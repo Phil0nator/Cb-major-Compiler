@@ -1065,6 +1065,9 @@ section .text
 
 
 section .data
+FLT_CONSTANT_0: dq __float32__(3.14159235)
+FLT_CONSTANT_1: dq __float32__(3.2354)
+FLT_CONSTANT_2: dq __float32__(23.3)
 __FLT_STANDARD_1: dq __float32__(1.0)
 __BOOL_STANDARD_TRUE: dq -0x1
 __BOOL_STANDARD_FALSE: dq 0x0
@@ -1138,12 +1141,52 @@ __expstack_int30: resb 0x8
 __expstack_flt30: resb 0x8
 __expstack_int31: resb 0x8
 __expstack_flt31: resb 0x8
+tester: resb 0x8
 
 
 
 section .text
 global CMAIN
 
+
+getPI:
+push rbp
+mov rbp, rsp
+sub rsp, 0x8
+movss xmm8, [FLT_CONSTANT_0]
+jmp __getPI__leave_ret_
+
+__getPI__leave_ret_:
+leave
+ret
+
+m:
+push rbp
+mov rbp, rsp
+sub rsp, 0x48
+movss [rbp-0x8], xmm0
+movss [rbp-0x10], xmm1
+movss [rbp-0x18], xmm2
+movss [rbp-0x20], xmm3
+mov rax, 0x4
+movss xmm14, [FLT_CONSTANT_1]
+cvtsi2ss xmm15, rax
+mulss xmm15, xmm14
+cvttss2si rax, xmm15
+mov QWORD [rbp-0x28], rax
+movss xmm10, [FLT_CONSTANT_2]
+movss  [rbp-0x30], xmm10
+mov rbx, -0x1
+mov QWORD [rbp-0x38], rbx
+PRINT_DEC 8, r10
+call getPI
+movss [rbp-0x40], xmm8
+mov r8, QWORD [rbp-0x28]
+jmp __m__leave_ret_
+
+__m__leave_ret_:
+leave
+ret
 
 
 
@@ -1159,6 +1202,7 @@ xor rax, rax
 mov r9, rsi     ;commandline args
 mov r10, rdi
 align 16
+mov QWORD [tester], 0x24
 call m
 NEWLINE
 ret

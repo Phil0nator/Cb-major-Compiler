@@ -186,10 +186,12 @@ class Compiler:
             isFast = True
             self.advance()
         
-        isThread = False
-        if(self.current_token.tok == T_KEYWORD and self.current_token.value == "Function"):
-            isThread = True
-            self.advance()
+        if(self.current_token.tok != T_ID):
+            throw(InvalidFunctionDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
+        rettype = self.current_token.value
+        self.advance()
+
+
 
         if(self.current_token.tok != T_ID):
             throw(InvalidFunctionDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
@@ -211,30 +213,14 @@ class Compiler:
                     self.advance()
                 elif (self.current_token.tok == T_ID):
                     params.append(self.current_token.value)
-                    types.append("var")
+                    types.append(self.current_token.value)
                     self.advance()
-                elif (self.current_token.tok == T_KEYWORD and self.current_token.value == "float"):
-                    types.append("float")
-                    self.advance()
-                    if(self.current_token.tok != T_ID):throw(InvalidFunctionDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
-                    params.append(self.current_token.value)
-                    self.advance()
-                elif (self.current_token.tok == T_KEYWORD and self.current_token.value == "Function"):
-                    types.append("Function")
-                    self.advance()
-                    if(self.current_token.tok != T_ID):throw(InvalidFunctionDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
-                    params.append(self.current_token.value)
-                    self.advance()
-
                 else:
                     throw(InvalidFunctionParameterDeclaration(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
         
         self.advance()#move past ')'
         
-        ret = "var"
-        if(self.current_token.tok == T_KEYWORD and self.current_token.value == "float"):
-            ret = "float"
-            self.advance()
+        
         if(self.current_token.tok != T_OSCOPE):
             throw(InvalidFunctionDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
 
@@ -254,9 +240,8 @@ class Compiler:
             throw(EmptyFunction(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
         
         body.append(Token(T_EOF,value=T_EOF))
-        function = Function(name,params,body,self,types)
+        function = Function(name,params,body,self,types,rettype)
         function.isFast=isFast
-        function.ret=ret
         self.advance()
         self.functions.append(function)
         
@@ -301,7 +286,7 @@ class Compiler:
             print(name)
             throw(UndefinedFunction(self.current_token.start,self.current_token.end,self.current_token.value,self.current_token.tok))
         else:
-            return Function(name,[],[Token(T_EOF)], self, [])
+            return Function(name,[],[Token(T_EOF)], self, [], "void")
 
     def functionExists(self, name):
         for fn in self.functions:
@@ -317,9 +302,12 @@ class Compiler:
         if(self.current_token.value == "final"):
             isFinal = True
             self.advance()
-        flt = False
-        if(self.current_token.value == "float"):
-            flt = True
+        if(self.current_token.value=="var"):
+            self.advance()
+        if(self.current_token.tok != T_ID):
+            throw(InvalidVariableDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
+        dtype = self.current_token.value
+        flt = dtype=="float" or dtype=="double"
         self.advance()
         if(self.current_token.tok != T_ID):
             throw(InvalidVariableDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))

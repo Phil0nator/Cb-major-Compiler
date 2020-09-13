@@ -70,9 +70,12 @@ ID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_."
 
 
 
-DATATYPES = [{"int":8}, {"float":4}, {"double":8}, {"char":1},{" int*":8}, {"float*":8},{"double*":8},{"char*":8},{"void":0},{"void*":8}]
-T_DTPS = ["int", "float", "double", "char"," int*", "float*", "double*", "char*", "void", "void*"]
+DATATYPES = {"int":8, "float":4, "double":8, "char":1," int*":8, "float*":8,"double*":8,"char*":8,"void":0,"void*":8,"bool":1}
+T_DTPS = ["int", "float", "double", "char"," int*", "float*", "double*", "char*", "void", "void*","bool"]
 
+
+def typeExists(t):
+    return t in T_DTPS
 
 #ESCAPE
 
@@ -93,7 +96,7 @@ ESCAPE_CHARS = {
 
 KEYWORDS = ["if", "struct", "class", "while", "for", "var", "final", "function", "true", "false", \
             "return", "__asm", "__c", "#include", "#define", "#ifdef", "#ifndef", "#else", "#endif", \
-            "constructor", "cmp", "float", "fast", "break", "continue", "Function", "else", "elif", "label", "goto"]
+            "constructor", "cmp", "fast", "break", "continue", "Function", "else", "elif", "label", "goto"]
 
 
 
@@ -178,14 +181,6 @@ int_allocator_ref = "QWORD"
 int_allocator_glob = "resb 8"
 
 
-
-allocator_table = {
-    "int" : int_allocator,
-    "g_int" : int_allocator_glob,
-    "int*" : int_allocator_ref
-
-
-}
 def define_global(name):
     return name+": resb 0x8\n"
 

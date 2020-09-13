@@ -184,7 +184,7 @@ class Lexer:
     def make_identifier(self):
         out = ''
         start = self.loc.copy()
-        while self.current_char !=None and self.current_char in ID_CHARS+T_NUMBERS:
+        while self.current_char !=None and self.current_char in ID_CHARS+T_NUMBERS+"*":
             out+=self.current_char
             
             self.advance()

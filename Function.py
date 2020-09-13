@@ -17,7 +17,7 @@ from FunctionOptimizer import *
 #Each different type of statement has its own member function designed to construct it.
 '''
 class Function:
-    def __init__(self,name,params,tokens, compiler, types):
+    def __init__(self,name,params,tokens, compiler, types, ret):
         self.tokens = tokens
         self.types = types
         self.name = name
@@ -25,7 +25,7 @@ class Function:
             self.name = "m"
         self.params = params
         self.compiler = compiler
-        self.ret = "var"
+        self.returntype = ret
         
         self.header = self.name+":"
         self.allocator = ""
@@ -844,7 +844,12 @@ class Function:
 
 
     def buildVariableDeclaration(self):
-        flt = (self.current_token.value == "float")
+        self.advance()
+        if(self.current_token.tok != T_ID):            throw(InvalidVariableDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
+
+        dtype = self.current_token.value
+        if(not typeExists(dtype)):  throw(InvalidVariableDeclarator(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
+        
         self.advance()
         isarr = False
         if(self.current_token.tok == T_OPENLINDEX):
@@ -866,33 +871,36 @@ class Function:
         if(self.getDeclarationByID(id) != None):
             throw(VariableReDeclaration(self.current_token.start,self.current_token.end,self.current_token.value, self.current_token.tok))
         self.advance()
-        if(self.current_token.tok == T_EOL): #variable declaration without assignment
-            self.appendDeclaration(id,flt)
+        if(self.current_token.tok == T_EOL):
+            self.appendDeclaration(id,dtype)
+            return 
+        # if(self.current_token.tok == T_EOL): #variable declaration without assignment
+        #     self.appendDeclaration(id,dtype)
             
 
-            if(not flt):
-                if(not isarr):
-                    self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, "0x0"))
-                else:
+        #     if(not flt):
+        #         if(not isarr):
+        #             self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, "0x0"))
+        #         else:
                     
-                    self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, "rbp"))
-                    self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, hex(self.allocationCounter-size)).replace("mov", "sub"))
+        #             self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, "rbp"))
+        #             self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, hex(self.allocationCounter-size)).replace("mov", "sub"))
             
-            else:
-                if(not isarr):
-                    self.addline("movss  xmm10, [FLT_STANDARD_ZERO]")
-                    self.addline("movss [rbp-"+hex(self.declarations[len(self.declarations)-1].offset)+"], xmm10")
-                else:
-                    self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, "rbp"))
-                    self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, hex(self.allocationCounter-size)).replace("mov", "sub"))
+        #     else:
+        #         if(not isarr):
+        #             self.addline("movss  xmm10, [FLT_STANDARD_ZERO]")
+        #             self.addline("movss [rbp-"+hex(self.declarations[len(self.declarations)-1].offset)+"], xmm10")
+        #         else:
+        #             self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, "rbp"))
+        #             self.addline(place_value_from_reg(self.declarations[len(self.declarations)-1].offset, hex(self.allocationCounter-size)).replace("mov", "sub"))
 
-            #self.advance()
+        #     #self.advance()
 
-            return
+        #     return
         if(isarr):return
         if(self.current_token.tok == "="): #with assignment
             self.advance()
-            self.appendDeclaration(id,flt)
+            self.appendDeclaration(id,dtype)
             
             terma = self.current_token.value
 
@@ -922,12 +930,12 @@ class Function:
 
     def buildReturnStatement(self):
         #current token will already be the return value
-        if(self.ret == "float"):
+        if(self.returntype == "float" or self.returntype=="double"):
             self.evaluation_wrapper(reg="xmm8")
-            self.addline("cvttss2si r8, xmm8")
+        #    self.addline("cvttss2si r8, xmm8")
         else:
             self.evaluation_wrapper(reg="r8")
-            self.addline("cvtsi2ss xmm8,r8")
+            #self.addline("cvtsi2ss xmm8,r8")
         
         self.addline("jmp __%s__leave_ret_"%self.name)
 
@@ -1162,12 +1170,12 @@ class Function:
             self.allocationoffset = len(self.params)*8+8
             for token in self.tokens:
                 
-                if(token.tok == T_KEYWORD and token.value == "var" or token.value == "float" or token.value=="for"): #forloops require extra declarations
+                if(token.tok == T_KEYWORD and token.value == "var" or token.value=="for"): #forloops require extra declarations
                     self.allocationoffset += 8
         else:
             self.allocationoffset = 8
             for token in self.tokens:
-                if(token.tok == T_KEYWORD and token.value == "var" or token.value == "float"):
+                if(token.tok == T_KEYWORD and token.value == "var"):
                     self.allocationoffset += 8
 
         if(not self.isFast):

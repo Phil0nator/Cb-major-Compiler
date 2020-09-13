@@ -1,5 +1,21 @@
+function double getPI(){
+     return 3.14159235;
+}
+
+var double tester = 36;
 
 
 function int main(char* args, int argc){
-     __asm{""}
+     var int test = 4*3.2354;
+     var float b = 23.3;
+     var bool b2 = true;
+     __asm{"
+
+          PRINT_DEC 8, r10
+
+     "}
+     var float testpi;
+     getPI()->testpi;
+
+     return test;
 }
