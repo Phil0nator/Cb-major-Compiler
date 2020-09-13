@@ -2,13 +2,13 @@
 
 
 class Declaration:
-    def __init__(self, name, offset, isfloat):
+    def __init__(self, name, offset, t):
         self.name = name
         self.offset = offset
-        self.isfloat = isfloat
+        self.t = t
         self.isarr= False #refering specifically to stack arrays, not malloc heap memory
     def __repr__(self):
-        return f"{self.name} : {str(self.offset)}\t isfloat: {self.isfloat}"
+        return f"{self.name} : {str(self.offset)}\t isfloat: {self.t}"
         
 
 

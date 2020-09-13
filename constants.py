@@ -70,6 +70,10 @@ ID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_."
 
 
 
+DATATYPES = [{"int":8}, {"float":4}, {"double":8}, {"char":1},{" int*":8}, {"float*":8},{"double*":8},{"char*":8},{"void":0},{"void*":8}]
+T_DTPS = ["int", "float", "double", "char"," int*", "float*", "double*", "char*", "void", "void*"]
+
+
 #ESCAPE
 
 

@@ -1,12 +1,5 @@
-#include "include:all.rud"
 
 
-
-function main(args, numargs){
-
-     
-     printformat("The number of commandline arguments is: %u\n", numargs);
-    
-  
+function int main(char* args, int argc){
+     __asm{""}
 }
-
