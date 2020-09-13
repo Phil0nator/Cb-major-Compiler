@@ -1,0 +1,28 @@
+#include "include:math.rud"
+#include "include:prints.rud"
+#include "include:time.rud"
+#include "include:io.rud"
+
+function main(args, numargs){
+    
+    
+    var t;
+    var file;
+    FileWriter.init(file, "logic.txt", WMODE_APPEND)->file;
+    FileWriter.write(file, "This is an extra line that has been written!\n");
+    var str;
+    for(var i; i==1; i=i;){
+
+        getString(1000)->str;
+        FileWriter.write(file, str);
+        newline();
+
+
+    }
+    
+    
+    
+    FileWriter.destroy(file);
+    
+
+}

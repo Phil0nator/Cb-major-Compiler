@@ -1,0 +1,126 @@
+
+#include "include:memory.rud"
+#ifdef __Linux__
+#include "include:linux-base/t.rud"
+#endif
+
+struct TimeSpec{
+    
+    var secs;
+    var nano;
+    var b;
+    var a;
+
+}
+
+function TimeSpec.init(this){
+
+    TimeSpec()->this;
+    
+    sys_get_time(this);
+
+
+    return this;
+}
+function TimeSpec.update(this){
+    sys_get_time(this+24);
+    return this;
+}
+
+function TimeSpec.getSeconds(this){
+    var s;
+    this:secs->s;
+    return s;
+}
+function TimeSpec.getSubs_nano(this){
+    var n;
+    this:nano->n;
+    return n;
+}
+function TimeSpec.getSubs_milli(this){
+    var n;
+    this:nano->n;
+    return n / 1000000;
+}
+function TimeSpec.equals(this, other){
+
+    
+    var s1;
+    var s2;
+    var n1;
+    var n2;
+    this:secs->s1;
+    other:secs->s1;
+    this:nano->n1;
+    other:nano->n2;
+
+    s1 = s1 - s2;
+    n1 = n2 - n2;
+    __asm{"
+    mov r8, 0
+    "}
+    cmp (s1, 0){
+        !=:return;
+    }
+    cmp(n1, 0){
+        !=:return;
+    }
+    return 1;
+
+
+}
+
+function TimeSpec.isLaterThan(this, other){
+
+    var s1;
+    var s2;
+    var n1;
+    var n2;
+    this:secs->s1;
+    other:secs->s1;
+    this:nano->n1;
+    other:nano->n2;
+
+    s1 = s1 - s2;
+    n1 = n2 - n2;
+
+    __asm{"
+    mov r8, 1
+    "}
+
+    cmp (s1, 0){
+        > :return;
+    }
+    __asm{"
+    mov r8, 0
+    "}
+    cmp(n1, 0){
+        < : return;
+    }
+
+    cmp(s1,0){
+        !=:return;
+    }
+    return 1;
+
+}
+
+
+
+function delay(seconds){
+
+    var time;
+    systime()->time;
+    time = time+seconds;
+    var c;
+    for(var i; i<1; i=0;){
+
+        systime()->c;
+        
+        cmp(c,time){
+            >=: return;
+        }
+
+    }
+
+}

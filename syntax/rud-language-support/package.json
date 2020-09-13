@@ -1,0 +1,26 @@
+{
+    "name": "rud-language-support",
+    "displayName": "rud language support",
+    "publisher": "Me",
+    "description": "Lanuage supprt for \"rud\"",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.48.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "rud",
+            "aliases": ["rud", "rud"],
+            "extensions": [".rud"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "rud",
+            "scopeName": "rud",
+            "path": "./syntaxes/rud.tmLanguage.json"
+        }]
+    }
+}

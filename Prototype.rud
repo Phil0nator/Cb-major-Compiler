@@ -1,0 +1,12 @@
+#include "include:all.rud"
+
+
+
+function main(args, numargs){
+
+     
+     printformat("The number of commandline arguments is: %u\n", numargs);
+    
+  
+}
+

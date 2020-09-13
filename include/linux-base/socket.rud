@@ -1,0 +1,237 @@
+#include "include:linux-base/files.rud"
+final var SOCK_STREAM = 1;  
+final var SOCK_DGRAM = 2;  
+final var SOCK_RAW = 3;  
+final var SOCK_RDM = 4;
+final var SOCK_SEQPACKET = 5;
+final var SOCK_PACKET = 10;
+
+
+final var AF_UNSPEC = 0;
+final var AF_UNIX = 1;
+final var AF_INET=2;
+final var AF_AX25=3;
+final var AF_IPX=4;
+final var AF_APPLETALK=5;
+final var AF_NETROM=6; 
+final var AF_BRIDGE=7; 
+final var AF_AAL5=8; 
+final var AF_X25=9; 
+final var AF_INET6=10; 
+final var AF_MAX = 12; 
+
+final var SOCK_NOPROT = 0;
+
+
+// Maximum queue length specifiable by listen.  */
+final var SOMAXCONN = 128;
+
+// Flags we can use with send/ and recv. */
+final var MSG_OOB = 1;
+final var MSG_PEEK = 2;
+final var MSG_DONTROUTE = 4;
+final var MSG_PROXY = 16;
+final var SOL_IP = 0;
+final var SOL_IPX = 256;
+final var SOL_AX25 = 257;
+final var SOL_ATALK = 258;
+final var SOL_NETROM = 259;
+final var SOL_TCP = 6;
+final var SOL_UDP = 17;
+
+final var IP_TOS = 1;
+final var IPTOS_LOWDELAY = 16;
+final var IPTOS_THROUGHPUT=8;
+final var IPTOS_RELIABILITY=4;
+final var IP_TTL = 2;
+final var IP_HDRINCL = 3;
+final var IP_OPTIONS = 4;
+
+final var IP_MULTICAST_IF =  32;
+final var IP_MULTICAST_TTL  = 33;
+final var IP_MULTICAST_LOOP   =34;
+final var IP_ADD_MEMBERSHIP  =35;
+final var IP_DROP_MEMBERSHIP  =36;
+
+final var IP_DEFAULT_MULTICAST_TTL = 1;
+final var IP_DEFAULT_MULTICAST_LOOP = 1;
+final var IP_MAX_MEMBERSHIPS = 20;
+ 
+final var IPX_TYPE = 1;
+
+final var TCP_NODELAY = 1;
+final var TCP_MAXSEG = 2;
+
+
+final var SOPRI_INTERACTIVE = 0;
+final var SOPRI_NORMAL = 1;
+final var SOPRI_BACKGROUND = 2;
+
+final var SIZEOF_SOCKADDR_IN = 32;
+
+struct sockaddr_in{
+
+    var sin_family;
+    var sin_port;
+    var in_addr;
+    var sin_zero;
+
+}
+
+struct in_addr{
+    var addr; //32 bit network address
+}
+
+
+function sockaddr_in.init(family, address, port){
+
+    var inet;
+    var sockaddr;
+    addres_to_inet(address)->inet;
+    sockaddr_in()->sockaddr;
+    sockaddr:sin_family=family;
+    sockaddr:sin_port = port;
+    sockaddr:sin_zero = 0;
+    sockaddr:in_addr = inet;
+    return sockaddr;
+
+}
+
+
+function sockaddr_in.destroy(this){
+    var sub;
+    this:in_addr->sub;
+    destroy(sub);
+    destroy(this);
+}
+
+
+
+
+
+function addres_to_inet(address){
+
+    __asm{"
+    push r9
+    mov r9, 8
+    call alloc
+    mov rsi, r8
+    pop r9
+    mov rdi, r9
+    call inet_aton
+    
+    "}
+
+}
+
+
+
+
+
+
+
+function fast sys_socket(family, type, protocol){
+
+    __asm{"
+        mov rax, 41; sys_socket syscall
+        mov rdi, r9
+        mov rsi, r10
+        mov rdx, r11
+        syscall
+        mov r8, rax   
+    "}
+
+}
+
+function fast sys_connect(fd, addr, addrlen){
+    __asm{"
+    
+    
+        mov rax, 42 ; sys_connect
+        mov rdi, r9
+        mov rsi, r10
+        mov rdx, r11
+        syscall
+        mov r8, rax
+    
+    "}
+
+}
+
+function fast sys_accept(fd, sockaddr, addrlen){
+
+    __asm{"
+    
+        mov rax, 43 ;sys_accept
+        mov rdi, r9
+        mov rsi, r10
+        mov rdx, r11
+        syscall
+        mov r8, rax
+    
+    "}
+
+}
+
+function fast sys_bind(fd, addr, addrlen){
+
+    __asm{"
+    
+    mov rax, 49
+    mov rdi, r9
+    mov rsi, r10
+    mov rdx, r11
+    syscall
+    mov r8, rax
+    
+    
+    "}
+
+}
+
+
+function fast sys_listen(fd, backlog){
+
+
+    __asm{"
+    
+    mov rax, 50
+    mov rdi, r9
+    mov rsi, r10
+    syscall
+    mov r8, rax
+    
+    
+    
+    "}
+
+}
+
+
+function fast sys_shutdown(fd, how){
+
+    __asm{"
+
+        mov rax, 48
+        mov rdi, r9
+        mov rsi, r10
+        syscall
+        mov r8, rax
+    
+    
+    
+    "}
+
+}
+
+function socketsend(fd, buffer, amt){
+
+    writeFile(fd, buffer, amt);
+
+}
+
+function socketrecv(fd, buffer, amt){
+
+    readFile(fd, buffer, amt);
+
+}

@@ -1,0 +1,151 @@
+#include "include:prints.rud"
+#include "include:entryexit.rud"
+#define MAX_INT 9223372036854775807
+#define NULL 0
+#define nullptr 0
+#define SIZEOF_CHAR 1
+#define SIZEOF_VAR 8
+#define SIZEOF_PTR 8
+
+final var __isincluded__MEMORY_ = 38598;
+
+
+function Array(len){
+
+    var out;
+    alloc(len*8)->out;
+    return out;
+
+}
+
+function fast putValue(array, index, value){
+    __asm{"
+    mov rax, r11
+    mov QWORD [r9+r10], rax  
+    "}
+}
+function fast getValue(array, index){
+
+    __asm{"
+    
+    mov rax, QWORD [r9+r10]
+    mov r8, rax
+    
+    "}
+
+}
+
+
+function fast alloc(amt){
+
+__asm{"
+   ALIGN_STACK
+   xor r11, r11
+   xor r12, r12
+   mov rdi, r9
+   call malloc
+   xor r11, r11
+   xor r12, r12
+   test rax, rax ; check for error
+
+   ;mov byte[rax+rdi], 0x0
+
+   mov r8, rax
+   UNALIGN_STACK
+
+"}
+
+
+}
+
+
+function memerror(error){
+
+    print_string("Memory error encountered");
+    exit(error);
+
+}
+
+function fast destroy(ptr){
+__asm{"
+    ALIGN_STACK
+    mov rdi, r9
+    
+    call free
+    xor r10, r10
+    xor r11, r11 ;gc
+    xor r12, r12
+    UNALIGN_STACK
+
+"}
+
+}
+
+function fast reallocate(ptr, newsize){
+
+    __asm{
+        "
+        
+        ALIGN_STACK
+        mov rdi, r9
+        mov rsi, r10
+        xor r10, r10
+        xor r11, r11 ;gc
+        xor r12, r12
+        call realloc
+
+        test rax, rax
+        xor r10, r10
+        xor r11, r11 ;gc
+        xor r12, r12
+        mov r8, rax
+        UNALIGN_STACK
+        
+        "}
+
+
+}
+
+
+
+function fast memcpy(destination, source, length){
+
+    __asm{"
+        xor r8, r8
+        xor r12, r12
+        __memcpy_flp_0x0:
+        mov r12, [r10+r8]
+        mov [r9+r8], r12
+        inc r8
+        cmp r8, r11
+        jne __memcpy_flp_0x0
+
+        __memcpy_flp_0x0_endfinal:
+    
+    
+    
+    "}
+
+
+}
+
+function fast memdup(source, length){
+
+    __asm{
+        "
+        push r9
+        push r10
+        mov r9, r10
+        call alloc
+        pop r10
+        pop r9
+        mov r11, r10
+        mov r10, r9
+        mov r9, r8
+        call memcpy
+        mov r8, r9
+
+        "
+    }
+
+}

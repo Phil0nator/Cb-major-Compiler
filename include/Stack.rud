@@ -1,0 +1,89 @@
+#include "include:memory.rud"
+#include "include:entryexit.rud"
+#include "include:prints.rud"
+
+struct Stack{
+
+    var mem;
+    var ptr;
+
+
+}
+
+
+function Stack.init(initialsize){
+
+    var out;
+    Stack()->out;
+    var m;
+    alloc(initialsize)->m;
+    out:mem = m;
+    out:ptr = initialsize-8;
+    return out;
+
+}
+
+function Stack.push(this, value){
+
+    var ptr;
+    this:ptr->ptr;
+    ptr = ptr - 1;
+
+    if(ptr < 0){
+
+        print_string("Stack: Error: StackOverflow.");
+        exit(1);
+
+    }
+
+
+    var m;
+    this:mem->m;
+    m[ptr]=value;
+    this:ptr=ptr;
+
+
+}
+
+function Stack.pop(this){
+
+
+    var ptr;
+    this:ptr->ptr;
+    var m;
+    this:mem->m;
+    var i;
+    m[ptr]->i;
+    this:ptr = ptr + 1;
+
+
+    return i;
+
+}
+
+function Stack.getraw(this){
+
+    var m;
+    this:mem->m;
+    return m;
+
+}
+
+function Stack.getrawptr(this){
+
+    var m;
+    this:mem->m;
+    var ptr;
+    this:ptr->ptr;
+    return m+ptr;
+
+}
+
+function Stack.destroy(this){
+
+    var m;
+    this:mem->m;
+    destroy(m);
+    destroy(this);
+
+}

@@ -1,0 +1,265 @@
+#include "include:memory.rud"
+#include "include:math.rud"
+#include "include:prints.rud"
+#include "include:string.rud"
+#include "include:entryexit.rud"
+#ifndef __Vector__
+#define __Vector__ 1
+
+var currentVector;
+
+struct Vector{
+
+    var array;
+    var len;
+    var pushpos;
+    var element_size;
+
+}
+
+
+function Vector.init(vec, size){
+
+    var arr;
+    alloc(1*size)->arr;
+    Vector()->vec;
+    vec:array = arr;
+    vec:len = 0;
+    vec:pushpos = 0;
+    vec:element_size = size;
+
+
+    return vec;
+}
+
+
+
+function Vector.resize(vec, newsize){
+
+    var arr;
+    vec:array->arr;
+    var newarr;
+    var itemsize;
+    vec:element_size->itemsize;
+    reallocate(arr, newsize*itemsize)->newarr;
+    cmp (newarr, nullptr){
+        ==:memerror;
+    }
+
+    vec:array = newarr;
+    vec:len = newsize;
+    return vec;
+
+
+
+
+
+}
+
+
+function expand_current_vector(){
+    
+    Vector.expand(currentVector);
+}
+
+function Vector.expand(vec){
+    
+
+    var len;
+    vec:len->len;
+    len = len + 1;
+    vec:len = len;
+    var arr;
+    vec:array->arr;
+    var newarr;
+    var size;
+    vec:element_size->size;
+    reallocate(arr, len*size)->newarr;
+    
+    vec:array=newarr;
+    return len;
+
+
+}
+
+function Vector.push(vec, item){
+    currentVector = vec;
+    var arr;
+    vec:array->arr;
+    var pos;
+    var size;
+    vec:element_size->size;
+    var len;
+    vec:pushpos->pos;
+    vec:len->len;
+
+    cmp(pos, len){
+
+        >=:expand_current_vector;
+
+    }->len;
+
+    vec:len = len;
+    
+    vec:array->arr;
+    arr@pos*size] = item;
+    pos = pos + 1;
+    vec:pushpos=pos;
+
+    
+    return item;
+
+}
+
+function Vector.pop(vec){
+
+
+    currentVector = vec;
+    var arr;
+
+    var size;
+    vec:element_size->size;
+
+    vec:array->arr;
+    var pos;
+    vec:pushpos->pos;
+    pos = pos-1;
+    var out;
+    arr@pos*size]->out;
+    vec:pushpos=pos;
+    return out;
+
+
+}
+
+function Vector.at(vec, index){
+
+    var arr;
+    vec:array->arr;
+    var item;
+    var size;
+    vec:element_size->size;
+    arr@index*size]->item;
+    return item;
+
+}
+
+function Vector.set(vec, index, value){
+
+    var arr;
+    var size;
+    vec:element_size->size;
+    vec:array->arr;
+    arr @index*size]  = value;
+
+}
+
+function Vector.print(vec){
+    var arr;
+    vec:array->arr;
+    var size;
+    vec:element_size->size;
+    var len;
+    vec:len->len;
+    printformat("@ ", 0);
+    var current_value;
+    for(var i=0; i <= (len - 1);i++){
+
+        arr@i*size]->current_value;
+        printformat("%i, ",current_value);
+
+    }
+    len = len - 1;
+    arr@len*size]->current_value;
+    printformat("%i ]\n",current_value);
+
+
+
+}
+function Vector.printstrs(vec){
+    var arr;
+    vec:array->arr;
+    var size;
+    vec:element_size->size;
+    var len;
+    vec:len->len;
+    printformat("[ ", 0);
+    var current_value;
+    
+
+    if(len == 1){
+        arr@0]->current_value;
+        printformat(" %s ]", current_value);
+        return 0;
+
+    }
+    
+    for(var i = 0; i < (len - 2);i++;){
+        
+        arr@i*size]->current_value;
+        printformat("%s, ",current_value);
+        
+
+    }
+        
+
+    arr@(len-1)*size]->current_value;
+    printformat("%s ]\n",current_value);
+
+
+
+}
+
+function Vector.size(vec){
+
+    var len;
+    vec:len->len;
+    return len;
+
+}
+
+function Vector.pushes(vec, newptr, newptr_len){
+
+    
+    var val;
+    var addr;
+    var size;
+    vec:element_size->size;
+    for(var i; i < newptr_len; i++ ;){
+        addr= i*size;
+        newptr@ addr]->val;
+        Vector.push(vec,val);
+
+    }
+
+
+}
+
+function Vector.destroy(vec){
+
+    var array;
+    vec:array->array;
+    destroy(array);
+    destroy(vec);
+    return 0;
+
+
+}
+
+function vectorize_args(args, numargs){
+    var tmp;
+    
+    Vector.init(tmp, 8)->tmp;
+    Vector.resize(tmp, numargs+1);
+    var item;
+    for(var i; i <= numargs;i++;){
+        args[i]->item;
+        Vector.set(tmp, i, item);
+
+    }
+    return tmp;
+
+}
+
+
+#endif
