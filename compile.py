@@ -48,7 +48,9 @@ def main():
     
     
     print("+-+-+ FINAL +-+-+")
-
+    
+    with open(__fileoutput__ , "wb") as f:
+        f.write(asm.encode())
 
 
 parser = arg.ArgumentParser(description='Compile .rud programs into either nasm assembly, or to an executable.')

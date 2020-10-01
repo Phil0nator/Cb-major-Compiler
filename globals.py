@@ -103,6 +103,8 @@ DOUBLE = DType("double", 8)
 VOID = DType("void", 0)
 BOOL = DType("bool", 1)
 
+INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL]
+
 false = hex(0)
 true = hex(255)
 
@@ -175,13 +177,20 @@ ret
 """%(name)
 
 constantReservers = ["DB", "DW", "DD", "DQ"]
+heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 def getConstantReserver(t):
     return constantReservers[t.size-5]
 
+def getHeapReserver(t):
+    if (t.size == 1):
+        return "RESQ 1"
+    if t.size == 8:
+        return "RESQ 1"
+    return "RESB %s"%t.size
 
 
 def createIntrinsicConstant(variable):
-    return "%s: %s %s"%(variable.name,getConstantReserver(variable.t), hex(variable.initializer))
+    return "%s: %s %s\n"%(variable.name,getConstantReserver(variable.t), hex(variable.initializer))
     pass
 
 stringconstant_counter = 0
@@ -189,9 +198,22 @@ def createStringConstant(s):
 
     out = []
     name = ("STRING_CONSTANT_%s"%stringconstant_counter)
-    out.append( "%s: db `%s`, 0"%(name, s))
+    out.append( "%s: db `%s`, 0\n"%(name, s))
     out.append(name)
     return out
+
+floatconstant_counter = 0
+def createFloatConstant(s):
+
+    out = []
+    name = ("FLT_CONSTANT_%s"%floatconstant_counter)
+    out.append("%s: dq __float32__(%s)\n"%(name,s))
+    out.append(name)
+    return out
+
+
+def createIntrinsicHeap(variable):
+    return "%s: %s\n"%(variable.name,getHeapReserver(variable.t))
 
 #compiletime:
 

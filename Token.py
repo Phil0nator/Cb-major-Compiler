@@ -21,7 +21,7 @@ T_DIVIDE = "/"
 T_INC = "++"
 T_DEC = "--"
 
-T_EQUALS = "=="
+T_SAME = "=="
 T_NOTEQUAL = "!="
 T_GREATER = ">"
 T_LESS = "<"
@@ -49,7 +49,7 @@ T_MULTIOP = "-*><=!|&"
 T_DIGITS = "0123456789"
 T_IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 
-
+T_EQUALS = "="
 
 T_OPENP = "("
 T_CLSP = ")"

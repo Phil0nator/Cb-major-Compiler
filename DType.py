@@ -5,7 +5,10 @@ class DType:
         self.members=members
     
     def __eq__(self, other):
-        return self.name == other.name
+        if(isinstance(other, DType)):
+            return self.name == other.name
+        else:
+            return False
 
     def __repr__(self):
         return f"[ Type: {self.name} ]"

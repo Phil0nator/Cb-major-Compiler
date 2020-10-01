@@ -100,6 +100,7 @@ class Lexer:
             elif (self.ch == "#"):
                 while self.ch != "\n":
                     self.advance()
+                self.advance()
 
             elif(self.ch == ";"):
                 tokens.append(Token(T_ENDL,T_ENDL,self.loc.copy(),self.loc.copy()))
@@ -137,5 +138,6 @@ class Lexer:
             else:
                 print("Unkown character sequence at: %s"%self.loc)
 
-        print(tokens)
+        tokens.append(Token(T_EOF,T_EOF,self.loc.copy(),self.loc.copy()))
+
         return tokens
