@@ -1,0 +1,3 @@
+
+
+int globaltest = 0;
