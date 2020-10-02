@@ -1,6 +1,8 @@
 from globals import *
 from Variable import *
 from DType import *
+from Token import *
+
 class Function:
     def __init__(self, name, parameters, returntype, compiler, tokens):
         self.name = name
@@ -12,6 +14,14 @@ class Function:
 
         self.stackCounter = 8
         self.variables = []
+
+
+        self.current_token = self.tokens[0]
+        self.ctidx = 0
+
+    def advance(self):
+        self.ctidx+=1
+        self.current_token = self.tokens[self.ctidx]
 
     def getCallingLabel(self):
         return functionlabel(self).replace(":","").replace("\n","")
@@ -52,6 +62,18 @@ class Function:
 
 
 
+    def beginRecursiveCompile(self):
+        opens = 1
+        while opens > 0 and self.current_token.tok != T_EOF:
+
+            if(self.current_token.tok == T_KEYWORD):
+                pass # keyword statement
+            elif (self.current_token.tok == T_ID):
+                pass # ID initiated statement
+            else:
+                pass # ambiguous statement
+
+
 
     def compile(self):
         
@@ -61,7 +83,7 @@ class Function:
 
 
 
-
+        self.beginRecursiveCompile()
 
 
 

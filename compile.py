@@ -8,6 +8,7 @@
 #   Link
 #   
 #
+import time
 import argparse as arg
 from Error import *
 from globals import *
@@ -22,7 +23,7 @@ from Compiler import *
 
 
 def main():
-
+    beginTime = time.time()
     with open(__fileinput__, "rb") as inpf:
         raw = inpf.read().decode()
 
@@ -53,6 +54,11 @@ def main():
     with open(__fileoutput__ , "wb") as f:
         f.write(asm.encode())
 
+    
+
+
+
+    print("Compiled and Linked symbols in %s ms"%(time.time()-beginTime))
 
 parser = arg.ArgumentParser(description='Compile .rud programs into either nasm assembly, or to an executable.')
 parser.add_argument("-o", "--output", required=True)

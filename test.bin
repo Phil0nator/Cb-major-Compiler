@@ -1059,21 +1059,10 @@ section .data
     nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
-FLT_CONSTANT_0: dq __float32__(3.5)
-STRING_CONSTANT_0: db `STRINGTESTING`, 0
 
 
 section .bss
     globaltest: RESB 8
-HvptrDest_0: RESB 8
-ptrtest: RESQ 1
-test: RESB 8
-tester: RESB 1
-testflt: RESB 8
-strtest: RESQ 1
-macrosq: RESB 8
-HvptrDest_1: RESB 1
-bruh: RESQ 1
 
 
 section .text
@@ -1111,17 +1100,6 @@ CMAIN:
     ;rdi
 
     mov QWORD[globaltest], 0
-mov QWORD[HvptrDest_0], 5
-mov QWORD[ptrtest], HvptrDest_0
-mov QWORD[test], 3
-mov QWORD[tester], 0x0
-xor rax, rax
-mov rax, qword[FLT_CONSTANT_0]
-mov qword[testflt], rax
-mov QWORD[strtest], STRING_CONSTANT_0
-mov QWORD[macrosq], 12
-mov QWORD[HvptrDest_1], 104
-mov QWORD[bruh], HvptrDest_1
 
 
     call _int_main_pintchar..
