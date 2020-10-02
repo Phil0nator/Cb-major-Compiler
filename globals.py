@@ -100,10 +100,11 @@ fileTemplate = "%s\n\n%s"%(io64,stub)
 INT = DType("int", 8)
 CHAR = DType("char", 1)
 DOUBLE = DType("double", 8)
+FLOAT = DType("float", 8)
 VOID = DType("void", 0)
 BOOL = DType("bool", 1)
 
-INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL]
+INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,FLOAT]
 
 false = hex(0)
 true = hex(255)
@@ -157,18 +158,16 @@ def label(name):
 
 def functionlabel(fn):
 
-    out = "\n_%s_%s_%s:\n"% ( fn.returntype.name, fn.name, "p#")
+    out = "_%s_%s_%s:\n"% ( fn.returntype, fn.name, "p#")
     types = ""
     for p in fn.parameters:
-        types+=p.t.name
+        types+=p.t.__repr__()
     out = out.replace("#", types)
     return out
 
 
 def function_closer(name):
     return """
-
-
 __%s__return:
 
 leave
@@ -176,45 +175,72 @@ ret
 
 """%(name)
 
+def psizeof(v):
+    if v.isptr: return "qword"
+    if v.t.size(0) == 1:
+        return "byte"
+    if v.t.size(0) == 8:
+        return "qword"
+    return "qword"
+
 constantReservers = ["DB", "DW", "DD", "DQ"]
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 def getConstantReserver(t):
-    return constantReservers[t.size-5]
+    return constantReservers[t.size(0)-5]
 
 def getHeapReserver(t):
-    if (t.size == 1):
-        return "RESQ 1"
-    if t.size == 8:
-        return "RESQ 1"
-    return "RESB %s"%t.size
+    if t.isptr: return "RESQ 1"
+    return "RESB %s"%t.t.size(0)
 
 
 def createIntrinsicConstant(variable):
-    return "%s: %s %s\n"%(variable.name,getConstantReserver(variable.t), hex(variable.initializer))
+    
+    if((variable.t.name == DOUBLE.name or variable.t.name == FLOAT.name)):
+
+        return "%s: dq __float32__(%s)\n"%(variable.name, (variable.initializer))
+
+    return "%s: %s %s\n"%(variable.name,getConstantReserver(variable.t), (variable.initializer))
+
     pass
 
 stringconstant_counter = 0
 def createStringConstant(s):
-
+    global stringconstant_counter
     out = []
     name = ("STRING_CONSTANT_%s"%stringconstant_counter)
     out.append( "%s: db `%s`, 0\n"%(name, s))
     out.append(name)
+    stringconstant_counter+=1
     return out
 
 floatconstant_counter = 0
 def createFloatConstant(s):
-
+    global floatconstant_counter
     out = []
     name = ("FLT_CONSTANT_%s"%floatconstant_counter)
     out.append("%s: dq __float32__(%s)\n"%(name,s))
     out.append(name)
+    floatconstant_counter+=1
     return out
 
 
 def createIntrinsicHeap(variable):
-    return "%s: %s\n"%(variable.name,getHeapReserver(variable.t))
+    return "%s: %s\n"%(variable.name,getHeapReserver(variable))
+
+
+
+def movVarHeap(vd, vs):
+
+    return "xor rax, rax\nmov rax, %s[%s]\n%s"%( psizeof(vs), vs.name, "mov %s[%s], rax\n"%( psizeof(vd), vd.name )  )
+
+
+
+
+
 
 #compiletime:
 
+
+def movRegToVar(od,reg):
+    return "mov [rbp-%s], %s"%(hex(od),reg)
 

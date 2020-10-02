@@ -1,9 +1,19 @@
 class DType:
-    def __init__(self, name, size, members=None):
+    def __init__(self, name, size, members=None, ptrdepth=0):
         self.name=name
-        self.size=size
+        self.s=size
         self.members=members
+        self.ptrdepth = ptrdepth
+
+    def size(self, depth):
+        if(depth < self.ptrdepth):
+            return 8
+        return self.s
     
+    def copy(self):
+        return DType(self.name,self.size,members=self.members,ptrdepth=self.ptrdepth)
+
+
     def __eq__(self, other):
         if(isinstance(other, DType)):
             return self.name == other.name
@@ -11,4 +21,4 @@ class DType:
             return False
 
     def __repr__(self):
-        return f"[ Type: {self.name} ]"
+        return f"{self.name}"+"."*self.ptrdepth

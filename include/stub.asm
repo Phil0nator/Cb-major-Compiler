@@ -17,9 +17,8 @@ CMAIN:
     xor rax, rax
 
 
-    mov r9, rsi     ;commandline args
-    mov r10, rdi
-    align 16
+    ;rsi     ;commandline args
+    ;rdi
 
     %%INITIALIZE%%
 

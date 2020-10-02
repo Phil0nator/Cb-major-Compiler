@@ -8,4 +8,4 @@ class Location:
         return Location(self.file,self.line,self.ch)
 
     def __repr__(self):
-        return f"[ file: {self.file} , Line: {self.line}, char: {self.ch} ]"
+        return f" \n\tfile: {self.file},\n\tLine: {self.line},\n\tchar: {self.ch} \n"

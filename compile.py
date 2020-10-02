@@ -31,11 +31,12 @@ def main():
 
     pp = PreProcessor(raw,pretokens,__fileinput__)
     totals = pp.process()
-
     print("+-+-+ Compile +-+-+")
     c = Compiler()
 
+
     for file in totals:
+        
         c.compile(file)
 
 

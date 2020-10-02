@@ -4,7 +4,7 @@ class Error:
         self.message = message
     
     def __repr__(self):
-        return f"{self.message} {self.tok} at {self.tok.start}"
+        return f"Compiletime Error: \n\t{self.message} \n\t\t{self.tok} at: \n\t{self.tok.start}"
 
 
 def throw(error):
@@ -32,3 +32,44 @@ class ExpectedSemicolon(Error):
     def __init__(self,tok):
         self.tok=tok
         self.message = "Expected Semicolon: "
+
+class UnexpectedToken(Error):
+    def __init__(self, tok):
+        self.tok=tok
+        self.message = "Unexpected Token: "
+
+class IntrinsicRequired(Error):
+    def __init__(self, tok):
+        self.tok=tok
+        self.message = "An Intrinsic Type was required: "
+
+class ExpectedValue(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = "Expected Value: "
+
+class InvalidConstant(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = "Invalid Constant (constants may only be primitive, non-pointer values): "
+
+
+class ExpectedType(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = "Expected Type: "
+
+class ExpectedParethesis(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = "Expected Parethesis: "
+
+class ExpectedComma(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = "Expected Comma: "
+
+class ExpectedToken(Error):
+    def __init__(self,tok,exp):
+        self.tok=tok
+        self.message = "Expected token ( '%s' ) :"%exp

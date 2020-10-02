@@ -44,7 +44,7 @@ T_AND = "&&"
 T_XOR = "^"
 
 
-T_MULTIOP = "-*><=!|&"
+T_MULTIOP = "-><=!|&"
 
 T_DIGITS = "0123456789"
 T_IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
@@ -72,7 +72,8 @@ KEYWORDS = [
     "for",
     "while",
     "if",
-    "__asm"
+    "__asm",
+    "return"
 ]
 
 

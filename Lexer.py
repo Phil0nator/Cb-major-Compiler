@@ -3,13 +3,15 @@ from Token import *
 from globals import *
 class Lexer:
     def __init__(self, fname, raw):
-        self.loc = Location(fname,0,0)
+        self.loc = Location(fname,1,0)
         self.raw = raw.replace("\t","")
         self.raw += chr(1)
         self.ch = self.raw[0]
         self.chidx = 0
 
+
     def advance(self):
+
         self.chidx+=1
         if(self.chidx < len(self.raw)):
             self.ch = self.raw[self.chidx]
@@ -68,7 +70,7 @@ class Lexer:
     def buildChar(self):
         self.advance()
         begin = self.loc.copy()
-        v = self.ch
+        v = ord(self.ch)
         self.advance()
         self.advance()
         return Token(T_CHAR, v,begin,self.loc.copy())
@@ -94,13 +96,13 @@ class Lexer:
     def getTokens(self):
         tokens = []
         while self.ch != chr(1):
+
             if(self.ch == "\n" or self.ch == " "):
                 self.advance()
 
             elif (self.ch == "#"):
                 while self.ch != "\n":
                     self.advance()
-                self.advance()
 
             elif(self.ch == ";"):
                 tokens.append(Token(T_ENDL,T_ENDL,self.loc.copy(),self.loc.copy()))
@@ -112,7 +114,7 @@ class Lexer:
                 tokens.append(Token(T_DIVIDE,T_DIVIDE,self.loc.copy(),self.loc.copy()))
                 self.advance()
             
-            elif (self.ch in "()}{[],"):
+            elif (self.ch in "()}{[],*"):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
             elif (self.ch in T_MULTIOP):

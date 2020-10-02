@@ -1056,20 +1056,47 @@ section .text
 
 
 section .data
-    FLT_CONSTANT_0: dq __float32__(3.5)
+    nullptr: DQ 0
+null: DQ 0
+nullterm: DB 0
+FLT_CONSTANT_0: dq __float32__(3.5)
 STRING_CONSTANT_0: db `STRINGTESTING`, 0
 
 
 section .bss
-    globaltest: RESQ 1
-test: RESQ 1
-tester: RESQ 1
-testflt: RESQ 1
+    globaltest: RESB 8
+HvptrDest_0: RESB 8
+ptrtest: RESQ 1
+test: RESB 8
+tester: RESB 1
+testflt: RESB 8
 strtest: RESQ 1
+macrosq: RESB 8
+HvptrDest_1: RESB 1
+bruh: RESQ 1
 
 
 section .text
 global CMAIN
+
+
+
+_int_main_pintchar..:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 0x18
+
+
+mov [rbp-0x8], rdi
+mov [rbp-0x10], rsi
+
+___int_main_pintchar..__return:
+
+leave
+ret
 
 
 
@@ -1080,17 +1107,24 @@ CMAIN:
     xor rax, rax
 
 
-    mov r9, rsi     ;commandline args
-    mov r10, rdi
-    align 16
+    ;rsi     ;commandline args
+    ;rdi
 
     mov QWORD[globaltest], 0
+mov QWORD[HvptrDest_0], 5
+mov QWORD[ptrtest], HvptrDest_0
 mov QWORD[test], 3
 mov QWORD[tester], 0x0
-mov rax, [FLT_CONSTANT_0]
-mov [testflt], rax
+xor rax, rax
+mov rax, qword[FLT_CONSTANT_0]
+mov qword[testflt], rax
 mov QWORD[strtest], STRING_CONSTANT_0
+mov QWORD[macrosq], 12
+mov QWORD[HvptrDest_1], 104
+mov QWORD[bruh], HvptrDest_1
 
-    
+
+    call _int_main_pintchar..
+
 
     ret
