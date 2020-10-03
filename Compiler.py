@@ -374,7 +374,6 @@ class Compiler:
             
 
     def finalize(self):
-        print(self.functions)
         for f in self.functions:
             f.compile()
 

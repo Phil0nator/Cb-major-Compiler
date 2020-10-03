@@ -207,7 +207,8 @@ class Function:
         while self.ctidx < lastone.tracker:
             instructions += self.evaluateRightsideExpression("STACK", ot)+"\n"
             types.append(ot)
-            ot = ot.copy()
+            ot = VOID.copy()
+        
         fn = self.getFunction(fid,types)
 
         if fn == None:
@@ -361,7 +362,7 @@ class Function:
                 instr += f"movq {rax}, {final.value}\npush {rax}\n"
                 if(otype!=None):
                     if(o.name == "AMB"):
-                        otype.name = "sse"
+                        otype.name = "double"
                     else:
                         otype.name = o.name
                         otype.ptrdepth = o.ptrdepth
@@ -371,7 +372,7 @@ class Function:
                 instr += f"push {final.value}\n"
                 if(otype!=None):
                     if(o.name == "AMB"):
-                        otype.name = "norm"
+                        otype.name = "int"
                     else:
                         otype.name = o.name
                         otype.ptrdepth = o.ptrdepth
@@ -382,13 +383,27 @@ class Function:
         if(isfloat(dest)):
             if(isfloat(final)):
                 instr += f"movsd {valueOf(dest)}, {final.value}\n"
+                o = DOUBLE.copy()
             else:
                 instr += f"cvtsi2sd {xmm7}, {final.value}\nmovsd {valueOf(dest)}, {xmm7}\n"
+                o = INT.copy()
         else:
             if(isfloat(final)):
                 instr += f"cvttsd2si {rax}, {final.value}\nmov {valueOf(dest)}, {rax}\n"
+                o = DOUBLE.copy()
             else:
                 instr += f"mov {valueOf(dest)}, {final.value}\n"
+                o = INT.copy()
+        
+        
+        if(otype!=None):
+            if(o.name == "AMB"):
+                otype.name = "norm"
+            else:
+                otype.name = o.name
+                otype.ptrdepth = o.ptrdepth
+                otype.signed = o.signed
+                otype.s = o.s
         return instr
 
 
@@ -398,7 +413,8 @@ class Function:
     def evaluateRightsideExpression(self, destination, otype=None):
         instructions = ""
         start = self.ctidx
-        while self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok != T_EQUALS and self.current_token.tok != T_CLSIDX:
+        opens = 1
+        while self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok != T_EQUALS and self.current_token.tok != T_CLSIDX and opens > 0:
             if( self.current_token.tok == T_ID):
                 if(self.compiler.getFunction( self.current_token.value) != None):
                     fnstart = self.ctidx
@@ -438,12 +454,16 @@ class Function:
                         self.ctidx-=2
                         self.advance()                        
 
+            elif (self.current_token.tok == T_OPENP): opens+=1
+            elif (self.current_token.tok == T_CLSP) : opens-=1
 
+            if(opens>0):
+                self.advance()
 
-            self.advance()
-
+        
         exprtokens = self.tokens[start:self.ctidx]
-
+        if(self.current_token.tok == T_CLSP):
+            self.advance()
 
                     
 

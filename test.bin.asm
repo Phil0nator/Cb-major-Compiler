@@ -1062,7 +1062,7 @@ nullterm: DB 0
 STRING_CONSTANT_0: db `%i\n`, 0
 STRING_CONSTANT_1: db `%u\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
-STRING_CONSTANT_3: db `bruhtest %g\n`, 0
+STRING_CONSTANT_3: db `bruhtest %f\n`, 0
 
 
 section .bss
@@ -1142,7 +1142,7 @@ movsd [rbp-16], xmm0
 
     
     ALIGN_STACK
-    cvtps2pd xmm0, xmm0
+    ;cvtps2pd xmm0, xmm0
     call printf
     FFLUSH_STDOUT
     UNALIGN_STACK
@@ -1226,8 +1226,8 @@ movsd [rbp-24], xmm1
 
     
     ALIGN_STACK
-    cvtps2pd xmm0, xmm0
-    cvtps2pd xmm1, xmm1
+    ;cvtps2pd xmm0, xmm0
+    ;cvtps2pd xmm1, xmm1
     call printf
     FFLUSH_STDOUT
     UNALIGN_STACK
@@ -1419,12 +1419,7 @@ idiv rbx
 mov r10, rax
 mov [rbp-24], r10
 
-
-mov rbx, -200
-mov rax, [rbp-24]
-xor rdx,rdx
-mul rbx
-mov r10, rax
+mov r10,  [rbp-24]
 cvtsi2sd xmm7, r10
 movsd [rbp-32], xmm7
 
@@ -1436,7 +1431,12 @@ xor rax, rax
 mov r10,  STRING_CONSTANT_3
 push r10
 
-movsd xmm9, [rbp-32]
+
+movsd xmm7, [rbp-32]
+mov rax, 3
+cvtsi2sd xmm8, rax
+divsd xmm7, xmm8
+movsd xmm9, xmm7
 movq rax, xmm9
 push rax
 

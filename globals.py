@@ -345,7 +345,7 @@ def movVarToReg(reg, var):
 def fncall(fn):
     return "call %s\n"%fn.getCallingLabel()
 
-def valueOf(x):
+def valueOf(x, dflt = False):
     if (isinstance(x,str)):
         return x
     elif (isinstance(x, Variable)):
@@ -366,10 +366,10 @@ def loadTo78(a, b):
     return f"movsd {xmm7}, {valueOf(a)}\nmovsd {xmm8}, {valueOf(b)}\n"
 
 def loadFI(a, b):
-    return f"movsd {xmm7}, {valueOf(a)}\ncvtsi2sd {xmm8}, {valueOf(b)}\n"
+    return f"movsd {xmm7}, {valueOf(a)}\nmov {rax}, {valueOf(b)}\ncvtsi2sd {xmm8}, {rax}\n"
 
 def loadIF(a, b):
-    return f"cvtsi2sd {xmm7}, {valueOf(a)}\nmovsd {xmm8}, {valueOf(b)}\n"
+    return f"mov {rax}, {valueOf(a)}\ncvtsi2sd {xmm7}, {rax}\nmovsd {xmm8}, {valueOf(b)}\n"
 
 def isfloat(x):
     if (isinstance(x, Token)):
