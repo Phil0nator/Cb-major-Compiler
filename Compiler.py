@@ -26,7 +26,7 @@ class Compiler:
         self.globals = []
         self.types = []
         for i in INTRINSICS:
-            self.types.append(i)
+            self.types.append(i.copy())
     
 
         self.heap_unnamed = 0
@@ -55,6 +55,11 @@ class Compiler:
                 return g
         return None
 
+    def getFunction(self, q):
+        for f in self.functions:
+            if f.name == q:
+                return f
+        return None
 
     def advance(self):
         self.ctidx+=1
@@ -66,7 +71,7 @@ class Compiler:
     def getType(self, q):
         for t in self.types:
             if t.name == q:
-                return t
+                return t.copy()
         return None
 
     def checkType(self):
@@ -115,6 +120,9 @@ class Compiler:
                 if (self.current_token.tok == T_EQUALS):
                 
                     self.advance()
+
+                    if(self.current_token.tok not in ["int","bool","char","double","float","id"]): throw(ExpectedValue(self.current_token))
+
                     if (intr!=None and self.current_token.tok != T_ID):
 
                         v = Variable(t,name,glob=True,initializer=self.current_token.value,isptr=isptr)
@@ -152,9 +160,13 @@ class Compiler:
                 
                 else:
                     v = Variable(t,name,glob=True,initializer=None,isptr=isptr)
+                
+                
                 self.globals.append(v)
                 self.heap+=createIntrinsicHeap(v)
                 self.advance()
+
+                if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
 
 
 
@@ -170,7 +182,7 @@ class Compiler:
         name = d[1]
         cnst = d[0]
         self.constants += cnst
-        v = Variable(CHAR,name,glob=True)
+        v = Variable(CHAR.copy(),name,glob=True)
         self.globals.append(v)
 
 
@@ -263,7 +275,9 @@ class Compiler:
 
         self.advance()
 
-        if(self.current_token.tok == T_ENDL): return
+        if(self.current_token.tok == T_ENDL): 
+            self.advance()
+            return
 
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token,T_OPENSCOPE))
 
@@ -280,10 +294,9 @@ class Compiler:
 
 
 
-
-        self.functions.append(Function(name,parameters,rettype,self, self.currentTokens[start:self.ctidx]))        
-
-
+        f = Function(name,parameters,rettype,self, self.currentTokens[start:self.ctidx])
+        self.functions.append(f)        
+        self.globals.append(Variable( f.returntype.copy(), f.name, glob=True))
 
 
 
@@ -294,18 +307,21 @@ class Compiler:
         raw = ftup[0]
         lex = Lexer(self.currentfname,raw)
         self.currentTokens = lex.getTokens()
+        c = 0
         for t in self.currentTokens:
             if t.tok == T_STRING:
-                
-                data = createStringConstant(t.value)
-                name = data[1]
-                instruct = data[0]
-                v = Variable(CHAR,name,glob=True,isptr=True,initializer=t.value)
-                self.globals.append(v)
-                t.tok = T_ID
-                t.value = name
+                if(self.currentTokens[c-2].tok != T_KEYWORD and self.currentTokens[c-2].value != "__asm"): # preserve assembly blocks
+                    data = createStringConstant(t.value)
+                    name = data[1]
+                    instruct = data[0]
+                    tp = CHAR.copy()
+                    tp.ptrdepth = 1
+                    v = Variable(tp,name,glob=True,isptr=True,initializer=t.value)
+                    self.globals.append(v)
+                    t.tok = T_ID
+                    t.value = name
 
-                self.constants+=instruct
+                    self.constants+=instruct
 
             elif t.tok == T_DOUBLE:
 
@@ -318,12 +334,13 @@ class Compiler:
                 t.value = name
 
                 self.constants+=instruct
+            c+=1
 
 
         self.current_token = self.currentTokens[0]
         self.ctidx = 0
         while self.current_token.tok != T_EOF:
-            
+
             if (self.current_token.tok == T_ID):
                 self.buildIDInitiatedStatement()
             elif (self.current_token.tok == T_KEYWORD):
@@ -331,18 +348,22 @@ class Compiler:
                     self.createConstant()
                 elif (self.current_token.value == "function"):
                     self.createFunction()
+
+
             else:
                 self.advance()
 
-        
+
+    def finalize(self):
+
         for f in self.functions:
             f.compile()
+
             self.text+=f.asm
 
 
         
         for f in self.functions:
             if f.name == "main":
-
                 self.entry = "call %s"%functionlabel(f).replace(":","")
 

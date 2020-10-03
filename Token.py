@@ -31,7 +31,7 @@ T_LE = "<="
 T_SR = ">>>"
 T_SL = "<<<"
 
-T_DEREF = "*"
+T_DEREF = "@"
 T_REFRIZE = "&"
 
 T_PTRIZE = "*"
@@ -77,6 +77,8 @@ KEYWORDS = [
 ]
 
 
+T_FUNCTIONCALL = "fn(x)"
+T_REGISTER = "reg"
 
 
 class Token:

@@ -1,0 +1,48 @@
+function void* malloc(int size){
+
+    __asm{"
+    
+    ALIGN_STACK
+    call malloc
+    UNALIGN_STACK
+    
+    "}
+
+}
+
+function void* calloc(int size){
+
+    __asm{"
+    
+    ALIGN_STACK
+    call calloc
+    UNALIGN_STACK
+    
+    "}
+
+}
+
+function void* realloc(void* og, int newsize){
+
+    __asm{"
+    
+    ALIGN_STACK
+    call realloc
+    UNALIGN_STACK
+    
+    "}
+
+}
+
+function void free(void *ptr){
+
+    __asm{"
+    
+    ALIGN_STACK
+    call free
+    UNALIGN_STACK
+    
+    
+    "}
+
+}

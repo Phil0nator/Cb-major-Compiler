@@ -1,5 +1,5 @@
 class Variable:
-    def __init__(self, t, name, glob=False, offset=0x0, initializer=None, isptr=False, mutable=True, signed = True, isStackarr = False):
+    def __init__(self, t, name, glob=False, offset=0, initializer=None, isptr=False, mutable=True, signed = True, isStackarr = False):
         self.t = t
         self.name=name
         self.glob=glob
@@ -14,6 +14,6 @@ class Variable:
         return (self.t.name == "float" or self.t.name == "double") and self.isptr == False
 
     def __repr__(self):
-        return f"[ Variable: {self.name} ]"
+        return f"[ Variable: {self.t} {self.name} @ {(self.offset)}]"
 
     

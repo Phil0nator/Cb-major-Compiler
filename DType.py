@@ -11,7 +11,7 @@ class DType:
         return self.s
     
     def copy(self):
-        return DType(self.name,self.size,members=self.members,ptrdepth=self.ptrdepth)
+        return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth)
 
 
     def __eq__(self, other):

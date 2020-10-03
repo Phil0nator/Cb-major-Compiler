@@ -117,6 +117,16 @@ class Lexer:
             elif (self.ch in "()}{[],*"):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
+
+            elif (self.ch == "-"):
+                self.advance()
+                prev = tokens[len(tokens)-1]
+                if(prev.tok in OPERATORS or prev.tok == T_EQUALS):
+                    t = self.buildNumber()
+                    t.value = -t.value
+                else:
+                    t = Token(T_MINUS, "-", self.loc.copy(),self.loc.copy())    
+                tokens.append(t)
             elif (self.ch in T_MULTIOP):
                 token = self.buildMultichar()
                 tokens.append(token)

@@ -73,3 +73,10 @@ class ExpectedToken(Error):
     def __init__(self,tok,exp):
         self.tok=tok
         self.message = "Expected token ( '%s' ) :"%exp
+
+
+
+class UnkownIdentifier(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = "Unkown Identifier: "

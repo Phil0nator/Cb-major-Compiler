@@ -9,6 +9,7 @@
 #   
 #
 import time
+import os
 import argparse as arg
 from Error import *
 from globals import *
@@ -20,7 +21,7 @@ from Token import *
 from Location import *
 from PreParser import *
 from Compiler import *
-
+from Linker import *
 
 def main():
     beginTime = time.time()
@@ -40,6 +41,7 @@ def main():
         
         c.compile(file)
 
+    c.finalize()
 
     asm = "%s"%fileTemplate
     asm = asm.replace("%%HEAP%%", c.heap)
@@ -48,17 +50,26 @@ def main():
     asm = asm.replace("%%INITIALIZE%%", c.initializers)
     asm = asm.replace("%%ENTRY%%", c.entry)
     
+
+    #asm = asm.replace("\n\n","\n").replace("\n\n","\n").replace("\t","")
     
     print("+-+-+ FINAL +-+-+")
     
-    with open(__fileoutput__ , "wb") as f:
+    with open(__fileoutput__+".asm", "wb") as f:
         f.write(asm.encode())
 
-    
+    os.system(assemble(__fileoutput__))
+    os.system(link(__fileoutput__,__fileoutput__))
+    os.remove(__fileoutput__+".o")
 
-
+    if(not __tonasm__):
+        os.remove(__fileoutput__+".asm")
 
     print("Compiled and Linked symbols in %s ms"%(time.time()-beginTime))
+    if(__autorun__):
+        os.system(f"./{__fileoutput__}")
+
+
 
 parser = arg.ArgumentParser(description='Compile .rud programs into either nasm assembly, or to an executable.')
 parser.add_argument("-o", "--output", required=True)

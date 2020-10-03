@@ -1,4 +1,6 @@
 from DType import *
+from Variable import *
+from Token import *
 # REGISTERS
 
 rax = "rax"
@@ -72,8 +74,25 @@ sse_parameter_registers = [
     xmm4,
     xmm5,
     xmm6,
-    xmm7,
-    xmm8,
+    
+
+]
+
+
+nrom_scratch_registers = [
+
+    r10,
+    r11,
+    r12,
+    r13,
+    r14,
+    r15
+
+]
+
+sse_scratch_registers = [
+
+
     xmm9,
     xmm10,
     xmm11,
@@ -82,6 +101,19 @@ sse_parameter_registers = [
     xmm14,
 
 ]
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 norm_return_register = "rax"
 sse_return_register = "xmm0"
@@ -101,15 +133,13 @@ INT = DType("int", 8)
 CHAR = DType("char", 1)
 DOUBLE = DType("double", 8)
 FLOAT = DType("float", 8)
-VOID = DType("void", 0)
+VOID = DType("void", 8)
 BOOL = DType("bool", 1)
 
-INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,FLOAT]
+INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,FLOAT,VOID]
 
-false = hex(0)
-true = hex(255)
-
-
+false = (0)
+true = (255)
 
 
 
@@ -119,8 +149,54 @@ true = hex(255)
 
 
 
+PRIORITY = {
+
+    "(":0,
+    "+":1,
+    "-":1,
+    "!":1,
+    "||":1,
+    "&&":1,
+    "==":1,
+    "!=":1,
+    ">":1,
+    "<":1,
+    ">=":1,
+    "<=":1,
+    ">>>":1,
+    "<<<":1,
+    "^":1,
+    "*":2,
+    "/":2,
+    "%":2,
 
 
+}
+
+
+OPERATORS = [
+
+    "(",
+    "+",
+    "-",
+    "!",
+    "||",
+    "&&",
+    "==",
+    "!=",
+    ">",
+    "<",
+    ">=",
+    "<=",
+    ">>",
+    "<<",
+    "^",
+    "*",
+    "/",
+    "%"
+
+
+]
 
 
 
@@ -146,7 +222,7 @@ push rbp
 mov rbp, rsp
 sub rsp, %s
 
-"""%(hex(amt))
+"""%((amt))
 
 
 def zeroize(reg):
@@ -157,7 +233,6 @@ def label(name):
 
 
 def functionlabel(fn):
-
     out = "_%s_%s_%s:\n"% ( fn.returntype, fn.name, "p#")
     types = ""
     for p in fn.parameters:
@@ -167,8 +242,7 @@ def functionlabel(fn):
 
 
 def function_closer(name):
-    return """
-__%s__return:
+    return """__%s__return:
 
 leave
 ret
@@ -242,5 +316,136 @@ def movVarHeap(vd, vs):
 
 
 def movRegToVar(od,reg):
-    return "mov [rbp-%s], %s"%(hex(od),reg)
+    if("xmm" not in reg):
+        return "mov [rbp-%s], %s"%((od),reg)
+    else:
+        return "movsd [rbp-%s], %s"%((od), reg)
+def movValToVar(var, reg):
+    if var.glob :
+        return "mov [%s], %s"%(var.name,reg)
+    else:
+        movRegToVar(var,reg)
 
+def movVarToReg(reg, var):
+    if isfloat(var):
+        if isfloat(reg):
+            return f"movsd {reg}, {valueOf(var)}\n"
+        else:
+            return f"cvttsd2si {reg}, {valueOf(var)}\n"
+    else:
+        if isfloat(reg):
+            return f"cvtsi2sd {reg}, {valueOf(var)}\n"
+        else:
+            return f"mov {reg},  {valueOf(var)}\n"
+
+
+
+def fncall(fn):
+    return "call %s\n"%fn.getCallingLabel()
+
+def valueOf(x):
+    if (isinstance(x,str)):
+        return x
+    elif (isinstance(x, Variable)):
+        if(x.glob):
+            if(x.isptr):
+                return f"{x.name}"
+            return f"[{x.name}]"
+        else:
+            return "[rbp-%s]"%(x.offset)
+    elif (isinstance(x, int)):
+        return (x)
+    
+
+def loadToAB(a, b):
+    return "mov %s, %s\n%s"%(rbx, valueOf(b), "mov %s, %s\n"%(rax, valueOf(a)))
+
+def loadTo78(a, b):
+    return f"movsd {xmm7}, {valueOf(a)}\nmovsd {xmm8}, {valueOf(b)}\n"
+
+def loadFI(a, b):
+    return f"movsd {xmm7}, {valueOf(a)}\ncvtsi2sd {xmm8}, {valueOf(b)}\n"
+
+def loadIF(a, b):
+    return f"cvtsi2sd {xmm7}, {valueOf(a)}\nmovsd {xmm8}, {valueOf(b)}\n"
+
+def isfloat(x):
+    if (isinstance(x, Token)):
+        if(x.tok == T_REGISTER):
+            return "xmm" in x.value
+        else:
+            if(isinstance(x.value, int)): return False
+            return False
+    if(isinstance(x, str)):
+        return "xmm" in x
+    if(isinstance(x, Variable)):
+        return x.isflt()
+    return False
+
+
+
+
+def addI():
+    return f"add {rax}, {rbx}\n"
+def addF():
+    return f"addsd {xmm7}, {xmm8}\n"
+
+def subI():
+    return f'sub {rax}, {rbx}\n'
+def subF():
+    return f"subsd {xmm7}, {xmm8}\n"
+
+def mulI():
+    return f"imul {rax}, {rbx}\n"
+def mulF():
+    return f"mulsd {xmm7}, {xmm8}\n"
+
+def divI():
+    return f"xor rdx, rdx\nidiv {rbx}\n"
+def divF():
+    return f"divsd {xmm7}, {xmm8}\n"
+
+
+
+
+
+
+def doOperation(a, b, o, d):
+    instr = "\n"
+    if(isfloat(a) and isfloat(b)):
+        instr+=loadTo78(a,b)
+    elif(isfloat(a) and not isfloat(b)):
+        instr+=loadFI(a,b)
+    elif (not isfloat(a) and isfloat(b)):
+        instr+=loadIF(a,b)
+    else:
+        instr+=loadToAB(a,b)
+    
+
+    if(isfloat(a) or isfloat(b)):
+        if(o == "+"):
+            instr+=addF()
+        elif(o == "-"):
+            instr+=subF()
+        elif(o == "/"):
+            instr+=divF()
+        elif(o=="*"):
+            instr+=mulF()
+
+
+        instr += f"movsd {d}, {xmm7}\n"
+
+    else:
+        if(o == "+"):
+            instr+=addI()
+        elif(o == "-"):
+            instr+=subI()
+        elif(o == "/"):
+            instr+=divI()
+        elif(o=="*"):
+            instr+=mulI()
+    
+        instr += f"mov {d}, {rax}\n"
+
+
+    return instr
