@@ -1,6 +1,7 @@
 from Variable import *
 from globals import *
 from token import *
+from Error import *
 class Postfixer:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -38,6 +39,7 @@ class Postfixer:
 
 
             else:
+                if (t.tok != T_ID and t.tok != T_FUNCTIONCALL and t.tok != T_INT and t.tok != T_BOOL): throw(UnexpectedToken(t))
                 pfix.append(t)
         while len(stack)>0:
             pfix.append(stack.pop())

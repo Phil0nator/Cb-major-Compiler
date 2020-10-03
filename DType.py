@@ -1,9 +1,10 @@
 class DType:
-    def __init__(self, name, size, members=None, ptrdepth=0):
+    def __init__(self, name, size, members=None, ptrdepth=0, signed=True):
         self.name=name
         self.s=size
         self.members=members
         self.ptrdepth = ptrdepth
+        self.signed = signed
 
     def size(self, depth):
         if(depth < self.ptrdepth):
@@ -11,8 +12,10 @@ class DType:
         return self.s
     
     def copy(self):
-        return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth)
+        return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth, signed=self.signed)
 
+    def isflt(self):
+        return self.name == "float" or self.name == "double"
 
     def __eq__(self, other):
         if(isinstance(other, DType)):
@@ -21,4 +24,7 @@ class DType:
             return False
 
     def __repr__(self):
-        return f"{self.name}"+"."*self.ptrdepth
+        if(self.signed):
+            return f"{self.name}"+"."*self.ptrdepth
+        else:
+            return f"u{self.name}"+"."*self.ptrdepth

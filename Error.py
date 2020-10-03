@@ -80,3 +80,13 @@ class UnkownIdentifier(Error):
     def __init__(self,tok):
         self.tok=tok
         self.message = "Unkown Identifier: "
+
+class UnkownFunction(Error):
+    def __init__(self, tok, name, types):
+        self.tok=tok
+        self.message = f"Unkown function {name} with parameter types {types} :"
+
+class InvalidSignSpecifier(Error):
+    def __init__(self, tok):
+        self.tok=tok
+        self.message = f"Invalid sign specifier ( only integral non-sse types may be specified as unsigned ): "

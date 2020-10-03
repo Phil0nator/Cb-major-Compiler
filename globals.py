@@ -136,6 +136,8 @@ FLOAT = DType("float", 8)
 VOID = DType("void", 8)
 BOOL = DType("bool", 1)
 
+
+
 INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,FLOAT,VOID]
 
 false = (0)
@@ -275,7 +277,7 @@ def createIntrinsicConstant(variable):
 
     return "%s: %s %s\n"%(variable.name,getConstantReserver(variable.t), (variable.initializer))
 
-    pass
+    
 
 stringconstant_counter = 0
 def createStringConstant(s):
@@ -397,11 +399,17 @@ def subF():
 
 def mulI():
     return f"imul {rax}, {rbx}\n"
+def mulUI():
+    return f"xor {rdx},{rdx}\nmul {rbx}\n"
+
 def mulF():
     return f"mulsd {xmm7}, {xmm8}\n"
 
 def divI():
     return f"xor rdx, rdx\nidiv {rbx}\n"
+def divUI():
+    return f"xor rdx, rdx\ndiv {rbx}\n"
+
 def divF():
     return f"divsd {xmm7}, {xmm8}\n"
 
@@ -441,9 +449,18 @@ def doOperation(a, b, o, d):
         elif(o == "-"):
             instr+=subI()
         elif(o == "/"):
-            instr+=divI()
+
+            if(isinstance(a,Variable) and not a.signed) or (isinstance(b, Variable) and not b.signed):
+                instr+=divUI()
+            else:
+                instr+=divI()
+        
         elif(o=="*"):
-            instr+=mulI()
+            if(isinstance(a,Variable) and not a.signed) or (isinstance(b, Variable) and not b.signed):
+                instr+=mulUI()
+            else:
+                instr+=mulI()
+
     
         instr += f"mov {d}, {rax}\n"
 

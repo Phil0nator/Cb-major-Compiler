@@ -67,13 +67,20 @@ T_AMBIGUOUS = "T?T"
 KEYWORDS = [
     "true",
     "false",
+    
+    
     "function",
     "const",
+    "unsigned",
+    
     "for",
     "while",
     "if",
     "__asm",
-    "return"
+    "return",
+
+
+
 ]
 
 

@@ -36,6 +36,7 @@ def main():
     print("+-+-+ Compile +-+-+")
     c = Compiler()
 
+    
 
     for file in totals:
         

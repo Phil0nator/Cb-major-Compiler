@@ -145,7 +145,8 @@ class PreProcessor:
 
                     self.definitions.append((name,content))
                     self.advance()
-            
+            else:
+                self.advance()
             
             
             

@@ -1056,7 +1056,14 @@ section .text
 
 
 section .data
-    
+    nullptr: DQ 0
+null: DQ 0
+nullterm: DB 0
+STRING_CONSTANT_0: db `%i\n`, 0
+STRING_CONSTANT_1: db `%u\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `bruhtest %g\n`, 0
+
 
 section .bss
     test: RESB 8
@@ -1064,6 +1071,307 @@ section .bss
 
 section .text
 global CMAIN
+
+
+
+_void_printf_pchar.int:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 24
+
+
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.int__return:
+
+leave
+ret
+
+
+
+_void_printf_pchar.uint:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 24
+
+
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.uint__return:
+
+leave
+ret
+
+
+
+_void_printf_pchar.double:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 24
+
+
+mov [rbp-8], rdi
+movsd [rbp-16], xmm0
+
+    
+    ALIGN_STACK
+    cvtps2pd xmm0, xmm0
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.double__return:
+
+leave
+ret
+
+
+
+_void_printf_pchar.char.:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 24
+
+
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.char.__return:
+
+leave
+ret
+
+
+
+_void_printf_pchar.intint:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 32
+
+
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+mov [rbp-24], rdx
+
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.intint__return:
+
+leave
+ret
+
+
+
+_void_printf_pchar.doubledouble:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 32
+
+
+mov [rbp-8], rdi
+movsd [rbp-16], xmm0
+movsd [rbp-24], xmm1
+
+    
+    ALIGN_STACK
+    cvtps2pd xmm0, xmm0
+    cvtps2pd xmm1, xmm1
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.doubledouble__return:
+
+leave
+ret
+
+
+
+_void_print_pint:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+xor rax, rax
+mov r10,  STRING_CONSTANT_0
+push r10
+
+mov r10,  [rbp-8]
+push r10
+
+pop  rsi
+pop  rdi
+mov rax, 0
+call _void_printf_pchar.int
+
+___void_print_pint__return:
+
+leave
+ret
+
+
+
+_void_print_puint:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+xor rax, rax
+mov r10,  STRING_CONSTANT_1
+push r10
+
+mov r10,  [rbp-8]
+push r10
+
+pop  rsi
+pop  rdi
+mov rax, 0
+call _void_printf_pchar.uint
+
+___void_print_puint__return:
+
+leave
+ret
+
+
+
+_void_print_pdouble:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+movsd [rbp-8], xmm0
+xor rax, rax
+mov r10,  STRING_CONSTANT_2
+push r10
+
+movsd xmm9, [rbp-8]
+movq rax, xmm9
+push rax
+
+pop r15
+movq xmm0, r15
+pop  rdi
+mov rax, 1
+call _void_printf_pchar.double
+
+___void_print_pdouble__return:
+
+leave
+ret
+
+
+
+_void_print_pchar.:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+
+    
+
+    PRINT_STRING [rdi]
+    
+    
+___void_print_pchar.__return:
+
+leave
+ret
+
+
+
+_void_print_pchar:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 9
+
+
+mov [rbp-8], rdi
+
+
+     PRINT_CHAR rdi   
+
+    
+___void_print_pchar__return:
+
+leave
+ret
 
 
 
@@ -1098,11 +1406,46 @@ _int_main_pintchar..:
 
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 48
 
 
 mov [rbp-8], rdi
 mov [rbp-16], rsi
+
+mov rbx, 2
+mov rax, 3
+xor rdx, rdx
+idiv rbx
+mov r10, rax
+mov [rbp-24], r10
+
+
+mov rbx, -200
+mov rax, [rbp-24]
+xor rdx,rdx
+mul rbx
+mov r10, rax
+cvtsi2sd xmm7, r10
+movsd [rbp-32], xmm7
+
+movsd xmm9, [rbp-32]
+cvttsd2si rax, xmm9
+mov [rbp-40], rax
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_3
+push r10
+
+movsd xmm9, [rbp-32]
+movq rax, xmm9
+push rax
+
+pop r15
+movq xmm0, r15
+pop  rdi
+mov rax, 1
+call _void_printf_pchar.double
+
 mov rax, 0
 mov rax, rax
 

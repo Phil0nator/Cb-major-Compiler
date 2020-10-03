@@ -11,6 +11,18 @@ function void printf(char* template, int format){
     "}
 
 }
+function void printf(char*template, unsigned int format){
+    
+    __asm{"
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    "}
+}
 function void printf(char* template, double f){
 
     __asm{"
@@ -75,11 +87,17 @@ function void print(int a){
 
 }
 
-function void print(double a){
-    printf("%f\n", a);
+function void print(unsigned int a){
+
+    printf("%u\n", a);
+
 }
 
-function void prints(char* a){
+function void print(double a){
+    printf("%lf\n", a);
+}
+
+function void print(char* a){
 
     __asm{"
     
@@ -89,7 +107,7 @@ function void prints(char* a){
     "}
 
 }
-function void printc(char a){
+function void print(char a){
 
     __asm{"
 

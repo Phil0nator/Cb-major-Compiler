@@ -59,11 +59,7 @@ class Function:
                 if(len(f.parameters) != lt): continue
                 valid = True
                 for i in range(lt):
-                    if f.parameters[i].isflt() and types[i] == "sse":
-                        pass
-                    elif not f.parameters[i].isflt() and types[i] == "norm":
-                        pass
-                    else:
+                    if f.parameters[i].t.__repr__() != types[i].__repr__():
                         valid = False
                         break
                 
@@ -85,11 +81,17 @@ class Function:
 
 
     def checkForType(self):
+        signed=True
+        if(self.current_token.tok == T_KEYWORD):
+            if(self.current_token.value == "unsigned"):
+                signed = False
+                self.advance()
+
         if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
         
         if(not self.compiler.isType(self.current_token.value)): throw(ExpectedType(self.current_token))
 
-        t = self.compiler.getType(self.current_token.value)
+        t = self.compiler.getType(self.current_token.value).copy()
 
         self.advance()
         ptrdepth = 0
@@ -97,6 +99,7 @@ class Function:
             ptrdepth+=1
             self.advance()
         t.ptrdepth=ptrdepth
+        t.signed = signed
         return t
 
 
@@ -104,14 +107,16 @@ class Function:
 
 
     def loadParameters(self):
-        count = 0
+        countn = 0
+        counts = 0
         for p in self.parameters:
             self.addVariable(p)
             if(p.isflt()):
-                self.addline(movRegToVar(p.offset,sse_parameter_registers[count]))
+                self.addline(movRegToVar(p.offset,sse_parameter_registers[counts]))
+                counts += 1
             else:
-                self.addline(movRegToVar(p.offset,norm_parameter_registers[count]))
-            count+=1
+                self.addline(movRegToVar(p.offset,norm_parameter_registers[countn]))
+                countn += 1
 
 
     
@@ -148,6 +153,15 @@ class Function:
 
         elif(word == "return"):
             self.buildReturnStatement()
+        elif(word == "unsigned"):
+            s = self.current_token
+            self.advance()
+            self.buildDeclaration()
+            v = self.variables[len(self.variables)-1]
+            if(v.isflt()):
+                throw(InvalidSignSpecifier(s))
+            v.signed = False
+            v.t.signed = False
 
         else:
             self.advance()
@@ -192,9 +206,14 @@ class Function:
 
         while self.ctidx < lastone.tracker:
             instructions += self.evaluateRightsideExpression("STACK", ot)+"\n"
-            types.append(ot.name)
-
+            types.append(ot)
+            ot = ot.copy()
         fn = self.getFunction(fid,types)
+
+        if fn == None:
+            throw(UnkownFunction(self.current_token,fid,types))
+
+
         pcount = len(fn.parameters)
 
 
@@ -202,11 +221,12 @@ class Function:
         sseused = 0
 
         for p in types:
-            if p == "sse":
+            if p.isflt():
                 sseused+=1
             else:
                 normsused+=1
         ssevarsforrax = sseused
+        
 
         for i in range(pcount, 0, -1):
             if(fn.parameters[i-1].isflt()):
@@ -305,17 +325,20 @@ class Function:
         elif(final.tok == T_FUNCTIONCALL):
             instr += final.value+"\n"
             final = Token(T_REGISTER, "rax",None,None)
-
+        o = DType("AMB", 8)
         if(isinstance(final, Variable)):
 
+            o = final.t.copy()
             if(final.isflt()):
                 instr += movVarToReg("xmm9", final)
                 final = Token(T_REGISTER, "xmm9", None, None)
+                
             else:
                 instr += movVarToReg("r10", final)
                 final = Token(T_REGISTER, "r10", None, None)
 
         if(isinstance(final, Token) and isinstance(final.value, int)):
+            o = INT.copy()
             instr += f"mov {rax}, {final.value}\n"
             final = Token(T_REGISTER, "rax",None,None)
 
@@ -337,22 +360,33 @@ class Function:
             if(isfloat(final)):
                 instr += f"movq {rax}, {final.value}\npush {rax}\n"
                 if(otype!=None):
-                    otype.name = "sse"
+                    if(o.name == "AMB"):
+                        otype.name = "sse"
+                    else:
+                        otype.name = o.name
+                        otype.ptrdepth = o.ptrdepth
+                        otype.signed = o.signed
+                        otype.s = o.s
             else:
                 instr += f"push {final.value}\n"
                 if(otype!=None):
-                    otype.name = "norm"
-            
+                    if(o.name == "AMB"):
+                        otype.name = "norm"
+                    else:
+                        otype.name = o.name
+                        otype.ptrdepth = o.ptrdepth
+                        otype.signed = o.signed
+                        otype.s = o.s
             return instr
 
         if(isfloat(dest)):
             if(isfloat(final)):
                 instr += f"movsd {valueOf(dest)}, {final.value}\n"
             else:
-                instr += f"cvtsi2sd {valueOf(dest)}, {final.value}\n"
+                instr += f"cvtsi2sd {xmm7}, {final.value}\nmovsd {valueOf(dest)}, {xmm7}\n"
         else:
             if(isfloat(final)):
-                instr += f"cvttsd2si {valueOf(dest)}, {final.value}\n"
+                instr += f"cvttsd2si {rax}, {final.value}\nmov {valueOf(dest)}, {rax}\n"
             else:
                 instr += f"mov {valueOf(dest)}, {final.value}\n"
         return instr

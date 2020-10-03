@@ -75,6 +75,11 @@ class Compiler:
         return None
 
     def checkType(self):
+        signed=True
+        if(self.current_token.tok == T_KEYWORD):
+            if(self.current_token.value == "unsigned"):
+                signed = False
+                self.advance()
 
         if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
         
@@ -88,6 +93,7 @@ class Compiler:
             ptrdepth+=1
             self.advance()
         t.ptrdepth=ptrdepth
+        t.signed=signed
         return t
 
 
@@ -346,16 +352,29 @@ class Compiler:
             elif (self.current_token.tok == T_KEYWORD):
                 if(self.current_token.value == "const"):
                     self.createConstant()
+                elif(self.current_token.value == "unsigned"):
+                    s = self.current_token
+                    self.advance()
+                    self.buildIDInitiatedStatement()
+                    v = self.globals[len(self.globals)-1]
+                    if(v.isflt()):
+                        throw(InvalidSignSpecifier(s))
+                    
+                    v.signed = False
+                    v.t.signed = False
+
+
+
                 elif (self.current_token.value == "function"):
                     self.createFunction()
 
 
             else:
                 self.advance()
-
+            
 
     def finalize(self):
-
+        print(self.functions)
         for f in self.functions:
             f.compile()
 
