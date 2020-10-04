@@ -1273,7 +1273,7 @@ ret
 _void_print_pchar:
 push rbp
 mov rbp, rsp
-sub rsp, 9
+sub rsp, 16
 mov [rbp-8], rdi
 PRINT_CHAR rdi
 NEWLINE
@@ -1283,7 +1283,7 @@ ret
 _void_print_pbool:
 push rbp
 mov rbp, rsp
-sub rsp, 9
+sub rsp, 16
 mov [rbp-8], rdi
 mov r10,  [rbp-8]
 mov rax, r10
@@ -1317,9 +1317,23 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 82
+sub rsp, 98
 mov [rbp-8], rdi
 mov [rbp-16], rsi
+mov rax, 56
+mov [rbp-82], rax
+xor rax, rax
+mov rbx, [true]
+mov rax, [false]
+or al, bl
+mov r10, rax
+mov [rbp-90], r10
+xor rax, rax
+mov r10,  [rbp-82]
+push r10
+pop  rdi
+mov rax, 0
+call _void_print_pint
 mov rax, 0
 mov rax, rax
 jmp ___int_main_pintchar..__return

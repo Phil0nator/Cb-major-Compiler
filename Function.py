@@ -61,7 +61,9 @@ class Function:
     def addVariable(self, v):
 
         v.offset = self.stackCounter
-        self.stackCounter += v.t.size(0)
+        #self.stackCounter += v.t.size(0)
+        if v.t.size(0) <= 8: self.stackCounter += 8
+        else: self.stackCounter += v.t.size(0)
         self.variables.append(v)
 
 
