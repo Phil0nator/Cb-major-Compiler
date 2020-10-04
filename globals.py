@@ -145,8 +145,33 @@ true = (255)
 
 
 
+signed_comparisons = {
 
+    "==": "je",
+    "!=": "jne",
+    "<" : "jl",
+    ">" : "jg",
+    "<=": "jle",
+    ">=": "jge"
 
+}
+
+unsigned_comparisons = {
+
+    "==": "je",
+    "!=": "jne",
+    "<" : "jb",
+    ">" : "ja",
+    "<=": "jbe",
+    ">=": "jae"
+
+}
+
+def getComparater(signed, op):
+    if(signed):
+        return signed_comparisons[op]
+    else:
+        return unsigned_comparisons[op]
 
 
 
@@ -317,6 +342,19 @@ def movVarHeap(vd, vs):
 #compiletime:
 
 
+def TsCompatible(typea, typeb, fni):
+    t1 = typea.__repr__()
+    t2 = typeb.__repr__()
+    if t1 == t2 : return True
+
+    for td in fni.compiler.tdefs:
+        if (t1 == td[0].__repr__() and t2 == td[1].__repr__()) or (t2 == td[1].__repr__() and t1 == td[0].__repr__()):
+            return True
+    
+    return False
+
+
+
 def movRegToVar(od,reg):
     if("xmm" not in reg):
         return "mov [rbp-%s], %s"%((od),reg)
@@ -413,21 +451,54 @@ def divUI():
 def divF():
     return f"divsd {xmm7}, {xmm8}\n"
 
+total_labelCounter = -1
+def getLogicLabel(inf):
+    global total_labelCounter
+    total_labelCounter+=1
+    return f"_L{inf}_{hex(total_labelCounter)}"
 
 
+def cmpI(signed, op):
+    infl = getLogicLabel("CMPI")
+    inflpost = getLogicLabel("CMPIPOST")
+    comparator = getComparater(signed, op)
+    return f"cmp rax, rbx\n{comparator} {infl}\nxor rax, rax\njmp {inflpost}\n{infl}:\nmov rax, 255\n{inflpost}:\n"
 
+def boolmath(op):
+    cmd = ""
+    if(op == "||"):
+        cmd = "or"
+    elif(op == "&&"):
+        cmd = "and"
+    elif(op == "^"):
+        cmd = "xor"
+    elif(op == "!"):
+        instr = f"not al\n"
+        instr += f"and al, 00000001b\n"
+        return instr
+        
+    instr = f"{cmd} al, bl\n"
+    return instr
 
 
 def doOperation(a, b, o, d):
     instr = "\n"
-    if(isfloat(a) and isfloat(b)):
-        instr+=loadTo78(a,b)
-    elif(isfloat(a) and not isfloat(b)):
-        instr+=loadFI(a,b)
-    elif (not isfloat(a) and isfloat(b)):
-        instr+=loadIF(a,b)
+
+    if(o in ["||","&&","^", "!"]):
+        instr += "xor rax, rax\nxor rbx,rbx\n"
+
+    if(o == "!"):
+        instr+="mov %s, %s\n"%(rax, valueOf(b))
     else:
-        instr+=loadToAB(a,b)
+
+        if(isfloat(a) and isfloat(b)):
+            instr+=loadTo78(a,b)
+        elif(isfloat(a) and not isfloat(b)):
+            instr+=loadFI(a,b)
+        elif (not isfloat(a) and isfloat(b)):
+            instr+=loadIF(a,b)
+        else:
+            instr+=loadToAB(a,b)
     
 
     if(isfloat(a) or isfloat(b)):
@@ -460,7 +531,15 @@ def doOperation(a, b, o, d):
                 instr+=mulUI()
             else:
                 instr+=mulI()
+        elif(o in ["==","!=",">","<","<=",">="]):
+            if(isinstance(a,Variable) and not a.signed) or (isinstance(b, Variable) and not b.signed):
+                instr+=cmpI(False, o)
+            else:
+                instr+=cmpI(True, o)
 
+        elif(o in ["||","&&","^", "!"]):
+            
+            instr+=boolmath(o)
     
         instr += f"mov {d}, {rax}\n"
 

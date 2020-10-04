@@ -1,4 +1,31 @@
+/*
+  *    <printf.k> contains some printf rappers for convenience, and some print(x) functions for primitive types.
+*/
+
+
+
+
+
+
+
+
+
+
+
 function void printf(char* template, int format){
+
+    __asm{"
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    "}
+
+}
+function void printf(char* template){
 
     __asm{"
     
@@ -103,7 +130,7 @@ function void print(char* a){
     
 
     PRINT_STRING [rdi]
-    
+    NEWLINE
     "}
 
 }
@@ -111,8 +138,19 @@ function void print(char a){
 
     __asm{"
 
-     PRINT_CHAR rdi   
+     PRINT_CHAR rdi
+     NEWLINE   
 
     "}
+
+}
+function void print(bool a){
+
+    if(a){
+        print("True");
+        return 0;
+    }
+    print("False");
+    return 0;
 
 }

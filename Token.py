@@ -65,9 +65,9 @@ T_AMBIGUOUS = "T?T"
 
 
 KEYWORDS = [
-    "true",
-    "false",
-    
+
+    "elif",
+    "else",
     
     "function",
     "const",
@@ -78,6 +78,7 @@ KEYWORDS = [
     "if",
     "__asm",
     "return",
+    "typedef"
 
 
 

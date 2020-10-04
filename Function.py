@@ -59,7 +59,8 @@ class Function:
                 if(len(f.parameters) != lt): continue
                 valid = True
                 for i in range(lt):
-                    if f.parameters[i].t.__repr__() != types[i].__repr__():
+                    #if f.parameters[i].t.__repr__() != types[i].__repr__():
+                    if (not TsCompatible(f.parameters[i].t, types[i],self)):
                         valid = False
                         break
                 
@@ -132,6 +133,55 @@ class Function:
         self.addline(instr)
         self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
 
+    def buildIfStatement(self):
+        self.advance()
+        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token,"("))
+        self.advance()
+        
+        preInstructions = self.evaluateRightsideExpression("rax")
+        self.ctidx-=2
+        self.advance()
+        if(self.current_token.tok == T_CLSP): 
+            self.advance()
+            return
+        postlabel = getLogicLabel("IFPOST")
+        jmpafter = getLogicLabel("IFELSE")
+        preInstructions+= f"\ncmp al, 1\njne {postlabel}\n"
+        self.addline(preInstructions)
+        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
+        self.advance()
+        self.beginRecursiveCompile()
+        self.addline(f"jmp {jmpafter}")
+        self.advance()
+        if(self.current_token.tok == T_KEYWORD):
+
+            if(self.current_token.value == "else"):
+                
+                self.addline(postlabel+":\n")
+
+                self.advance()
+                if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
+                    self.buildIfStatement()
+                elif(self.current_token.tok == T_OPENSCOPE):
+                    self.advance()
+                    self.beginRecursiveCompile()
+                else:
+                    throw(ExpectedToken(self.current_token,"{"))
+
+                self.addline(jmpafter+":\n")
+
+            else:
+                self.addline(postlabel+":\n")
+                self.addline(jmpafter+":\n")
+        else:
+            self.addline(postlabel+":\n")
+            self.addline(jmpafter+":\n")
+
+
+
+    
+
+
 
     def buildKeywordStatement(self):
         word = self.current_token.value
@@ -162,6 +212,9 @@ class Function:
                 throw(InvalidSignSpecifier(s))
             v.signed = False
             v.t.signed = False
+        
+        elif(word == "if"):
+            self.buildIfStatement()
 
         else:
             self.advance()
@@ -208,7 +261,6 @@ class Function:
             instructions += self.evaluateRightsideExpression("STACK", ot)+"\n"
             types.append(ot)
             ot = VOID.copy()
-        
         fn = self.getFunction(fid,types)
 
         if fn == None:
@@ -245,7 +297,7 @@ class Function:
         instructions += f"mov {rax}, {ssevarsforrax}\n"
 
         instructions+=fncall(fn)
-        return instructions
+        return instructions, fn
 
 
 
@@ -257,11 +309,17 @@ class Function:
 
         sses = 0
         norms= 0
+        o = DType("int", 8)
 
         for t in pfix:
             if(t.tok in OPERATORS):
-                b = stack.pop()
-                a = stack.pop()
+
+                if(t.tok == T_NOT):
+                    b = stack.pop()
+                    a = Token(T_REGISTER, "", None, None)
+                else:
+                    b = stack.pop()
+                    a = stack.pop()
 
                 bq = self.getVariable(b.value)
                 if(bq == None):
@@ -272,6 +330,8 @@ class Function:
                     else:
                         instr+=b.value+"\n"
                         bq = f"{rax}"
+                else:
+                    o = bq.t.copy()
 
                 aq = self.getVariable(a.value)
                 if(aq == None):
@@ -281,9 +341,12 @@ class Function:
                     else:
                         instr+=a.value+"\n"
                         aq = f"{rax}"
+                else:
+                    o = aq.t.copy()
 
 
-
+                if(t.tok in ["==","!=",">","<","<=",">="]):
+                    o = BOOL.copy()
                 
 
                 
@@ -301,8 +364,7 @@ class Function:
                 if(bq in nrom_scratch_registers):
                     norms-=2
 
-                instr+=(doOperation(aq,bq,t.tok,d))
-
+                instr+= doOperation(aq,bq,t.tok,d)
 
 
 
@@ -326,7 +388,6 @@ class Function:
         elif(final.tok == T_FUNCTIONCALL):
             instr += final.value+"\n"
             final = Token(T_REGISTER, "rax",None,None)
-        o = DType("AMB", 8)
         if(isinstance(final, Variable)):
 
             o = final.t.copy()
@@ -433,7 +494,7 @@ class Function:
                         self.ctidx = fnstart-1
                         self.advance()
 
-                        fnisntr = self.buildFunctionCall()+"\n"
+                        fnisntr, fn = self.buildFunctionCall()+"\n"
 
                         self.ctidx = fnend-1
                         self.advance()
@@ -444,6 +505,7 @@ class Function:
                             self.tokens.remove(t)
                         
                         fntoken = Token(T_FUNCTIONCALL, fnisntr, fnstartloc, fnstartloc1)
+                        fntoken.fn = fn
                         self.tokens.insert(self.ctidx, fntoken)
 
 
@@ -502,7 +564,7 @@ class Function:
         
 
     def buildBlankfnCall(self):
-        instructions = self.buildFunctionCall()
+        instructions, fn = self.buildFunctionCall()
         self.ctidx-=2
         self.advance()
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))

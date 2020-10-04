@@ -39,7 +39,7 @@ class Postfixer:
 
 
             else:
-                if (t.tok != T_ID and t.tok != T_FUNCTIONCALL and t.tok != T_INT and t.tok != T_BOOL): throw(UnexpectedToken(t))
+                if (t.tok != T_ID and t.tok != T_FUNCTIONCALL and t.tok != T_INT and t.tok != T_BOOL and t.tok != T_CHAR): throw(UnexpectedToken(t))
                 pfix.append(t)
         while len(stack)>0:
             pfix.append(stack.pop())

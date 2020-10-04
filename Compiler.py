@@ -25,6 +25,7 @@ class Compiler:
         self.functions = []
         self.globals = []
         self.types = []
+        self.tdefs = []
         for i in INTRINSICS:
             self.types.append(i.copy())
     
@@ -362,6 +363,22 @@ class Compiler:
                     
                     v.signed = False
                     v.t.signed = False
+                elif(self.current_token.value == "typedef"):
+                    s = self.current_token
+                    self.advance()
+                    ta = self.checkType()
+                    if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+                    ntn = self.current_token.value
+                    newtype = ta.copy()
+                    newtype.name=ntn
+
+                    self.types.append(newtype.copy())
+                    self.tdefs.append((ta,newtype))
+                    if(self.isIntrinsic(ntn)):
+                        INTRINSICS.append(newtype.copy())
+                    self.advance()
+                    if(self.current_token.tok != T_ENDL):
+                        throw(ExpectedSemicolon(self.current_token))
 
 
 

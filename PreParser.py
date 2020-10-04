@@ -36,7 +36,7 @@ class PreParser:
         
         while self.chidx < len(self.content):
             
-            if (ord(self.ch) == 1):
+            if (self.ch == chr(1)):
 
                 self.tokens.append(Token(T_EOF,T_EOF,self.loc.copy(),self.loc.copy()))
                 return self.tokens
@@ -110,14 +110,13 @@ class PreProcessor:
         return None
 
     def process(self):
-        
         while self.current_token.tok != T_EOF:
             if ( self.current_token.tok == T_KEYWORD):
                 
                 if ( self.current_token.value == "include"):
 
                     self.advance()
-
+                    
                     if(self.current_token.tok == T_STRING):
 
                         path = self.current_token.value
@@ -127,15 +126,16 @@ class PreProcessor:
                             
                         pp = PreParser(self.texts[0][0],path)
                         tokens = pp.getTokens()
+                        i = 0
+                        for t in tokens:
+                            i+=1
+                            if(t.tok != T_EOF):
+                                self.tokens.insert(self.tkidx+i, t)
 
-                        for t in tokens[:-1]:
-                            self.tokens.insert(self.tkidx+1, t)
-                        self.advance()
-                        
-                
+
                     else:
 
-                        print("Invalid Include: %s"%self.current_token.start)
+                        print("Invalid Include ( %s ): %s"%(self.current_token, self.current_token.start))
                 
                 elif (self.current_token.value == "define"):
                     self.advance()

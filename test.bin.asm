@@ -1056,21 +1056,126 @@ section .text
 
 
 section .data
-    nullptr: DQ 0
-null: DQ 0
-nullterm: DB 0
-STRING_CONSTANT_0: db `%i\n`, 0
+    STRING_CONSTANT_0: db `%i\n`, 0
 STRING_CONSTANT_1: db `%u\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
-STRING_CONSTANT_3: db `bruhtest %f\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
+nullptr: DQ 0
+null: DQ 0
+nullterm: DB 0
+true: DB 1
+false: DB 0
+STRING_CONSTANT_5: db `Hello World!`, 0
+STRING_CONSTANT_6: db `goodbye World!`, 0
+STRING_CONSTANT_7: db `Why`, 0
+STRING_CONSTANT_8: db `maybe`, 0
+STRING_CONSTANT_9: db `not`, 0
 
 
 section .bss
-    test: RESB 8
-
+    
 
 section .text
 global CMAIN
+
+
+
+_void._malloc_pint:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+
+    
+    ALIGN_STACK
+    call malloc
+    UNALIGN_STACK
+    
+    
+___void._malloc_pint__return:
+
+leave
+ret
+
+
+
+_void._calloc_pint:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+
+    
+    ALIGN_STACK
+    call calloc
+    UNALIGN_STACK
+    
+    
+___void._calloc_pint__return:
+
+leave
+ret
+
+
+
+_void._realloc_pvoid.int:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 24
+
+
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+
+    
+    ALIGN_STACK
+    call realloc
+    UNALIGN_STACK
+    
+    
+___void._realloc_pvoid.int__return:
+
+leave
+ret
+
+
+
+_void_free_pvoid.:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+
+    
+    ALIGN_STACK
+    call free
+    UNALIGN_STACK
+    
+    
+    
+___void_free_pvoid.__return:
+
+leave
+ret
 
 
 
@@ -1095,6 +1200,32 @@ mov [rbp-16], rsi
 
     
 ___void_printf_pchar.int__return:
+
+leave
+ret
+
+
+
+_void_printf_pchar.:
+
+
+
+push rbp
+mov rbp, rsp
+sub rsp, 16
+
+
+mov [rbp-8], rdi
+
+    
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+
+
+    
+___void_printf_pchar.__return:
 
 leave
 ret
@@ -1344,7 +1475,7 @@ mov [rbp-8], rdi
     
 
     PRINT_STRING [rdi]
-    
+    NEWLINE
     
 ___void_print_pchar.__return:
 
@@ -1365,7 +1496,8 @@ sub rsp, 9
 mov [rbp-8], rdi
 
 
-     PRINT_CHAR rdi   
+     PRINT_CHAR rdi
+     NEWLINE   
 
     
 ___void_print_pchar__return:
@@ -1375,25 +1507,52 @@ ret
 
 
 
-_int_test2_pint:
+_void_print_pbool:
 
 
 
 push rbp
 mov rbp, rsp
-sub rsp, 16
+sub rsp, 9
 
 
 mov [rbp-8], rdi
-
-mov rbx, 4
-mov rax, [rbp-8]
-imul rax, rbx
-mov r10, rax
+mov r10,  [rbp-8]
 mov rax, r10
 
-jmp ___int_test2_pint__return
-___int_test2_pint__return:
+cmp al, 1
+jne _LIFPOST_0x0
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_3
+push r10
+
+pop  rdi
+mov rax, 0
+call _void_print_pchar.
+
+mov rax, 0
+mov rax, rax
+
+jmp ___void_print_pbool__return
+jmp _LIFELSE_0x1
+_LIFPOST_0x0:
+
+_LIFELSE_0x1:
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_4
+push r10
+
+pop  rdi
+mov rax, 0
+call _void_print_pchar.
+
+mov rax, 0
+mov rax, rax
+
+jmp ___void_print_pbool__return
+___void_print_pbool__return:
 
 leave
 ret
@@ -1406,50 +1565,113 @@ _int_main_pintchar..:
 
 push rbp
 mov rbp, rsp
-sub rsp, 48
+sub rsp, 24
 
 
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 
-mov rbx, 2
-mov rax, 3
-xor rdx, rdx
-idiv rbx
+xor rax, rax
+xor rbx,rbx
+mov rax, [true]
+not al
+and al, 00000001b
 mov r10, rax
-mov [rbp-24], r10
+mov rax, r10
 
-mov r10,  [rbp-24]
-cvtsi2sd xmm7, r10
-movsd [rbp-32], xmm7
-
-movsd xmm9, [rbp-32]
-cvttsd2si rax, xmm9
-mov [rbp-40], rax
+cmp al, 1
+jne _LIFPOST_0x2
 
 xor rax, rax
-mov r10,  STRING_CONSTANT_3
+mov r10,  STRING_CONSTANT_5
 push r10
 
-
-movsd xmm7, [rbp-32]
-mov rax, 3
-cvtsi2sd xmm8, rax
-divsd xmm7, xmm8
-movsd xmm9, xmm7
-movq rax, xmm9
-push rax
-
-pop r15
-movq xmm0, r15
 pop  rdi
-mov rax, 1
-call _void_printf_pchar.double
-
 mov rax, 0
-mov rax, rax
+call _void_print_pchar.
 
-jmp ___int_main_pintchar..__return
+jmp _LIFELSE_0x3
+_LIFPOST_0x2:
+
+_LIFELSE_0x3:
+
+
+xor rax, rax
+xor rbx,rbx
+mov rax, [false]
+not al
+and al, 00000001b
+mov r10, rax
+mov rax, r10
+
+cmp al, 1
+jne _LIFPOST_0x4
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_6
+push r10
+
+pop  rdi
+mov rax, 0
+call _void_print_pchar.
+
+jmp _LIFELSE_0x5
+_LIFPOST_0x4:
+
+_LIFELSE_0x5:
+
+
+xor rax, rax
+xor rbx,rbx
+mov rbx, [true]
+mov rax, [true]
+xor al, bl
+mov r10, rax
+mov rax, r10
+
+cmp al, 1
+jne _LIFPOST_0x6
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_7
+push r10
+
+pop  rdi
+mov rax, 0
+call _void_print_pchar.
+
+jmp _LIFELSE_0x7
+_LIFPOST_0x6:
+
+mov r10,  [true]
+mov rax, r10
+
+cmp al, 1
+jne _LIFPOST_0x8
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_8
+push r10
+
+pop  rdi
+mov rax, 0
+call _void_print_pchar.
+
+jmp _LIFELSE_0x9
+_LIFPOST_0x8:
+
+xor rax, rax
+mov r10,  STRING_CONSTANT_9
+push r10
+
+pop  rdi
+mov rax, 0
+call _void_print_pchar.
+
+_LIFELSE_0x9:
+
+_LIFELSE_0x7:
+
 ___int_main_pintchar..__return:
 
 leave
@@ -1467,8 +1689,7 @@ CMAIN:
     ;rsi     ;commandline args
     ;rdi
 
-    mov QWORD[test], 35
-
+    
 
     call _int_main_pintchar..
 

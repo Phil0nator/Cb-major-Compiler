@@ -111,10 +111,23 @@ class Lexer:
                 tokens.append(Token(T_PLUS,T_PLUS,self.loc.copy(),self.loc.copy()))
                 self.advance()
             elif(self.ch == "/"):
-                tokens.append(Token(T_DIVIDE,T_DIVIDE,self.loc.copy(),self.loc.copy()))
                 self.advance()
+                if(self.ch == "/"):
+                    while self.ch != "\n":
+                        self.advance()
+                elif(self.ch == "*"):
+                    comment = "  "
+                    while comment[-2:] != "*/":
+                        self.advance()
+                        comment+=self.ch
+                        
+                    
+                    
+                else:
+                    tokens.append(Token(T_DIVIDE,T_DIVIDE,self.loc.copy(),self.loc.copy()))
+                    self.advance()
             
-            elif (self.ch in "()}{[],*"):
+            elif (self.ch in "()}{[],^*"):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
 

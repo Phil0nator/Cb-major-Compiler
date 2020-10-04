@@ -1,3 +1,9 @@
+/*
+  * <memory.k> contains rappers of malloc and its friends for convenience.
+*/
+
+
+
 function void* malloc(int size){
 
     __asm{"
