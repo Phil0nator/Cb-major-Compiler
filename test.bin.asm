@@ -1030,7 +1030,10 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-FLT_CONSTANT_0: dq __float32__(4.5)
+FLT_CONSTANT_0: dq 0x1.ca1c20624dd2fp+17
+FLT_CONSTANT_1: dq 0x1.7fa903126e979p+14
+FLT_CONSTANT_2: dq 0x1.7c10eb851eb85p+14
+FLT_CONSTANT_3: dq 0x1.252a48e8a71dep+11
 section .bss
     
 section .text
@@ -1137,7 +1140,7 @@ mov [rbp-8], rdi
 ;Load Parameter: [ Variable: double f @ 16]
 movsd [rbp-16], xmm0
 ALIGN_STACK
-cvtps2pd xmm0, xmm0
+mov rax, 1
 call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
@@ -1187,8 +1190,6 @@ movsd [rbp-16], xmm0
 ;Load Parameter: [ Variable: double b @ 24]
 movsd [rbp-24], xmm1
 ALIGN_STACK
-cvtps2pd xmm0, xmm0
-cvtps2pd xmm1, xmm1
 call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
@@ -1322,18 +1323,33 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 82
+sub rsp, 90
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-xor rax, rax
-;[ id : FLT_CONSTANT_0 ][ + : + ][ int : 5 ][ ) : ) ]
-movsd xmm7, [FLT_CONSTANT_0]
-mov rax, 5
-cvtsi2sd xmm8, rax
-addsd xmm7, xmm8
+;[ id : FLT_CONSTANT_0 ][ + : + ][ id : FLT_CONSTANT_1 ][ / : / ][ id : FLT_CONSTANT_2 ][ - : - ][ id : FLT_CONSTANT_3 ][ - : - ][ int : 2 ]
+movsd xmm7, [FLT_CONSTANT_1]
+movsd xmm8, [FLT_CONSTANT_2]
+divsd xmm7, xmm8
 movsd xmm9, xmm7
+movsd xmm7, [FLT_CONSTANT_0]
+movsd xmm8, xmm9
+addsd xmm7, xmm8
+movsd xmm10, xmm7
+movsd xmm7, xmm10
+movsd xmm8, [FLT_CONSTANT_3]
+subsd xmm7, xmm8
+movsd xmm9, xmm7
+movsd xmm7, xmm9
+mov rax, 2
+cvtsi2sd xmm8, rax
+subsd xmm7, xmm8
+movsd xmm10, xmm7
+movsd [rbp-82], xmm10
+xor rax, rax
+;[ id : bruhtest ][ ) : ) ]
+movsd xmm9, [rbp-82]
 movq rax, xmm9
 push rax
 pop r15

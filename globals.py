@@ -306,7 +306,8 @@ def createIntrinsicConstant(variable):
     
     if((variable.t.name == DOUBLE.name or variable.t.name == FLOAT.name)):
 
-        return "%s: dq __float32__(%s)\n"%(variable.name, (variable.initializer))
+        #return "%s: dq __float32__(%s)\n"%(variable.name, (variable.initializer))
+        return f"{variable.name}: dq {variable.initializer.hex()}\n"
 
     return "%s: %s %s\n"%(variable.name,getConstantReserver(variable.t), (variable.initializer))
 
@@ -327,7 +328,8 @@ def createFloatConstant(s):
     global floatconstant_counter
     out = []
     name = ("FLT_CONSTANT_%s"%floatconstant_counter)
-    out.append("%s: dq __float32__(%s)\n"%(name,s))
+    #out.append("%s: dq __float32__(%s)\n"%(name,s))
+    out.append(f"{name}: dq {s.hex()}\n")
     out.append(name)
     floatconstant_counter+=1
     return out

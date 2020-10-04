@@ -481,13 +481,13 @@ class Function:
             return instr
         elif(dest == "STACKF"):
             if(isfloat(final)):
-                instr += f"movq {rax}, {final.value}\npush {rax}\n"
+                instr += f"xor rax, rax\nmovq rax, {final.value}\npush {rax}\n"
             else:
-                instr += f"cvtsi2sd {xmm7}, {final.value}\nmovq {rax}, {xmm7}\npush {rax}"
+                instr += f"cvtsi2sd {xmm7}, {final.value}\nmovq rax, {xmm7}\npush {rax}"
             return instr
         elif(dest == "STACK"):
             if(isfloat(final)):
-                instr += f"movq {rax}, {final.value}\npush {rax}\n"
+                instr += f"movq rax, {final.value}\npush {rax}\n"
                 if(otype!=None):
                     if(o.name == "AMB"):
                         otype.name = "double"
