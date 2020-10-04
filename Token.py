@@ -90,6 +90,7 @@ T_REGISTER = "reg"
 
 
 class Token:
+    # used for T_FUNCTIONCALL only
     def __init__(self, tok, value, start, end):
         self.tok = tok
         self.start = start

@@ -1085,6 +1085,7 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: int size @ 8]
 mov [rbp-8], rdi
 
     
@@ -1109,6 +1110,7 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: int size @ 8]
 mov [rbp-8], rdi
 
     
@@ -1133,7 +1135,9 @@ mov rbp, rsp
 sub rsp, 24
 
 
+;Load Parameter: [ Variable: void. og @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int newsize @ 16]
 mov [rbp-16], rsi
 
     
@@ -1158,6 +1162,7 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: void. ptr @ 8]
 mov [rbp-8], rdi
 
     
@@ -1183,7 +1188,9 @@ mov rbp, rsp
 sub rsp, 24
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int format @ 16]
 mov [rbp-16], rsi
 
     
@@ -1210,6 +1217,7 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
 
     
@@ -1236,7 +1244,9 @@ mov rbp, rsp
 sub rsp, 24
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: uint format @ 16]
 mov [rbp-16], rsi
 
     
@@ -1263,12 +1273,14 @@ mov rbp, rsp
 sub rsp, 24
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double f @ 16]
 movsd [rbp-16], xmm0
 
     
     ALIGN_STACK
-    ;cvtps2pd xmm0, xmm0
+    cvtps2pd xmm0, xmm0
     call printf
     FFLUSH_STDOUT
     UNALIGN_STACK
@@ -1291,7 +1303,9 @@ mov rbp, rsp
 sub rsp, 24
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. other @ 16]
 mov [rbp-16], rsi
 
     
@@ -1318,8 +1332,11 @@ mov rbp, rsp
 sub rsp, 32
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int a @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: int b @ 24]
 mov [rbp-24], rdx
 
     
@@ -1346,14 +1363,17 @@ mov rbp, rsp
 sub rsp, 32
 
 
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double a @ 16]
 movsd [rbp-16], xmm0
+;Load Parameter: [ Variable: double b @ 24]
 movsd [rbp-24], xmm1
 
     
     ALIGN_STACK
-    ;cvtps2pd xmm0, xmm0
-    ;cvtps2pd xmm1, xmm1
+    cvtps2pd xmm0, xmm0
+    cvtps2pd xmm1, xmm1
     call printf
     FFLUSH_STDOUT
     UNALIGN_STACK
@@ -1376,11 +1396,14 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
 xor rax, rax
+;[ id : STRING_CONSTANT_0 ]
 mov r10,  STRING_CONSTANT_0
 push r10
 
+;[ id : a ][ ) : ) ]
 mov r10,  [rbp-8]
 push r10
 
@@ -1405,11 +1428,14 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
 xor rax, rax
+;[ id : STRING_CONSTANT_1 ]
 mov r10,  STRING_CONSTANT_1
 push r10
 
+;[ id : a ][ ) : ) ]
 mov r10,  [rbp-8]
 push r10
 
@@ -1434,11 +1460,14 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
 xor rax, rax
+;[ id : STRING_CONSTANT_2 ]
 mov r10,  STRING_CONSTANT_2
 push r10
 
+;[ id : a ][ ) : ) ]
 movsd xmm9, [rbp-8]
 movq rax, xmm9
 push rax
@@ -1465,6 +1494,7 @@ mov rbp, rsp
 sub rsp, 16
 
 
+;Load Parameter: [ Variable: char. a @ 8]
 mov [rbp-8], rdi
 
     
@@ -1488,6 +1518,7 @@ mov rbp, rsp
 sub rsp, 9
 
 
+;Load Parameter: [ Variable: char a @ 8]
 mov [rbp-8], rdi
 
 
@@ -1511,7 +1542,9 @@ mov rbp, rsp
 sub rsp, 9
 
 
+;Load Parameter: [ Variable: bool a @ 8]
 mov [rbp-8], rdi
+;[ id : a ][ ) : ) ]
 mov r10,  [rbp-8]
 mov rax, r10
 and al, 00000001b
@@ -1519,6 +1552,7 @@ cmp al, 1
 jne _LIFPOST_0x0
 
 xor rax, rax
+;[ id : STRING_CONSTANT_3 ][ ) : ) ]
 mov r10,  STRING_CONSTANT_3
 push r10
 
@@ -1526,6 +1560,7 @@ pop  rdi
 mov rax, 0
 call _void_print_pchar.
 
+;[ int : 0 ]
 mov rax, 0
 mov rax, rax
 
@@ -1536,6 +1571,7 @@ _LIFPOST_0x0:
 _LIFELSE_0x1:
 
 xor rax, rax
+;[ id : STRING_CONSTANT_4 ][ ) : ) ]
 mov r10,  STRING_CONSTANT_4
 push r10
 
@@ -1543,6 +1579,7 @@ pop  rdi
 mov rax, 0
 call _void_print_pchar.
 
+;[ int : 0 ]
 mov rax, 0
 mov rax, rax
 
@@ -1560,81 +1597,18 @@ _int_main_pintchar..:
 
 push rbp
 mov rbp, rsp
-sub rsp, 25
+sub rsp, 24
 
 
+;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-mov r10,  [true]
-mov [rbp-24], r10
+;[ int : 0 ]
+mov rax, 0
+mov rax, rax
 
-jmp _LWHILECMP_0x3
-_LWHILESTART_0x2:
-
-mov rbx, [true]
-mov rax, [rbp-24]
-cmp rax, rbx
-je _LCMPI_0x6
-xor rax, rax
-jmp _LCMPIPOST_0x7
-_LCMPI_0x6:
-mov rax, 255
-_LCMPIPOST_0x7:
-mov r10, rax
-
-xor rax, rax
-mov rbx, [rbp-8]
-mov rax, r10
-and al, bl
-mov r11, rax
-
-mov rbx, 1
-mov rax, r11
-cmp rax, rbx
-je _LCMPI_0x8
-xor rax, rax
-jmp _LCMPIPOST_0x9
-_LCMPI_0x8:
-mov rax, 255
-_LCMPIPOST_0x9:
-mov r12, rax
-mov rax, r12
-and al, 00000001b
-cmp al, 1
-jne _LIFPOST_0xa
-
-
-mov r10,  [false]
-mov [rbp-24], r10
-
-jmp _LIFELSE_0xb
-_LIFPOST_0xa:
-
-_LIFELSE_0xb:
-
-_LWHILECMP_0x3:
-
-xor rax, rax
-mov rbx, [rbp-8]
-mov rax, [rbp-24]
-and al, bl
-mov r10, rax
-
-mov rbx, 1
-mov rax, r10
-cmp rax, rbx
-je _LCMPI_0x4
-xor rax, rax
-jmp _LCMPIPOST_0x5
-_LCMPI_0x4:
-mov rax, 255
-_LCMPIPOST_0x5:
-mov r11, rax
-mov rax, r11
-and al, 00000001b
-cmp al, 1
-je _LWHILESTART_0x2
-
+jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
 
 leave

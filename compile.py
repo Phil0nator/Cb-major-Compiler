@@ -22,16 +22,17 @@ from Location import *
 from PreParser import *
 from Compiler import *
 from Linker import *
+import config
 
 def main():
     beginTime = time.time()
-    with open(__fileinput__, "rb") as inpf:
+    with open(config.__fileinput__, "rb") as inpf:
         raw = inpf.read().decode()
 
-    pre = PreParser(raw,__fileinput__)
+    pre = PreParser(raw,config.__fileinput__)
     pretokens = pre.getTokens() 
 
-    pp = PreProcessor(raw,pretokens,__fileinput__)
+    pp = PreProcessor(raw,pretokens,config.__fileinput__)
     totals = pp.process()
     print("+-+-+ Compile +-+-+")
     c = Compiler()
@@ -56,34 +57,22 @@ def main():
     
     print("+-+-+ FINAL +-+-+")
     
-    with open(__fileoutput__+".asm", "wb") as f:
+    with open(config.__fileoutput__+".asm", "wb") as f:
         f.write(asm.encode())
 
-    os.system(assemble(__fileoutput__))
-    os.system(link(__fileoutput__,__fileoutput__))
-    os.remove(__fileoutput__+".o")
+    os.system(assemble(config.__fileoutput__))
+    os.system(link(config.__fileoutput__,config.__fileoutput__))
+    os.remove(config.__fileoutput__+".o")
 
-    if(not __tonasm__):
-        os.remove(__fileoutput__+".asm")
+    if(not config.__tonasm__):
+        os.remove(config.__fileoutput__+".asm")
 
     print("Compiled and Linked symbols in %s ms"%(time.time()-beginTime))
-    if(__autorun__):
-        os.system(f"./{__fileoutput__}")
+    if(config.__autorun__):
+        os.system(f"./{config.__fileoutput__}")
 
 
 
-parser = arg.ArgumentParser(description='Compile .rud programs into either nasm assembly, or to an executable.')
-parser.add_argument("-o", "--output", required=True)
-parser.add_argument("-i", "--input", required=True)
-parser.add_argument("-nasm", action="store_true", default=False)
-parser.add_argument("-r", action="store_true", default=False)
-parser.add_argument("-g", action="store_true",default=False)
-args = parser.parse_args()
-__fileinput__=args.input
-__fileoutput__=args.output
-__tonasm__=args.nasm
-__autorun__=args.r
-__dbg__ = args.g
 
 
 main()

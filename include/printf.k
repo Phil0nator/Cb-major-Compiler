@@ -55,7 +55,7 @@ function void printf(char* template, double f){
     __asm{"
     
     ALIGN_STACK
-    ;cvtps2pd xmm0, xmm0
+    cvtps2pd xmm0, xmm0
     call printf
     FFLUSH_STDOUT
     UNALIGN_STACK
@@ -96,8 +96,8 @@ function void printf(char* template, double a, double b){
     __asm{"
     
     ALIGN_STACK
-    ;cvtps2pd xmm0, xmm0
-    ;cvtps2pd xmm1, xmm1
+    cvtps2pd xmm0, xmm0
+    cvtps2pd xmm1, xmm1
     call printf
     FFLUSH_STDOUT
     UNALIGN_STACK

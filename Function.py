@@ -4,6 +4,7 @@ from DType import *
 from Token import *
 from Error import *
 from Postfixer import *
+import config
 class Function:
     def __init__(self, name, parameters, returntype, compiler, tokens):
         self.name = name
@@ -50,6 +51,9 @@ class Function:
 
     def addline(self, l):
         self.asm+=l+"\n"
+    
+    def addcomment(self, c):
+        self.asm+=";"+c+"\n"
 
 
     def getFunction(self, fn, types):
@@ -112,13 +116,15 @@ class Function:
         counts = 0
         for p in self.parameters:
             self.addVariable(p)
+            if(config.DO_DEBUG):
+                self.addcomment(f"Load Parameter: {p}")
             if(p.isflt()):
                 self.addline(movRegToVar(p.offset,sse_parameter_registers[counts]))
+                
                 counts += 1
             else:
                 self.addline(movRegToVar(p.offset,norm_parameter_registers[countn]))
                 countn += 1
-
 
     
 
@@ -128,8 +134,10 @@ class Function:
 
     def buildReturnStatement(self):
         self.advance()
-
-        instr = self.evaluateRightsideExpression("rax")
+        if(self.returntype.isflt()):
+            instr = self.evaluateRightsideExpression(sse_return_register)
+        else:
+            instr = self.evaluateRightsideExpression(norm_return_register)
         self.addline(instr)
         self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
 
@@ -356,8 +364,12 @@ class Function:
                     if(b.tok !=T_FUNCTIONCALL):
                         bq = b.value
                     else:
+                        f = b.fn
                         instr+=b.value+"\n"
-                        bq = f"{rax}"
+                        if(f.returntype.isflt()):
+                            bq = f"{sse_return_register}"
+                        else:
+                            bq = f"{norm_return_register}"
                 else:
                     o = bq.t.copy()
 
@@ -367,8 +379,12 @@ class Function:
                     if(a.tok != T_FUNCTIONCALL):
                         aq = a.value
                     else:
+                        f = a.fn
                         instr+=a.value+"\n"
-                        aq = f"{rax}"
+                        if(f.returntype.isflt()):
+                            aq = f"{sse_return_register}"
+                        else:
+                            aq = f"{norm_return_register}"
                 else:
                     o = aq.t.copy()
 
@@ -415,7 +431,13 @@ class Function:
 
         elif(final.tok == T_FUNCTIONCALL):
             instr += final.value+"\n"
-            final = Token(T_REGISTER, "rax",None,None)
+            f = final.fn
+            if(f.returntype.isflt()):
+
+                final = Token(T_REGISTER, sse_return_register,None,None)
+            else:
+                final = Token(T_REGISTER, norm_return_register,None,None)
+
         if(isinstance(final, Variable)):
 
             o = final.t.copy()
@@ -468,7 +490,6 @@ class Function:
                         otype.signed = o.signed
                         otype.s = o.s
             return instr
-
         if(isfloat(dest)):
             if(isfloat(final)):
                 instr += f"movsd {valueOf(dest)}, {final.value}\n"
@@ -503,7 +524,9 @@ class Function:
         instructions = ""
         start = self.ctidx
         opens = 1
+        comment = ""
         while self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok != T_EQUALS and self.current_token.tok != T_CLSIDX and opens > 0:
+            comment+= self.current_token.__repr__()
             if( self.current_token.tok == T_ID):
                 if(self.compiler.getFunction( self.current_token.value) != None):
                     fnstart = self.ctidx
@@ -522,8 +545,8 @@ class Function:
                         self.ctidx = fnstart-1
                         self.advance()
 
-                        fnisntr, fn = self.buildFunctionCall()+"\n"
-
+                        fnisntr, fn = self.buildFunctionCall()
+                        fnisntr+="\n"
                         self.ctidx = fnend-1
                         self.advance()
 
@@ -562,9 +585,10 @@ class Function:
 
         pf = Postfixer(exprtokens)
 
-
-
-        instructions = self.evaluatePostfix(destination, pf.createPostfix(), otype)
+        instructions=""
+        if(config.DO_DEBUG):
+            instructions+=f";{comment}\n"
+        instructions += self.evaluatePostfix(destination, pf.createPostfix(), otype)
 
 
 
