@@ -137,8 +137,9 @@ class Function:
         self.advance()
         if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token,"("))
         self.advance()
-        
-        preInstructions = self.evaluateRightsideExpression("rax")
+        ot = BOOL.copy()
+        preInstructions = self.evaluateRightsideExpression("rax",ot)
+
         self.ctidx-=2
         self.advance()
         if(self.current_token.tok == T_CLSP): 
@@ -146,7 +147,7 @@ class Function:
             return
         postlabel = getLogicLabel("IFPOST")
         jmpafter = getLogicLabel("IFELSE")
-        preInstructions+= f"\ncmp al, 1\njne {postlabel}\n"
+        preInstructions+= f"{check_fortrue}jne {postlabel}\n"
         self.addline(preInstructions)
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
         self.advance()
@@ -179,7 +180,31 @@ class Function:
 
 
 
+
+    def buildForloop(self):
+        pass
     
+    
+    def buildWhileloop(self):
+        self.advance()
+        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
+        self.advance()
+        
+        startlabel = getLogicLabel("WHILESTART")
+        comparisonlabel = getLogicLabel("WHILECMP")
+        
+        
+        self.addline(f"jmp {comparisonlabel}")
+        self.addline(f"{startlabel}:")
+        cmpinst = self.evaluateRightsideExpression("rax")
+        cmpinst += f"{check_fortrue}je {startlabel}\n"
+        self.ctidx-=2
+        self.advance()
+        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
+        self.advance()
+        self.beginRecursiveCompile()
+        self.addline(f"{comparisonlabel}:")
+        self.addline(cmpinst)
 
 
 
@@ -215,6 +240,9 @@ class Function:
         
         elif(word == "if"):
             self.buildIfStatement()
+
+        elif(word == "while"):
+            self.buildWhileloop()
 
         else:
             self.advance()

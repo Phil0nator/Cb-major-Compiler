@@ -27,6 +27,8 @@ typedef int clock_t; /* unit for system accounting */
 typedef char i8_t; /* 8 bit signed type */
 
 
-
+/*
+  * Default boolean values;
+*/
 const bool true  = 1;
 const bool false = 0;

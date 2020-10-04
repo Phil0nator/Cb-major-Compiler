@@ -1066,11 +1066,6 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_5: db `Hello World!`, 0
-STRING_CONSTANT_6: db `goodbye World!`, 0
-STRING_CONSTANT_7: db `Why`, 0
-STRING_CONSTANT_8: db `maybe`, 0
-STRING_CONSTANT_9: db `not`, 0
 
 
 section .bss
@@ -1519,7 +1514,7 @@ sub rsp, 9
 mov [rbp-8], rdi
 mov r10,  [rbp-8]
 mov rax, r10
-
+and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
 
@@ -1565,112 +1560,80 @@ _int_main_pintchar..:
 
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 25
 
 
 mov [rbp-8], rdi
 mov [rbp-16], rsi
-
-xor rax, rax
-xor rbx,rbx
-mov rax, [true]
-not al
-and al, 00000001b
-mov r10, rax
-mov rax, r10
-
-cmp al, 1
-jne _LIFPOST_0x2
-
-xor rax, rax
-mov r10,  STRING_CONSTANT_5
-push r10
-
-pop  rdi
-mov rax, 0
-call _void_print_pchar.
-
-jmp _LIFELSE_0x3
-_LIFPOST_0x2:
-
-_LIFELSE_0x3:
-
-
-xor rax, rax
-xor rbx,rbx
-mov rax, [false]
-not al
-and al, 00000001b
-mov r10, rax
-mov rax, r10
-
-cmp al, 1
-jne _LIFPOST_0x4
-
-xor rax, rax
-mov r10,  STRING_CONSTANT_6
-push r10
-
-pop  rdi
-mov rax, 0
-call _void_print_pchar.
-
-jmp _LIFELSE_0x5
-_LIFPOST_0x4:
-
-_LIFELSE_0x5:
-
-
-xor rax, rax
-xor rbx,rbx
-mov rbx, [true]
-mov rax, [true]
-xor al, bl
-mov r10, rax
-mov rax, r10
-
-cmp al, 1
-jne _LIFPOST_0x6
-
-xor rax, rax
-mov r10,  STRING_CONSTANT_7
-push r10
-
-pop  rdi
-mov rax, 0
-call _void_print_pchar.
-
-jmp _LIFELSE_0x7
-_LIFPOST_0x6:
-
 mov r10,  [true]
+mov [rbp-24], r10
+
+jmp _LWHILECMP_0x3
+_LWHILESTART_0x2:
+
+mov rbx, [true]
+mov rax, [rbp-24]
+cmp rax, rbx
+je _LCMPI_0x6
+xor rax, rax
+jmp _LCMPIPOST_0x7
+_LCMPI_0x6:
+mov rax, 255
+_LCMPIPOST_0x7:
+mov r10, rax
+
+xor rax, rax
+mov rbx, [rbp-8]
 mov rax, r10
+and al, bl
+mov r11, rax
 
+mov rbx, 1
+mov rax, r11
+cmp rax, rbx
+je _LCMPI_0x8
+xor rax, rax
+jmp _LCMPIPOST_0x9
+_LCMPI_0x8:
+mov rax, 255
+_LCMPIPOST_0x9:
+mov r12, rax
+mov rax, r12
+and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x8
+jne _LIFPOST_0xa
+
+
+mov r10,  [false]
+mov [rbp-24], r10
+
+jmp _LIFELSE_0xb
+_LIFPOST_0xa:
+
+_LIFELSE_0xb:
+
+_LWHILECMP_0x3:
 
 xor rax, rax
-mov r10,  STRING_CONSTANT_8
-push r10
+mov rbx, [rbp-8]
+mov rax, [rbp-24]
+and al, bl
+mov r10, rax
 
-pop  rdi
-mov rax, 0
-call _void_print_pchar.
-
-jmp _LIFELSE_0x9
-_LIFPOST_0x8:
-
+mov rbx, 1
+mov rax, r10
+cmp rax, rbx
+je _LCMPI_0x4
 xor rax, rax
-mov r10,  STRING_CONSTANT_9
-push r10
-
-pop  rdi
-mov rax, 0
-call _void_print_pchar.
-
-_LIFELSE_0x9:
-
-_LIFELSE_0x7:
+jmp _LCMPIPOST_0x5
+_LCMPI_0x4:
+mov rax, 255
+_LCMPIPOST_0x5:
+mov r11, rax
+mov rax, r11
+and al, 00000001b
+cmp al, 1
+je _LWHILESTART_0x2
 
 ___int_main_pintchar..__return:
 

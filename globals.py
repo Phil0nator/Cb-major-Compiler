@@ -106,8 +106,8 @@ sse_scratch_registers = [
 
 
 
-
-
+ensure_boolean = "and al, 00000001b\n"
+check_fortrue = f"{ensure_boolean}cmp al, 1\n"
 
 
 
@@ -485,7 +485,8 @@ def doOperation(a, b, o, d):
     instr = "\n"
 
     if(o in ["||","&&","^", "!"]):
-        instr += "xor rax, rax\nxor rbx,rbx\n"
+        #instr += "xor rax, rax\nxor rbx,rbx\n"
+        instr+="xor rax, rax\n"
 
     if(o == "!"):
         instr+="mov %s, %s\n"%(rax, valueOf(b))

@@ -90,3 +90,9 @@ class InvalidSignSpecifier(Error):
     def __init__(self, tok):
         self.tok=tok
         self.message = f"Invalid sign specifier ( only integral non-sse types may be specified as unsigned ): "
+
+
+class NonbooleanIf(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = f"Non-boolean value used to determine if statement: "
