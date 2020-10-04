@@ -1020,8 +1020,34 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `%i\n`, 0
-STRING_CONSTANT_1: db `%u\n`, 0
+    FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
+EPSILON: dq 0x1.ef2d0f6115f51p-107
+M_PI: dq 0x1.921fb54442d18p+1
+M_E: dq 0x1.5bf0a8b145769p+1
+M_LOG2E: dq 0x1.71547652b82fep+0
+M_LOG10E: dq 0x1.bcb7b1526e50ep-2
+M_LN2: dq 0x1.62e42fefa39efp-1
+M_PI_2: dq 0x1.921fb54442d18p+0
+M_PI_4: dq 0x1.921fb54442d18p-1
+M_1_PI: dq 0x1.45f306dc9c883p-2
+M_2_PI: dq 0x1.45f306dc9c883p-1
+M_2_SQRTPI: dq 0x1.20dd750429b6dp+0
+M_SQRT2: dq 0x1.6a09e667f3bcdp+0
+M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
 STRING_CONSTANT_3: db `True`, 0
 STRING_CONSTANT_4: db `False`, 0
@@ -1030,10 +1056,7 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-FLT_CONSTANT_0: dq 0x1.ca1c20624dd2fp+17
-FLT_CONSTANT_1: dq 0x1.7fa903126e979p+14
-FLT_CONSTANT_2: dq 0x1.7c10eb851eb85p+14
-FLT_CONSTANT_3: dq 0x1.252a48e8a71dep+11
+FLT_CONSTANT_13: dq 0x1.0000000000000p+1
 section .bss
     
 section .text
@@ -1086,6 +1109,16 @@ ALIGN_STACK
     call free
     UNALIGN_STACK
 ___void_free_pvoid.__return:
+leave
+ret
+_double_sqrt_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
+movsd [rbp-8], xmm0
+sqrtsd xmm0, xmm0
+___double_sqrt_pdouble__return:
 leave
 ret
 _void_printf_pchar.int:
@@ -1328,27 +1361,19 @@ sub rsp, 90
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[ id : FLT_CONSTANT_0 ][ + : + ][ id : FLT_CONSTANT_1 ][ / : / ][ id : FLT_CONSTANT_2 ][ - : - ][ id : FLT_CONSTANT_3 ][ - : - ][ int : 2 ]
-movsd xmm7, [FLT_CONSTANT_1]
-movsd xmm8, [FLT_CONSTANT_2]
-divsd xmm7, xmm8
-movsd xmm9, xmm7
-movsd xmm7, [FLT_CONSTANT_0]
-movsd xmm8, xmm9
-addsd xmm7, xmm8
-movsd xmm10, xmm7
-movsd xmm7, xmm10
-movsd xmm8, [FLT_CONSTANT_3]
-subsd xmm7, xmm8
-movsd xmm9, xmm7
-movsd xmm7, xmm9
-mov rax, 2
-cvtsi2sd xmm8, rax
-subsd xmm7, xmm8
-movsd xmm10, xmm7
-movsd [rbp-82], xmm10
+;[ id : sqrt ][ ) : ) ]
 xor rax, rax
-;[ id : bruhtest ][ ) : ) ]
+;[ id : FLT_CONSTANT_13 ][ ) : ) ]
+movsd xmm9, [FLT_CONSTANT_13]
+movq rax, xmm9
+push rax
+pop r15
+movq xmm0, r15
+mov rax, 1
+call _double_sqrt_pdouble
+movsd [rbp-82], xmm0
+xor rax, rax
+;[ id : test ][ ) : ) ]
 movsd xmm9, [rbp-82]
 movq rax, xmm9
 push rax

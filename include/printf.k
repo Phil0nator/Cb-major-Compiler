@@ -108,13 +108,13 @@ UNALIGN_STACK
 
 function void print(int a){
 
-    printf("%i\n", a);
+    printf("%li\n", a);
 
 }
 
 function void print(unsigned int a){
 
-    printf("%u\n", a);
+    printf("%lu\n", a);
 
 }
 

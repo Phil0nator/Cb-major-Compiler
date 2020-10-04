@@ -42,12 +42,12 @@ class Lexer:
         begin = self.loc.copy()
         self.advance()
 
-        while self.ch in T_DIGITS+T_DOT:
+        while self.ch in T_DIGITS+T_DOT+"e"+"-":
             num+=self.ch
             self.advance()
 
         t = T_INT
-        if(T_DOT in num):
+        if(T_DOT in num or "e" in num):
             val = float(num)
             t=T_DOUBLE
         else:
