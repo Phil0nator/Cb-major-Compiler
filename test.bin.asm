@@ -1316,6 +1316,20 @@ jmp ___void_print_pbool__return
 ___void_print_pbool__return:
 leave
 ret
+_int_test_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+mov [rbp-8], rdi
+mov rbx, 1
+mov rax, [rbp-8]
+add rax, rbx
+mov r10, rax
+mov rax, r10
+jmp ___int_test_pint__return
+___int_test_pint__return:
+leave
+ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
@@ -1323,20 +1337,14 @@ sub rsp, 24
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 xor rax, rax
-xor rax, rax
-movsd xmm9, [val]
-movq rax, xmm9
-push rax
-pop r15
-movq xmm0, r15
+mov rbx, 1
 mov rax, 1
-call _double_sqrt_pdouble
-movq rax, xmm0
-push rax
-pop r15
-movq xmm0, r15
-mov rax, 1
-call _void_print_pdouble
+add rax, rbx
+mov r10, rax
+push r10
+pop  rdi
+mov rax, 0
+call _void_print_pint
 mov rax, 0
 mov rax, rax
 jmp ___int_main_pintchar..__return

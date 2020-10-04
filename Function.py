@@ -5,7 +5,7 @@ from Token import *
 from Error import *
 from Postfixer import *
 import config
-
+import time
 
 def product(arr):
     total = arr[0]
@@ -73,6 +73,11 @@ class Function:
     def addcomment(self, c):
         self.asm+=";"+c+"\n"
 
+    def isbeforeTracker(self, value):
+        for t in self.tokens[self.ctidx:]:
+            if t.tracker == value:
+                return True
+        return False
 
     def getFunction(self, fn, types):
         for f in self.compiler.functions:
@@ -287,9 +292,11 @@ class Function:
             self.advance()
             if(self.current_token.tok == T_OPENP): opens+=1
             elif(self.current_token.tok == T_CLSP): opens-=1
+        self.ctidx-=2
+        self.advance()
         endrec = self.ctidx
         lastone = self.current_token
-        lastone.tracker = endrec
+        lastone.tracker = time.time()
         
         self.ctidx =startrec - 1
         self.advance()
@@ -312,7 +319,7 @@ class Function:
         types = []
         ot = DType("",0)
 
-        while self.ctidx < lastone.tracker:
+        while self.isbeforeTracker(lastone.tracker):
             instructions += self.evaluateRightsideExpression("STACK", ot)+"\n"
             types.append(ot)
             ot = VOID.copy()
@@ -584,8 +591,12 @@ class Function:
                         self.tokens.insert(self.ctidx, fntoken)
                         
                         fntoken.thint = fn.returntype.copy()
-                        self.advance()
-                    
+
+                        if(self.current_token.tok != T_ENDL): 
+
+                            self.advance()
+
+                        
 
 
                     else:
@@ -603,12 +614,11 @@ class Function:
 
         
         exprtokens = self.tokens[start:self.ctidx]
+
         if(self.current_token.tok == T_CLSP):
             self.advance()
 
-        if(len(exprtokens)<=0):
-            self.advance()
-            return ""
+       
 
 
         pf = Postfixer(exprtokens)

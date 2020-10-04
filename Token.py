@@ -96,10 +96,11 @@ class Token:
         self.end = end
         self.value = value
         self.fn = None
-        self.thint = 0 # type hint
+        self.thint = None # type hint
+        self.tracker = 0 # usage hint
 
     def __repr__(self):
         if(self.tok != T_FUNCTIONCALL):
-            return f"[ {self.tok} : {self.value} ]" 
+            return f"[ {self.tok} : {self.value}, {self.tracker} ]" 
         else:
             return f"[ {T_FUNCTIONCALL} : {self.fn} ]"
