@@ -5,6 +5,22 @@ from Token import *
 from Error import *
 from Postfixer import *
 import config
+
+
+def product(arr):
+    total = arr[0]
+    for i in arr[1:]:
+        total*=i
+    return total
+
+
+
+
+
+
+
+
+
 class Function:
     def __init__(self, name, parameters, returntype, compiler, tokens):
         self.name = name
@@ -606,7 +622,32 @@ class Function:
         name = self.checkForId()
         self.addVariable(Variable(t,name))
         var = self.variables[len(self.variables)-1]
+        sizes = []
+        isarr = False
+
+
+        while self.current_token.tok == "[":
+            isarr=True
+            self.advance()
+            if self.current_token.tok != T_INT: throw(ExpectedToken(self.current_token, "constexpr"))
+            size = self.current_token.value
+            sizes.append(size)
+            self.advance()
+            if(self.current_token.tok != T_CLSIDX): throw(ExpectedToken(self.current_token, "]"))
+            self.advance()
+
+        if(isarr):
+            totalsize = product(sizes)
+            
+            var.stackarrsize = totalsize
+            var.isStackarr = True
+            self.stackCounter+=totalsize
+            if(self.current_token.tok != T_ENDL): throw(ExpectedToken(self.current_token, ";"))
+
+
+
         
+
         if(self.current_token.tok == T_ENDL): return
 
         if(self.current_token.tok != T_EQUALS): throw(ExpectedToken(self.current_token, " = or ; "))

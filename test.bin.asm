@@ -1030,6 +1030,7 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
+FLT_CONSTANT_0: dq __float32__(4.5)
 section .bss
     
 section .text
@@ -1321,11 +1322,24 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 82
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+xor rax, rax
+;[ id : FLT_CONSTANT_0 ][ + : + ][ int : 5 ][ ) : ) ]
+movsd xmm7, [FLT_CONSTANT_0]
+mov rax, 5
+cvtsi2sd xmm8, rax
+addsd xmm7, xmm8
+movsd xmm9, xmm7
+movq rax, xmm9
+push rax
+pop r15
+movq xmm0, r15
+mov rax, 1
+call _void_print_pdouble
 ;[ int : 0 ]
 mov rax, 0
 mov rax, rax

@@ -9,11 +9,16 @@ class Variable:
         self.mutable = mutable
         self.signed = signed
         self.isStackarr = isStackarr
+        self.stackarrsize = t.size(0)
+        self.stackdims = isStackarr
 
     def isflt(self):
         return (self.t.name == "float" or self.t.name == "double") and self.isptr == False
 
     def __repr__(self):
-        return f"[ Variable: {self.t} {self.name} @ {(self.offset)}]"
+        if(self.isStackarr):
+            return f"[Variable: {self.t} {self.name}[{self.stackarrsize}] @ {self.offset} -> {self.offset+self.stackarrsize}]]"
+        else:
+            return f"[ Variable: {self.t} {self.name} @ {(self.offset)}]"
 
     
