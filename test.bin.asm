@@ -1056,7 +1056,6 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-FLT_CONSTANT_13: dq 0x1.0000000000000p+1
 section .bss
     
 section .text
@@ -1065,7 +1064,6 @@ _void._malloc_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: int size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call malloc
@@ -1077,7 +1075,6 @@ _void._calloc_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: int size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call calloc
@@ -1089,9 +1086,7 @@ _void._realloc_pvoid.int:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: void. og @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: int newsize @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
     call realloc
@@ -1103,7 +1098,6 @@ _void_free_pvoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: void. ptr @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call free
@@ -1115,7 +1109,6 @@ _double_sqrt_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
 sqrtsd xmm0, xmm0
 ___double_sqrt_pdouble__return:
@@ -1125,9 +1118,7 @@ _void_printf_pchar.int:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: int format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1140,7 +1131,6 @@ _void_printf_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
 call printf
@@ -1153,9 +1143,7 @@ _void_printf_pchar.uint:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: uint format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1168,9 +1156,7 @@ _void_printf_pchar.double:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: double f @ 16]
 movsd [rbp-16], xmm0
 ALIGN_STACK
 mov rax, 1
@@ -1184,9 +1170,7 @@ _void_printf_pchar.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: char. other @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1199,11 +1183,8 @@ _void_printf_pchar.intint:
 push rbp
 mov rbp, rsp
 sub rsp, 32
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: int a @ 16]
 mov [rbp-16], rsi
-;Load Parameter: [ Variable: int b @ 24]
 mov [rbp-24], rdx
 ALIGN_STACK
 call printf
@@ -1216,11 +1197,8 @@ _void_printf_pchar.doubledouble:
 push rbp
 mov rbp, rsp
 sub rsp, 32
-;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: double a @ 16]
 movsd [rbp-16], xmm0
-;Load Parameter: [ Variable: double b @ 24]
 movsd [rbp-24], xmm1
 ALIGN_STACK
 call printf
@@ -1233,13 +1211,10 @@ _void_print_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
 xor rax, rax
-;[ id : STRING_CONSTANT_0 ]
 mov r10,  STRING_CONSTANT_0
 push r10
-;[ id : a ][ ) : ) ]
 mov r10,  [rbp-8]
 push r10
 pop  rsi
@@ -1253,13 +1228,10 @@ _void_print_puint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
 xor rax, rax
-;[ id : STRING_CONSTANT_1 ]
 mov r10,  STRING_CONSTANT_1
 push r10
-;[ id : a ][ ) : ) ]
 mov r10,  [rbp-8]
 push r10
 pop  rsi
@@ -1273,13 +1245,10 @@ _void_print_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
 xor rax, rax
-;[ id : STRING_CONSTANT_2 ]
 mov r10,  STRING_CONSTANT_2
 push r10
-;[ id : a ][ ) : ) ]
 movsd xmm9, [rbp-8]
 movq rax, xmm9
 push rax
@@ -1295,7 +1264,6 @@ _void_print_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: char. a @ 8]
 mov [rbp-8], rdi
 PRINT_STRING [rdi]
 NEWLINE
@@ -1306,7 +1274,6 @@ _void_print_pchar:
 push rbp
 mov rbp, rsp
 sub rsp, 9
-;Load Parameter: [ Variable: char a @ 8]
 mov [rbp-8], rdi
 PRINT_CHAR rdi
 NEWLINE
@@ -1317,22 +1284,18 @@ _void_print_pbool:
 push rbp
 mov rbp, rsp
 sub rsp, 9
-;Load Parameter: [ Variable: bool a @ 8]
 mov [rbp-8], rdi
-;[ id : a ][ ) : ) ]
 mov r10,  [rbp-8]
 mov rax, r10
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
 xor rax, rax
-;[ id : STRING_CONSTANT_3 ][ ) : ) ]
 mov r10,  STRING_CONSTANT_3
 push r10
 pop  rdi
 mov rax, 0
 call _void_print_pchar.
-;[ int : 0 ]
 mov rax, 0
 mov rax, rax
 jmp ___void_print_pbool__return
@@ -1340,13 +1303,11 @@ jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
 xor rax, rax
-;[ id : STRING_CONSTANT_4 ][ ) : ) ]
 mov r10,  STRING_CONSTANT_4
 push r10
 pop  rdi
 mov rax, 0
 call _void_print_pchar.
-;[ int : 0 ]
 mov rax, 0
 mov rax, rax
 jmp ___void_print_pbool__return
@@ -1356,32 +1317,9 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 90
-;Load Parameter: [ Variable: int argc @ 8]
+sub rsp, 82
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[ id : sqrt ][ ) : ) ]
-xor rax, rax
-;[ id : FLT_CONSTANT_13 ][ ) : ) ]
-movsd xmm9, [FLT_CONSTANT_13]
-movq rax, xmm9
-push rax
-pop r15
-movq xmm0, r15
-mov rax, 1
-call _double_sqrt_pdouble
-movsd [rbp-82], xmm0
-xor rax, rax
-;[ id : test ][ ) : ) ]
-movsd xmm9, [rbp-82]
-movq rax, xmm9
-push rax
-pop r15
-movq xmm0, r15
-mov rax, 1
-call _void_print_pdouble
-;[ int : 0 ]
 mov rax, 0
 mov rax, rax
 jmp ___int_main_pintchar..__return
