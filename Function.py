@@ -227,6 +227,7 @@ class Function:
             if(self.current_token.tok != T_STRING): throw(ExpectedToken(self.current_token, "Assembly String"))
 
             content = self.current_token.value
+            content = content.replace("\t", "").strip()
 
             self.addline(content)
 

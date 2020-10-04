@@ -53,7 +53,11 @@ def main():
     asm = asm.replace("%%ENTRY%%", c.entry)
     
 
-    #asm = asm.replace("\n\n","\n").replace("\n\n","\n").replace("\t","")
+
+
+    asm = asm.replace("\n\n","\n").replace("\n\n","\n")
+    
+    
     
     print("+-+-+ FINAL +-+-+")
     
@@ -66,6 +70,7 @@ def main():
 
     if(not config.__tonasm__):
         os.remove(config.__fileoutput__+".asm")
+    
 
     print("Compiled and Linked symbols in %s ms"%(time.time()-beginTime))
     if(config.__autorun__):
