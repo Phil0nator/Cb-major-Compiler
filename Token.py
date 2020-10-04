@@ -90,12 +90,16 @@ T_REGISTER = "reg"
 
 
 class Token:
-    # used for T_FUNCTIONCALL only
     def __init__(self, tok, value, start, end):
         self.tok = tok
         self.start = start
         self.end = end
         self.value = value
+        self.fn = None
+        self.thint = 0 # type hint
 
     def __repr__(self):
-        return f"[ {self.tok} : {self.value} ]"
+        if(self.tok != T_FUNCTIONCALL):
+            return f"[ {self.tok} : {self.value} ]" 
+        else:
+            return f"[ {T_FUNCTIONCALL} : {self.fn} ]"

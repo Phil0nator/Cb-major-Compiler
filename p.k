@@ -1,13 +1,13 @@
 #include "include/std.k"
 
+const double val = 2.5;
+
+
 
 function int main(int argc, char** argv){
 
-    int a[50];
 
-    int tester = 56;
-    bool broken = false||true;
-    print(tester);
+    print( sqrt(val));
    
 
     return 0;

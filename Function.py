@@ -361,14 +361,11 @@ class Function:
 
         instr = ""
         stack = []
-
         sses = 0
         norms= 0
         o = DType("int", 8)
-
         for t in pfix:
             if(t.tok in OPERATORS):
-
                 if(t.tok == T_NOT):
                     b = stack.pop()
                     a = Token(T_REGISTER, "", None, None)
@@ -437,9 +434,6 @@ class Function:
 
             else:
                 stack.append(t)
-        
-        
-        
         final = stack.pop()
         if(final.tok == T_ID):
             finalq = self.getVariable(final.value)
@@ -456,6 +450,16 @@ class Function:
                 final = Token(T_REGISTER, sse_return_register,None,None)
             else:
                 final = Token(T_REGISTER, norm_return_register,None,None)
+            o = f.returntype.copy()
+        
+        elif(final.tok == T_REGISTER):
+            if( isfloat(final.value) ):
+                o = DOUBLE.copy()
+            else:
+                if(final.thint != None):
+                    o = final.thint.copy()
+                else:
+                    o = INT.copy()
 
         if(isinstance(final, Variable)):
 
@@ -544,6 +548,7 @@ class Function:
         start = self.ctidx
         opens = 1
         comment = ""
+        fillbacks = []
         while self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok != T_EQUALS and self.current_token.tok != T_CLSIDX and opens > 0:
             comment+= self.current_token.__repr__()
             if( self.current_token.tok == T_ID):
@@ -572,13 +577,14 @@ class Function:
 
                         for t in self.tokens[fnstart:fnend]:
                             self.ctidx-=1
+                            #self.tokens.insert(0, Token(T_AMBIGUOUS,"",None, None))
                             self.tokens.remove(t)
-                        
                         fntoken = Token(T_FUNCTIONCALL, fnisntr, fnstartloc, fnstartloc1)
                         fntoken.fn = fn
                         self.tokens.insert(self.ctidx, fntoken)
-
-
+                        
+                        fntoken.thint = fn.returntype.copy()
+                        self.advance()
                     
 
 
@@ -586,7 +592,10 @@ class Function:
                         self.ctidx-=2
                         self.advance()                        
 
-            elif (self.current_token.tok == T_OPENP): opens+=1
+
+
+            elif (self.current_token.tok == T_OPENP): opens+=1                        
+
             elif (self.current_token.tok == T_CLSP) : opens-=1
 
             if(opens>0):
@@ -597,9 +606,9 @@ class Function:
         if(self.current_token.tok == T_CLSP):
             self.advance()
 
-                    
-
-
+        if(len(exprtokens)<=0):
+            self.advance()
+            return ""
 
 
         pf = Postfixer(exprtokens)
@@ -610,10 +619,8 @@ class Function:
         instructions += self.evaluatePostfix(destination, pf.createPostfix(), otype)
 
 
-
         self.advance()
         
-
         return instructions
 
 

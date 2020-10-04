@@ -1056,6 +1056,8 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
+FLT_CONSTANT_13: dq 0x1.4000000000000p+1
+val: dq 0x1.4000000000000p+1
 section .bss
     
 section .text
@@ -1317,23 +1319,24 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 98
+sub rsp, 24
 mov [rbp-8], rdi
 mov [rbp-16], rsi
-mov rax, 56
-mov [rbp-82], rax
 xor rax, rax
-mov rbx, [true]
-mov rax, [false]
-or al, bl
-mov r10, rax
-mov [rbp-90], r10
 xor rax, rax
-mov r10,  [rbp-82]
-push r10
-pop  rdi
-mov rax, 0
-call _void_print_pint
+movsd xmm9, [val]
+movq rax, xmm9
+push rax
+pop r15
+movq xmm0, r15
+mov rax, 1
+call _double_sqrt_pdouble
+movq rax, xmm0
+push rax
+pop r15
+movq xmm0, r15
+mov rax, 1
+call _void_print_pdouble
 mov rax, 0
 mov rax, rax
 jmp ___int_main_pintchar..__return
