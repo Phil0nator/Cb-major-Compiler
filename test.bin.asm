@@ -1059,8 +1059,6 @@ nullterm: DB 0
 true: DB 1
 false: DB 0
 FLT_CONSTANT_14: dq 0x1.4000000000000p+1
-STRING_CONSTANT_5: db `this is a test of the type casting`, 0
-FLT_CONSTANT_15: dq 0x1.6666666666666p+2
 val: dq 0x1.4000000000000p+1
 section .bss
     
@@ -1496,57 +1494,37 @@ call _void_print_pint
 ___void_print_pvoid__return:
 leave
 ret
+_void_exit_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int code @ 8]
+mov [rbp-8], rdi
+mov rax, 60
+    syscall
+___void_exit_pint__return:
+leave
+ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 48
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[ id : STRING_CONSTANT_5]
-mov r10,  STRING_CONSTANT_5
+;[ $ : char.][ @ : @][ id : argv]
+mov rax, [rbp-16]
+mov rax, [rax]
+mov r10, rax
 mov [rbp-24], r10
 xor rax, rax
-;[ id : test][ ) : )]
+;[ id : a1][ ) : )]
 mov r10,  [rbp-24]
 push r10
 pop  rdi
 mov rax, 0
 call _void_print_pchar.
-xor rax, rax
-;[ $ : char][ @ : @][ id : test][ ) : )]
-mov rax, [rbp-24]
-mov rax, [rax]
-mov r10, rax
-push r10
-pop  rdi
-mov rax, 0
-call _void_print_pchar
-;[ id : FLT_CONSTANT_15]
-movsd xmm9, [FLT_CONSTANT_15]
-movsd [rbp-32], xmm9
-xor rax, rax
-;[ $ : int][ id : b][ ) : )]
-movsd xmm9, [rbp-32]
-cvttsd2si rax, xmm9
-push rax
-pop  rdi
-mov rax, 0
-call _void_print_pint
-;[ int : 5]
-mov rax, 5
-mov [rbp-40], rax
-xor rax, rax
-;[ $ : double][ id : five][ ) : )]
-mov r10,  [rbp-40]
-cvtsi2sd xmm7, r10
-movq rax, xmm7
-push rax
-pop r15
-movq xmm0, r15
-mov rax, 1
-call _void_print_pdouble
 ;[ int : 0]
 mov rax, 0
 mov rax, rax

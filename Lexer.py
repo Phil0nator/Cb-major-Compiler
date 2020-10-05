@@ -108,6 +108,11 @@ class Lexer:
                 self.advance()
                 t = self.buildAmbiguous()
                 t.tok = T_TYPECAST
+
+                while self.ch == "*":
+                    self.advance()
+                    t.value+="."
+
                 tokens.append(t)
 
 

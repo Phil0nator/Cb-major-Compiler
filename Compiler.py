@@ -70,9 +70,16 @@ class Compiler:
             throw(UnexepectedEOFError(self.current_token))
 
     def getType(self, q):
+        pd = 0
+        if "." in q:
+            pd = q.count(".")
+            q = q.replace(".","")
+        
         for t in self.types:
             if t.name == q:
-                return t.copy()
+                out = t.copy()
+                out.ptrdepth = pd
+                return out
         return None
 
     def checkType(self):

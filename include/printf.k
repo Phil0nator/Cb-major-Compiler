@@ -156,3 +156,4 @@ function void print(void a){
     int ptr = a;
     print(ptr);
 }
+

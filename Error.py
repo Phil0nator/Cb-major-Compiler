@@ -101,4 +101,4 @@ class NonbooleanIf(Error):
 class TypeMismatch(Error):
     def __init__(self,tok, a, b):
         self.tok=tok
-        self.message = f"Invalid implicit typecast from {a} to {b} :"
+        self.message = f"Invalid implicit typecast from {b} to {a} :"

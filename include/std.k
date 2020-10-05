@@ -7,3 +7,13 @@
 
 #include "include/memory.k"
 
+function void exit(int code){
+
+    __asm{"
+    
+    mov rax, 60
+    syscall
+    
+    "}
+
+}

@@ -455,7 +455,6 @@ class Function:
             else:
                 stack.append(t)
         
-        print(stack)
         fcast = None
         if(len(stack)>1):
             while len(stack)>1:
@@ -463,7 +462,6 @@ class Function:
             fcast = t
             o = t.copy()
         final = stack.pop()
-
 
         if(final.tok == T_ID):
             finalq = self.getVariable(final.value)
@@ -492,8 +490,11 @@ class Function:
                     o = INT.copy()
 
         if(isinstance(final, Variable)):
+            if(fcast == None):
+                o = final.t.copy()
+            else:
+                o = fcast.copy()
 
-            o = final.t.copy()
             if(final.isflt()):
                 instr += movVarToReg("xmm9", final)
                 final = Token(T_REGISTER, "xmm9", None, None)
@@ -557,6 +558,13 @@ class Function:
             return instr
         
         if(isinstance(dest, Variable)):
+            if(fcast != None and otype!=None):
+                otype.name = fcast.name
+                otype.ptrdepth = fcast.ptrdepth
+                otype.signed = fcast.signed
+                otype.s = fcast.s
+            if(fcast != None): o = fcast.copy()
+
             if(not typematch(dest.t,o)):
                 throw(TypeMismatch(self.current_token,dest.t, o))
 
@@ -578,13 +586,9 @@ class Function:
 
 
 
-        if(fcast != None):
-            otype.name = fcast.name
-            otype.ptrdepth = fcast.ptrdepth
-            otype.signed = o.signed
-            otype.s = o.s
         
-        if(otype!=None):
+        
+        if(otype!=None and fcast == None):
             if(o.name == "AMB"):
                 otype.name = "norm"
             else:

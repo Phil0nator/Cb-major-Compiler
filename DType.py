@@ -33,8 +33,10 @@ class DType:
 
 
 def typematch(a, b):
+    if(a.ptrdepth != b.ptrdepth): return False
+    if(a.name == "void" or b.name == "void"): return True
     if(a.isflt() and b.isflt()): return True
-    if(not a.isflt() and not b.isflt() and a.size(0) == b.size(0)): return True
+    if(not a.isflt() and not b.isflt() and a.size(0) >= b.size(0)): return True
     if(a.isflt() and not b.isflt()): return True
-    if(a.name == "void"): return True
+
     return False
