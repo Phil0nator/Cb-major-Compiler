@@ -101,6 +101,6 @@ class Token:
 
     def __repr__(self):
         if(self.tok != T_FUNCTIONCALL):
-            return f"[ {self.tok} : {self.value}, {self.tracker} ]" 
+            return f"[ {self.tok} : {self.value}]" 
         else:
             return f"[ {T_FUNCTIONCALL} : {self.fn} ]"

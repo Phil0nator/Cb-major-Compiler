@@ -1033,6 +1033,7 @@ FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
 FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
 FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
 FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_13: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1046,6 +1047,7 @@ M_2_PI: dq 0x1.45f306dc9c883p-1
 M_2_SQRTPI: dq 0x1.20dd750429b6dp+0
 M_SQRT2: dq 0x1.6a09e667f3bcdp+0
 M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
+M_MINZERO: dq -0x0.0p+0
 STRING_CONSTANT_0: db `%li\n`, 0
 STRING_CONSTANT_1: db `%lu\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
@@ -1056,7 +1058,8 @@ null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-FLT_CONSTANT_13: dq 0x1.4000000000000p+1
+FLT_CONSTANT_14: dq 0x1.4000000000000p+1
+FLT_CONSTANT_15: dq -0x1.beb3333333333p+7
 val: dq 0x1.4000000000000p+1
 section .bss
     
@@ -1066,6 +1069,7 @@ _void._malloc_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: int size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call malloc
@@ -1077,6 +1081,7 @@ _void._calloc_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: int size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call calloc
@@ -1088,7 +1093,9 @@ _void._realloc_pvoid.int:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: void. og @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int newsize @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
     call realloc
@@ -1100,6 +1107,7 @@ _void_free_pvoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: void. ptr @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call free
@@ -1111,16 +1119,138 @@ _double_sqrt_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
 sqrtsd xmm0, xmm0
 ___double_sqrt_pdouble__return:
+leave
+ret
+_double_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+    sqrtsd xmm0, xmm0
+___double_sqrt_pint__return:
+leave
+ret
+_int_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+  sqrtsd xmm0, xmm0
+  cvttsd2si rax, xmm0
+___int_sqrt_pint__return:
+leave
+ret
+_int_pow_pintint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rsi
+mov rax, rdi
+  dec rsi
+  _int_pow_pintint_flp:
+  mul rdi
+  dec rsi
+  jnz _int_pow_pintint_flp
+___int_pow_pintint__return:
+leave
+ret
+_double_pow_pintint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rsi
+xor rax, rax
+;[ id : base]
+mov r10,  [rbp-8]
+push r10
+;[ id : exp][ ) : )]
+mov r10,  [rbp-16]
+push r10
+pop  rsi
+pop  rdi
+mov rax, 0
+call _int_pow_pintint
+cvtsi2sd xmm0, rax
+___double_pow_pintint__return:
+leave
+ret
+_int_round_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvtsd2si rax, xmm0
+___int_round_pdouble__return:
+leave
+ret
+_int_ceil_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+  inc rax
+___int_ceil_pdouble__return:
+leave
+ret
+_int_floor_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+___int_floor_pdouble__return:
+leave
+ret
+_int_abs_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int x @ 8]
+mov [rbp-8], rdi
+mov rax, rdi
+  sar rdi, 63
+  xor rax, rdi
+  sub rax, rdi
+___int_abs_pint__return:
+leave
+ret
+_double_abs_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+movsd xmm1, xmm0
+  xorpd xmm1, [M_MINZERO]
+  andpd xmm0, xmm1
+___double_abs_pdouble__return:
 leave
 ret
 _void_printf_pchar.int:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1133,6 +1263,7 @@ _void_printf_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
 call printf
@@ -1145,7 +1276,9 @@ _void_printf_pchar.uint:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: uint format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1158,7 +1291,9 @@ _void_printf_pchar.double:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double f @ 16]
 movsd [rbp-16], xmm0
 ALIGN_STACK
 mov rax, 1
@@ -1172,7 +1307,9 @@ _void_printf_pchar.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. other @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1185,8 +1322,11 @@ _void_printf_pchar.intint:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int a @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: int b @ 24]
 mov [rbp-24], rdx
 ALIGN_STACK
 call printf
@@ -1199,8 +1339,11 @@ _void_printf_pchar.doubledouble:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double a @ 16]
 movsd [rbp-16], xmm0
+;Load Parameter: [ Variable: double b @ 24]
 movsd [rbp-24], xmm1
 ALIGN_STACK
 call printf
@@ -1213,10 +1356,13 @@ _void_print_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
 xor rax, rax
+;[ id : STRING_CONSTANT_0]
 mov r10,  STRING_CONSTANT_0
 push r10
+;[ id : a][ ) : )]
 mov r10,  [rbp-8]
 push r10
 pop  rsi
@@ -1230,10 +1376,13 @@ _void_print_puint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
 xor rax, rax
+;[ id : STRING_CONSTANT_1]
 mov r10,  STRING_CONSTANT_1
 push r10
+;[ id : a][ ) : )]
 mov r10,  [rbp-8]
 push r10
 pop  rsi
@@ -1247,10 +1396,13 @@ _void_print_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
 xor rax, rax
+;[ id : STRING_CONSTANT_2]
 mov r10,  STRING_CONSTANT_2
 push r10
+;[ id : a][ ) : )]
 movsd xmm9, [rbp-8]
 movq rax, xmm9
 push rax
@@ -1266,6 +1418,7 @@ _void_print_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. a @ 8]
 mov [rbp-8], rdi
 PRINT_STRING [rdi]
 NEWLINE
@@ -1276,6 +1429,7 @@ _void_print_pchar:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char a @ 8]
 mov [rbp-8], rdi
 PRINT_CHAR rdi
 NEWLINE
@@ -1286,18 +1440,22 @@ _void_print_pbool:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: bool a @ 8]
 mov [rbp-8], rdi
+;[ id : a][ ) : )]
 mov r10,  [rbp-8]
 mov rax, r10
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
 xor rax, rax
+;[ id : STRING_CONSTANT_3][ ) : )]
 mov r10,  STRING_CONSTANT_3
 push r10
 pop  rdi
 mov rax, 0
 call _void_print_pchar.
+;[ int : 0]
 mov rax, 0
 mov rax, rax
 jmp ___void_print_pbool__return
@@ -1305,46 +1463,45 @@ jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
 xor rax, rax
+;[ id : STRING_CONSTANT_4][ ) : )]
 mov r10,  STRING_CONSTANT_4
 push r10
 pop  rdi
 mov rax, 0
 call _void_print_pchar.
+;[ int : 0]
 mov rax, 0
 mov rax, rax
 jmp ___void_print_pbool__return
 ___void_print_pbool__return:
 leave
 ret
-_int_test_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rbx, 1
-mov rax, [rbp-8]
-add rax, rbx
-mov r10, rax
-mov rax, r10
-jmp ___int_test_pint__return
-___int_test_pint__return:
-leave
-ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
 xor rax, rax
-mov rbx, 1
+;[ id : abs][ ) : )]
+xor rax, rax
+;[ id : FLT_CONSTANT_15][ ) : )]
+movsd xmm9, [FLT_CONSTANT_15]
+movq rax, xmm9
+push rax
+pop r15
+movq xmm0, r15
 mov rax, 1
-add rax, rbx
-mov r10, rax
-push r10
-pop  rdi
-mov rax, 0
-call _void_print_pint
+call _double_abs_pdouble
+movq rax, xmm0
+push rax
+pop r15
+movq xmm0, r15
+mov rax, 1
+call _void_print_pdouble
+;[ int : 0]
 mov rax, 0
 mov rax, rax
 jmp ___int_main_pintchar..__return
