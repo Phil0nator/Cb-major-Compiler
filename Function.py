@@ -4,6 +4,7 @@ from DType import *
 from Token import *
 from Error import *
 from Postfixer import *
+import Optimizer
 import config
 import time
 
@@ -820,6 +821,9 @@ class Function:
         self.asm = self.asm.replace("/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
         self.createClosing()
 
+        
+        optimizer = Optimizer.Optimizer(self.asm)
+        optimizer.optimize(config.__oplevel__)
 
     def __repr__(self):
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"

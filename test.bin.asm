@@ -1020,20 +1020,32 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
+    FLT_CONSTANT_0: dq 0x1.4000000000000p+1
+val: dq 0x1.4000000000000p+1
+nullptr: DQ 0
+null: DQ 0
+nullterm: DB 0
+true: DB 1
+false: DB 0
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
+FLT_CONSTANT_1: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_2: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_3: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_4: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_5: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_6: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_8: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_10: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_11: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_13: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_14: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1048,169 +1060,83 @@ M_2_SQRTPI: dq 0x1.20dd750429b6dp+0
 M_SQRT2: dq 0x1.6a09e667f3bcdp+0
 M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
 M_MINZERO: dq -0x0.0p+0
-STRING_CONSTANT_0: db `%li\n`, 0
-STRING_CONSTANT_1: db `%lu\n`, 0
-STRING_CONSTANT_2: db `%lf\n`, 0
-STRING_CONSTANT_3: db `True`, 0
-STRING_CONSTANT_4: db `False`, 0
-nullptr: DQ 0
-null: DQ 0
-nullterm: DB 0
-true: DB 1
-false: DB 0
-FLT_CONSTANT_14: dq 0x1.4000000000000p+1
-val: dq 0x1.4000000000000p+1
 section .bss
     
 section .text
 global CMAIN
 
-;[ function double sqrt( [[ Variable: double a @ 8]] ) ]
-_double_sqrt_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: double a @ 8]
-movsd [rbp-8], xmm0
-sqrtsd xmm0, xmm0
-___double_sqrt_pdouble__return:
-leave
-ret
-
-;[ function double sqrt( [[ Variable: int a @ 8]] ) ]
-_double_sqrt_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: int a @ 8]
-mov [rbp-8], rdi
-cvtsi2sd xmm0, rdi
-    sqrtsd xmm0, xmm0
-___double_sqrt_pint__return:
-leave
-ret
-
-;[ function int sqrt( [[ Variable: int a @ 8]] ) ]
-_int_sqrt_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: int a @ 8]
-mov [rbp-8], rdi
-cvtsi2sd xmm0, rdi
-  sqrtsd xmm0, xmm0
-  cvttsd2si rax, xmm0
-___int_sqrt_pint__return:
-leave
-ret
-
-;[ function int pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
-_int_pow_pintint:
+;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
+_int_main_pintchar..:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: int base @ 8]
+;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: int exp @ 16]
+;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-mov rax, rdi
-  dec rsi
-  _int_pow_pintint_flp:
-  mul rdi
-  dec rsi
-  jnz _int_pow_pintint_flp
-___int_pow_pintint__return:
-leave
-ret
-
-;[ function double pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
-_double_pow_pintint:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-;Load Parameter: [ Variable: int base @ 8]
-mov [rbp-8], rdi
-;Load Parameter: [ Variable: int exp @ 16]
-mov [rbp-16], rsi
-xor rax, rax
-;[ id : base]
-mov r10,  [rbp-8]
-push r10
-;[ id : exp][ ) : )]
-mov r10,  [rbp-16]
-push r10
-pop  rsi
-pop  rdi
+;[ int : 0]
 mov rax, 0
-call _int_pow_pintint
-cvtsi2sd xmm0, rax
-___double_pow_pintint__return:
+mov rax, rax
+jmp ___int_main_pintchar..__return
+___int_main_pintchar..__return:
 leave
 ret
 
-;[ function int round( [[ Variable: double x @ 8]] ) ]
-_int_round_pdouble:
+;[ function void. malloc( [[ Variable: size_t size @ 8]] ) ]
+_void._malloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: double x @ 8]
-movsd [rbp-8], xmm0
-cvtsd2si rax, xmm0
-___int_round_pdouble__return:
-leave
-ret
-
-;[ function int ceil( [[ Variable: double x @ 8]] ) ]
-_int_ceil_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: double x @ 8]
-movsd [rbp-8], xmm0
-cvttsd2si rax, xmm0
-  inc rax
-___int_ceil_pdouble__return:
-leave
-ret
-
-;[ function int floor( [[ Variable: double x @ 8]] ) ]
-_int_floor_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: double x @ 8]
-movsd [rbp-8], xmm0
-cvttsd2si rax, xmm0
-___int_floor_pdouble__return:
-leave
-ret
-
-;[ function int abs( [[ Variable: int x @ 8]] ) ]
-_int_abs_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: int x @ 8]
+;Load Parameter: [ Variable: size_t size @ 8]
 mov [rbp-8], rdi
-mov rax, rdi
-  sar rdi, 63
-  xor rax, rdi
-  sub rax, rdi
-___int_abs_pint__return:
+ALIGN_STACK
+    call malloc
+    UNALIGN_STACK
+___void._malloc_psize_t__return:
 leave
 ret
 
-;[ function double abs( [[ Variable: double x @ 8]] ) ]
-_double_abs_pdouble:
+;[ function void. calloc( [[ Variable: size_t size @ 8]] ) ]
+_void._calloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: double x @ 8]
-movsd [rbp-8], xmm0
-movsd xmm1, xmm0
-  xorpd xmm1, [M_MINZERO]
-  andpd xmm0, xmm1
-___double_abs_pdouble__return:
+;Load Parameter: [ Variable: size_t size @ 8]
+mov [rbp-8], rdi
+ALIGN_STACK
+    call calloc
+    UNALIGN_STACK
+___void._calloc_psize_t__return:
+leave
+ret
+
+;[ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ]
+_void._realloc_pvoid.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: void. og @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: size_t newsize @ 16]
+mov [rbp-16], rsi
+ALIGN_STACK
+    call realloc
+    UNALIGN_STACK
+___void._realloc_pvoid.size_t__return:
+leave
+ret
+
+;[ function void free( [[ Variable: void. ptr @ 8]] ) ]
+_void_free_pvoid.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: void. ptr @ 8]
+mov [rbp-8], rdi
+ALIGN_STACK
+    call free
+    UNALIGN_STACK
+___void_free_pvoid.__return:
 leave
 ret
 
@@ -1493,87 +1419,152 @@ ___void_print_pvoid__return:
 leave
 ret
 
-;[ function void. malloc( [[ Variable: size_t size @ 8]] ) ]
-_void._malloc_psize_t:
+;[ function double sqrt( [[ Variable: double a @ 8]] ) ]
+_double_sqrt_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: size_t size @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call malloc
-    UNALIGN_STACK
-___void._malloc_psize_t__return:
+;Load Parameter: [ Variable: double a @ 8]
+movsd [rbp-8], xmm0
+sqrtsd xmm0, xmm0
+___double_sqrt_pdouble__return:
 leave
 ret
 
-;[ function void. calloc( [[ Variable: size_t size @ 8]] ) ]
-_void._calloc_psize_t:
+;[ function double sqrt( [[ Variable: int a @ 8]] ) ]
+_double_sqrt_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: size_t size @ 8]
+;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-ALIGN_STACK
-    call calloc
-    UNALIGN_STACK
-___void._calloc_psize_t__return:
+cvtsi2sd xmm0, rdi
+    sqrtsd xmm0, xmm0
+___double_sqrt_pint__return:
 leave
 ret
 
-;[ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ]
-_void._realloc_pvoid.size_t:
+;[ function int sqrt( [[ Variable: int a @ 8]] ) ]
+_int_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+  sqrtsd xmm0, xmm0
+  cvttsd2si rax, xmm0
+___int_sqrt_pint__return:
+leave
+ret
+
+;[ function int pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
+_int_pow_pintint:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-;Load Parameter: [ Variable: void. og @ 8]
+;Load Parameter: [ Variable: int base @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: size_t newsize @ 16]
+;Load Parameter: [ Variable: int exp @ 16]
 mov [rbp-16], rsi
-ALIGN_STACK
-    call realloc
-    UNALIGN_STACK
-___void._realloc_pvoid.size_t__return:
+mov rax, rdi
+  dec rsi
+  _int_pow_pintint_flp:
+  mul rdi
+  dec rsi
+  jnz _int_pow_pintint_flp
+___int_pow_pintint__return:
 leave
 ret
 
-;[ function void free( [[ Variable: void. ptr @ 8]] ) ]
-_void_free_pvoid.:
+;[ function double pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
+_double_pow_pintint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rsi
+xor rax, rax
+;[ id : base]
+mov r10,  [rbp-8]
+push r10
+;[ id : exp][ ) : )]
+mov r10,  [rbp-16]
+push r10
+pop  rsi
+pop  rdi
+mov rax, 0
+call _int_pow_pintint
+cvtsi2sd xmm0, rax
+___double_pow_pintint__return:
+leave
+ret
+
+;[ function int round( [[ Variable: double x @ 8]] ) ]
+_int_round_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: void. ptr @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call free
-    UNALIGN_STACK
-___void_free_pvoid.__return:
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvtsd2si rax, xmm0
+___int_round_pdouble__return:
 leave
 ret
 
-;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
-_int_main_pintchar..:
+;[ function int ceil( [[ Variable: double x @ 8]] ) ]
+_int_ceil_pdouble:
 push rbp
 mov rbp, rsp
-sub rsp, 32
-;Load Parameter: [ Variable: int argc @ 8]
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+  inc rax
+___int_ceil_pdouble__return:
+leave
+ret
+
+;[ function int floor( [[ Variable: double x @ 8]] ) ]
+_int_floor_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+___int_floor_pdouble__return:
+leave
+ret
+
+;[ function int abs( [[ Variable: int x @ 8]] ) ]
+_int_abs_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int x @ 8]
 mov [rbp-8], rdi
-;Load Parameter: [ Variable: char.. argv @ 16]
-mov [rbp-16], rsi
-;[ $ : char.][ id : malloc]
-xor rax, rax
-;[ int : 100][ ) : )]
-mov rax, 100
-push rax
-pop  rdi
-mov rax, 0
-call _void._malloc_psize_t
-mov [rbp-24], rax
-;[ int : 0]
-mov rax, 0
-mov rax, rax
-jmp ___int_main_pintchar..__return
-___int_main_pintchar..__return:
+mov rax, rdi
+  sar rdi, 63
+  xor rax, rdi
+  sub rax, rdi
+___int_abs_pint__return:
+leave
+ret
+
+;[ function double abs( [[ Variable: double x @ 8]] ) ]
+_double_abs_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+movsd xmm1, xmm0
+  xorpd xmm1, [M_MINZERO]
+  andpd xmm0, xmm1
+___double_abs_pdouble__return:
 leave
 ret
 

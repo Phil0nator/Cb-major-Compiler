@@ -11,7 +11,7 @@ def join(arr, d):
 class PreParser:
     def __init__(self, content, fname):
         self.content = content
-        self.content += chr(1)
+        self.content += "\n"+chr(1)
         self.fname = fname
         
         self.ch = self.content[0]
@@ -120,17 +120,17 @@ class PreProcessor:
                     if(self.current_token.tok == T_STRING):
 
                         path = self.current_token.value
-
+                        print(f"[including: {path} ]")
                         with open(path, "rb") as f:
-                            self.texts.insert(0, [f.read().decode(), path])
+                            self.texts.append([f.read().decode(), path])
                             
-                        pp = PreParser(self.texts[0][0],path)
+                        pp = PreParser(self.texts[len(self.texts)-1][0],path)
                         tokens = pp.getTokens()
                         i = 0
                         for t in tokens:
-                            i+=1
                             if(t.tok != T_EOF):
                                 self.tokens.insert(self.tkidx+i, t)
+                            i+=1
 
 
                     else:
