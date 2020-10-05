@@ -104,6 +104,13 @@ class Lexer:
                 while self.ch != "\n":
                     self.advance()
 
+            elif(self.ch == "$"):
+                self.advance()
+                t = self.buildAmbiguous()
+                t.tok = T_TYPECAST
+                tokens.append(t)
+
+
             elif(self.ch == ";"):
                 tokens.append(Token(T_ENDL,T_ENDL,self.loc.copy(),self.loc.copy()))
                 self.advance()
@@ -127,7 +134,7 @@ class Lexer:
                     tokens.append(Token(T_DIVIDE,T_DIVIDE,self.loc.copy(),self.loc.copy()))
                     self.advance()
             
-            elif (self.ch in "()}{[],^*"):
+            elif (self.ch in "()}{[],^*@"):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
 

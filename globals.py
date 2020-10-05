@@ -1,7 +1,7 @@
 from DType import *
 from Variable import *
 from Token import *
-
+import time
 
 
 
@@ -204,6 +204,9 @@ PRIORITY = {
     "*":2,
     "/":2,
     "%":2,
+    "&":3,
+    "@":3,
+    "$":0
 
 
 }
@@ -228,7 +231,10 @@ OPERATORS = [
     "^",
     "*",
     "/",
-    "%"
+    "%",
+    "&",
+    "@",
+    "$"
 
 
 ]
@@ -356,7 +362,7 @@ def TsCompatible(typea, typeb, fni):
     t1 = typea.__repr__()
     t2 = typeb.__repr__()
     if t1 == t2 : return True
-
+    if typea.name == "void" or typea.name == "void": return True
     for td in fni.compiler.tdefs:
         if (t1 == td[0].__repr__() and t2 == td[1].__repr__()) or (t2 == td[1].__repr__() and t1 == td[0].__repr__()):
             return True
@@ -429,7 +435,8 @@ def isfloat(x):
     if(isinstance(x, str)):
         return "xmm" in x
     if(isinstance(x, Variable)):
-        return x.isflt()
+        
+        return x.isflt() and not x.isptr
     return False
 
 
@@ -491,14 +498,17 @@ def boolmath(op):
     return instr
 
 
-def doOperation(a, b, o, d):
+def doOperation(a, b, o, d, caller):
     instr = "\n"
-
     if(o in ["||","&&","^", "!"]):
         #instr += "xor rax, rax\nxor rbx,rbx\n"
         instr+="xor rax, rax\n"
 
     if(o == "!"):
+        instr+="mov %s, %s\n"%(rax, valueOf(b))
+    elif(o == T_REFRIZE):
+        pass
+    elif(o == T_DEREF):
         instr+="mov %s, %s\n"%(rax, valueOf(b))
     else:
 
@@ -511,8 +521,7 @@ def doOperation(a, b, o, d):
         else:
             instr+=loadToAB(a,b)
     
-
-    if(isfloat(a) or isfloat(b)):
+    if(isfloat(a) or isfloat(b)) and o != T_REFRIZE:
         if(o == "+"):
             instr+=addF()
         elif(o == "-"):
@@ -552,6 +561,21 @@ def doOperation(a, b, o, d):
             
             instr+=boolmath(o)
     
+        elif(o == "&"):
+            if(isinstance(b, int)):
+                v = Variable(INT.copy(),"--LOCATIONVAR-%s"%time.time().hex()[:10])
+                caller.addVariable(v)
+                instr+=f"mov qword{valueOf(v)}, {b}\n"
+                instr+=f"lea {rax}, {valueOf(v)}\n"
+            elif(isinstance(b, str)):
+                instr+=f"lea {rax}, [{b}]\n"
+            else:
+                instr+= f"lea {rax}, {valueOf(b)}\n"
+        elif(o == T_DEREF):
+            if(isinstance(b, Variable) or isinstance(b, str)):
+                instr+=f"mov {rax}, [{rax}]\n"
+            
+
         instr += f"mov {d}, {rax}\n"
 
 

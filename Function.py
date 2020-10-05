@@ -16,7 +16,9 @@ def product(arr):
 
 
 
-
+## TODO:
+#   Nested functions are very broken
+#       (maybe rewrite)
 
 
 
@@ -373,7 +375,15 @@ class Function:
         o = DType("int", 8)
         for t in pfix:
             if(t.tok in OPERATORS):
-                if(t.tok == T_NOT):
+                if(t.tok == T_TYPECAST):
+                    o = self.compiler.getType(t.value).copy()
+                    if(o == None):
+                        throw(ExpectedType(t))
+                    stack.append(o)
+                    continue
+
+                if(t.tok == T_NOT or t.tok ==  T_REFRIZE or t.tok ==  T_DEREF):
+                    
                     b = stack.pop()
                     a = Token(T_REGISTER, "", None, None)
                 else:
@@ -415,9 +425,12 @@ class Function:
                 if(t.tok in ["==","!=",">","<","<=",">="]):
                     o = BOOL.copy()
                 
-
+                if(t.tok == T_REFRIZE):
+                    o.ptrdepth+=1
+                elif(t.tok == T_DEREF):
+                    o.ptrdepth-=1
                 
-                if (isfloat(aq) or isfloat(bq) ):
+                if (isfloat(aq) or isfloat(bq) and t.tok != T_REFRIZE):
                     d = sse_scratch_registers[sses]
                     stack.append(Token(T_REGISTER, d, None, None))
                     sses+=1
@@ -431,7 +444,7 @@ class Function:
                 if(bq in nrom_scratch_registers):
                     norms-=2
 
-                instr+= doOperation(aq,bq,t.tok,d)
+                instr+= doOperation(aq,bq,t.tok,d, self)
 
 
 
@@ -441,7 +454,17 @@ class Function:
 
             else:
                 stack.append(t)
+        
+        print(stack)
+        fcast = None
+        if(len(stack)>1):
+            while len(stack)>1:
+                t = stack.pop()
+            fcast = t
+            o = t.copy()
         final = stack.pop()
+
+
         if(final.tok == T_ID):
             finalq = self.getVariable(final.value)
             if(finalq == None):
@@ -500,26 +523,43 @@ class Function:
             return instr
         elif(dest == "STACK"):
             if(isfloat(final)):
-                instr += f"movq rax, {final.value}\npush {rax}\n"
-                if(otype!=None):
-                    if(o.name == "AMB"):
-                        otype.name = "double"
-                    else:
-                        otype.name = o.name
-                        otype.ptrdepth = o.ptrdepth
-                        otype.signed = o.signed
-                        otype.s = o.s
+                if(fcast == None or (fcast != None and fcast.isflt())):
+                    instr += f"movq rax, {final.value}\npush {rax}\n"
+                    if(otype!=None):
+                        if(o.name == "AMB"):
+                            otype.name = "double"
+                        else:
+                            otype.name = o.name
+                            otype.ptrdepth = o.ptrdepth
+                            otype.signed = o.signed
+                            otype.s = o.s
+                else:
+                    instr += f"cvttsd2si rax, {final.value}\npush {rax}\n"
             else:
-                instr += f"push {final.value}\n"
-                if(otype!=None):
-                    if(o.name == "AMB"):
-                        otype.name = "int"
-                    else:
-                        otype.name = o.name
-                        otype.ptrdepth = o.ptrdepth
-                        otype.signed = o.signed
-                        otype.s = o.s
+                if(fcast == None or (fcast != None and not fcast.isflt())):
+                    instr += f"push {final.value}\n"
+                    if(otype!=None):
+                        if(o.name == "AMB"):
+                            otype.name = "int"
+                        else:
+                            otype.name = o.name
+                            otype.ptrdepth = o.ptrdepth
+                            otype.signed = o.signed
+                            otype.s = o.s
+                else:
+                    instr += f"cvtsi2sd {xmm7}, {final.value}\nmovq {rax}, {xmm7}\npush {rax}\n"
+            
+            if(fcast != None):
+                otype.name = fcast.name
+                otype.ptrdepth = fcast.ptrdepth
+                otype.signed = o.signed
+                otype.s = o.s
             return instr
+        
+        if(isinstance(dest, Variable)):
+            if(not typematch(dest.t,o)):
+                throw(TypeMismatch(self.current_token,dest.t, o))
+
         if(isfloat(dest)):
             if(isfloat(final)):
                 instr += f"movsd {valueOf(dest)}, {final.value}\n"
@@ -535,6 +575,14 @@ class Function:
                 instr += f"mov {valueOf(dest)}, {final.value}\n"
                 o = INT.copy()
         
+
+
+
+        if(fcast != None):
+            otype.name = fcast.name
+            otype.ptrdepth = fcast.ptrdepth
+            otype.signed = o.signed
+            otype.s = o.s
         
         if(otype!=None):
             if(o.name == "AMB"):
@@ -544,6 +592,7 @@ class Function:
                 otype.ptrdepth = o.ptrdepth
                 otype.signed = o.signed
                 otype.s = o.s
+
         return instr
 
 
@@ -641,6 +690,7 @@ class Function:
         name = self.checkForId()
         self.addVariable(Variable(t,name))
         var = self.variables[len(self.variables)-1]
+        var.isptr = t.ptrdepth>0
         sizes = []
         isarr = False
 

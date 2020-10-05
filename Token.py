@@ -61,6 +61,8 @@ T_CLSIDX = "]"
 T_COMMA = ","
 
 
+T_TYPECAST = "$"
+
 T_AMBIGUOUS = "T?T"
 
 

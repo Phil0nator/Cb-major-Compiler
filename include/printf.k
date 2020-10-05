@@ -152,3 +152,7 @@ function void print(bool a){
     return 0;
 
 }
+function void print(void a){
+    int ptr = a;
+    print(ptr);
+}

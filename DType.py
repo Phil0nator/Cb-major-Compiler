@@ -15,7 +15,7 @@ class DType:
         return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth, signed=self.signed)
 
     def isflt(self):
-        return self.name == "float" or self.name == "double"
+        return self.name == "float" or self.name == "double" and self.ptrdepth==0
 
     def __eq__(self, other):
         if(isinstance(other, DType)):
@@ -28,3 +28,13 @@ class DType:
             return f"{self.name}"+"."*self.ptrdepth
         else:
             return f"u{self.name}"+"."*self.ptrdepth
+
+
+
+
+def typematch(a, b):
+    if(a.isflt() and b.isflt()): return True
+    if(not a.isflt() and not b.isflt() and a.size(0) == b.size(0)): return True
+    if(a.isflt() and not b.isflt()): return True
+    if(a.name == "void"): return True
+    return False
