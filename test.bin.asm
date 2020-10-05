@@ -1064,56 +1064,8 @@ section .bss
     
 section .text
 global CMAIN
-_void._malloc_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: int size @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call malloc
-    UNALIGN_STACK
-___void._malloc_pint__return:
-leave
-ret
-_void._calloc_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: int size @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call calloc
-    UNALIGN_STACK
-___void._calloc_pint__return:
-leave
-ret
-_void._realloc_pvoid.int:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-;Load Parameter: [ Variable: void. og @ 8]
-mov [rbp-8], rdi
-;Load Parameter: [ Variable: int newsize @ 16]
-mov [rbp-16], rsi
-ALIGN_STACK
-    call realloc
-    UNALIGN_STACK
-___void._realloc_pvoid.int__return:
-leave
-ret
-_void_free_pvoid.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: void. ptr @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call free
-    UNALIGN_STACK
-___void_free_pvoid.__return:
-leave
-ret
+
+;[ function double sqrt( [[ Variable: double a @ 8]] ) ]
 _double_sqrt_pdouble:
 push rbp
 mov rbp, rsp
@@ -1124,6 +1076,8 @@ sqrtsd xmm0, xmm0
 ___double_sqrt_pdouble__return:
 leave
 ret
+
+;[ function double sqrt( [[ Variable: int a @ 8]] ) ]
 _double_sqrt_pint:
 push rbp
 mov rbp, rsp
@@ -1135,6 +1089,8 @@ cvtsi2sd xmm0, rdi
 ___double_sqrt_pint__return:
 leave
 ret
+
+;[ function int sqrt( [[ Variable: int a @ 8]] ) ]
 _int_sqrt_pint:
 push rbp
 mov rbp, rsp
@@ -1147,6 +1103,8 @@ cvtsi2sd xmm0, rdi
 ___int_sqrt_pint__return:
 leave
 ret
+
+;[ function int pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
 _int_pow_pintint:
 push rbp
 mov rbp, rsp
@@ -1164,6 +1122,8 @@ mov rax, rdi
 ___int_pow_pintint__return:
 leave
 ret
+
+;[ function double pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
 _double_pow_pintint:
 push rbp
 mov rbp, rsp
@@ -1187,6 +1147,8 @@ cvtsi2sd xmm0, rax
 ___double_pow_pintint__return:
 leave
 ret
+
+;[ function int round( [[ Variable: double x @ 8]] ) ]
 _int_round_pdouble:
 push rbp
 mov rbp, rsp
@@ -1197,6 +1159,8 @@ cvtsd2si rax, xmm0
 ___int_round_pdouble__return:
 leave
 ret
+
+;[ function int ceil( [[ Variable: double x @ 8]] ) ]
 _int_ceil_pdouble:
 push rbp
 mov rbp, rsp
@@ -1208,6 +1172,8 @@ cvttsd2si rax, xmm0
 ___int_ceil_pdouble__return:
 leave
 ret
+
+;[ function int floor( [[ Variable: double x @ 8]] ) ]
 _int_floor_pdouble:
 push rbp
 mov rbp, rsp
@@ -1218,6 +1184,8 @@ cvttsd2si rax, xmm0
 ___int_floor_pdouble__return:
 leave
 ret
+
+;[ function int abs( [[ Variable: int x @ 8]] ) ]
 _int_abs_pint:
 push rbp
 mov rbp, rsp
@@ -1231,6 +1199,8 @@ mov rax, rdi
 ___int_abs_pint__return:
 leave
 ret
+
+;[ function double abs( [[ Variable: double x @ 8]] ) ]
 _double_abs_pdouble:
 push rbp
 mov rbp, rsp
@@ -1243,6 +1213,8 @@ movsd xmm1, xmm0
 ___double_abs_pdouble__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: int format @ 16]] ) ]
 _void_printf_pchar.int:
 push rbp
 mov rbp, rsp
@@ -1258,6 +1230,8 @@ UNALIGN_STACK
 ___void_printf_pchar.int__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8]] ) ]
 _void_printf_pchar.:
 push rbp
 mov rbp, rsp
@@ -1271,6 +1245,8 @@ UNALIGN_STACK
 ___void_printf_pchar.__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: uint format @ 16]] ) ]
 _void_printf_pchar.uint:
 push rbp
 mov rbp, rsp
@@ -1286,6 +1262,8 @@ UNALIGN_STACK
 ___void_printf_pchar.uint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: double f @ 16]] ) ]
 _void_printf_pchar.double:
 push rbp
 mov rbp, rsp
@@ -1302,6 +1280,8 @@ UNALIGN_STACK
 ___void_printf_pchar.double__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: char. other @ 16]] ) ]
 _void_printf_pchar.char.:
 push rbp
 mov rbp, rsp
@@ -1317,6 +1297,8 @@ UNALIGN_STACK
 ___void_printf_pchar.char.__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: int a @ 16], [ Variable: int b @ 24]] ) ]
 _void_printf_pchar.intint:
 push rbp
 mov rbp, rsp
@@ -1334,6 +1316,8 @@ UNALIGN_STACK
 ___void_printf_pchar.intint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: double a @ 16], [ Variable: double b @ 24]] ) ]
 _void_printf_pchar.doubledouble:
 push rbp
 mov rbp, rsp
@@ -1351,6 +1335,8 @@ UNALIGN_STACK
 ___void_printf_pchar.doubledouble__return:
 leave
 ret
+
+;[ function void print( [[ Variable: int a @ 8]] ) ]
 _void_print_pint:
 push rbp
 mov rbp, rsp
@@ -1371,6 +1357,8 @@ call _void_printf_pchar.int
 ___void_print_pint__return:
 leave
 ret
+
+;[ function void print( [[ Variable: uint a @ 8]] ) ]
 _void_print_puint:
 push rbp
 mov rbp, rsp
@@ -1387,10 +1375,12 @@ push r10
 pop  rsi
 pop  rdi
 mov rax, 0
-call _void_printf_pchar.uint
+call _void_printf_pchar.int
 ___void_print_puint__return:
 leave
 ret
+
+;[ function void print( [[ Variable: double a @ 8]] ) ]
 _void_print_pdouble:
 push rbp
 mov rbp, rsp
@@ -1413,6 +1403,8 @@ call _void_printf_pchar.double
 ___void_print_pdouble__return:
 leave
 ret
+
+;[ function void print( [[ Variable: char. a @ 8]] ) ]
 _void_print_pchar.:
 push rbp
 mov rbp, rsp
@@ -1424,6 +1416,8 @@ NEWLINE
 ___void_print_pchar.__return:
 leave
 ret
+
+;[ function void print( [[ Variable: char a @ 8]] ) ]
 _void_print_pchar:
 push rbp
 mov rbp, rsp
@@ -1435,6 +1429,8 @@ NEWLINE
 ___void_print_pchar__return:
 leave
 ret
+
+;[ function void print( [[ Variable: bool a @ 8]] ) ]
 _void_print_pbool:
 push rbp
 mov rbp, rsp
@@ -1475,6 +1471,8 @@ jmp ___void_print_pbool__return
 ___void_print_pbool__return:
 leave
 ret
+
+;[ function void print( [[ Variable: void a @ 8]] ) ]
 _void_print_pvoid:
 push rbp
 mov rbp, rsp
@@ -1494,17 +1492,66 @@ call _void_print_pint
 ___void_print_pvoid__return:
 leave
 ret
-_void_exit_pint:
+
+;[ function void. malloc( [[ Variable: size_t size @ 8]] ) ]
+_void._malloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: int code @ 8]
+;Load Parameter: [ Variable: size_t size @ 8]
 mov [rbp-8], rdi
-mov rax, 60
-    syscall
-___void_exit_pint__return:
+ALIGN_STACK
+    call malloc
+    UNALIGN_STACK
+___void._malloc_psize_t__return:
 leave
 ret
+
+;[ function void. calloc( [[ Variable: size_t size @ 8]] ) ]
+_void._calloc_psize_t:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: size_t size @ 8]
+mov [rbp-8], rdi
+ALIGN_STACK
+    call calloc
+    UNALIGN_STACK
+___void._calloc_psize_t__return:
+leave
+ret
+
+;[ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ]
+_void._realloc_pvoid.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: void. og @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: size_t newsize @ 16]
+mov [rbp-16], rsi
+ALIGN_STACK
+    call realloc
+    UNALIGN_STACK
+___void._realloc_pvoid.size_t__return:
+leave
+ret
+
+;[ function void free( [[ Variable: void. ptr @ 8]] ) ]
+_void_free_pvoid.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: void. ptr @ 8]
+mov [rbp-8], rdi
+ALIGN_STACK
+    call free
+    UNALIGN_STACK
+___void_free_pvoid.__return:
+leave
+ret
+
+;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
@@ -1513,18 +1560,15 @@ sub rsp, 32
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[ $ : char.][ @ : @][ id : argv]
-mov rax, [rbp-16]
-mov rax, [rax]
-mov r10, rax
-mov [rbp-24], r10
+;[ $ : char.][ id : malloc]
 xor rax, rax
-;[ id : a1][ ) : )]
-mov r10,  [rbp-24]
-push r10
+;[ int : 100][ ) : )]
+mov rax, 100
+push rax
 pop  rdi
 mov rax, 0
-call _void_print_pchar.
+call _void._malloc_psize_t
+mov [rbp-24], rax
 ;[ int : 0]
 mov rax, 0
 mov rax, rax

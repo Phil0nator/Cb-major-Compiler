@@ -5,6 +5,7 @@ from Token import *
 from Location import *
 from Lexer import *
 from Error import *
+import config
 class Compiler:
 
     def __init__(self):
@@ -33,10 +34,7 @@ class Compiler:
         self.heap_unnamed = 0
 
     def isType(self, q):
-        for t in self.types:
-            if t.name == q:
-                return True
-        return False
+        return self.getType(q) != None
 
     def isIntrinsic(self, q):
         for t in INTRINSICS:
@@ -74,7 +72,6 @@ class Compiler:
         if "." in q:
             pd = q.count(".")
             q = q.replace(".","")
-        
         for t in self.types:
             if t.name == q:
                 out = t.copy()
@@ -400,6 +397,9 @@ class Compiler:
     def finalize(self):
         for f in self.functions:
             f.compile()
+            
+            if(config.DO_DEBUG):
+                self.text+="\n\n\n;"+f.__repr__()
 
             self.text+=f.asm
 

@@ -4,7 +4,7 @@
 
 
 
-function void* malloc(int size){
+function void* malloc(size_t size){
 
     __asm{"
     
@@ -16,7 +16,7 @@ function void* malloc(int size){
 
 }
 
-function void* calloc(int size){
+function void* calloc(size_t size){
 
     __asm{"
     
@@ -28,7 +28,7 @@ function void* calloc(int size){
 
 }
 
-function void* realloc(void* og, int newsize){
+function void* realloc(void* og, size_t newsize){
 
     __asm{"
     

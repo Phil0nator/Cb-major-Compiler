@@ -363,6 +363,7 @@ def TsCompatible(typea, typeb, fni):
     t2 = typeb.__repr__()
     if t1 == t2 : return True
     if typea.name == "void" or typea.name == "void": return True
+    if(typematch(typea, typeb)): return True
     for td in fni.compiler.tdefs:
         if (t1 == td[0].__repr__() and t2 == td[1].__repr__()) or (t2 == td[1].__repr__() and t1 == td[0].__repr__()):
             return True
