@@ -783,18 +783,30 @@ class Function:
         self.advance()
         offset = v.offset
         inst = ""
-        if(self.current_token.tok == T_OPENIDX):
-            inst = self.evaluateRightsideExpression(EC.ExpressionComponent("rbx",INT.copy(),token=vt))
-            inst+=(f"mov {rax}, {(offset)}\n")
-            inst+=(f"sub {rax}, {rbx}\n")
-            offset = "rax"
         
-        self.advance()
-        ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t,token=vt)                )
-        self.addline(inst)
-        self.addline(ev)
+        
+        if(self.current_token.tok == T_EQUALS): #normal
+            self.advance()
 
-
+            ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t,token=vt)                )
+            self.addline(inst)
+            self.addline(ev)
+        
+        
+        else: # ++ or -- shortcuts
+            o1 = self.current_token.value
+            self.advance()
+            if(self.current_token.tok != "+" and self.current_token.tok != "-"):
+                throw(UnkownExpressionShortcut(self.current_token))
+            o1 += self.current_token.value
+            if(o1 != "--" and o1 != "++"):
+                throw(UnkownExpressionShortcut(self.current_token))
+            
+            expr = [EC.ExpressionComponent(v,v.t),EC.ExpressionComponent(1,INT.copy(),constint=True),EC.ExpressionComponent(o1[0],o1,isoperation=True)]
+            instr,o = self.evaluatePostfix(EC.ExpressionComponent( v, v.t , token=vt),expr)
+            inst+=instr
+            self.addline(inst)
+            self.advance()
 
     def buildIDStatement(self):
         

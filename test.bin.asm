@@ -1603,9 +1603,9 @@ sub rsp, 32
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 0]]
+;[[ int : 10]]
 ;------------
-mov QWORD[rbp-24], 0
+mov QWORD[rbp-24], 10
 jmp _LFORCMP_0x1
 _LFORTOP_0x0:
 ;[[ id : STRING_CONSTANT_0]]
@@ -1620,18 +1620,17 @@ mov rbx, QWORD[rbp-24]
 mov rdi, rbx
 mov rax, 0
 call _void_print_pint
-;[[ id : i], [ + : +], [ int : 1]]
 mov rcx, 1
 mov rbx, QWORD[rbp-24]
-add rbx, rcx
+sub rbx, rcx
 ;------------
 mov QWORD[rbp-24], rbx
 _LFORCMP_0x1:
-;[[ id : i], [ < : <], [ int : 10]]
-mov rcx, 10
+;[[ id : i], [ > : >], [ int : 0]]
+mov rcx, 0
 mov rbx, QWORD[rbp-24]
 cmp bl, cl
-jl _LCMPI_0x4
+jg _LCMPI_0x4
 xor bl, bl
 jmp _LCMPIPOST_0x5
 _LCMPI_0x4:

@@ -115,3 +115,9 @@ class UnkownType(Error):
     def __init__(self, tok):
         self.tok=tok
         self.message = f"Unkown Type: "
+
+
+class UnkownExpressionShortcut(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unkown expression shortcut: "
