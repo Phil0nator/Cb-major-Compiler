@@ -190,10 +190,11 @@ class Function:
         preInstructions = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy()))
         if(self.current_token.tok == T_CLSP): 
             self.advance()
-            return
+            
         postlabel = getLogicLabel("IFPOST")
         jmpafter = getLogicLabel("IFELSE")
         preInstructions+= f"{check_fortrue}jne {postlabel}\n"
+
         self.addline(preInstructions)
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
         self.advance()
@@ -383,7 +384,7 @@ class Function:
 
             if(needLoadB): instr+=loadToReg(breg, b.accessor)
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
-            instr+=doOperation(areg, breg, op, a.type.signed or b.type.signed)
+            instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
             apendee = (EC.ExpressionComponent(areg,a.type))
             rfree(breg)
         else: #situation is different when casting is directional
@@ -428,7 +429,7 @@ class Function:
                 rfree(newcoreg)
                 newcoreg = coreg
             
-            instr+=doOperation(creg,newcoreg,op, caster.type.signed)
+            instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
             apendee = (EC.ExpressionComponent(creg,caster.type))
             rfree(newcoreg)
             rfree(coreg)

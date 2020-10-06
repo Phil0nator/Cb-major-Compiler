@@ -4,7 +4,7 @@ from Classes.Variable import Variable
 import Classes.Token as T
 import time
 import Classes.ExpressionComponent as EC
-
+import config
 
 
 
@@ -441,6 +441,7 @@ def typematch(a, b):
     if(isinstance(a, DType) and isinstance(b, DType)):
         if(a.name == "void" or b.name == "void"): return True
         if(a.ptrdepth != b.ptrdepth): return False
+        if(a.__eq__(b)):return True
         if(a.isflt() and b.isflt()): return True
         
         if(isIntrinsic(a.name) and isIntrinsic(b.name)):
@@ -575,7 +576,8 @@ def calculateConstant(a, b, op):
 
 
 
-def doIntOperation(areg, breg, op, signed):
+def doIntOperation(areg, breg, op, signed, size=8):
+
     if(op == "+"):
         return f"add {areg}, {breg}\n"
     elif(op == "-"):
@@ -652,11 +654,11 @@ def doFloatOperation(areg, breg, op):
     return f"{asmop} {areg}, {breg}\n"
     
 
-def doOperation(areg, breg, op, signed = False):
+def doOperation(t, areg, breg, op, signed = False):
     if("xmm" in areg and "xmm" in breg):
         return doFloatOperation(areg, breg, op)
     elif("xmm" not in areg and "xmm" not in breg):
-        return doIntOperation(areg,breg,op, signed)
+        return doIntOperation(areg,breg,op, signed, size=t.size(0))
     else:
         print("fatal type mismatch: unkown.")
         exit(1)
