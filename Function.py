@@ -235,8 +235,45 @@ class Function:
         updatelabel = getLogicLabel("FORUPDATE")
         endlabel = getLogicLabel("FOREND")
 
-        self.addline(f"jmp {comparisonlabel}\n")
+        self.buildDeclaration()
+        if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
+        self.advance()
 
+        getCondition = self.evaluateRightsideExpression(EC.ExpressionComponent(rax,BOOL.copy(),token=self.current_token))
+
+        if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
+        self.advance()
+        
+        self.addline(f"jmp {comparisonlabel}\n")
+        self.addline(f"{toplabel}:")
+        
+        self.addline(f"##FLPCONTENT##")
+        
+        
+        self.buildAssignment()
+        
+        updatev = self.asm[self.asm.find("##FLPCONTENT##"):len(self.asm)-1]
+        self.asm = self.asm.replace(updatev,"")
+        updatev = updatev.replace("##FLPCONTENT##","")
+
+
+        if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
+        self.advance()
+        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
+        self.advance()
+        self.beginRecursiveCompile()
+        self.addline(updatev)
+        self.addline(f"{comparisonlabel}:\n")
+        self.addline(getCondition)
+        self.addline(f"{check_fortrue}\nje {toplabel}\n")
+        
+
+
+        print(self.current_token)
+
+
+        
+        
 
     
     
