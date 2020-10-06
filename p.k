@@ -1,10 +1,12 @@
 #include "include/std.k"
-const double val = 2.5;
 
-
+function int bruh(double a){
+    return floor(sqrt(a));
+}
 
 
 function int main(int argc, char** argv){
+
 
     
 

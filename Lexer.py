@@ -41,10 +41,11 @@ class Lexer:
         num = self.ch
         begin = self.loc.copy()
         self.advance()
-
-        while self.ch in T_DIGITS+T_DOT+"e"+"-":
+        pchars = T_DIGITS+T_DOT+"e"
+        while self.ch in pchars:
             num+=self.ch
             self.advance()
+            if("e" in pchars): pchars+="-"
 
         t = T_INT
         if(T_DOT in num or "e" in num):
@@ -137,7 +138,7 @@ class Lexer:
                     
                 else:
                     tokens.append(Token(T_DIVIDE,T_DIVIDE,self.loc.copy(),self.loc.copy()))
-                    self.advance()
+                    
             
             elif (self.ch in "()}{[],^*@"):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))

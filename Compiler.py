@@ -26,7 +26,7 @@ class Compiler:
         self.functions = []
         self.globals = []
         self.types = []
-        self.tdefs = []
+        self.tdefs = [] # (old, new)
         for i in INTRINSICS:
             self.types.append(i.copy())
     
@@ -67,6 +67,11 @@ class Compiler:
         except:
             throw(UnexepectedEOFError(self.current_token))
 
+
+    def Tequals(self, ta, tb):
+        for tdef in self.tdefs:
+            if(tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta: return True
+        return False
     def getType(self, q):
         pd = 0
         if "." in q:
@@ -132,7 +137,7 @@ class Compiler:
                 
                     self.advance()
 
-                    if(self.current_token.tok not in ["int","bool","char","double","float","id"]): throw(ExpectedValue(self.current_token))
+                    if(not self.isIntrinsic(self.current_token.tok)): throw(ExpectedValue(self.current_token))
 
                     if (intr!=None and self.current_token.tok != T_ID):
 

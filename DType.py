@@ -1,3 +1,4 @@
+import config
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0, signed=True):
         self.name=name
@@ -11,6 +12,9 @@ class DType:
             return 8
         return self.s
     
+    def load(self, other):
+        self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed)
+
     def copy(self):
         return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth, signed=self.signed)
 
@@ -19,7 +23,7 @@ class DType:
 
     def __eq__(self, other):
         if(isinstance(other, DType)):
-            return self.name == other.name
+            return (self.name == other.name or config.GlobalCompiler.Tequals(self.name, other.name)) and self.ptrdepth == other.ptrdepth and self.signed == other.signed 
         else:
             return False
 
@@ -29,14 +33,30 @@ class DType:
         else:
             return f"u{self.name}"+"."*self.ptrdepth
 
+type_precedence = {
+
+    "bool":0,
+    "char":0,
+    "unsigned char": 1,
+    "unsigned bool": 1,
+    "int" :2,
+    "unsigned int":3,
+    "double":4,
+    "void":5
 
 
 
-def typematch(a, b):
-    if(a.ptrdepth != b.ptrdepth): return False
-    if(a.name == "void" or b.name == "void"): return True
-    if(a.isflt() and b.isflt()): return True
-    if(not a.isflt() and not b.isflt() and a.size(0) >= b.size(0)): return True
-    if(a.isflt() and not b.isflt()): return True
 
-    return False
+
+
+}
+
+def determinePrecedence(a, b):
+    # preq : must have typematch
+
+    if(type_precedence[a.name] > type_precedence[b.name]):
+        return a, b
+    else:
+        return b, a
+
+
