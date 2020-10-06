@@ -46,8 +46,8 @@ class Lexer:
         while self.ch in pchars:
             num+=self.ch
             self.advance()
-            if("e" in pchars): pchars+="-"
-
+            if("e" in num): pchars+="-"
+        
         t = T.T_INT
         if(T.T_DOT in num or "e" in num):
             val = float(num)

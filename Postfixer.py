@@ -17,7 +17,7 @@ class Postfixer:
     def addtok(self, t):
         
         if self.isOperator(t):
-            ec = EC.ExpressionComponent(t.tok,None,True)
+            ec = EC.ExpressionComponent(t.tok,t.value,isoperation=True)
         else:
             if(t.tok == T_INT):
                 ec = EC.ExpressionComponent(t.value,INT.copy(),constint=True)
@@ -26,7 +26,7 @@ class Postfixer:
                 ec = EC.ExpressionComponent(v,v.t)
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop",t.fn.returntype)
-        
+        ec.token = t
         self.pfix.append(ec)
 
     def createPostfix(self):

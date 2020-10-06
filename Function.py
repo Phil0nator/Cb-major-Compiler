@@ -19,9 +19,6 @@ def product(arr):
 
 
 
-## TODO:
-#   Nested functions are very broken
-#       (maybe rewrite)
 
 
 
@@ -176,9 +173,9 @@ class Function:
     def buildReturnStatement(self):
         self.advance()
         if(self.returntype.isflt()):
-            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy))
+            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy, token=self.current_token))
         else:
-            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(norm_return_register,INT.copy()))
+            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(norm_return_register,INT.copy(),token=self.current_token))
         self.addline(instr)
         self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
 
@@ -187,7 +184,7 @@ class Function:
         if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token,"("))
         self.advance()
 
-        preInstructions = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy()))
+        preInstructions = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy(),token=self.current_token))
         if(self.current_token.tok == T_CLSP): 
             self.advance()
             
@@ -243,7 +240,7 @@ class Function:
         
         self.addline(f"jmp {comparisonlabel}")
         self.addline(f"{startlabel}:")
-        cmpinst = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy()))
+        cmpinst = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy(),token=self.current_token))
         cmpinst += f"{check_fortrue}je {startlabel}\n"
 
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
@@ -340,9 +337,9 @@ class Function:
         for i in range(pcount):
             if(fn.parameters[i].isflt()):
                 
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[i], fn.parameters[i].t.copy()))
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[i], fn.parameters[i].t.copy(), token=self.current_token))
             else:
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[i], fn.parameters[i].t.copy()))
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[i], fn.parameters[i].t.copy(),token=self.current_token))
         
             if(self.current_token.tok == ","):
                     self.advance()
@@ -385,11 +382,11 @@ class Function:
             if(needLoadB): instr+=loadToReg(breg, b.accessor)
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
             instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
-            apendee = (EC.ExpressionComponent(areg,a.type))
+            apendee = (EC.ExpressionComponent(areg,a.type,token=a.token))
             rfree(breg)
         else: #situation is different when casting is directional
             if(not typematch(a.type,b.type)):
-                throw(TypeMismatch(self.current_token, a.type, b.type))
+                throw(TypeMismatch(a.token, a.type, b.type))
             newtype, toConvert = determinePrecedence(a.type, b.type)
             o = newtype.copy()
             if(newtype.__eq__(a.type)):
@@ -430,7 +427,7 @@ class Function:
                 newcoreg = coreg
             
             instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
-            apendee = (EC.ExpressionComponent(creg,caster.type))
+            apendee = (EC.ExpressionComponent(creg,caster.type,token=caster.token))
             rfree(newcoreg)
             rfree(coreg)
 
@@ -447,7 +444,6 @@ class Function:
         o = VOID.copy()
         for e in pfix:
             if(e.isoperation):
-                
                 if(not operatorISO(e.accessor)):
                     b = stack.pop()
                     a = stack.pop()
@@ -466,22 +462,22 @@ class Function:
                     if(e.accessor == T_NOT):
 
                         if(not typematch(BOOL, a.type)):
-                            throw(TypeMismatch(self.current_token,BOOL, a.type))
+                            throw(TypeMismatch(a.token,BOOL, a.type))
                         if(a.isRegister()):
                             areg = a.accessor
                         else:
                             areg = ralloc(False)
-
+                        instr+=loadToReg(areg,a.accessor)
                         instr+=boolmath(areg,None,e.accessor)
                         o = BOOL.copy()
-                        stack.append(EC.ExpressionComponent(areg,BOOL.copy()))
+                        stack.append(EC.ExpressionComponent(areg,BOOL.copy(),token=a.token))
 
                     
                     elif(e.accessor == T_REFRIZE):
                         
                         if( a.isconstint() ):
 
-                            throw(AddressOfConstant(self.current_token))
+                            throw(AddressOfConstant(a.token))
 
                         elif( isinstance(a.accessor, Variable) ):
                             
@@ -489,16 +485,16 @@ class Function:
                             instr+=f"lea {result}, [rbp-{a.accessor.offset}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
-                            stack.append(EC.ExpressionComponent(result, o.copy()))
+                            stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
                         
                         else:
-                            throw(AddressOfConstant(self.current_token))
+                            throw(AddressOfConstant(a.token))
                         
                     elif(e.accessor == T_DEREF):
 
                         if( a.isconstint() ):
 
-                            throw(AddressOfConstant(self.current_token))
+                            throw(AddressOfConstant(a.token))
 
                         elif(isinstance(a.accessor, Variable)):
 
@@ -513,10 +509,26 @@ class Function:
                             o = a.accessor.t.copy()
                             o.ptrdepth-=1
                             rfree(tmp)
-                            stack.append(EC.ExpressionComponent(oreg, o.copy()))
+                            stack.append(EC.ExpressionComponent(oreg, o.copy(),token=a.token))
+                    elif(e.accessor == T_TYPECAST):
 
-
-
+                        
+                        tid = e.type
+                        t = self.compiler.getType(tid)
+                        if(t == None):
+                            throw(UnkownType(e.token))
+                        aval = ralloc(a.type.isflt())
+                        result = ralloc(t.isflt())
+                        cst=castABD(EC.ExpressionComponent("",t),EC.ExpressionComponent("",a.type),"",aval,result)
+                        if(cst != False):
+                            instr+=loadToReg(aval, a.accessor)
+                            instr+=cst
+                            rfree(aval)
+                            stack.append(EC.ExpressionComponent(result,t.copy(),token=a.token))
+                        else:
+                            rfree(aval)
+                            rfree(result)
+                            stack.append(EC.ExpressionComponent(a.accessor,t.copy(),token=a.token))
 
 
 
@@ -546,7 +558,7 @@ class Function:
         else:
 
             if(not typematch(dest.type, final.type)):
-                throw(TypeMismatch(self.current_token, dest.type, final.type))
+                throw(TypeMismatch(dest.token, dest.type, final.type))
 
 
 
@@ -589,7 +601,7 @@ class Function:
                 instr+=loadToReg(dest.accessor,source)
             
             rfree(castdest)
-            rfreeAll()
+            #rfreeAll()
 
 
         return instr, o
@@ -695,7 +707,7 @@ class Function:
 
         self.advance()
 
-        self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(var, var.t)))
+        self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(var, var.t, token=self.current_token)))
         
 
     def buildBlankfnCall(self):
@@ -706,18 +718,19 @@ class Function:
         self.advance()
 
     def buildAssignment(self):
+        vt = self.current_token
         v = self.getVariable(self.current_token.value)
         self.advance()
         offset = v.offset
         inst = ""
         if(self.current_token.tok == T_OPENIDX):
-            inst = self.evaluateRightsideExpression(EC.ExpressionComponent("rbx",INT.copy()))
+            inst = self.evaluateRightsideExpression(EC.ExpressionComponent("rbx",INT.copy(),token=vt))
             inst+=(f"mov {rax}, {(offset)}\n")
             inst+=(f"sub {rax}, {rbx}\n")
             offset = "rax"
         
         self.advance()
-        ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t)                )
+        ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t,token=vt)                )
         self.addline(inst)
         self.addline(ev)
 

@@ -57,6 +57,8 @@ function int sqrt(int a){
 
 }
 
+
+
 function int pow(int base, int exp){
 
   __asm{"

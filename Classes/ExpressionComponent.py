@@ -1,13 +1,12 @@
-from Classes.Variable import Variable
 class ExpressionComponent:
-    def __init__(self, accessor, t, isoperation=False,  constint=False):
+    def __init__(self, accessor, t, isoperation=False,  constint=False, token=None):
         self.type = t
         self.accessor = accessor
         self.inmem = False
         self.isoperation = isoperation
         self.constint = constint
-        if(isinstance(accessor, Variable)):
-            self.inmem = True
+        self.token = token
+
     def isRegister(self):
         return isinstance(self.type, str) and self.type == "register" 
 

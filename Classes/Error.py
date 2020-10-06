@@ -108,3 +108,8 @@ class AddressOfConstant(Error):
     def __init__(self,tok):
         self.tok=tok
         self.message = f"Taking address of constant value: "
+
+class UnkownType(Error):
+    def __init__(self, tok):
+        self.tok=tok
+        self.message = f"Unkown Type: "
