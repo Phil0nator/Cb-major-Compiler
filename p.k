@@ -5,5 +5,7 @@
 function int main(int argc, char** argv){
 
 
+    bool man = !false;
+
     return 0;
 }

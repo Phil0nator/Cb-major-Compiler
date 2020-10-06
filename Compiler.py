@@ -404,9 +404,9 @@ class Compiler:
             f.compile()
             
             if(config.DO_DEBUG):
-                self.text+="\n\n\n;"+f.__repr__()
+                f.asm=f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
 
-            self.text+=f.asm
+            self.text=f"{f.asm}{self.text}"
 
 
         
