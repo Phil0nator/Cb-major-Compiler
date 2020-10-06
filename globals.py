@@ -1,6 +1,7 @@
-from Classes.DType import *
-from Classes.Variable import *
-from Classes.Token import *
+import Classes.DType as Type
+from Classes.DType import DType
+from Classes.Variable import Variable
+import Classes.Token as T
 import time
 import Classes.ExpressionComponent as EC
 
@@ -443,7 +444,7 @@ def typematch(a, b):
         if(a.isflt() and b.isflt()): return True
         
         if(isIntrinsic(a.name) and isIntrinsic(b.name)):
-            if(type_precedence[a.name] > type_precedence[b.name]): return True
+            if(Type.type_precedence[a.name] > Type.type_precedence[b.name]): return True
             return False
         
 
@@ -523,8 +524,8 @@ def loadToReg(reg, value):
     
 
 def isfloat(x):
-    if (isinstance(x, Token)):
-        if(x.tok == T_REGISTER):
+    if (isinstance(x, T.Token)):
+        if(x.tok == T.T_REGISTER):
             return "xmm" in x.value
         else:
             if(isinstance(x.value, int)): return False

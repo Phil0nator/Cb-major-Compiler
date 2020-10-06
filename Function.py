@@ -3,7 +3,7 @@ from Classes.Variable import *
 from Classes.DType import *
 from Classes.Token import *
 from Classes.Error import *
-from Lexing.Postfixer import *
+from Postfixer import *
 import Classes.Optimizer
 import config
 import time

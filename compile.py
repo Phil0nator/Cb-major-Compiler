@@ -14,13 +14,11 @@ import argparse as arg
 from Classes.Error import *
 from globals import *
 
-from Classes.Variable import *
-from Compiling.Function import *
-from Classes.DType import *
-from Classes.Token import *
-from Classes.Location import *
-from Lexing.PreParser import *
-from Compiling.Compiler import *
+
+
+from PreParser import PreParser
+from PreParser import PreProcessor
+from Compiler import Compiler
 from Linker import *
 import config
 
