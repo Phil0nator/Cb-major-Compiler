@@ -1,3 +1,4 @@
+import config
 class Error:
     def __init__(self, tok, message):
         self.tok = tok
@@ -9,6 +10,7 @@ class Error:
 
 def throw(error):
     print(error)
+    #config.GlobalCompiler.panicmode = True
     exit(1)
 
 

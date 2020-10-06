@@ -44,6 +44,10 @@ def main():
 
     c.finalize()
 
+    if(c.panicmode):
+        print("Could not finish compilation due to errors.")
+        exit(1)
+
     asm = "%s"%fileTemplate
     asm = asm.replace("%%HEAP%%", c.heap)
     asm = asm.replace("%%CONSTANTS%%", c.constants)

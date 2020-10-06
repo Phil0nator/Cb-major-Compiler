@@ -173,7 +173,7 @@ class Function:
     def buildReturnStatement(self):
         self.advance()
         if(self.returntype.isflt()):
-            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy, token=self.current_token))
+            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy(), token=self.current_token))
         else:
             instr = self.evaluateRightsideExpression(EC.ExpressionComponent(norm_return_register,INT.copy(),token=self.current_token))
         self.addline(instr)
@@ -226,7 +226,18 @@ class Function:
 
 
     def buildForloop(self):
-        pass
+        self.advance()
+        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
+        self.advance()
+
+        toplabel = getLogicLabel("FORTOP")
+        comparisonlabel = getLogicLabel("FORCMP")
+        updatelabel = getLogicLabel("FORUPDATE")
+        endlabel = getLogicLabel("FOREND")
+
+        self.addline(f"jmp {comparisonlabel}\n")
+
+
     
     
     def buildWhileloop(self):
@@ -288,6 +299,9 @@ class Function:
 
         elif(word == "while"):
             self.buildWhileloop()
+
+        elif(word == "for"):
+            self.buildForloop()
 
         else:
             self.advance()
@@ -383,9 +397,10 @@ class Function:
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
             instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
             apendee = (EC.ExpressionComponent(areg,a.type,token=a.token))
+
             rfree(breg)
         else: #situation is different when casting is directional
-            if(not typematch(a.type,b.type)):
+            if(not typematch(a.type,b.type) and not typematch(b.type, a.type)):
                 throw(TypeMismatch(a.token, a.type, b.type))
             newtype, toConvert = determinePrecedence(a.type, b.type)
             o = newtype.copy()
@@ -463,11 +478,14 @@ class Function:
 
                         if(not typematch(BOOL, a.type)):
                             throw(TypeMismatch(a.token,BOOL, a.type))
+                        
+                        needload = True
                         if(a.isRegister()):
                             areg = a.accessor
+                            needload=False
                         else:
                             areg = ralloc(False)
-                        instr+=loadToReg(areg,a.accessor)
+                        if(needload): instr+=loadToReg(areg,a.accessor)
                         instr+=boolmath(areg,None,e.accessor)
                         o = BOOL.copy()
                         stack.append(EC.ExpressionComponent(areg,BOOL.copy(),token=a.token))
@@ -540,6 +558,8 @@ class Function:
         
         instr+=";------------\n"
         if(dest == "AMB"):
+            if(final.isRegister()):
+                rfree(final.accessor)
             return instr, o
 
         if(final.type.__eq__(dest.type)):
@@ -557,8 +577,9 @@ class Function:
         
         else:
 
-            if(not typematch(dest.type, final.type)):
-                throw(TypeMismatch(dest.token, dest.type, final.type))
+            #not needed error
+            #if(not typematch(dest.type, final.type)):
+            #throw(TypeMismatch(dest.token, dest.type, final.type))
 
 
 
@@ -600,6 +621,9 @@ class Function:
                     source = castdest
                 instr+=loadToReg(dest.accessor,source)
             
+            if(final.isRegister()):
+                rfree(final.accessor)
+
             rfree(castdest)
             #rfreeAll()
 
@@ -645,7 +669,6 @@ class Function:
             wasfunc=False
 
             self.advance()
-
 
 
 

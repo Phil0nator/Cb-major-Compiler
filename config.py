@@ -20,3 +20,9 @@ if(args.O2):
 elif(args.O3):
     __oplevel__ = 3
 GlobalCompiler = None
+
+REGISTERS = ["rax","rbx","rcx","rdx","rsi","rdi","r8","r9","r10","r11","r12","r13","r14","r15"
+            "al","bl","cl","dl","r8b","r9b","r10b","r11b","r12b","r13b","r14b","r15b"
+]
+for i in range(15):
+    REGISTERS.append(f"xmm{i}")

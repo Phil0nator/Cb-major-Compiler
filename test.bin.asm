@@ -1059,7 +1059,9 @@ M_SQRT2: dq 0x1.6a09e667f3bcdp+0
 M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
 M_MINZERO: dq -0x0.0p+0
 section .bss
+align 16
     
+    __heap_padding__: resz 1
 section .text
 global CMAIN
 
@@ -1072,7 +1074,8 @@ sub rsp, 16
 ;Load Parameter: [ Variable: double x @ 8]
 movsd [rbp-8], xmm0
 movsd xmm1, xmm0
-  xorpd xmm1, [M_MINZERO]
+  movsd xmm2, [M_MINZERO]
+  xorpd xmm1, xmm2
   andpd xmm0, xmm1
 ___double_abs_pdouble__return:
 leave
@@ -1134,6 +1137,25 @@ ___int_round_pdouble__return:
 leave
 ret
 
+;[ function double pow( [[ Variable: double base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_double_pow_pdoubleint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: double base @ 8]
+movsd [rbp-8], xmm0
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rdi
+dec rdi
+    _double_pow_pdoubleint_flp:
+    mulsd xmm0, xmm0
+    dec rdi
+    jnz _int_pow_pintint_flp
+___double_pow_pdoubleint__return:
+leave
+ret
+
 ;[ function double pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
 
 _double_pow_pintint:
@@ -1146,12 +1168,12 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 ;[[ id : base]]
 ;------------
-mov rcx, QWORD[rbp-8]
-mov rdi, rcx
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
 ;[[ id : exp]]
 ;------------
-mov rcx, QWORD[rbp-16]
-mov rsi, rcx
+mov rbx, QWORD[rbp-16]
+mov rsi, rbx
 mov rax, 0
 call _int_pow_pintint
 cvtsi2sd xmm0, rax
@@ -1231,12 +1253,12 @@ sub rsp, 24
 mov [rbp-8], rdi
 ;[[ id : a]]
 ;------------
-mov rcx, QWORD[rbp-8]
-mov QWORD[rbp-16], rcx
+mov rbx, QWORD[rbp-8]
+mov QWORD[rbp-16], rbx
 ;[[ id : ptr]]
 ;------------
-mov rcx, QWORD[rbp-16]
-mov rdi, rcx
+mov rbx, QWORD[rbp-16]
+mov rdi, rbx
 mov rax, 0
 call _void_print_pint
 ___void_print_pvoid.__return:
@@ -1253,15 +1275,15 @@ sub rsp, 16
 mov [rbp-8], rdi
 ;[[ id : a]]
 ;------------
-mov rcx, QWORD[rbp-8]
-mov rax, rcx
+mov rbx, QWORD[rbp-8]
+mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
 ;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rcx, STRING_CONSTANT_3
-mov rdi, rcx
+mov rbx, STRING_CONSTANT_3
+mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
 ;[[ int : 0]]
@@ -1273,8 +1295,8 @@ _LIFPOST_0x0:
 _LIFELSE_0x1:
 ;[[ id : STRING_CONSTANT_4]]
 ;------------
-mov rcx, STRING_CONSTANT_4
-mov rdi, rcx
+mov rbx, STRING_CONSTANT_4
+mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
 ;[[ int : 0]]
@@ -1323,8 +1345,8 @@ sub rsp, 16
 movsd [rbp-8], xmm0
 ;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rcx, STRING_CONSTANT_2
-mov rdi, rcx
+mov rbx, STRING_CONSTANT_2
+mov rdi, rbx
 ;[[ id : a]]
 ;------------
 movsd xmm7, QWORD[rbp-8]
@@ -1345,12 +1367,12 @@ sub rsp, 16
 mov [rbp-8], rdi
 ;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rcx, STRING_CONSTANT_1
-mov rdi, rcx
+mov rbx, STRING_CONSTANT_1
+mov rdi, rbx
 ;[[ id : a]]
 ;------------
-mov rcx, QWORD[rbp-8]
-mov rsi, rcx
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
 mov rax, 0
 call _void_printf_pchar.uint
 ___void_print_puint__return:
@@ -1367,12 +1389,12 @@ sub rsp, 16
 mov [rbp-8], rdi
 ;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rcx, STRING_CONSTANT_0
-mov rdi, rcx
+mov rbx, STRING_CONSTANT_0
+mov rdi, rbx
 ;[[ id : a]]
 ;------------
-mov rcx, QWORD[rbp-8]
-mov rsi, rcx
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
 mov rax, 0
 call _void_printf_pchar.int
 ___void_print_pint__return:
@@ -1575,40 +1597,16 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ $ : bool], [ id : argc]]
-;------------
-mov rbx, QWORD[rbp-8]
-mov QWORD[rbp-24], rbx
-;[[ ! : !], [ id : iffer]]
-mov rcx, QWORD[rbp-24]
-not rcx
-and rcx, 00000001b
-;------------
-mov rdi, rcx
-mov rax, 0
-call _void_print_pbool
 ;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
-leave
-ret
-
-;[ function void pee( [[ Variable: bool p @ 8]] ) ]
-
-_void_pee_pbool:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: bool p @ 8]
-mov [rbp-8], rdi
-___void_pee_pbool__return:
 leave
 ret
 

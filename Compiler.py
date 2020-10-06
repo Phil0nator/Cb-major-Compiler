@@ -36,6 +36,8 @@ class Compiler:
 
         self.heap_unnamed = 0
 
+        self.panicmode = False
+
     def isType(self, q):
         return self.getType(q) != None
 

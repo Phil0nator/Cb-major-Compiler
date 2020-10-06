@@ -81,7 +81,21 @@ function double pow(int base, int exp){
   __asm{"cvtsi2sd xmm0, rax"}
 
 }
+function double pow(double base, int exp){
 
+  __asm{"
+  
+    
+    dec rdi
+    _double_pow_pdoubleint_flp:
+    mulsd xmm0, xmm0
+    dec rdi
+    jnz _int_pow_pintint_flp
+  
+  
+  "}
+
+}
 
 
 
@@ -131,7 +145,8 @@ function double abs(double x){
 
   __asm{"
   movsd xmm1, xmm0
-  xorpd xmm1, [M_MINZERO]
+  movsd xmm2, [M_MINZERO]
+  xorpd xmm1, xmm2
   andpd xmm0, xmm1
   "}
 

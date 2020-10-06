@@ -1,3 +1,4 @@
+import config
 class ExpressionComponent:
     def __init__(self, accessor, t, isoperation=False,  constint=False, token=None):
         self.type = t
@@ -8,7 +9,7 @@ class ExpressionComponent:
         self.token = token
 
     def isRegister(self):
-        return isinstance(self.type, str) and self.type == "register" 
+        return isinstance(self.accessor, str) and self.accessor in config.REGISTERS  
 
     def isStackpop(self):
         return self.accessor == "pop"
