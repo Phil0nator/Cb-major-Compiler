@@ -102,3 +102,9 @@ class TypeMismatch(Error):
     def __init__(self,tok, a, b):
         self.tok=tok
         self.message = f"Invalid implicit typecast from {b} to {a} :"
+
+
+class AddressOfConstant(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = f"Taking address of constant value: "

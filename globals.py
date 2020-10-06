@@ -438,12 +438,13 @@ def TsCompatible(typea, typeb, fni):
 
 def typematch(a, b):
     if(isinstance(a, DType) and isinstance(b, DType)):
-        if(a.ptrdepth != b.ptrdepth): return False
         if(a.name == "void" or b.name == "void"): return True
+        if(a.ptrdepth != b.ptrdepth): return False
         if(a.isflt() and b.isflt()): return True
         
         if(isIntrinsic(a.name) and isIntrinsic(b.name)):
-            return True
+            if(type_precedence[a.name] > type_precedence[b.name]): return True
+            return False
         
 
     return False

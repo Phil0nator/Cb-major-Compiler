@@ -5,8 +5,12 @@
 function int main(int argc, char** argv){
 
 
-    bool man = !false;
-    print(man);
+    int* aptr = &argc;
+    print("test");
+    print(@aptr+2);
+    print("after");
+    
+
 
     return 0;
 }

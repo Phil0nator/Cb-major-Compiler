@@ -327,24 +327,21 @@ class Function:
         pcount = len(fn.parameters)
 
 
-        normsused = 0
         sseused = 0
         
         for p in types:
             if p.isflt():
                 sseused+=1
-            else:
-                normsused+=1
+
         ssevarsforrax = sseused
-        ssetotal = sseused
-        normtotal = normsused
+
 
         for i in range(pcount):
             if(fn.parameters[i].isflt()):
                 
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[ssetotal-sseused], fn.parameters[i].t.copy()))
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[i], fn.parameters[i].t.copy()))
             else:
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normtotal-normsused], fn.parameters[i].t.copy()))
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[i], fn.parameters[i].t.copy()))
         
             if(self.current_token.tok == ","):
                     self.advance()
@@ -464,16 +461,62 @@ class Function:
                         o = newt.copy()
                 else:
                     a = stack.pop()
-                    if(not typematch(BOOL, a.type)):
-                        throw(TypeMismatch(self.current_token,BOOL, a.type))
-                    if(a.isRegister()):
-                        areg = a.accessor
-                    else:
-                        areg = ralloc(False)
 
-                    instr+=boolmath(areg,None,e.accessor)
-                    o = BOOL.copy()
-                    stack.append(EC.ExpressionComponent(areg,BOOL.copy()))
+                    if(e.accessor == T_NOT):
+
+                        if(not typematch(BOOL, a.type)):
+                            throw(TypeMismatch(self.current_token,BOOL, a.type))
+                        if(a.isRegister()):
+                            areg = a.accessor
+                        else:
+                            areg = ralloc(False)
+
+                        instr+=boolmath(areg,None,e.accessor)
+                        o = BOOL.copy()
+                        stack.append(EC.ExpressionComponent(areg,BOOL.copy()))
+
+                    
+                    elif(e.accessor == T_REFRIZE):
+                        
+                        if( a.isconstint() ):
+
+                            throw(AddressOfConstant(self.current_token))
+
+                        elif( isinstance(a.accessor, Variable) ):
+                            
+                            result = ralloc(False)
+                            instr+=f"lea {result}, [rbp-{a.accessor.offset}]\n"
+                            o = a.type.copy()
+                            o.ptrdepth+=1
+                            stack.append(EC.ExpressionComponent(result, o.copy()))
+                        
+                        else:
+                            throw(AddressOfConstant(self.current_token))
+                        
+                    elif(e.accessor == T_DEREF):
+
+                        if( a.isconstint() ):
+
+                            throw(AddressOfConstant(self.current_token))
+
+                        elif(isinstance(a.accessor, Variable)):
+
+                            tmp = ralloc(False)
+                            instr+=f"mov {tmp}, {valueOf(a.accessor)}\n" 
+                            if(a.accessor.t.isflt()):
+                                oreg = ralloc(True)
+                                instr+=f"movsd {oreg}, [{tmp}]\n"
+                            else:
+                                oreg = ralloc(False)
+                                instr+=f"mov {oreg}, [{tmp}]\n"
+                            o = a.accessor.t.copy()
+                            o.ptrdepth-=1
+                            rfree(tmp)
+                            stack.append(EC.ExpressionComponent(oreg, o.copy()))
+
+                        
+
+
 
 
 
