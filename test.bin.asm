@@ -1020,10 +1020,7 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    FLT_CONSTANT_0: dq 0x1.4000000000000p+1
-FLT_CONSTANT_1: dq 0x1.c000000000000p+1
-FLT_CONSTANT_2: dq 0x1.8cccccccccccdp+2
-nullptr: DQ 0
+    nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
@@ -1033,20 +1030,20 @@ STRING_CONSTANT_1: db `%lu\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
 STRING_CONSTANT_3: db `True`, 0
 STRING_CONSTANT_4: db `False`, 0
-FLT_CONSTANT_3: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_4: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_5: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_6: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_7: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_8: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_9: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_10: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_11: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_12: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_13: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_14: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_15: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_16: dq -0x0.0p+0
+FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_13: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1066,36 +1063,6 @@ section .bss
 section .text
 global CMAIN
 
-;[ function int bruh( [[ Variable: double a @ 8]] ) ]
-_int_bruh_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: double a @ 8]
-movsd [rbp-8], xmm0
-;[[ id : a]]
-;------------
-movsd xmm7, QWORD[rbp-8]
-movsd xmm0, xmm7
-mov rax, 1
-call _double_sqrt_pdouble
-movq rax, xmm0
-push rax
-;[[ fn(x) : [ function double sqrt( [[ Variable: double a @ 0]] ) ] ]]
-;------------
-pop rax
-movq xmm0, rax
-mov rax, 1
-call _int_floor_pdouble
-push rax
-;[[ fn(x) : [ function int floor( [[ Variable: double x @ 0]] ) ] ]]
-;------------
-pop rax
-jmp ___int_bruh_pdouble__return
-___int_bruh_pdouble__return:
-leave
-ret
-
 ;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
 _int_main_pintchar..:
 push rbp
@@ -1105,42 +1072,6 @@ sub rsp, 24
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : FLT_CONSTANT_0]]
-;------------
-movsd xmm8, [FLT_CONSTANT_0]
-movsd xmm0, xmm8
-mov rax, 1
-call _int_bruh_pdouble
-push rax
-;[[ id : FLT_CONSTANT_1]]
-;------------
-movsd xmm8, [FLT_CONSTANT_1]
-movsd xmm0, xmm8
-mov rax, 1
-call _int_bruh_pdouble
-push rax
-;[[ fn(x) : [ function int bruh( [[ Variable: double a @ 8]] ) ] ]]
-;------------
-pop rax
-cvtsi2sd xmm0, rax
-mov rax, 0
-call _int_bruh_pdouble
-push rax
-;[[ ( : (], [ fn(x) : [ function int bruh( [[ Variable: double a @ 8]] ) ] ], [ * : *], [ int : 3], [ + : +], [ fn(x) : [ function int bruh( [[ Variable: double a @ 8]] ) ] ], [ ) : )], [ / : /], [ id : FLT_CONSTANT_2]]
-mov rcx, 3
-pop rbx
-imul rbx, rcx
-pop r10
-mov rcx, rbx
-add rcx, r10
-movsd xmm7, [FLT_CONSTANT_2]
-mov r10, rcx
-cvtsi2sd xmm8, r10
-divsd xmm7, xmm8
-;------------
-cvttsd2si rdi, xmm7
-mov rax, 1
-call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0
