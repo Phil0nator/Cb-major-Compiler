@@ -1,4 +1,4 @@
-#include "include/stddef.k"
+#include "include/std.k"
 
 function int bruh(){
     return 1;
@@ -10,13 +10,15 @@ function int beans(double amt, double p2){
 
 function int main(int argc, char** argv){
 
-    double test = 3.25/6;
+    int a = bruh();
 
-    int test2 = 256/test;
+    int b = bruh()+bruh();
 
-    bruh();
+    print("Hello World");
 
-    beans(test2, 0);
+    printf("Hello World %i\n", b);
+    
+    print(a);
 
     return 0;
 }

@@ -11,6 +11,9 @@ class ExpressionComponent:
     def isRegister(self):
         return isinstance(self.type, str) and self.type == "register" 
 
+    def isStackpop(self):
+        return self.accessor == "pop"
+
     def isconstint(self):
         return self.constint != False
 

@@ -500,6 +500,15 @@ def valueOf(x, dflt = False):
 
 def loadToReg(reg, value):
     if(reg == value):return ""
+    if(value == "pop"):
+        if(isinstance(reg, str)):
+            if("xmm" in reg):
+                pop = f"pop {rax}\n"
+                return f"{pop}movq {reg}, {rax}\n"
+            return f"pop {reg}\n"
+        elif(isinstance(reg, Variable)):
+            return f"pop {rax}\nmov {valueOf(reg)}, {rax}\n"
+
     if(isinstance(reg, str)):
         if("xmm" in reg):
             return f"movsd {reg}, {valueOf(value)}\n"

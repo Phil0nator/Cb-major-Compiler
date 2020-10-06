@@ -298,12 +298,13 @@ class Function:
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = VOID.copy()
             tmp = self.evaluateRightsideExpression("AMB", o)
+            
             if(self.current_token.tok == ","):
                 self.advance()
             types.append(o)
         if(self.current_token.tok != T_ENDL):
-            self.advance()
-
+            #self.advance()
+            pass
 
         fn = self.getFunction(fid,types)
         self.ctidx = start-1
@@ -337,8 +338,8 @@ class Function:
                     self.advance()
         
         if(self.current_token.tok != T_ENDL):
-            self.advance()
-        
+            #self.advance()
+            pass
 
 
 
@@ -472,7 +473,7 @@ class Function:
             else:
                 rfree(final.accessor)
             instr+=loadToReg(dest.accessor,final.accessor)
-        
+
         
         
         else:
@@ -502,11 +503,11 @@ class Function:
                     instr+=loadToReg(dest.accessor, castdest)
             
             else:
-                source = final
+                source = final.accessor
                 if(isinstance(final.accessor, Variable)):
                     instr+=loadToReg(castdest, final.accessor)
                     source = castdest
-                instr+=loadToReg(dest.accessor,source.accessor)
+                instr+=loadToReg(dest.accessor,source)
             
             rfree(castdest)
             rfreeAll()
@@ -524,17 +525,35 @@ class Function:
         opens = 1
         comment = ""
         exprtokens = []
+        instructions=""
+        wasfunc = False
         while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA:
+
             if(self.current_token.tok == T_CLSP):opens-=1
             elif(self.current_token.tok == T_OPENP):opens+=1
 
+            elif(self.current_token.tok == T_ID):
+                if(self.tokens[self.ctidx+1].tok == "("):
+                    wasfunc=True
+                    start = self.current_token.start.copy()
+                    fninstr, fn = self.buildFunctionCall()
+                    
+                    token =Token(T_FUNCTIONCALL,fninstr,start, self.current_token.start.copy())
+                    token.fn = fn
+                    exprtokens.append(token)
+                    instructions+=fninstr+"\n"
 
+                    if(fn.returntype.isflt()):
+                        instructions+=f"movq {rax}, {sse_return_register}\n"
+                    instructions+=f"push {norm_return_register}\n"
+                    
 
-
-            exprtokens.append(self.current_token)
-
+            if(not wasfunc):
+                exprtokens.append(self.current_token)
+            wasfunc=False
 
             self.advance()
+
 
 
 
@@ -544,7 +563,7 @@ class Function:
         
 
 
-        instructions=""
+
         if(config.DO_DEBUG):
             instructions+=f";{comment}\n\n"
         ins, ot = self.evaluatePostfix(destination, pf.createPostfix())
@@ -601,6 +620,7 @@ class Function:
 
     def buildBlankfnCall(self):
         instructions, fn = self.buildFunctionCall()
+        if(self.current_token.tok == ")"): self.advance()
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
         self.addline(instructions)
         self.advance()
