@@ -6,12 +6,9 @@ function int bruh(){
 
 function int main(int argc, char** argv){
 
-    int a = 36;
-    int b = a;
-    bool three = true;
+    double test = 3.25/6;
 
-
-
+    bruh();
 
     return 0;
 }

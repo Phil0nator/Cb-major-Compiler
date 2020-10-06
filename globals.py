@@ -171,10 +171,14 @@ def ralloc(flt):
 
                 
 def rfree(r):
+    
     if r in sse_scratch_registers:
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = False
-    else: norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = False
-
+    elif r in norm_scratch_registers: norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = False
+def rfreeAll():
+    for i in range(len(sse_scratch_registers_inuse)):
+        sse_scratch_registers_inuse[i]=False
+        norm_scratch_registers_inuse[i]=False
 
 
 
@@ -501,6 +505,7 @@ def loadToReg(reg, value):
         if(reg.t.isflt()):
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
+    
 
 def isfloat(x):
     if (isinstance(x, Token)):

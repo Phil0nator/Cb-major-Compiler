@@ -229,15 +229,15 @@ class Function:
         
         self.addline(f"jmp {comparisonlabel}")
         self.addline(f"{startlabel}:")
-        cmpinst, t = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy))
+        cmpinst = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy()))
         cmpinst += f"{check_fortrue}je {startlabel}\n"
-        self.ctidx-=2
-        self.advance()
+
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
         self.advance()
         self.beginRecursiveCompile()
         self.addline(f"{comparisonlabel}:")
         self.addline(cmpinst)
+        self.advance()
 
 
 
@@ -287,7 +287,23 @@ class Function:
         fn = None
         instructions = ""
 
+        self.advance()
+        if(self.current_token.tok != "("): throw(ExpectedToken(self.current_token,"("))
+        self.advance()
 
+        types = []
+
+        while self.current_token.tok != ")":
+            o = VOID.copy()
+            instructions += self.evaluateRightsideExpression("STACK", o)
+            types.append(o)
+        
+        fn = self.getFunction(fid,types)
+
+
+        self.advance()
+
+        instructions+=fncall(fn)
         return instructions, fn
 
         
@@ -371,7 +387,6 @@ class Function:
 
 
     def evaluatePostfix(self, dest, pfix):
-
         instr = ""
         stack = []
         sses = 0
@@ -409,6 +424,8 @@ class Function:
                 instr+=loadToReg(tmp, final.accessor)
                 final.accessor = tmp
                 rfree(tmp)
+            else:
+                rfree(final.accessor)
             instr+=loadToReg(dest.accessor,final.accessor)
         
         
@@ -441,11 +458,10 @@ class Function:
                 if(isinstance(final.accessor, Variable)):
                     instr+=loadToReg(castdest, final.accessor)
                     source = castdest
-                instr+=loadToReg(dest,source)
+                instr+=loadToReg(dest.accessor,source.accessor)
             
             rfree(castdest)
-
-
+            rfreeAll()
 
 
         return instr, o
@@ -454,15 +470,19 @@ class Function:
 
 
 
-    def evaluateRightsideExpression(self, destination):
+    def evaluateRightsideExpression(self, destination, otyperef=None):
         instructions = ""
         start = self.ctidx
         opens = 1
         comment = ""
         exprtokens = []
-        while opens>0 and self.current_token.tok != T_ENDL:
+        while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA:
             if(self.current_token.tok == T_CLSP):opens-=1
             elif(self.current_token.tok == T_OPENP):opens+=1
+
+
+
+
             exprtokens.append(self.current_token)
 
 
@@ -482,6 +502,8 @@ class Function:
         ins, ot = self.evaluatePostfix(destination, pf.createPostfix())
         instructions += ins
 
+        if(otyperef != None):
+            otyperef.load(ot)
         
         return instructions
 
@@ -531,8 +553,6 @@ class Function:
 
     def buildBlankfnCall(self):
         instructions, fn = self.buildFunctionCall()
-        self.ctidx-=2
-        self.advance()
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
         self.addline(instructions)
         self.advance()
@@ -549,7 +569,7 @@ class Function:
             offset = "rax"
         
         self.advance()
-        ev, o = self.evaluateRightsideExpression(EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t))
+        ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t)                )
         self.addline(inst)
         self.addline(ev)
 

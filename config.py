@@ -19,3 +19,4 @@ if(args.O2):
     __oplevel__ = 2
 elif(args.O3):
     __oplevel__ = 3
+GlobalCompiler = None

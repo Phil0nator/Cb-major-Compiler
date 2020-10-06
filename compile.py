@@ -37,7 +37,7 @@ def main():
     totals = pp.process()
     print("+-+-+ Compile +-+-+")
     c = Compiler()
-
+    config.GlobalCompiler = c
     
 
     for file in totals:
@@ -61,7 +61,7 @@ def main():
     
     
     print("+-+-+ FINAL +-+-+")
-    
+
     with open(config.__fileoutput__+".asm", "wb") as f:
         f.write(asm.encode())
 

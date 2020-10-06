@@ -1020,7 +1020,8 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullptr: DQ 0
+    FLT_CONSTANT_0: dq 0x1.a000000000000p+1
+nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
@@ -1047,35 +1048,23 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 48
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 36]]
+;[[ id : FLT_CONSTANT_0], [ / : /], [ int : 6]]
+movsd xmm7, [FLT_CONSTANT_0]
+mov rbx, 6
+cvttsd2si xmm8, rbx
+divsd xmm7, xmm8
 ;------------
-mov QWORD[rbp-24], 36
-;[[ id : a]]
+movsd QWORD[rbp-24], xmm7
+call _int_bruh_p
+;[[ int : 0]]
 ;------------
-mov rbx, QWORD[rbp-24]
-mov QWORD[rbp-32], rbx
-;[[ id : true]]
-;------------
-mov rbx, [true]
-mov QWORD[rbp-40], rbx
-;[[ id : three], [ && : &&], [ id : false], [ ) : )]]
-mov rcx, [false]
-mov rbx, QWORD[rbp-40]
-and bl, cl
-;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-jne _LIFPOST_0x0
-PRINT_DEC 8, rsi
-jmp _LIFELSE_0x1
-_LIFPOST_0x0:
-_LIFELSE_0x1:
+mov rax, 0
+jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
 leave
 ret

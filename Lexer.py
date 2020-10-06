@@ -41,10 +41,11 @@ class Lexer:
         num = self.ch
         begin = self.loc.copy()
         self.advance()
-
-        while self.ch in T_DIGITS+T_DOT+"e"+"-":
+        pchars = T_DIGITS+T_DOT+"e"
+        while self.ch in pchars:
             num+=self.ch
             self.advance()
+            if("e" in pchars): pchars+="-"
 
         t = T_INT
         if(T_DOT in num or "e" in num):

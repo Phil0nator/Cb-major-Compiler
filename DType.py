@@ -1,3 +1,4 @@
+import config
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0, signed=True):
         self.name=name
@@ -11,6 +12,9 @@ class DType:
             return 8
         return self.s
     
+    def load(self, other):
+        self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed)
+
     def copy(self):
         return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth, signed=self.signed)
 
@@ -19,7 +23,7 @@ class DType:
 
     def __eq__(self, other):
         if(isinstance(other, DType)):
-            return self.name == other.name and self.ptrdepth == other.ptrdepth and self.signed == other.signed 
+            return (self.name == other.name or config.GlobalCompiler.Tequals(self.name, other.name)) and self.ptrdepth == other.ptrdepth and self.signed == other.signed 
         else:
             return False
 
