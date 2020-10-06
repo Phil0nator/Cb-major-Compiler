@@ -53,7 +53,7 @@ type_precedence = {
 
 def determinePrecedence(a, b):
     # preq : must have typematch
-
+    
     if(type_precedence[a.name] > type_precedence[b.name]):
         return a, b
     else:

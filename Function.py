@@ -284,6 +284,7 @@ class Function:
 
     def buildFunctionCall(self):
         fid = self.current_token.value
+        fnstartt = self.current_token
         fn = None
         instructions = ""
 
@@ -294,7 +295,6 @@ class Function:
         types = []
 
         start = self.ctidx
-
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = VOID.copy()
             tmp = self.evaluateRightsideExpression("AMB", o)
@@ -309,7 +309,8 @@ class Function:
         fn = self.getFunction(fid,types)
         self.ctidx = start-1
         self.advance()
-
+        if(fn == None):
+            throw(UnkownFunction(fnstartt,fid,types))
         pcount = len(fn.parameters)
 
 
@@ -328,10 +329,10 @@ class Function:
         for i in range(pcount, 0, -1):
             if(fn.parameters[i-1].isflt()):
                 
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[ssetotal-sseused], fn.parameters[i-1].t.copy()))
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[ssetotal-sseused], fn.parameters[pcount-i].t.copy()))
                 sseused-=1
             else:
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normtotal-normsused], fn.parameters[i-1].t.copy()))
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normtotal-normsused], fn.parameters[pcount-i].t.copy()))
                 normsused-=1
         
             if(self.current_token.tok == ","):
@@ -477,7 +478,11 @@ class Function:
         
         
         else:
-            
+
+            if(not typematch(dest.type, final.type)):
+                throw(TypeMismatch(self.current_token, dest.type, final.type))
+
+
 
             twoStep = False
             if(isinstance(dest.accessor, Variable)):

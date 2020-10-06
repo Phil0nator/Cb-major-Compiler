@@ -1269,10 +1269,12 @@ sub rsp, 16
 mov [rbp-8], rdi
 ;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rdi, STRING_CONSTANT_0
+mov rbx, STRING_CONSTANT_0
+mov rdi, rbx
 ;[[ id : a]]
 ;------------
-mov rsi, QWORD[rbp-8]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
 mov rax, 0
 call _void_printf_pchar.int
 ___void_print_pint__return:
@@ -1288,7 +1290,8 @@ sub rsp, 16
 mov [rbp-8], rdi
 ;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rdi, STRING_CONSTANT_1
+mov rbx, STRING_CONSTANT_1
+mov rdi, rbx
 ;[[ id : a]]
 ;------------
 mov rsi, QWORD[rbp-8]
@@ -1307,7 +1310,8 @@ sub rsp, 16
 movsd [rbp-8], xmm0
 ;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rdi, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_2
+mov rdi, rbx
 ;[[ id : a]]
 ;------------
 cvttsd2si rsi, QWORD[rbp-8]
