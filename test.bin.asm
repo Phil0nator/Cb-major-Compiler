@@ -1182,8 +1182,8 @@ mov rbp, rsp
 sub rsp, 24
 mov [rbp-8], rdi
 ;------------
-mov rbx, QWORD[rbp-8]
-mov QWORD[rbp-16], rbx
+mov rcx, QWORD[rbp-8]
+mov QWORD[rbp-16], rcx
 ;------------
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
@@ -1198,8 +1198,8 @@ mov rbp, rsp
 sub rsp, 16
 mov [rbp-8], rdi
 ;------------
-mov rbx, STRING_CONSTANT_3
-mov rdi, rbx
+mov rcx, STRING_CONSTANT_3
+mov rdi, rcx
 mov rax, 0
 call _void_print_pchar.
 ;------------
@@ -1234,8 +1234,8 @@ mov rbp, rsp
 sub rsp, 16
 movsd [rbp-8], xmm0
 ;------------
-mov rbx, STRING_CONSTANT_2
-mov rdi, rbx
+mov rcx, STRING_CONSTANT_2
+mov rdi, rcx
 ;------------
 movsd xmm7, QWORD[rbp-8]
 movsd xmm1, xmm7
@@ -1250,11 +1250,11 @@ mov rbp, rsp
 sub rsp, 16
 mov [rbp-8], rdi
 ;------------
-mov rbx, STRING_CONSTANT_1
-mov rdi, rbx
+mov rcx, STRING_CONSTANT_1
+mov rdi, rcx
 ;------------
-mov rbx, QWORD[rbp-8]
-mov rsi, rbx
+mov rcx, QWORD[rbp-8]
+mov rsi, rcx
 mov rax, 0
 call _void_printf_pchar.uint
 ___void_print_puint__return:
@@ -1266,11 +1266,11 @@ mov rbp, rsp
 sub rsp, 16
 mov [rbp-8], rdi
 ;------------
-mov rbx, STRING_CONSTANT_0
-mov rdi, rbx
+mov rcx, STRING_CONSTANT_0
+mov rdi, rcx
 ;------------
-mov rbx, QWORD[rbp-8]
-mov rsi, rbx
+mov rcx, QWORD[rbp-8]
+mov rsi, rcx
 mov rax, 0
 call _void_printf_pchar.int
 ___void_print_pint__return:
@@ -1417,9 +1417,25 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 32
 mov [rbp-8], rdi
 mov [rbp-16], rsi
+mov rcx, QWORD[rbp-8]
+mov rbx, 200
+xor rdx, rdx
+mov rax,rbx
+idiv rcx
+mov rbx, rax
+mov r10, 60
+mov rcx, rbx
+imul rcx, r10
+;------------
+mov QWORD[rbp-24], rcx
+;------------
+mov rcx, QWORD[rbp-24]
+mov rdi, rcx
+mov rax, 0
+call _void_print_pint
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return

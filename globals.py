@@ -590,7 +590,7 @@ def doIntOperation(areg, breg, op, signed):
         else:
             asmop = "div"
         
-        return f"xor rdx, rdx\nmov{rax},{areg}\n{asmop} {breg}\nmov {areg}, {rax}\n"
+        return f"xor rdx, rdx\nmov {rax},{areg}\n{asmop} {breg}\nmov {areg}, {rax}\n"
     
     elif(op == "mov"):
         return f"mov {areg}, {breg}\n"
