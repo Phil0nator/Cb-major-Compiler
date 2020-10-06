@@ -2,6 +2,7 @@ from DType import *
 from Variable import *
 from Token import *
 import time
+import ExpressionComponent as EC
 
 
 
@@ -59,6 +60,24 @@ r13b = "r13b"
 r14b = "r14b"
 r15b = "r15b"
 
+boolchar_version = {
+
+    rax:al,
+    rbx:bl,
+    rcx:cl,
+    rdx:dl,
+    r8:r8b,
+    r9:r9b,
+    r10:r10b,
+    r11:r11b,
+    r12:r12b,
+    r13:r13b,
+    r14:r14b,
+    r15:r15b
+
+
+}
+
 
 # parameters:
 
@@ -87,8 +106,10 @@ sse_parameter_registers = [
 ]
 
 
-nrom_scratch_registers = [
-
+norm_scratch_registers = [
+    
+    rbx,
+    rcx,
     r10,
     r11,
     r12,
@@ -100,7 +121,8 @@ nrom_scratch_registers = [
 
 sse_scratch_registers = [
 
-
+    xmm7,
+    xmm8,
     xmm9,
     xmm10,
     xmm11,
@@ -110,6 +132,48 @@ sse_scratch_registers = [
 
 ]
 
+sse_scratch_registers_inuse = [
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False
+]
+
+norm_scratch_registers_inuse = [
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False
+]
+
+def ralloc(flt):
+    if(flt):
+        for i in range(len(sse_scratch_registers_inuse)):
+            if(not sse_scratch_registers_inuse[i]):
+                out = sse_scratch_registers[i]
+                sse_scratch_registers_inuse[i]=True
+                return out
+
+    else:
+        for i in range(len(norm_scratch_registers_inuse)):
+            if(not norm_scratch_registers_inuse[i]):
+                out = norm_scratch_registers[i]
+                norm_scratch_registers_inuse[i]=True
+                return out
+
+                
+def rfree(r):
+    if r in sse_scratch_registers:
+        sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = False
+    else: norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = False
 
 
 
@@ -140,13 +204,12 @@ fileTemplate = "%s\n\n%s"%(io64,stub)
 INT = DType("int", 8)
 CHAR = DType("char", 1)
 DOUBLE = DType("double", 8)
-FLOAT = DType("float", 8)
 VOID = DType("void", 8)
 BOOL = DType("bool", 1)
 
 
 
-INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,FLOAT,VOID]
+INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,VOID]
 
 false = (0)
 true = (255)
@@ -310,7 +373,7 @@ def getHeapReserver(t):
 
 def createIntrinsicConstant(variable):
     
-    if((variable.t.name == DOUBLE.name or variable.t.name == FLOAT.name)):
+    if((variable.t.isflt())):
 
         #return "%s: dq __float32__(%s)\n"%(variable.name, (variable.initializer))
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
@@ -356,19 +419,29 @@ def movVarHeap(vd, vs):
 
 
 #compiletime:
-
+def isIntrinsic(q):
+    for t in INTRINSICS:
+        if q == t.name:
+            return True
+    return False
 
 def TsCompatible(typea, typeb, fni):
-    t1 = typea.__repr__()
-    t2 = typeb.__repr__()
-    if t1 == t2 : return True
-    if typea.name == "void" or typea.name == "void": return True
-    if(typematch(typea, typeb)): return True
-    for td in fni.compiler.tdefs:
-        if (t1 == td[0].__repr__() and t2 == td[1].__repr__()) or (t2 == td[1].__repr__() and t1 == td[0].__repr__()):
+    return typematch(typea, typeb)
+
+
+def typematch(a, b):
+    if(isinstance(a, DType) and isinstance(b, DType)):
+        if(a.ptrdepth != b.ptrdepth): return False
+        if(a.name == "void" or b.name == "void"): return True
+        if(a.isflt() and b.isflt()): return True
+        
+        if(isIntrinsic(a.name) and isIntrinsic(b.name)):
             return True
-    
+        
+
     return False
+
+
 
 
 
@@ -412,19 +485,18 @@ def valueOf(x, dflt = False):
             return "[rbp-%s]"%(x.offset)
     elif (isinstance(x, int)):
         return (x)
-    
 
-def loadToAB(a, b):
-    return "mov %s, %s\n%s"%(rbx, valueOf(b), "mov %s, %s\n"%(rax, valueOf(a)))
 
-def loadTo78(a, b):
-    return f"movsd {xmm7}, {valueOf(a)}\nmovsd {xmm8}, {valueOf(b)}\n"
-
-def loadFI(a, b):
-    return f"movsd {xmm7}, {valueOf(a)}\nmov {rax}, {valueOf(b)}\ncvtsi2sd {xmm8}, {rax}\n"
-
-def loadIF(a, b):
-    return f"mov {rax}, {valueOf(a)}\ncvtsi2sd {xmm7}, {rax}\nmovsd {xmm8}, {valueOf(b)}\n"
+def loadToReg(reg, value):
+    if(reg == value):return ""
+    if(isinstance(reg, str)):
+        if("xmm" in reg):
+            return f"movsd {reg}, {valueOf(value)}\n"
+        return f"mov {reg}, {valueOf(value)}\n"
+    elif(isinstance(reg, Variable)):
+        if(reg.t.isflt()):
+            return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+        return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
 def isfloat(x):
     if (isinstance(x, Token)):
@@ -443,32 +515,6 @@ def isfloat(x):
 
 
 
-def addI():
-    return f"add {rax}, {rbx}\n"
-def addF():
-    return f"addsd {xmm7}, {xmm8}\n"
-
-def subI():
-    return f'sub {rax}, {rbx}\n'
-def subF():
-    return f"subsd {xmm7}, {xmm8}\n"
-
-def mulI():
-    return f"imul {rax}, {rbx}\n"
-def mulUI():
-    return f"xor {rdx},{rdx}\nmul {rbx}\n"
-
-def mulF():
-    return f"mulsd {xmm7}, {xmm8}\n"
-
-def divI():
-    return f"xor rdx, rdx\nidiv {rbx}\n"
-def divUI():
-    return f"xor rdx, rdx\ndiv {rbx}\n"
-
-def divF():
-    return f"divsd {xmm7}, {xmm8}\n"
-
 total_labelCounter = -1
 def getLogicLabel(inf):
     global total_labelCounter
@@ -476,13 +522,67 @@ def getLogicLabel(inf):
     return f"_L{inf}_{hex(total_labelCounter)}"
 
 
-def cmpI(signed, op):
+def operatorISO(op):
+    return op in ["!", "@", "&", "$"]
+
+
+def calculateConstant(a, b, op):
+    if(op == "*"):
+        return EC.ExpressionComponent(int(a.accessor*b.accessor), INT.copy(), constint=True)
+    elif(op == "/"):
+        return EC.ExpressionComponent(int(a.accessor/b.accessor),INT.copy(), constint=True)
+    elif(op == "+"):
+        return EC.ExpressionComponent(int(a.accessor+b.accessor),INT.copy(), constint=True)
+    elif(op == "-"):
+        return EC.ExpressionComponent(int(a.accessor-b.accessor),INT.copy(), constint=True)
+    elif(op == "=="):
+        return EC.ExpressionComponent(int(a.accessor==b.accessor),INT.copy(), constint=True)
+    elif(op == "!="):
+        return EC.ExpressionComponent(int(a.accessor!=b.accessor),INT.copy(), constint=True)
+    elif(op == "<="):
+        return EC.ExpressionComponent(int(a.accessor<=b.accessor),INT.copy(), constint=True)
+    elif(op == ">="):
+        return EC.ExpressionComponent(int(a.accessor>=b.accessor),INT.copy(), constint=True)
+    elif(op == ">"):
+        return EC.ExpressionComponent(int(a.accessor>b.accessor),INT.copy(), constint=True)
+    elif(op == "<"):
+        return EC.ExpressionComponent(int(a.accessor<b.accessor),INT.copy(), constint=True)
+
+
+
+def doIntOperation(areg, breg, op, signed):
+    if(op == "+"):
+        return f"add {areg}, {breg}\n"
+    elif(op == "-"):
+        return f"sub {areg}, {breg}\n"
+    elif(op == "*" and signed):
+        return f"imul {areg}, {breg}\n"
+    elif(op == "*"):
+        return f"mov {rax},{areg}\nmul {breg}\nmov {areg}, {rax}\n"
+    elif(op == "/"):
+        if(signed):
+            asmop = "idiv"
+        else:
+            asmop = "div"
+        
+        return f"xor rdx, rdx\nmov{rax},{areg}\n{asmop} {breg}\nmov {areg}, {rax}\n"
+    
+    elif(op == "mov"):
+        return f"mov {areg}, {breg}\n"
+
+    elif(op in ["==","!=",">","<","<=",">="]):
+        return cmpI(boolchar_version[areg],boolchar_version[breg],signed,op)
+    elif(op in ["!","&&","||","^"]):
+        return boolmath(boolchar_version[areg],boolchar_version[breg],op)
+
+
+def cmpI(areg, breg,signed, op):
     infl = getLogicLabel("CMPI")
     inflpost = getLogicLabel("CMPIPOST")
     comparator = getComparater(signed, op)
-    return f"cmp rax, rbx\n{comparator} {infl}\nxor rax, rax\njmp {inflpost}\n{infl}:\nmov rax, 255\n{inflpost}:\n"
+    return f"cmp {areg}, {breg}\n{comparator} {infl}\nxor {areg}, {areg}\njmp {inflpost}\n{infl}:\nmov {areg}, 255\n{inflpost}:\n"
 
-def boolmath(op):
+def boolmath(areg, breg,op):
     cmd = ""
     if(op == "||"):
         cmd = "or"
@@ -491,93 +591,60 @@ def boolmath(op):
     elif(op == "^"):
         cmd = "xor"
     elif(op == "!"):
-        instr = f"not al\n"
-        instr += f"and al, 00000001b\n"
+        instr = f"not {areg}\n"
+        instr += f"and {areg}, 00000001b\n"
         return instr
         
-    instr = f"{cmd} al, bl\n"
+    instr = f"{cmd} {areg}, {breg}\n"
     return instr
 
 
-def doOperation(a, b, o, d, caller):
-    instr = "\n"
-    if(o in ["||","&&","^", "!"]):
-        #instr += "xor rax, rax\nxor rbx,rbx\n"
-        instr+="xor rax, rax\n"
 
-    if(o == "!"):
-        instr+="mov %s, %s\n"%(rax, valueOf(b))
-    elif(o == T_REFRIZE):
-        pass
-    elif(o == T_DEREF):
-        instr+="mov %s, %s\n"%(rax, valueOf(b))
-    else:
 
-        if(isfloat(a) and isfloat(b)):
-            instr+=loadTo78(a,b)
-        elif(isfloat(a) and not isfloat(b)):
-            instr+=loadFI(a,b)
-        elif (not isfloat(a) and isfloat(b)):
-            instr+=loadIF(a,b)
-        else:
-            instr+=loadToAB(a,b)
+
+
+
+
+
+
+
+
+
+
+def doFloatOperation(areg, breg, op):
+    asmop = ""
+    if(op == "+"):
+        asmop = "addsd"
+    elif(op == "-"):
+        asmop="subsd"
+    elif(op == "*"):
+        asmop="mulsd"
+    elif(op == "/"):
+        asmop="divsd"
+    elif(op == "mov"):
+        asmop="movsd"
     
-    if(isfloat(a) or isfloat(b)) and o != T_REFRIZE:
-        if(o == "+"):
-            instr+=addF()
-        elif(o == "-"):
-            instr+=subF()
-        elif(o == "/"):
-            instr+=divF()
-        elif(o=="*"):
-            instr+=mulF()
-
-
-        instr += f"movsd {d}, {xmm7}\n"
-
-    else:
-        if(o == "+"):
-            instr+=addI()
-        elif(o == "-"):
-            instr+=subI()
-        elif(o == "/"):
-
-            if(isinstance(a,Variable) and not a.signed) or (isinstance(b, Variable) and not b.signed):
-                instr+=divUI()
-            else:
-                instr+=divI()
-        
-        elif(o=="*"):
-            if(isinstance(a,Variable) and not a.signed) or (isinstance(b, Variable) and not b.signed):
-                instr+=mulUI()
-            else:
-                instr+=mulI()
-        elif(o in ["==","!=",">","<","<=",">="]):
-            if(isinstance(a,Variable) and not a.signed) or (isinstance(b, Variable) and not b.signed):
-                instr+=cmpI(False, o)
-            else:
-                instr+=cmpI(True, o)
-
-        elif(o in ["||","&&","^", "!"]):
-            
-            instr+=boolmath(o)
+    return f"{asmop} {areg}, {breg}\n"
     
-        elif(o == "&"):
-            if(isinstance(b, int)):
-                v = Variable(INT.copy(),"--LOCATIONVAR-%s"%time.time().hex()[:10])
-                caller.addVariable(v)
-                instr+=f"mov qword{valueOf(v)}, {b}\n"
-                instr+=f"lea {rax}, {valueOf(v)}\n"
-            elif(isinstance(b, str)):
-                instr+=f"lea {rax}, [{b}]\n"
-            else:
-                instr+= f"lea {rax}, {valueOf(b)}\n"
-        elif(o == T_DEREF):
-            if(isinstance(b, Variable) or isinstance(b, str)):
-                instr+=f"mov {rax}, [{rax}]\n"
-            
 
-        instr += f"mov {d}, {rax}\n"
+def doOperation(areg, breg, op, signed = False):
+    if("xmm" in areg and "xmm" in breg):
+        return doFloatOperation(areg, breg, op)
+    elif("xmm" not in areg and "xmm" not in breg):
+        return doIntOperation(areg,breg,op, signed)
+    else:
+        print("fatal type mismatch: unkown.")
+        exit(1)
 
 
-    return instr
+
+
+
+def castABD(a, b, areg, breg, newbreg):
+    if(not a.type.isflt() and not b.type.isflt()):
+        return False
+    if(a.type.isflt() and not b.type.isflt()):
+        return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
+    if(b.type.isflt() and not a.type.isflt()):
+        return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
+    return False

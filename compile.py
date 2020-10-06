@@ -25,6 +25,7 @@ from Linker import *
 import config
 
 def main():
+
     beginTime = time.time()
     with open(config.__fileinput__, "rb") as inpf:
         raw = inpf.read().decode()

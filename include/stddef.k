@@ -32,3 +32,8 @@ typedef char i8_t; /* 8 bit signed type */
 */
 const bool true  = 1;
 const bool false = 0;
+
+/*
+  * float == double
+*/
+typedef double float;

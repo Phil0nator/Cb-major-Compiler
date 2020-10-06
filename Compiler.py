@@ -132,7 +132,7 @@ class Compiler:
                 
                     self.advance()
 
-                    if(self.current_token.tok not in ["int","bool","char","double","float","id"]): throw(ExpectedValue(self.current_token))
+                    if(not self.isIntrinsic(self.current_token.tok)): throw(ExpectedValue(self.current_token))
 
                     if (intr!=None and self.current_token.tok != T_ID):
 
