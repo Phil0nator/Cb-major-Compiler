@@ -2,7 +2,8 @@
   * <math.k> includes some commonly used math functions and constants
 */
 
-#define MAX_INT 9223372036854775807
+unsigned int MAXUINT = -1;
+
 
 const double EPSILON        = 1.192092896e-32;          /* smallest respresentable double value greater than 0  */
 const double M_PI           = 3.14159265358979323846;   /* PI                                                   */

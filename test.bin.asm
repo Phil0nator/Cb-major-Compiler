@@ -1020,18 +1020,16 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `Hello World!`, 0
-STRING_CONSTANT_1: db `AT: %i, %i\n`, 0
-nullptr: DQ 0
+    nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_2: db `%li\n`, 0
-STRING_CONSTANT_3: db `%lu\n`, 0
-STRING_CONSTANT_4: db `%lf\n`, 0
-STRING_CONSTANT_5: db `True`, 0
-STRING_CONSTANT_6: db `False`, 0
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
 FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
 FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
 FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
@@ -1062,7 +1060,7 @@ M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
 M_MINZERO: dq -0x0.0p+0
 section .bss
 align 16
-    
+    MAXUINT: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
@@ -1281,10 +1279,10 @@ mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0xc
-;[[ id : STRING_CONSTANT_5]]
+jne _LIFPOST_0x0
+;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1292,12 +1290,12 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
-jmp _LIFELSE_0xd
-_LIFPOST_0xc:
-_LIFELSE_0xd:
-;[[ id : STRING_CONSTANT_6]]
+jmp _LIFELSE_0x1
+_LIFPOST_0x0:
+_LIFELSE_0x1:
+;[[ id : STRING_CONSTANT_4]]
 ;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1345,9 +1343,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;[[ id : STRING_CONSTANT_4]]
+;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1367,9 +1365,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_3]]
+;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rbx, STRING_CONSTANT_3
+mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1389,9 +1387,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_2]]
+;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rbx, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1599,83 +1597,15 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
 ;[[ int : 0]]
 ;------------
-mov QWORD[rbp-24], 0
-jmp _LFORCMP_0x1
-_LFORTOP_0x0:
-;[[ int : 0]]
-;------------
-mov QWORD[rbp-32], 0
-jmp _LFORCMP_0x7
-_LFORTOP_0x6:
-;[[ id : STRING_CONSTANT_0]]
-;------------
-mov rbx, STRING_CONSTANT_0
-mov rdi, rbx
 mov rax, 0
-call _void_print_pchar.
-;[[ id : STRING_CONSTANT_1]]
-;------------
-mov rbx, STRING_CONSTANT_1
-mov rdi, rbx
-;[[ id : i]]
-;------------
-mov rbx, QWORD[rbp-24]
-mov rsi, rbx
-;[[ id : j]]
-;------------
-mov rbx, QWORD[rbp-32]
-mov rdx, rbx
-mov rax, 0
-call _void_printf_pchar.intint
-mov rcx, 1
-mov rbx, QWORD[rbp-32]
-add rbx, rcx
-;------------
-mov QWORD[rbp-32], rbx
-_LFORCMP_0x7:
-;[[ id : j], [ < : <], [ int : 10]]
-mov rcx, 10
-mov rbx, QWORD[rbp-32]
-cmp bl, cl
-jl _LCMPI_0xa
-xor bl, bl
-jmp _LCMPIPOST_0xb
-_LCMPI_0xa:
-mov bl, 255
-_LCMPIPOST_0xb:
-;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-je _LFORTOP_0x6
-mov rcx, 1
-mov rbx, QWORD[rbp-24]
-add rbx, rcx
-;------------
-mov QWORD[rbp-24], rbx
-_LFORCMP_0x1:
-;[[ id : i], [ < : <], [ int : 10]]
-mov rcx, 10
-mov rbx, QWORD[rbp-24]
-cmp bl, cl
-jl _LCMPI_0x4
-xor bl, bl
-jmp _LCMPIPOST_0x5
-_LCMPI_0x4:
-mov bl, 255
-_LCMPIPOST_0x5:
-;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-je _LFORTOP_0x0
+jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
 leave
 ret
@@ -1685,6 +1615,6 @@ CMAIN:
     xor rax, rax
     ;rsi     ;commandline args
     ;rdi
-    
+    mov QWORD[MAXUINT], -1
     call _int_main_pintchar..
     ret

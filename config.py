@@ -10,14 +10,14 @@ parser.add_argument("-O3","--optimize3",action="store_true", default=False, help
 args = parser.parse_args()
 __fileinput__=args.input
 __fileoutput__=args.output
-__tonasm__=args.nasm
-__autorun__=args.r
-__dbg__ = args.g
-DO_DEBUG = args.g
+__tonasm__=args.assembly
+__autorun__=args.run
+__dbg__ = args.debug
+DO_DEBUG = args.debug
 __oplevel__ = 1
-if(args.O2):
+if(args.optimize2):
     __oplevel__ = 2
-elif(args.O3):
+elif(args.optimize3):
     __oplevel__ = 3
 GlobalCompiler = None
 
