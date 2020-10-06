@@ -1,4 +1,4 @@
-from Variable import Variable
+from Classes.Variable import Variable
 class ExpressionComponent:
     def __init__(self, accessor, t, isoperation=False,  constint=False):
         self.type = t

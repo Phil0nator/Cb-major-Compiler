@@ -1,5 +1,5 @@
-from Location import *
-from Token import *
+from Classes.Location import *
+from Classes.Token import *
 from globals import *
 class Lexer:
     def __init__(self, fname, raw):

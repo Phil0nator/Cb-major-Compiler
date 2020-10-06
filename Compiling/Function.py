@@ -1,13 +1,13 @@
 from globals import *
-from Variable import *
-from DType import *
-from Token import *
-from Error import *
-from Postfixer import *
-import Optimizer
+from Classes.Variable import *
+from Classes.DType import *
+from Classes.Token import *
+from Classes.Error import *
+from Lexing.Postfixer import *
+import Classes.Optimizer
 import config
 import time
-import ExpressionComponent as EC
+import Classes.ExpressionComponent as EC
 
 
 def product(arr):

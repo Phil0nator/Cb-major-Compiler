@@ -1,9 +1,9 @@
-from Variable import *
+from Classes.Variable import *
 from globals import *
-from token import *
-from Error import *
+from Classes.Token import *
+from Classes.Error import *
 
-import ExpressionComponent as EC
+import Classes.ExpressionComponent as EC
 class Postfixer:
     def __init__(self, tokens, fn):
         self.tokens = tokens

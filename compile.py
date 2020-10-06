@@ -11,16 +11,16 @@
 import time
 import os
 import argparse as arg
-from Error import *
+from Classes.Error import *
 from globals import *
 
-from Variable import *
-from Function import *
-from DType import *
-from Token import *
-from Location import *
-from PreParser import *
-from Compiler import *
+from Classes.Variable import *
+from Compiling.Function import *
+from Classes.DType import *
+from Classes.Token import *
+from Classes.Location import *
+from Lexing.PreParser import *
+from Compiling.Compiler import *
 from Linker import *
 import config
 

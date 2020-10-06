@@ -1,10 +1,10 @@
-from Variable import *
-from Function import *
-from DType import *
-from Token import *
-from Location import *
-from Lexer import *
-from Error import *
+from Classes.Variable import *
+from Compiling.Function import *
+from Classes.DType import *
+from Classes.Token import *
+from Classes.Location import *
+from Lexing.Lexer import *
+from Classes.Error import *
 import config
 class Compiler:
 

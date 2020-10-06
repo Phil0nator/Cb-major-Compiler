@@ -1,6 +1,6 @@
-from Token import *
-from Location import *
-from Error import *
+from Classes.Token import *
+from Classes.Location import *
+from Classes.Error import *
 def join(arr, d):
     out = ""
     for s in arr:

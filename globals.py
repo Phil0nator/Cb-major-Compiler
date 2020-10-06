@@ -1,8 +1,8 @@
-from DType import *
-from Variable import *
-from Token import *
+from Classes.DType import *
+from Classes.Variable import *
+from Classes.Token import *
 import time
-import ExpressionComponent as EC
+import Classes.ExpressionComponent as EC
 
 
 
