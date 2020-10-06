@@ -6,11 +6,11 @@ function int bruh(){
 
 function int main(int argc, char** argv){
 
-    int test = (argc*32)/26.25;
+    int a = 36;
+    int b = a;
+    bool three = true;
 
-    if(true){
-        __asm{"PRINT_DEC 8, rax "}
-    }
+
 
 
     return 0;

@@ -370,6 +370,9 @@ def getHeapReserver(t):
     if t.isptr: return "RESQ 1"
     return "RESB %s"%t.t.size(0)
 
+def getSizeSpecifier(t):
+
+    return "QWORD"
 
 def createIntrinsicConstant(variable):
     
@@ -482,7 +485,7 @@ def valueOf(x, dflt = False):
                 return f"{x.name}"
             return f"[{x.name}]"
         else:
-            return "[rbp-%s]"%(x.offset)
+            return f"{getSizeSpecifier(x.t)}[rbp-{x.offset}]"
     elif (isinstance(x, int)):
         return (x)
 
@@ -494,6 +497,7 @@ def loadToReg(reg, value):
             return f"movsd {reg}, {valueOf(value)}\n"
         return f"mov {reg}, {valueOf(value)}\n"
     elif(isinstance(reg, Variable)):
+        
         if(reg.t.isflt()):
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"

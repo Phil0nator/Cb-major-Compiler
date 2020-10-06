@@ -377,7 +377,6 @@ class Function:
         sses = 0
         norms= 0
         o = VOID.copy()
-        print(pfix)
         for e in pfix:
             if(e.isoperation):
                 
@@ -400,11 +399,20 @@ class Function:
             else:
                 stack.append(e)
         final = stack.pop()
-
+        o = final.type.copy()
         
         instr+=";------------\n"
         if(final.type.__eq__(dest.type)):
+
+            if(isinstance(final.accessor, Variable)):
+                tmp = ralloc(final.type.isflt())
+                instr+=loadToReg(tmp, final.accessor)
+                final.accessor = tmp
+                rfree(tmp)
             instr+=loadToReg(dest.accessor,final.accessor)
+        
+        
+        
         else:
             
 
@@ -437,8 +445,6 @@ class Function:
             
             rfree(castdest)
 
-        print(instr)
-        print("---------->",final)
 
 
 
