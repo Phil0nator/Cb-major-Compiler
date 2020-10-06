@@ -1048,7 +1048,7 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
@@ -1056,10 +1056,18 @@ mov [rbp-16], rsi
 ;[[ id : FLT_CONSTANT_0], [ / : /], [ int : 6]]
 movsd xmm7, [FLT_CONSTANT_0]
 mov rbx, 6
-cvttsd2si xmm8, rbx
+cvtsi2sd xmm8, rbx
 divsd xmm7, xmm8
 ;------------
 movsd QWORD[rbp-24], xmm7
+;[[ int : 256], [ / : /], [ id : test]]
+movsd xmm7, QWORD[rbp-24]
+mov rbx, 256
+cvtsi2sd xmm8, rbx
+divsd xmm7, xmm8
+;------------
+cvttsd2si rbx, xmm7
+mov QWORD[rbp-32], rbx
 call _int_bruh_p
 ;[[ int : 0]]
 ;------------

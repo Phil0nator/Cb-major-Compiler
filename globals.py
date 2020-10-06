@@ -653,7 +653,7 @@ def castABD(a, b, areg, breg, newbreg):
     if(not a.type.isflt() and not b.type.isflt()):
         return False
     if(a.type.isflt() and not b.type.isflt()):
-        return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
-    if(b.type.isflt() and not a.type.isflt()):
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
+    if(b.type.isflt() and not a.type.isflt()):
+        return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False

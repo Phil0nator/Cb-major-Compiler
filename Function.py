@@ -368,7 +368,7 @@ class Function:
             if(needLoadC): instr+=loadToReg(creg, caster.accessor)
             if(needLoadCO): instr+=loadToReg(coreg, castee.accessor)
 
-            cst=castABD(a,b,creg,coreg,newcoreg)
+            cst=castABD(caster,castee,creg,coreg,newcoreg)
             #cst represents if actual extra instructions are needed to cast
             if(cst!=False):
                 instr+=cst
