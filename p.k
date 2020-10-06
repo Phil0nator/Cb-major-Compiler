@@ -3,11 +3,11 @@
 
 function int main(int argc, char** argv){
 
-    for(int i = 10; i > 0; i-- ){
-
-        print("Hello World!");
-        print(i);
-
+    for(int i = 0; i < 10; i++ ){
+        for(int j = 0; j < 10; j++){
+            print("Hello World!");
+            printf("AT: %i, %i\n", i, j);
+        }
     }
 
     return 0;
