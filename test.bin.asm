@@ -1044,6 +1044,23 @@ ___int_bruh_p__return:
 leave
 ret
 
+;[ function int beans( [[ Variable: double amt @ 8], [ Variable: double p2 @ 16]] ) ]
+_int_beans_pdoubledouble:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: double amt @ 8]
+movsd [rbp-8], xmm0
+;Load Parameter: [ Variable: double p2 @ 16]
+movsd [rbp-16], xmm1
+;[[ id : amt]]
+;------------
+cvttsd2si rax, QWORD[rbp-8]
+jmp ___int_beans_pdoubledouble__return
+___int_beans_pdoubledouble__return:
+leave
+ret
+
 ;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
 _int_main_pintchar..:
 push rbp
@@ -1068,7 +1085,17 @@ divsd xmm7, xmm8
 ;------------
 cvttsd2si rbx, xmm7
 mov QWORD[rbp-32], rbx
+mov rax, 0
 call _int_bruh_p
+;[[ id : test2]]
+;------------
+cvtsi2sd xmm0, QWORD[rbp-32]
+;[[ int : 0], [ ) : )]]
+;------------
+mov rax, 0
+cvtsi2sd xmm1, rax
+mov rax, 0
+call _int_beans_pdoubledouble
 ;[[ int : 0]]
 ;------------
 mov rax, 0

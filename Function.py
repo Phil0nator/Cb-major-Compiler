@@ -293,15 +293,57 @@ class Function:
 
         types = []
 
-        while self.current_token.tok != ")":
+        start = self.ctidx
+
+        while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = VOID.copy()
-            instructions += self.evaluateRightsideExpression("STACK", o)
+            tmp = self.evaluateRightsideExpression("AMB", o)
+            if(self.current_token.tok == ","):
+                self.advance()
             types.append(o)
-        
+        if(self.current_token.tok != T_ENDL):
+            self.advance()
+
+
         fn = self.getFunction(fid,types)
-
-
+        self.ctidx = start-1
         self.advance()
+
+        pcount = len(fn.parameters)
+
+
+        normsused = 0
+        sseused = 0
+        
+        for p in types:
+            if p.isflt():
+                sseused+=1
+            else:
+                normsused+=1
+        ssevarsforrax = sseused
+        ssetotal = sseused
+        normtotal = normsused
+
+        for i in range(pcount, 0, -1):
+            if(fn.parameters[i-1].isflt()):
+                
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[ssetotal-sseused], fn.parameters[i-1].t.copy()))
+                sseused-=1
+            else:
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normtotal-normsused], fn.parameters[i-1].t.copy()))
+                normsused-=1
+        
+            if(self.current_token.tok == ","):
+                    self.advance()
+        
+        if(self.current_token.tok != T_ENDL):
+            self.advance()
+        
+
+
+
+        instructions += f"mov {rax}, {ssevarsforrax}\n"
+
 
         instructions+=fncall(fn)
         return instructions, fn
@@ -417,6 +459,9 @@ class Function:
         o = final.type.copy()
         
         instr+=";------------\n"
+        if(dest == "AMB"):
+            return instr, o
+
         if(final.type.__eq__(dest.type)):
 
             if(isinstance(final.accessor, Variable)):
@@ -441,6 +486,9 @@ class Function:
                 castdest = dest.accessor
 
             if(dest.type.isflt() and not final.type.isflt()):
+                if(isinstance(final.accessor, int)):
+                    instr+=f"mov {rax}, {final.accessor}\n"
+                    final.accessor = "rax"
                 cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
             elif(not dest.type.isflt() and final.type.isflt()):
                 cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"

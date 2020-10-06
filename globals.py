@@ -474,8 +474,12 @@ def movVarToReg(reg, var):
             return f"cvtsi2sd {reg}, {valueOf(var)}\n"
         else:
             return f"mov {reg},  {valueOf(var)}\n"
-
-
+def spush(v: EC.ExpressionComponent):
+    if(v.type.isflt()):
+        return f"movq {rax}, {v.accessor}\npush {rax}\n"
+    if(isinstance(v.accessor, Variable)):
+        return f"mov {rax}, {valueOf(v.accessor)}\npush {rax}\n"
+    return f"push {v.accessor}\n"
 
 def fncall(fn):
     return "call %s\n"%fn.getCallingLabel()
