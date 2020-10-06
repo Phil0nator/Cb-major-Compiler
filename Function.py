@@ -435,6 +435,7 @@ class Function:
         sses = 0
         norms= 0
         o = VOID.copy()
+        print(pfix)
         for e in pfix:
             if(e.isoperation):
                 
@@ -490,8 +491,16 @@ class Function:
                 if(isinstance(final.accessor, int)):
                     instr+=f"mov {rax}, {final.accessor}\n"
                     final.accessor = "rax"
+                elif(final.accessor == "pop"):
+                    instr+=f"pop {rax}\n"
+                    final.accessor = "rax"
+
                 cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
             elif(not dest.type.isflt() and final.type.isflt()):
+                if(final.accessor == "pop"):
+                    instr+=f"pop {rax}\nmovq {xmm7}, {rax}\n"
+                    final.accessor = "xmm7"
+
                 cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
             else:
                 cst = False
@@ -532,6 +541,8 @@ class Function:
             if(self.current_token.tok == T_CLSP):opens-=1
             elif(self.current_token.tok == T_OPENP):opens+=1
 
+            if(opens <=0): break
+
             elif(self.current_token.tok == T_ID):
                 if(self.tokens[self.ctidx+1].tok == "("):
                     wasfunc=True
@@ -546,13 +557,13 @@ class Function:
                     if(fn.returntype.isflt()):
                         instructions+=f"movq {rax}, {sse_return_register}\n"
                     instructions+=f"push {norm_return_register}\n"
-                    
 
             if(not wasfunc):
                 exprtokens.append(self.current_token)
             wasfunc=False
 
             self.advance()
+            print(self.current_token)
 
 
 

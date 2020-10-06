@@ -1020,32 +1020,33 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `Hello World`, 0
-STRING_CONSTANT_1: db `Hello World %i\n`, 0
+    FLT_CONSTANT_0: dq 0x1.4000000000000p+1
+FLT_CONSTANT_1: dq 0x1.c000000000000p+1
+FLT_CONSTANT_2: dq 0x1.8cccccccccccdp+2
 nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_2: db `%li\n`, 0
-STRING_CONSTANT_3: db `%lu\n`, 0
-STRING_CONSTANT_4: db `%lf\n`, 0
-STRING_CONSTANT_5: db `True`, 0
-STRING_CONSTANT_6: db `False`, 0
-FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
+FLT_CONSTANT_3: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_4: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_5: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_6: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_7: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_8: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_9: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_10: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_11: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_12: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_13: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_14: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_15: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_16: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1065,33 +1066,33 @@ section .bss
 section .text
 global CMAIN
 
-;[ function int bruh( [] ) ]
-_int_bruh_p:
+;[ function int bruh( [[ Variable: double a @ 8]] ) ]
+_int_bruh_pdouble:
 push rbp
 mov rbp, rsp
-sub rsp, 8
-;[[ int : 1]]
-;------------
-mov rax, 1
-jmp ___int_bruh_p__return
-___int_bruh_p__return:
-leave
-ret
-
-;[ function int beans( [[ Variable: double amt @ 8], [ Variable: double p2 @ 16]] ) ]
-_int_beans_pdoubledouble:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-;Load Parameter: [ Variable: double amt @ 8]
+sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;Load Parameter: [ Variable: double p2 @ 16]
-movsd [rbp-16], xmm1
-;[[ id : amt]]
+;[[ id : a]]
 ;------------
-cvttsd2si rax, QWORD[rbp-8]
-jmp ___int_beans_pdoubledouble__return
-___int_beans_pdoubledouble__return:
+movsd xmm7, QWORD[rbp-8]
+movsd xmm0, xmm7
+mov rax, 1
+call _double_sqrt_pdouble
+movq rax, xmm0
+push rax
+;[[ fn(x) : [ function double sqrt( [[ Variable: double a @ 0]] ) ] ]]
+;------------
+pop rax
+movq xmm0, rax
+mov rax, 1
+call _int_floor_pdouble
+push rax
+;[[ fn(x) : [ function int floor( [[ Variable: double x @ 0]] ) ] ]]
+;------------
+pop rax
+jmp ___int_bruh_pdouble__return
+___int_bruh_pdouble__return:
 leave
 ret
 
@@ -1099,49 +1100,46 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-mov rax, 0
-call _int_bruh_p
+;[[ id : FLT_CONSTANT_0]]
+;------------
+movsd xmm8, [FLT_CONSTANT_0]
+movsd xmm0, xmm8
+mov rax, 1
+call _int_bruh_pdouble
 push rax
-;[[ fn(x) : [ function int bruh( [] ) ] ]]
+;[[ id : FLT_CONSTANT_1]]
+;------------
+movsd xmm8, [FLT_CONSTANT_1]
+movsd xmm0, xmm8
+mov rax, 1
+call _int_bruh_pdouble
+push rax
+;[[ fn(x) : [ function int bruh( [[ Variable: double a @ 8]] ) ] ]]
 ;------------
 pop rax
-mov QWORD[rbp-24], rax
+cvtsi2sd xmm0, rax
 mov rax, 0
-call _int_bruh_p
+call _int_bruh_pdouble
 push rax
-mov rax, 0
-call _int_bruh_p
-push rax
-;[[ fn(x) : [ function int bruh( [] ) ] ], [ + : +], [ fn(x) : [ function int bruh( [] ) ] ]]
-pop rcx
+;[[ ( : (], [ fn(x) : [ function int bruh( [[ Variable: double a @ 8]] ) ] ], [ * : *], [ int : 3], [ + : +], [ fn(x) : [ function int bruh( [[ Variable: double a @ 8]] ) ] ], [ ) : )], [ / : /], [ id : FLT_CONSTANT_2]]
+mov rcx, 3
 pop rbx
-add rbx, rcx
+imul rbx, rcx
+pop r10
+mov rcx, rbx
+add rcx, r10
+movsd xmm7, [FLT_CONSTANT_2]
+mov r10, rcx
+cvtsi2sd xmm8, r10
+divsd xmm7, xmm8
 ;------------
-mov QWORD[rbp-32], rbx
-;[[ id : STRING_CONSTANT_0], [ ) : )]]
-;------------
-mov rbx, STRING_CONSTANT_0
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-;[[ id : STRING_CONSTANT_1]]
-;------------
-mov rdi, STRING_CONSTANT_1
-;[[ id : b], [ ) : )]]
-;------------
-mov rsi, QWORD[rbp-32]
-mov rax, 0
-call _void_printf_pchar.int
-;[[ id : a], [ ) : )]]
-;------------
-mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-mov rax, 0
+cvttsd2si rdi, xmm7
+mov rax, 1
 call _void_print_pint
 ;[[ int : 0]]
 ;------------
@@ -1338,10 +1336,10 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_2]]
+;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rdi, STRING_CONSTANT_2
-;[[ id : a], [ ) : )]]
+mov rdi, STRING_CONSTANT_0
+;[[ id : a]]
 ;------------
 mov rsi, QWORD[rbp-8]
 mov rax, 0
@@ -1357,10 +1355,10 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_3]]
+;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rdi, STRING_CONSTANT_3
-;[[ id : a], [ ) : )]]
+mov rdi, STRING_CONSTANT_1
+;[[ id : a]]
 ;------------
 mov rsi, QWORD[rbp-8]
 mov rax, 0
@@ -1376,10 +1374,10 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;[[ id : STRING_CONSTANT_4]]
+;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rdi, STRING_CONSTANT_4
-;[[ id : a], [ ) : )]]
+mov rdi, STRING_CONSTANT_2
+;[[ id : a]]
 ;------------
 cvttsd2si rsi, QWORD[rbp-8]
 mov rax, 1
@@ -1421,29 +1419,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: bool a @ 8]
 mov [rbp-8], rdi
-;[[ id : a], [ ) : )]]
+;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rbx, QWORD[rbp-8]
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-jne _LIFPOST_0x0
-;[[ id : STRING_CONSTANT_5], [ ) : )]]
-;------------
-mov rbx, STRING_CONSTANT_5
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-;[[ int : 0]]
-;------------
-mov rax, 0
-jmp ___void_print_pbool__return
-jmp _LIFELSE_0x1
-_LIFPOST_0x0:
-_LIFELSE_0x1:
-;[[ id : STRING_CONSTANT_6], [ ) : )]]
-;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1466,7 +1444,7 @@ mov [rbp-8], rdi
 ;------------
 mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-16], rbx
-;[[ id : ptr], [ ) : )]]
+;[[ id : ptr]]
 ;------------
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
@@ -1547,7 +1525,7 @@ mov [rbp-16], rsi
 ;------------
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-;[[ id : exp], [ ) : )]]
+;[[ id : exp]]
 ;------------
 mov rbx, QWORD[rbp-16]
 mov rsi, rbx
