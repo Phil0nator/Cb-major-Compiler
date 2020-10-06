@@ -1151,7 +1151,7 @@ mov rdi, rbx
 ;[[ id : exp]]
 ;------------
 mov rbx, QWORD[rbp-16]
-mov rsi, rbx
+mov rdi, rbx
 mov rax, 0
 call _int_pow_pintint
 cvtsi2sd xmm0, rax
@@ -1307,9 +1307,10 @@ mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
-cvttsd2si rsi, QWORD[rbp-8]
+movsd xmm7, QWORD[rbp-8]
+movsd xmm0, xmm7
 mov rax, 1
-call _void_printf_pchar.int
+call _void_printf_pchar.double
 ___void_print_pdouble__return:
 leave
 ret
@@ -1328,9 +1329,10 @@ mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
-mov rsi, QWORD[rbp-8]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
 mov rax, 0
-call _void_printf_pchar.int
+call _void_printf_pchar.uint
 ___void_print_puint__return:
 leave
 ret
@@ -1350,7 +1352,7 @@ mov rdi, rbx
 ;[[ id : a]]
 ;------------
 mov rbx, QWORD[rbp-8]
-mov rsi, rbx
+mov rdi, rbx
 mov rax, 0
 call _void_printf_pchar.int
 ___void_print_pint__return:
@@ -1559,9 +1561,16 @@ mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
 ;[[ ! : !], [ id : false]]
+not rbx
+and rbx, 00000001b
 ;------------
-mov rbx, [false]
 mov QWORD[rbp-24], rbx
+;[[ id : man]]
+;------------
+mov rbx, QWORD[rbp-24]
+mov rdi, rbx
+mov rax, 0
+call _void_print_pbool
 ;[[ int : 0]]
 ;------------
 mov rax, 0

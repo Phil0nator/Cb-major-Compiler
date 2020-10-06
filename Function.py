@@ -85,7 +85,20 @@ class Function:
         return False
 
     def getFunction(self, fn, types):
-        for f in self.compiler.functions:
+
+        for f in self.compiler.functions: # first seach exact matches
+            if f.name == fn:
+                if(len(f.parameters) != len(types)): continue
+                valid = True
+                for i in range(len(types)):
+                    if(not f.parameters[i].t.__eq__(types[i])):
+                        
+                        valid=False
+                        break
+                if(valid):
+                    return f
+        
+        for f in self.compiler.functions: #seach others for valid casts
             if f.name == fn:
                 lt = len(types)
                 if(len(f.parameters) != lt): continue
@@ -326,14 +339,12 @@ class Function:
         ssetotal = sseused
         normtotal = normsused
 
-        for i in range(pcount, 0, -1):
-            if(fn.parameters[i-1].isflt()):
+        for i in range(pcount):
+            if(fn.parameters[i].isflt()):
                 
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[ssetotal-sseused], fn.parameters[pcount-i].t.copy()))
-                sseused-=1
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[ssetotal-sseused], fn.parameters[i].t.copy()))
             else:
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normtotal-normsused], fn.parameters[pcount-i].t.copy()))
-                normsused-=1
+                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normtotal-normsused], fn.parameters[i].t.copy()))
         
             if(self.current_token.tok == ","):
                     self.advance()
@@ -451,8 +462,19 @@ class Function:
                         stack.append(apendee)
                         instr+=newinstr
                         o = newt.copy()
+                else:
+                    a = stack.pop()
+                    if(not typematch(BOOL, a.type)):
+                        throw(TypeMismatch(self.current_token,BOOL, a.type))
+                    if(a.isRegister()):
+                        areg = a.accessor
+                    else:
+                        areg = ralloc(False)
 
-                            
+                    instr+=boolmath(areg,None,e.accessor)
+                    o = BOOL.copy()
+                    stack.append(EC.ExpressionComponent(areg,BOOL.copy()))
+
 
 
             else:

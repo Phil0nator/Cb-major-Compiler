@@ -516,6 +516,7 @@ def loadToReg(reg, value):
     elif(isinstance(reg, Variable)):
         
         if(reg.t.isflt()):
+            
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
     

@@ -11,7 +11,9 @@ class DType:
         if(depth < self.ptrdepth):
             return 8
         return self.s
-    
+
+
+
     def load(self, other):
         self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed)
 
