@@ -52,3 +52,21 @@ function void free(void *ptr){
     "}
 
 }
+
+function void memcpy(void *dest, void* source, int bytes){
+
+    __asm{"
+    ; rax = final dest:
+    
+    _void_memcpy_pvoid.void.int_flp:
+    mov bl, [rsi]
+    mov [rdi], bl
+    inc rsi
+    inc rdi
+    dec rdx
+    jnz _void_memcpy_pvoid.void.int_flp
+    
+    
+    "}
+
+}

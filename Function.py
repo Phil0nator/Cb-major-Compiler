@@ -436,6 +436,12 @@ class Function:
             if(needLoadB): instr+=loadToReg(breg, b.accessor)
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
             instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
+
+            if(op in ["==","!=",">","<","<=",">="] and a.type.isflt()):
+                rfree(areg)
+                areg = f"{rax}"
+                a.type = BOOL.copy()
+
             apendee = (EC.ExpressionComponent(areg,a.type,token=a.token))
 
             rfree(breg)
@@ -482,6 +488,13 @@ class Function:
                 newcoreg = coreg
             
             instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
+
+            # handle float comparison
+            if(op in ["==","!=",">","<","<=",">="] and caster.type.isflt()):
+                rfree(creg)
+                creg = f"{rax}"
+                caster.type = BOOL.copy()
+
             apendee = (EC.ExpressionComponent(creg,caster.type,token=caster.token))
             rfree(newcoreg)
             rfree(coreg)

@@ -16,9 +16,9 @@ class Error:
                 break
         lines = file.split("\n")
         
-        lp = f"|{line-1}"+lines[line-2]+"\n"
-        lp += f"|{line}"+lines[line-1]+"\n"
-        lp += f"|{line+1}"+lines[line]+"\n"
+        if(line!=0):                    lp = f"|{line-1}\t"+lines[line-2]+"\n"
+        if(True):                       lp += f"|{line}\t"+lines[line-1]+"\n"
+        if(line!=len(lines)-1):         lp += f"|{line+1}\t"+lines[line]+"\n"
         problem = lp
 
         problem = problem[0:problem.find(self.tok.value)] + error_indicator + self.tok.value + Style.RESET_ALL + problem[problem.find(self.tok.value)+len(self.tok.value):]

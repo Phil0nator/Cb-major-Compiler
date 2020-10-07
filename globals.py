@@ -224,23 +224,23 @@ true = (255)
 
 signed_comparisons = {
 
-    "==": "je",
-    "!=": "jne",
-    "<" : "jl",
-    ">" : "jg",
-    "<=": "jle",
-    ">=": "jge"
+    "==": "e",
+    "!=": "ne",
+    "<" : "l",
+    ">" : "g",
+    "<=": "le",
+    ">=": "ge"
 
 }
 
 unsigned_comparisons = {
 
-    "==": "je",
-    "!=": "jne",
-    "<" : "jb",
-    ">" : "ja",
-    "<=": "jbe",
-    ">=": "jae"
+    "==": "e",
+    "!=": "ne",
+    "<" : "b",
+    ">" : "a",
+    "<=": "be",
+    ">=": "ae"
 
 }
 
@@ -609,10 +609,20 @@ def doIntOperation(areg, breg, op, signed, size=8):
 
 
 def cmpI(areg, breg,signed, op):
-    infl = getLogicLabel("CMPI")
-    inflpost = getLogicLabel("CMPIPOST")
+
     comparator = getComparater(signed, op)
-    return f"cmp {areg}, {breg}\n{comparator} {infl}\nxor {areg}, {areg}\njmp {inflpost}\n{infl}:\nmov {areg}, 255\n{inflpost}:\n"
+    if(areg in boolchar_version):
+        bcv = boolchar_version[areg]
+    else:
+        bcv = areg
+    return f"\ncmp {areg}, {breg}\nset{comparator} {bcv}\n"
+
+
+def cmpF(areg, breg, op):
+    
+    comparator = getComparater(True, op)
+    return f"UCOMISD {areg}, {breg}\nset{comparator} {al}\n"
+
 
 def boolmath(areg, breg,op):
     cmd = ""
@@ -656,6 +666,9 @@ def doFloatOperation(areg, breg, op):
     elif(op == "mov"):
         asmop="movsd"
     
+    elif(op in ["==","!=",">","<","<=",">="]):
+        return cmpF(areg,breg,op)
+
     return f"{asmop} {areg}, {breg}\n"
     
 
