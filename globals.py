@@ -504,6 +504,7 @@ def valueOf(x, dflt = False):
 
 
 def loadToReg(reg, value):
+    
     if(reg == value):return ""
     if(value == "pop"):
         if(isinstance(reg, str)):
@@ -516,7 +517,9 @@ def loadToReg(reg, value):
 
     if(isinstance(reg, str)):
         if("xmm" in reg):
-            return f"movsd {reg}, {valueOf(value)}\n"
+            #TODO:
+            # SEE IF THIS IS FINE
+            return f"movq {reg}, {valueOf(value)} ; TODO: see if this is fine\n" 
         return f"mov {reg}, {valueOf(value)}\n"
     elif(isinstance(reg, Variable)):
         

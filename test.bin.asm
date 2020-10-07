@@ -1020,7 +1020,8 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullptr: DQ 0
+    FLT_CONSTANT_0: dq 0x1.4000000000000p+1
+nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
@@ -1034,20 +1035,20 @@ STRING_CONSTANT_5: db `[]`, 0
 STRING_CONSTANT_6: db `[`, 0
 STRING_CONSTANT_7: db ` %i ,`, 0
 STRING_CONSTANT_8: db ` %i ]\n`, 0
-FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
+FLT_CONSTANT_1: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_2: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_3: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_4: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_5: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_6: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_8: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_10: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_11: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_13: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_14: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1464,8 +1465,8 @@ mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
-movsd xmm7, QWORD[rbp-8]
-movsd xmm0, xmm7
+movq xmm7, QWORD[rbp-8] ; TODO: see if this is fine
+movq xmm0, xmm7 ; TODO: see if this is fine
 mov rax, 1
 call _void_printf_pchar.double
 ___void_print_pdouble__return:
@@ -1712,7 +1713,7 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
@@ -1754,6 +1755,36 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x0
+;[[ int : 80]]
+;------------
+mov rdi, 80
+mov rax, 0
+call _void._malloc_psize_t
+push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
+;------------
+pop rax
+mov QWORD[rbp-32], rax
+mov rbx, [rbp-32]
+;[[ int : 0]]
+;------------
+mov rcx, 0
+imul rcx, 8
+add rbx, rcx
+;[[ id : FLT_CONSTANT_0]]
+;------------
+movq xmm8, [FLT_CONSTANT_0] ; TODO: see if this is fine
+movq xmm7, xmm8 ; TODO: see if this is fine
+movsd [rbx], xmm7
+;[[ @ : @], [ ( : (], [ id : bruhs], [ + : +], [ ( : (], [ int : 0], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
+mov rbx, QWORD[rbp-32]
+mov rcx, 0
+add rbx, rcx
+mov rcx, [rbx]
+;------------
+movq xmm0, rcx ; TODO: see if this is fine
+mov rax, 1
+call _void_print_pdouble
 ;[[ int : 0]]
 ;------------
 mov rax, 0

@@ -525,6 +525,7 @@ class Function:
                         else:
                             areg = ralloc(False)
                         if(needload): instr+=loadToReg(areg,a.accessor)
+
                         instr+=boolmath(areg,None,e.accessor)
                         o = BOOL.copy()
                         stack.append(EC.ExpressionComponent(areg,BOOL.copy(),token=a.token))
@@ -618,6 +619,7 @@ class Function:
             if(isinstance(final.accessor, Variable)):
                 tmp = ralloc(final.type.isflt())
                 instr+=loadToReg(tmp, final.accessor)
+
                 final.accessor = tmp
                 rfree(tmp)
             else:
@@ -664,14 +666,14 @@ class Function:
                 instr+=cst
                 if(twoStep):
                     instr+=loadToReg(dest.accessor, castdest)
-            
+
             else:
                 source = final.accessor
                 if(isinstance(final.accessor, Variable)):
                     instr+=loadToReg(castdest, final.accessor)
                     source = castdest
                 instr+=loadToReg(dest.accessor,source)
-            
+
             if(final.isRegister()):
                 rfree(final.accessor)
 
@@ -926,7 +928,7 @@ class Function:
             ev = self.evaluateRightsideExpression(  EC.ExpressionComponent(result, v.t,token=vt)  )
             self.addline(inst)
             self.addline(ev)
-            if(v.t.isflt()):
+            if(v.t.isfltdepth(depthreached)):
                 self.addline(f"movsd [{startaddr}], {result}\n")
             else:
                 self.addline(f"mov [{startaddr}], {result}\n")
