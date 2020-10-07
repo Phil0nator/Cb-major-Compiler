@@ -39,7 +39,7 @@ def main():
     
 
     for file in totals:
-        
+        config.raw_filedata.append(file)
         c.compile(file)
 
     c.finalize()

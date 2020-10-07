@@ -1,11 +1,29 @@
 import config
+from colorama import Fore, Style
+from termcolor import colored
+error_indicator = f"{Fore.RED}{Style.BRIGHT}"
 class Error:
     def __init__(self, tok, message):
         self.tok = tok
         self.message = message
     
     def __repr__(self):
-        return f"Compiletime Error: \n\t{self.message} \n\t\t{self.tok} at: \n\t{self.tok.start}"
+        line = self.tok.start.line
+        file = self.tok.start.file
+        for f in config.raw_filedata:
+            if(f[1] == file):
+                file = f[0]
+                break
+        lines = file.split("\n")
+        
+        lp = f"|{line-1}"+lines[line-2]+"\n"
+        lp += f"|{line}"+lines[line-1]+"\n"
+        lp += f"|{line+1}"+lines[line]+"\n"
+        problem = lp
+
+        problem = problem[0:problem.find(self.tok.value)] + error_indicator + self.tok.value + Style.RESET_ALL + problem[problem.find(self.tok.value)+len(self.tok.value):]
+        
+        return f"{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{self.message} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
 
 
 def throw(error):
@@ -13,6 +31,10 @@ def throw(error):
     #config.GlobalCompiler.panicmode = True
     exit(1)
 
+
+def warn(warning):
+    print(warning)
+    
 
 class UnexepectedEOFError(Error):
     def __init__(self, tok):

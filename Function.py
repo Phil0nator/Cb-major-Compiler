@@ -763,8 +763,9 @@ class Function:
                         i+=1
                         self.advance()
                     exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
-
-
+                    self.ctidx-=2
+                    self.advance()
+                
 
             if(not wasfunc):
                 exprtokens.append(self.current_token)

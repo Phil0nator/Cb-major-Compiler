@@ -1755,36 +1755,17 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x0
-;[[ int : 80]]
+;[[ $ : char], [ id : FLT_CONSTANT_0]]
+movq xmm7, [FLT_CONSTANT_0] ; TODO: see if this is fine
+cvttsd2si rbx, xmm7
 ;------------
-mov rdi, 80
-mov rax, 0
-call _void._malloc_psize_t
-push rax
-;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
+mov QWORD[rbp-32], rbx
+;[[ $ : char], [ id : b]]
 ;------------
-pop rax
-mov QWORD[rbp-32], rax
-mov rbx, [rbp-32]
-;[[ int : 0]]
-;------------
-mov rcx, 0
-imul rcx, 8
-add rbx, rcx
-;[[ id : FLT_CONSTANT_0]]
-;------------
-movq xmm8, [FLT_CONSTANT_0] ; TODO: see if this is fine
-movq xmm7, xmm8 ; TODO: see if this is fine
-movsd [rbx], xmm7
-;[[ @ : @], [ ( : (], [ id : bruhs], [ + : +], [ ( : (], [ int : 0], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
 mov rbx, QWORD[rbp-32]
-mov rcx, 0
-add rbx, rcx
-mov rcx, [rbx]
-;------------
-movq xmm0, rcx ; TODO: see if this is fine
-mov rax, 1
-call _void_print_pdouble
+mov rdi, rbx
+mov rax, 0
+call _void_print_pchar
 ;[[ int : 0]]
 ;------------
 mov rax, 0
