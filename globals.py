@@ -263,10 +263,10 @@ PRIORITY = {
     "&&":2,
     "==":3,
     "!=":3,
-    ">":1,
-    "<":1,
-    ">=":1,
-    "<=":1,
+    ">":3,
+    "<":3,
+    ">=":3,
+    "<=":3,
     ">>>":2,
     "<<<":2,
     "^":2,
@@ -308,7 +308,15 @@ OPERATORS = [
 
 ]
 
+integer_only = [
 
+    "||",
+    "&&",
+    "^",
+    "!"
+
+
+]
 
 
 
@@ -519,7 +527,7 @@ def loadToReg(reg, value):
         if("xmm" in reg):
             #TODO:
             # SEE IF THIS IS FINE
-            return f"movq {reg}, {valueOf(value)} ; TODO: see if this is fine\n" 
+            return f"movq {reg}, {valueOf(value)} ;<-\n" 
         return f"mov {reg}, {valueOf(value)}\n"
     elif(isinstance(reg, Variable)):
         
@@ -621,7 +629,7 @@ def cmpI(areg, breg,signed, op):
 def cmpF(areg, breg, op):
     
     comparator = getComparater(True, op)
-    return f"UCOMISD {areg}, {breg}\nset{comparator} {al}\n"
+    return f"ucomisd {areg}, {breg}\nset{comparator} {al}\n"
 
 
 def boolmath(areg, breg,op):

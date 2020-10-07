@@ -1318,14 +1318,14 @@ add rbx, rcx
 mov QWORD[rbp-24], rbx
 _LFORCMP_0x9:
 ;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
+mov rcx, QWORD[rbp-16]
+mov rbx, QWORD[rbp-24]
+cmp bl, cl
+setl bl
 mov rcx, 1
-mov rbx, QWORD[rbp-16]
 sub rbx, rcx
-mov rcx, QWORD[rbp-24]
-cmp cl, bl
-setl cl
 ;------------
-mov rax, rcx
+mov rax, rbx
 and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x8
@@ -1456,8 +1456,8 @@ mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
-movq xmm7, QWORD[rbp-8] ; TODO: see if this is fine
-movq xmm0, xmm7 ; TODO: see if this is fine
+movq xmm7, QWORD[rbp-8] ;<-
+movq xmm0, xmm7 ;<-
 mov rax, 1
 call _void_printf_pchar.double
 ___void_print_pdouble__return:
@@ -1768,16 +1768,16 @@ cmp al, 1
 je _LFORTOP_0x0
 ;[[ id : FLT_CONSTANT_0]]
 ;------------
-movq xmm7, [FLT_CONSTANT_0] ; TODO: see if this is fine
+movq xmm7, [FLT_CONSTANT_0] ;<-
 movsd QWORD[rbp-32], xmm7
 ;[[ id : FLT_CONSTANT_1]]
 ;------------
-movq xmm7, [FLT_CONSTANT_1] ; TODO: see if this is fine
+movq xmm7, [FLT_CONSTANT_1] ;<-
 movsd QWORD[rbp-40], xmm7
 ;[[ id : a], [ == : ==], [ id : b]]
-movq xmm8, QWORD[rbp-40] ; TODO: see if this is fine
-movq xmm7, QWORD[rbp-32] ; TODO: see if this is fine
-UCOMISD xmm7, xmm8
+movq xmm8, QWORD[rbp-40] ;<-
+movq xmm7, QWORD[rbp-32] ;<-
+ucomisd xmm7, xmm8
 sete al
 ;------------
 mov QWORD[rbp-48], rax
@@ -1787,11 +1787,13 @@ mov rbx, QWORD[rbp-48]
 mov rdi, rbx
 mov rax, 0
 call _void_print_pbool
-;[[ id : a], [ >= : >=], [ id : b]]
-movq xmm8, QWORD[rbp-40] ; TODO: see if this is fine
-movq xmm7, QWORD[rbp-32] ; TODO: see if this is fine
-UCOMISD xmm7, xmm8
+;[[ id : a], [ >= : >=], [ id : b], [ && : &&], [ id : false]]
+movq xmm8, QWORD[rbp-40] ;<-
+movq xmm7, QWORD[rbp-32] ;<-
+ucomisd xmm7, xmm8
 setge al
+mov rbx, [false]
+and al, bl
 ;------------
 mov rdi, rax
 mov rax, 0
