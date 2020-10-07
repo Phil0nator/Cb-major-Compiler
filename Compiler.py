@@ -74,6 +74,7 @@ class Compiler:
 
 
     def Tequals(self, ta, tb):
+        if(ta == tb):return True
         for tdef in self.tdefs:
             if(tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta: return True
         return False
@@ -100,7 +101,7 @@ class Compiler:
         
         if(not self.isType(self.current_token.value)): throw(ExpectedType(self.current_token))
 
-        t = self.getType(self.current_token.value)
+        t = self.getType(self.current_token.value).copy()
 
         self.advance()
         ptrdepth = 0
@@ -376,7 +377,8 @@ class Compiler:
                         throw(InvalidSignSpecifier(s))
                     
                     v.signed = False
-                    v.t.signed = False
+                    v.t = v.t.copy()
+                    v.t.signed=False
                 elif(self.current_token.value == "typedef"):
                     s = self.current_token
                     self.advance()
@@ -407,6 +409,8 @@ class Compiler:
     def finalize(self):
         for f in self.functions:
             f.compile()
+            rfreeAll() # make sure there are no register leaks between functions 
+
             
             if(config.DO_DEBUG):
                 f.asm=f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"

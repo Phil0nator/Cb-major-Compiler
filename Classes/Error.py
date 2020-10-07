@@ -121,3 +121,19 @@ class UnkownExpressionShortcut(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unkown expression shortcut: "
+
+
+class TakingIndexOfScalar(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Cannot take index of scalar: "
+
+class UsingFloatAsIndex(Error):
+    def __init__(self,tok):
+        self.tok = tok
+        self.message = f"Cannot use a float value as index: "
+
+class VariableRedeclaration(Error):
+    def __init__(self, tok,v):
+        self.tok = tok
+        self.message = f"Existing declaration for variable [{v}] :"

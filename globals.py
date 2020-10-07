@@ -207,11 +207,11 @@ fileTemplate = "%s\n\n%s"%(io64,stub)
 
 # intrinsic types:
 
-INT = DType("int", 8)
-CHAR = DType("char", 1)
-DOUBLE = DType("double", 8)
-VOID = DType("void", 8)
-BOOL = DType("bool", 1)
+INT = DType("int", 8, signed=True)
+CHAR = DType("char", 1, signed=True)
+DOUBLE = DType("double", 8, signed=True)
+VOID = DType("void", 8, signed=False)
+BOOL = DType("bool", 1, signed=True)
 
 
 
@@ -256,26 +256,26 @@ def getComparater(signed, op):
 PRIORITY = {
 
     "(":0,
-    "+":1,
-    "-":1,
-    "!":1,
-    "||":1,
-    "&&":1,
-    "==":1,
-    "!=":1,
+    "+":2,
+    "-":2,
+    "!":2,
+    "||":2,
+    "&&":2,
+    "==":3,
+    "!=":3,
     ">":1,
     "<":1,
     ">=":1,
     "<=":1,
-    ">>>":1,
-    "<<<":1,
-    "^":1,
-    "*":2,
-    "/":2,
-    "%":2,
-    "&":3,
-    "@":3,
-    "$":4
+    ">>>":2,
+    "<<<":2,
+    "^":2,
+    "*":3,
+    "/":3,
+    "%":3,
+    "&":4,
+    "@":4,
+    "$":5
 
 
 }
@@ -440,7 +440,8 @@ def TsCompatible(typea, typeb, fni):
 
 def typematch(a, b):
     if(isinstance(a, DType) and isinstance(b, DType)):
-        if(a.name == "void" or b.name == "void"): return True
+        if(a.__eq__(VOID.copy()) or b.__eq__(VOID.copy())): return True
+        if(a.__eq__(INT.copy()) and b.ptrdepth > 0): return True
         if(a.ptrdepth != b.ptrdepth): return False
         if(a.__eq__(b)):return True
         if(a.isflt() and b.isflt()): return True

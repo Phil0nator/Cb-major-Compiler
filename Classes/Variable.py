@@ -11,6 +11,7 @@ class Variable:
         self.isStackarr = isStackarr
         self.stackarrsize = t.size(0)
         self.stackdims = isStackarr
+        self.stacksizes = []
 
     def isflt(self):
         return (self.t.name == "float" or self.t.name == "double") and self.isptr == False

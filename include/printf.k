@@ -157,3 +157,20 @@ function void print(void* a){
     print(ptr);
 }
 
+// Array printing functions: 
+function void print(int* a, int len){
+
+    if(len == 0){
+        print("[]");
+        return 0;
+    }
+
+    printf("[",0);
+    for(int i = 0; i < len-1;i++){
+
+        printf(" %i ,", a[i]);
+
+    }
+    printf(" %i ]\n", a[len-1]);
+
+}

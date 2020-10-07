@@ -21,7 +21,10 @@ class DType:
         return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth, signed=self.signed)
 
     def isflt(self):
-        return self.name == "float" or self.name == "double" and self.ptrdepth==0
+        return config.GlobalCompiler.Tequals(self.name, "double") and self.ptrdepth==0
+
+    def isfltdepth(self, depth):
+        return depth >= self.ptrdepth and config.GlobalCompiler.Tequals(self.name, "double")
 
     def __eq__(self, other):
         if(isinstance(other, DType)):
@@ -47,18 +50,20 @@ type_precedence = {
     "void":5
 
 
-
-
-
-
 }
 
 def determinePrecedence(a, b):
     # preq : must have typematch
-    
-    if(type_precedence[a.name] > type_precedence[b.name]):
+    if(type_precedence[a.name] > type_precedence[b.name] and a.ptrdepth == b.ptrdepth):
+        
+        
         return a, b
+    elif(a.ptrdepth > 0 and b.__eq__(DType("int", 8))) or (a.ptrdepth>0 and b.__eq__(DType("int",8,signed=False))):
+
+        return a, b
+    
     else:
+        
         return b, a
 
 

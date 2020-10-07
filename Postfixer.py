@@ -23,10 +23,12 @@ class Postfixer:
                 ec = EC.ExpressionComponent(t.value,INT.copy(),constint=True)
             elif(t.tok == T_ID):
                 v:Variable = self.fn.getVariable(t.value)
-
+                if(v == None): throw(UnkownIdentifier(t))
                 ec = EC.ExpressionComponent(v,v.t)
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop",t.fn.returntype)
+            elif(t.tok == T_CHAR):
+                ec = EC.ExpressionComponent(t.value,CHAR.copy(),constint=True)
         ec.token = t
         self.pfix.append(ec)
 

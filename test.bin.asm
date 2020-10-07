@@ -1030,6 +1030,10 @@ STRING_CONSTANT_1: db `%lu\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
 STRING_CONSTANT_3: db `True`, 0
 STRING_CONSTANT_4: db `False`, 0
+STRING_CONSTANT_5: db `[]`, 0
+STRING_CONSTANT_6: db `[`, 0
+STRING_CONSTANT_7: db ` %i ,`, 0
+STRING_CONSTANT_8: db ` %i ]\n`, 0
 FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
 FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
 FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
@@ -1243,6 +1247,117 @@ ___double_sqrt_pdouble__return:
 leave
 ret
 
+;[ function void print( [[ Variable: int. a @ 8], [ Variable: int len @ 16]] ) ]
+
+_void_print_pint.int:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: int. a @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int len @ 16]
+mov [rbp-16], rsi
+;[[ id : len], [ == : ==], [ int : 0]]
+mov rcx, 0
+mov rbx, QWORD[rbp-16]
+cmp bl, cl
+je _LCMPI_0x8
+xor bl, bl
+jmp _LCMPIPOST_0x9
+_LCMPI_0x8:
+mov bl, 255
+_LCMPIPOST_0x9:
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0xa
+;[[ id : STRING_CONSTANT_5]]
+;------------
+mov rbx, STRING_CONSTANT_5
+mov rdi, rbx
+mov rax, 0
+call _void_print_pchar.
+;[[ int : 0]]
+;------------
+mov rax, 0
+jmp ___void_print_pint.int__return
+jmp _LIFELSE_0xb
+_LIFPOST_0xa:
+_LIFELSE_0xb:
+;[[ id : STRING_CONSTANT_6]]
+;------------
+mov rbx, STRING_CONSTANT_6
+mov rdi, rbx
+;[[ int : 0]]
+;------------
+mov rsi, 0
+mov rax, 0
+call _void_printf_pchar.int
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-24], 0
+jmp _LFORCMP_0xd
+_LFORTOP_0xc:
+;[[ id : STRING_CONSTANT_7]]
+;------------
+mov rbx, STRING_CONSTANT_7
+mov rdi, rbx
+;[[ @ : @], [ ( : (], [ id : a], [ + : +], [ ( : (], [ id : i], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
+mov rcx, 8
+mov rbx, QWORD[rbp-24]
+imul rbx, rcx
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov rbx, [rcx]
+;------------
+mov rsi, rbx
+mov rax, 0
+call _void_printf_pchar.int
+mov rcx, 1
+mov rbx, QWORD[rbp-24]
+add rbx, rcx
+;------------
+mov QWORD[rbp-24], rbx
+_LFORCMP_0xd:
+;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
+mov rcx, 1
+mov rbx, QWORD[rbp-16]
+sub rbx, rcx
+mov rcx, QWORD[rbp-24]
+cmp cl, bl
+jl _LCMPI_0x10
+xor cl, cl
+jmp _LCMPIPOST_0x11
+_LCMPI_0x10:
+mov cl, 255
+_LCMPIPOST_0x11:
+;------------
+mov rax, rcx
+and al, 00000001b
+cmp al, 1
+je _LFORTOP_0xc
+;[[ id : STRING_CONSTANT_8]]
+;------------
+mov rbx, STRING_CONSTANT_8
+mov rdi, rbx
+;[[ @ : @], [ ( : (], [ id : a], [ + : +], [ ( : (], [ id : len], [ - : -], [ int : 1], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
+mov rcx, 1
+mov rbx, QWORD[rbp-16]
+sub rbx, rcx
+mov rcx, 8
+imul rbx, rcx
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov rbx, [rcx]
+;------------
+mov rsi, rbx
+mov rax, 0
+call _void_printf_pchar.int
+___void_print_pint.int__return:
+leave
+ret
+
 ;[ function void print( [[ Variable: void. a @ 8]] ) ]
 
 _void_print_pvoid.:
@@ -1279,7 +1394,7 @@ mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x0
+jne _LIFPOST_0x6
 ;[[ id : STRING_CONSTANT_3]]
 ;------------
 mov rbx, STRING_CONSTANT_3
@@ -1290,9 +1405,9 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
-jmp _LIFELSE_0x1
-_LIFPOST_0x0:
-_LIFELSE_0x1:
+jmp _LIFELSE_0x7
+_LIFPOST_0x6:
+_LIFELSE_0x7:
 ;[[ id : STRING_CONSTANT_4]]
 ;------------
 mov rbx, STRING_CONSTANT_4
@@ -1350,7 +1465,7 @@ mov rdi, rbx
 ;[[ id : a]]
 ;------------
 movsd xmm7, QWORD[rbp-8]
-movsd xmm1, xmm7
+movsd xmm0, xmm7
 mov rax, 1
 call _void_printf_pchar.double
 ___void_print_pdouble__return:
@@ -1597,11 +1712,48 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-24], 0
+jmp _LFORCMP_0x1
+_LFORTOP_0x0:
+;[[ @ : @], [ ( : (], [ id : argv], [ + : +], [ ( : (], [ id : i], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
+mov rcx, 8
+mov rbx, QWORD[rbp-24]
+imul rbx, rcx
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov rbx, [rcx]
+;------------
+mov rdi, rbx
+mov rax, 0
+call _void_print_pchar.
+mov rcx, 1
+mov rbx, QWORD[rbp-24]
+add rbx, rcx
+;------------
+mov QWORD[rbp-24], rbx
+_LFORCMP_0x1:
+;[[ id : i], [ < : <], [ id : argc]]
+mov rcx, QWORD[rbp-8]
+mov rbx, QWORD[rbp-24]
+cmp bl, cl
+jl _LCMPI_0x4
+xor bl, bl
+jmp _LCMPIPOST_0x5
+_LCMPI_0x4:
+mov bl, 255
+_LCMPIPOST_0x5:
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+je _LFORTOP_0x0
 ;[[ int : 0]]
 ;------------
 mov rax, 0
