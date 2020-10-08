@@ -1020,8 +1020,8 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `Worker`, 0
-STRING_CONSTANT_1: db `Hello World`, 0
+    STRING_CONSTANT_0: db `Hello World`, 0
+STRING_CONSTANT_1: db `Stinky`, 0
 nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
@@ -1799,24 +1799,17 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 48
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 5]]
-;------------
-mov QWORD[rbp-24], 5
-;[[ id : STRING_CONSTANT_0]]
-;------------
-mov rbx, STRING_CONSTANT_0
-mov QWORD[rbp-32], rbx
 ;[[ int : 256]]
 ;------------
-mov QWORD[rbp-40], 256
+mov QWORD[rbp-24], 256
 ;[[ id : bruh], [ == : ==], [ int : 256]]
 mov rcx, 256
-mov rbx, QWORD[rbp-40]
+mov rbx, QWORD[rbp-24]
 cmp bl, cl
 sete bl
 ;------------
@@ -1824,15 +1817,42 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
-;[[ id : STRING_CONSTANT_1]]
+;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rbx, STRING_CONSTANT_1
+mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
 jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
+;[[ int : 100], [ * : *], [ id : char]]
+;------------
+mov rdi, 100
+mov rax, 0
+call _void._malloc_psize_t
+push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
+;------------
+pop rax
+mov QWORD[rbp-32], rax
+;[[ id : buffer]]
+;------------
+mov rdi, QWORD[rbp-32]
+;[[ id : STRING_CONSTANT_1]]
+;------------
+mov rsi, STRING_CONSTANT_1
+;[[ int : 6]]
+;------------
+mov rdx, 6
+mov rax, 0
+call _void_memcpy_pvoid.void.int
+;[[ id : buffer]]
+;------------
+mov rbx, QWORD[rbp-32]
+mov rdi, rbx
+mov rax, 0
+call _void_print_pchar.
 ;[[ int : 0]]
 ;------------
 mov rax, 0
