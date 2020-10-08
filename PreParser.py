@@ -1,6 +1,7 @@
 from Classes.Token import *
 from Classes.Location import *
 from Classes.Error import *
+from Lexer import Lexer
 def join(arr, d):
     out = ""
     for s in arr:
@@ -33,21 +34,29 @@ class PreParser:
             exit()
 
     def getTokens(self):
-        
-        while self.chidx < len(self.content):
+                
+        lex = Lexer(self.fname,self.content)
+        directives = lex.getTokens(getDirectives=True)
+        self.content = join(directives,"\n")+chr(1)
+        while self.chidx < len(self.content)-1:
             
-            if (self.ch == chr(1)):
+           if (self.ch == chr(1)):
 
-                self.tokens.append(Token(T_EOF,T_EOF,self.loc.copy(),self.loc.copy()))
-                return self.tokens
+               self.tokens.append(Token(T_EOF,T_EOF,self.loc.copy(),self.loc.copy()))
+               return self.tokens
 
-            elif (self.ch == "\n"):
-                self.advance()
-            elif (self.ch == "#"):
-                self.parseDirective()
-            else:
-                self.advance()
+           elif (self.ch == "\n"):
+               self.advance()
+           elif (self.ch == "#"):
+               self.parseDirective()
+           elif(self.chidx < len(self.content)-1):
+              self.advance()
+        self.tokens.append(Token(T_EOF,T_EOF,self.loc.copy(),self.loc.copy()))
+
         return self.tokens
+
+
+
 
 
     def parseString(self):
@@ -110,7 +119,7 @@ class PreProcessor:
         return None
 
     def process(self):
-        while self.current_token.tok != T_EOF:
+        while self.current_token.tok != T_EOF and self.tkidx < len(self.tokens)-1:
             if ( self.current_token.tok == T_KEYWORD):
                 
                 if ( self.current_token.value == "include"):
@@ -124,15 +133,14 @@ class PreProcessor:
                         with open(path, "rb") as f:
                             self.texts.append([f.read().decode(), path])
                             
-                        pp = PreParser(self.texts[len(self.texts)-1][0],path)
+                        pp = PreParser(self.texts[-1][0],path)
                         tokens = pp.getTokens()
                         i = 1
                         for t in tokens:
                             if(t.tok != T_EOF):
                                 self.tokens.insert(self.tkidx+i, t)
                             i+=1
-
-
+                        self.advance()
                     else:
 
                         print("Invalid Include ( %s ): %s"%(self.current_token, self.current_token.start))
@@ -145,9 +153,8 @@ class PreProcessor:
 
                     self.definitions.append((name,content))
                     self.advance()
-            else:
-                self.advance()
-            
+                else:
+                    pass
             
             
 

@@ -37,8 +37,9 @@ def main():
     c = Compiler()
     config.GlobalCompiler = c
     
-
+    
     for file in totals:
+        
         config.raw_filedata.append(file)
         c.compile(file)
 

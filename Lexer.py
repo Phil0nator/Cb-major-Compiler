@@ -97,16 +97,24 @@ class Lexer:
         return Token(T.T_ID, value, begin, self.loc.copy())
 
 
-    def getTokens(self):
+    def getTokens(self, getDirectives = False):
         tokens = []
+        directives = []
         while self.ch != chr(1):
 
             if(self.ch == "\n" or self.ch == " "):
                 self.advance()
 
             elif (self.ch == "#"):
-                while self.ch != "\n":
-                    self.advance()
+                if(not getDirectives):
+                    while self.ch != "\n":
+                        self.advance()
+                else:
+                    out = ""
+                    while self.ch != "\n":
+                        out+=self.ch
+                        self.advance()
+                    directives.append(out)
 
             elif(self.ch == "$"):
                 self.advance()
@@ -136,9 +144,7 @@ class Lexer:
                     while comment[-2:] != "*/":
                         self.advance()
                         comment+=self.ch
-                        
-                    
-                    
+                    self.advance()                    
                 else:
                     tokens.append(Token(T.T_DIVIDE,T.T_DIVIDE,self.loc.copy(),self.loc.copy()))
                     
@@ -182,5 +188,9 @@ class Lexer:
                 print("Unkown character sequence at: %s"%self.loc)
 
         tokens.append(Token(T.T_EOF,T.T_EOF,self.loc.copy(),self.loc.copy()))
-
+        
+        
+        if(getDirectives): return directives
+        
+        
         return tokens
