@@ -1070,19 +1070,20 @@ rand_next: RESB 8
 section .text
 global CMAIN
 
-;[ function void srand( [[ Variable: uint seed @ 8]] ) ]
+;[ function void srand( [] ) ]
 
-_void_srand_puint:
+_void_srand_p:
 push rbp
 mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: uint seed @ 8]
-mov [rbp-8], rdi
-;[[ id : seed]]
+sub rsp, 8
+mov rax, 0
+call _int_rdrand_p
+push rax
+;[[ fn(x) : [ function int rdrand( [] ) ] ]]
 ;------------
-mov rbx, QWORD[rbp-8]
-mov [rand_next], rbx
-___void_srand_puint__return:
+pop rax
+mov [rand_next], rax
+___void_srand_p__return:
 leave
 ret
 
@@ -1092,25 +1093,47 @@ _int_rand_p:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-;[[ id : rand_next], [ * : *], [ int : 235495089223452]]
-mov rbx, 235495089223452
+;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ << : <<], [ int : 13], [ ) : )]]
+mov rcx, 13
+mov rbx, [rand_next]
+sal rbx, cl
 mov rcx, [rand_next]
-imul rbx, rcx
+xor rcx, rbx
 ;------------
-mov [rand_next], rbx
-;[[ ( : (], [ id : rand_next], [ % : %], [ int : 13791369], [ ) : )], [ >> : >>], [ int : 5]]
-mov rbx, 13791369
-mov rcx, [rand_next]
-xor rdx, rdx
-mov rax, rbx
-idiv rcx
- mov rbx, rdx
-mov rcx, 5
+mov [rand_next], rcx
+;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ >> : >>], [ int : 17], [ ) : )]]
+mov rcx, 17
+mov rbx, [rand_next]
 sar rbx, cl
+mov rcx, [rand_next]
+xor rcx, rbx
 ;------------
+mov [rand_next], rcx
+;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ << : <<], [ int : 5], [ ) : )]]
+mov rcx, 5
+mov rbx, [rand_next]
+sal rbx, cl
+mov rcx, [rand_next]
+xor rcx, rbx
+;------------
+mov [rand_next], rcx
+;[[ id : rand_next]]
+;------------
+mov rbx, [rand_next]
 mov rax, rbx
 jmp ___int_rand_p__return
 ___int_rand_p__return:
+leave
+ret
+
+;[ function int rdrand( [] ) ]
+
+_int_rdrand_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+rdrand rax
+___int_rdrand_p__return:
 leave
 ret
 
@@ -1311,7 +1334,7 @@ sete bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x6
+jne _LIFPOST_0x2
 ;[[ id : STRING_CONSTANT_5]]
 ;------------
 mov rbx, STRING_CONSTANT_5
@@ -1322,9 +1345,9 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pint.int__return
-jmp _LIFELSE_0x7
-_LIFPOST_0x6:
-_LIFELSE_0x7:
+jmp _LIFELSE_0x3
+_LIFPOST_0x2:
+_LIFELSE_0x3:
 ;[[ id : STRING_CONSTANT_6]]
 ;------------
 mov rbx, STRING_CONSTANT_6
@@ -1337,8 +1360,8 @@ call _void_printf_pchar.int
 ;[[ int : 0]]
 ;------------
 mov QWORD[rbp-24], 0
-jmp _LFORCMP_0x9
-_LFORTOP_0x8:
+jmp _LFORCMP_0x5
+_LFORTOP_0x4:
 ;[[ id : STRING_CONSTANT_7]]
 ;------------
 mov rbx, STRING_CONSTANT_7
@@ -1359,7 +1382,7 @@ mov rbx, QWORD[rbp-24]
 add rbx, rcx
 ;------------
 mov QWORD[rbp-24], rbx
-_LFORCMP_0x9:
+_LFORCMP_0x5:
 ;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
 mov rcx, QWORD[rbp-16]
 mov rbx, QWORD[rbp-24]
@@ -1371,7 +1394,7 @@ sub rbx, rcx
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LFORTOP_0x8
+je _LFORTOP_0x4
 ;[[ id : STRING_CONSTANT_8]]
 ;------------
 mov rbx, STRING_CONSTANT_8
@@ -1429,7 +1452,7 @@ mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x4
+jne _LIFPOST_0x0
 ;[[ id : STRING_CONSTANT_3]]
 ;------------
 mov rbx, STRING_CONSTANT_3
@@ -1440,9 +1463,9 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
-jmp _LIFELSE_0x5
-_LIFPOST_0x4:
-_LIFELSE_0x5:
+jmp _LIFELSE_0x1
+_LIFPOST_0x0:
+_LIFELSE_0x1:
 ;[[ id : STRING_CONSTANT_4]]
 ;------------
 mov rbx, STRING_CONSTANT_4
@@ -1772,54 +1795,11 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 0]]
-;------------
-mov QWORD[rbp-24], 0
-jmp _LFORCMP_0x1
-_LFORTOP_0x0:
-;[[ @ : @], [ ( : (], [ id : argv], [ + : +], [ ( : (], [ id : i], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
-mov rcx, 8
-mov rbx, QWORD[rbp-24]
-imul rbx, rcx
-mov rcx, QWORD[rbp-16]
-add rcx, rbx
-mov rbx, [rcx]
-;------------
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-mov rcx, 1
-mov rbx, QWORD[rbp-24]
-add rbx, rcx
-;------------
-mov QWORD[rbp-24], rbx
-_LFORCMP_0x1:
-;[[ id : i], [ < : <], [ id : argc]]
-mov rcx, QWORD[rbp-8]
-mov rbx, QWORD[rbp-24]
-cmp bl, cl
-setl bl
-;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-je _LFORTOP_0x0
-;[[ int : 5]]
-;------------
-mov QWORD[rbp-32], 5
-;[[ int : 400], [ >> : >>], [ id : b]]
-mov rcx, QWORD[rbp-32]
-mov rbx, 400
-sar rbx, cl
-;------------
-mov rdi, rbx
-mov rax, 0
-call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0

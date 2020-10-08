@@ -511,7 +511,6 @@ class Function:
         stack = []
         sses = 0
         norms= 0
-        print(pfix)
         o = VOID.copy()
         for e in pfix:
             if(e.isoperation):

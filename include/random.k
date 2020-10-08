@@ -1,11 +1,32 @@
-unsigned int rand_next = 1;
+int rand_next = 1;
 
-function int rand(){
-    rand_next = rand_next*235495089223452;
-    return (rand_next % 13791369)>>5;
+/**
+*
+* int rdrand() is a wrapper for the very slow x86 rdrand instruction which outputs cryptographically secure random integers.
+*
+*/
+function int rdrand(){
+    __asm{"rdrand rax"}
 }
 
+/**
+*
+* int rand() uses xorshift randomness to get multiple random numbers out of one 
+*   rdrand call for faster but less secure random numbers.
+* The srand() function must be called first before any useful numbers can be produced by rand().
+*   \see srand()
+*/
+function int rand(){
+    rand_next = rand_next ^ (rand_next << 13);
+    rand_next = rand_next ^ (rand_next >> 17);
+    rand_next = rand_next ^ (rand_next << 5);
+    return rand_next;
+}
 
-function void srand(unsigned int seed){
-    rand_next=seed;
+/**
+* srand() sets the seed for the speed-oriented rand() function.
+*   \see rand()
+*/
+function void srand(){
+    rand_next=rdrand();
 }

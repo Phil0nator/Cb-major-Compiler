@@ -10,19 +10,32 @@ class Error:
     def __repr__(self):
         line = self.tok.start.line
         file = self.tok.start.file
+        char = self.tok.start.ch 
+
         for f in config.raw_filedata:
             if(f[1] == file):
                 file = f[0]
                 break
+
+            
+        file = file[0:char-1] + error_indicator + self.tok.value + Style.RESET_ALL + file[char+len(self.tok.value):len(file)-1]
         lines = file.split("\n")
         
+        
+        
+
         if(line!=0):                    lp = f"|{line-1}\t"+lines[line-2]+"\n"
         if(True):                       lp += f"|{line}\t"+lines[line-1]+"\n"
         if(line!=len(lines)-1):         lp += f"|{line+1}\t"+lines[line]+"\n"
+        
+        
         problem = lp
 
-        problem = problem[0:problem.find(self.tok.value)] + error_indicator + self.tok.value + Style.RESET_ALL + problem[problem.find(self.tok.value)+len(self.tok.value):]
+        #problem = problem[0:problem.find(self.tok.value)] + error_indicator + self.tok.value + Style.RESET_ALL + problem[problem.find(self.tok.value)+len(self.tok.value):]
         
+
+
+
         return f"{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{self.message} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
 
 

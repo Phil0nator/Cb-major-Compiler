@@ -635,7 +635,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op in ["==","!=",">","<","<=",">="]):
         return cmpI(boolchar_version[areg],boolchar_version[breg],signed,op)
     elif(op in ["!","&&","||","^"]):
-        return boolmath(boolchar_version[areg],boolchar_version[breg],op)
+        return boolmath(areg,breg,op)
 
 
 def cmpI(areg, breg,signed, op):

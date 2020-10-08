@@ -180,13 +180,13 @@ class Compiler:
                         throw(UnexpectedIdentifier(self.current_token))
 
                 
+                    self.advance()
                 else:
                     v = Variable(t,name,glob=True,initializer=None,isptr=isptr)
                 
                 
                 self.globals.append(v)
                 self.heap+=createIntrinsicHeap(v)
-                self.advance()
 
                 if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
 
