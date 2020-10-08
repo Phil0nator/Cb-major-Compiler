@@ -17,8 +17,7 @@ class Error:
                 file = f[0]
                 break
 
-
-        file = file[0:char] + error_indicator + self.tok.value + Style.RESET_ALL + file[char+len(self.tok.value):len(file)-1]
+        file = file[0:char] + error_indicator + str(self.tok.value) + Style.RESET_ALL + file[char+len(str(self.tok.value)):len(file)-1]
         lines = file.split("\n")
         
         
@@ -36,7 +35,7 @@ class Error:
 
 
 
-        return f"{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{self.message} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
+        return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
 
 
 def throw(error):
@@ -177,3 +176,14 @@ class InvalidOperationOperands(Error):
     def __init__(self, tok, op, a, b):
         self.tok = tok
         self.message = f"Invalid operation [ '{op}' ] for operands of type [ '{a}', '{b}' ] :"
+
+
+class UsingTypenameAsVariable(Error):
+    def __init__(self,tok):
+        self.tok=tok
+        self.message = f"Cannot use typename as variable name: "
+
+class HangingOperator(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Invalid expression due to hanging operator: "

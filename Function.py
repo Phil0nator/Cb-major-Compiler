@@ -184,6 +184,7 @@ class Function:
             instr = self.evaluateRightsideExpression(EC.ExpressionComponent(norm_return_register,INT.copy(),token=self.current_token))
         self.addline(instr)
         self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
+        self.checkSemi()
 
     def buildIfStatement(self):
         self.advance()
@@ -253,8 +254,6 @@ class Function:
         self.breaks.append(endlabel)
         self.buildDeclaration()
         var = self.variables[len(self.variables)-1]
-        if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
-        self.advance()
 
         getCondition = self.evaluateRightsideExpression(EC.ExpressionComponent(rax,BOOL.copy(),token=self.current_token))
 
@@ -502,7 +501,7 @@ class Function:
 
             rfree(breg)
         else: #situation is different when casting is directional
-            if(not typematch(a.type,b.type) and not typematch(b.type, a.type)):
+            if(not typematch(a.type,b.type) and not typematch(b.type, a.type) and not (a.isconstint() or b.isconstint())):
                 throw(TypeMismatch(a.token, a.type, b.type))
             newtype, toConvert = determinePrecedence(a.type, b.type)
             o = newtype.copy()
@@ -576,6 +575,8 @@ class Function:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):
                     b = stack.pop()
+                    if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
+
                     a = stack.pop()
                     op = e.accessor
 
@@ -590,7 +591,7 @@ class Function:
                     a = stack.pop()
                     if(e.accessor == T_NOT):
 
-                        if(not typematch(BOOL, a.type)):
+                        if(not typematch(BOOL, a.type) and not a.isconstint()):
                             throw(TypeMismatch(a.token,BOOL, a.type))
                         
                         needload = True
@@ -691,7 +692,11 @@ class Function:
 
             else:
                 stack.append(e)
+        
+        if(len(stack) != 1): throw(HangingOperator(pfix[len(pfix)-1].token))
         final = stack.pop()
+        
+        
         o = final.type.copy()
         
         instr+=";------------\n"
@@ -912,6 +917,8 @@ class Function:
         if(self.getVariable(name) != None and not self.getVariable(name).glob):
             throw(VariableRedeclaration(self.tokens[self.ctidx-1], name))
 
+        if(self.compiler.getType(name) != None): throw(UsingTypenameAsVariable(self.tokens[self.ctidx-1]))
+
         self.addVariable(Variable(t,name))
         var = self.variables[len(self.variables)-1]
         
@@ -956,6 +963,7 @@ class Function:
 
         self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(var, var.t, token=self.current_token)))
         
+        self.checkSemi()
 
     def buildBlankfnCall(self):
         instructions, fn = self.buildFunctionCall()
@@ -1037,6 +1045,7 @@ class Function:
             self.advance()
             result = ralloc(v.t.isfltdepth(depthreached))
             ev = self.evaluateRightsideExpression(  EC.ExpressionComponent(result, v.t,token=vt)  )
+            if(v.t.size(depthreached) == 1 and not v.t.isfltdepth(depthreached)): result = boolchar_version[result]
             self.addline(inst)
             self.addline(ev)
             if(v.t.isfltdepth(depthreached)):
@@ -1051,6 +1060,7 @@ class Function:
         elif(self.current_token.tok == T_EQUALS and isptridx):
             self.advance()
             result = ralloc(v.t.isfltdepth(depthreached))
+            if(v.t.size(depthreached) == 1): result = boolchar_version[result]
             newt = v.t.copy()
             newt.ptrdepth-=1
             ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,newt,token=vt) )
@@ -1078,6 +1088,10 @@ class Function:
             inst+=instr
             self.addline(inst)
             self.advance()
+
+        if(self.current_token.tok!=T_CLSP): self.checkSemi()
+
+
 
     def buildIDStatement(self):
         
@@ -1125,6 +1139,7 @@ class Function:
 
             else:
                 pass # ambiguous statement
+                throw(UnexpectedToken(self.current_token))
                 self.advance()
 
 

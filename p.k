@@ -4,26 +4,15 @@
 
 function int main(int argc, char** argv){
 
-
-
-    int bruh = 256;
-
-    if(bruh == 256){
-
-        print("Hello World");
-
-    }
     
-    char * buffer = malloc(100*char);
-    memcpy(buffer, "Stinky", 6);
-    print(buffer);
+    char * beans = "BEANS BEANS BEANS";
+    print(beans);
+    beans[0] = 'h';
+    print(beans);
 
-    //this is a one line comment
+    int c = !5;
 
-    /*
-    this is a multiline comment
-    */
-
+    
 
     return 0;
 }

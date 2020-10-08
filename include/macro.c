@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include <threads.h>
+//#include <threads.h>
 
 #ifndef __WIN32__
 
