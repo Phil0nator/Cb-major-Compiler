@@ -24,16 +24,19 @@ import config
 
 def main():
 
-    beginTime = time.time()
-    with open(config.__fileinput__, "rb") as inpf:
+    beginTime = time.time() # record time of start
+    with open(config.__fileinput__, "rb") as inpf: # read entrypoint
         raw = inpf.read().decode()
 
+    # preprocess
     pre = PreParser(raw,config.__fileinput__)
     pretokens = pre.getTokens() 
 
     pp = PreProcessor(raw,pretokens,config.__fileinput__)
     totals = pp.process()
     print("+-+-+ Compile +-+-+")
+    
+    # global compilation
     c = Compiler()
     config.GlobalCompiler = c
     
@@ -43,13 +46,14 @@ def main():
         config.raw_filedata.append(file)
         c.compile(file)
 
-
+    # function compilation
     c.finalize()
 
     if(c.panicmode):
         print("Could not finish compilation due to errors.")
         exit(1)
-
+    
+    # feed to template
     asm = "%s"%fileTemplate
     asm = asm.replace("%%HEAP%%", c.heap)
     asm = asm.replace("%%CONSTANTS%%", c.constants)
@@ -59,12 +63,14 @@ def main():
     
 
 
-
+    #cleanup
     asm = asm.replace("\n\n","\n").replace("\n\n","\n")
     
     
     
     print("+-+-+ FINAL +-+-+")
+
+    #linking, and running
 
     with open(config.__fileoutput__+".asm", "wb") as f:
         f.write(asm.encode())

@@ -96,7 +96,7 @@ class Lexer:
         self.advance()
         return Token(T.T_CHAR, v,begin,self.loc.copy())
 
-    def buildAmbiguous(self):
+    def buildAmbiguous(self): # build unkown identifier. Could be : ID, Keyword, Type, etc...
         value = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -106,15 +106,13 @@ class Lexer:
             self.advance()
 
         if( value in T.KEYWORDS ):
-            if(value in ["true", "false"]):
-                if(value == "true"):
-                    return Token(T.T_BOOL, True, begin, self.loc.copy())
-                return Token(T.T_BOOL, False, begin, self.loc.copy())
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
-
-
-    def getTokens(self, getDirectives = False):
+ 
+    # main function to get all tokens for a given text file. 
+    # getDirectives can be set to True by the PreProcessor to only see directives
+    # \see PreParser
+    def getTokens(self, getDirectives = False): 
         tokens = []
         directives = []
         while self.ch != chr(1):

@@ -4,17 +4,31 @@ from Classes.Token import *
 from Classes.Error import *
 
 import Classes.ExpressionComponent as EC
+
+
+########################################
+#
+#   The Postfixer class is used to take a series of Token objects
+#       in the form of an infix equation and turn them into a
+#       series of ExpressionComponent objects in postfix form.
+#   \see Function
+#   \see DType
+#   \see Variable
+#   \see Token
+#   \see ExpressionComponent
+#
+########################################
 class Postfixer:
     def __init__(self, tokens, fn):
-        self.tokens = tokens
-        self.pfix = []
-        self.stack = []
-        self.fn = fn
+        self.tokens = tokens            # a list of Token objects
+        self.pfix = []                  # the output
+        self.stack = []                 # utility stack
+        self.fn = fn                    # caller
     
-    def isOperator(self, t):
+    def isOperator(self, t):            # determine if a given Token object represents an operator
         return t.tok in OPERATORS
     
-    def addtok(self, t):
+    def addtok(self, t):                # add a given token to the final output as an ExpressionComponent object
         
         if self.isOperator(t):
             ec = EC.ExpressionComponent(t.tok,t.value,isoperation=True)
@@ -40,7 +54,7 @@ class Postfixer:
         ec.token = t
         self.pfix.append(ec)
 
-    def createPostfix(self):
+    def createPostfix(self):        # main function
 
 
         for t in self.tokens:

@@ -9,7 +9,7 @@ import config
 import time
 import Classes.ExpressionComponent as EC
 
-
+# multiply all items in an array
 def product(arr):
     total = arr[0]
     for i in arr[1:]:
@@ -17,46 +17,48 @@ def product(arr):
     return total
 
 
-
-
-
-
-
-
+###################################################
+#
+#   The Function class is where the bulk of compilation occurs.
+#   Function objects are isolated and created by compiler objects.
+#
+#
+#
+#####################################################
 class Function:
     def __init__(self, name, parameters, returntype, compiler, tokens):
-        self.name = name
-        self.parameters = parameters
-        self.returntype=returntype
-        self.compiler = compiler
-        self.tokens = tokens
-        self.asm = "\n"
+        self.name = name                        # fn name
+        self.parameters = parameters            # list:Variable parameters
+        self.returntype=returntype              # DType: return type
+        self.compiler = compiler                # Parent
+        self.tokens = tokens                    # All Tokens
+        self.asm = "\n"                         # raw assembly output
 
-        self.stackCounter = 8
-        self.variables = []
+        self.stackCounter = 8                   # counter to keep track of stacksize
+        self.variables = []                     # all local variables
 
-        self.continues = []
-        self.breaks = []
+        self.continues = []                     # stack containing labels to jump to if the "continue" keyword is used
+        self.breaks = []                        # stack containing labels to jump to if the "break" keyword is used
 
 
-        self.current_token = self.tokens[0]
-        self.ctidx = 0
+        self.current_token = self.tokens[0]     # current token
+        self.ctidx = 0                          # corrent token index
 
-    def advance(self):
+    def advance(self):                              # advance token
         self.ctidx+=1
         self.current_token = self.tokens[self.ctidx]
 
-    def getCallingLabel(self):
+    def getCallingLabel(self):                      # get the raw asm label used to call this function
         return functionlabel(self).replace(":","").replace("\n","")
 
-    def checkSemi(self):
+    def checkSemi(self):                            # check current token for semicolon
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
         self.advance()
 
-    def getClosingLabel(self):
+    def getClosingLabel(self):                      # get raw asm label used to denote the end of this function
         return function_closer(self.getCallingLabel()).split("\n")[0]
 
-    def getVariable(self, q):
+    def getVariable(self, q):                       # get a variable of name q from first local then global scope if necessary
 
         for v in self.variables:
             if (v.name == q):
@@ -66,7 +68,7 @@ class Function:
         if(globq!=None): return globq
         return None
 
-    def addVariable(self, v):
+    def addVariable(self, v):                       # add a given variable, and set its stack offset
 
         v.offset = self.stackCounter
         #self.stackCounter += v.t.size(0)
@@ -75,7 +77,7 @@ class Function:
         self.variables.append(v)
 
 
-    def addline(self, l):
+    def addline(self, l):                           # add a line of assembly to raw
         self.asm+=l+"\n"
     
     def addcomment(self, c):
@@ -87,7 +89,7 @@ class Function:
                 return True
         return False
 
-    def getFunction(self, fn, types):
+    def getFunction(self, fn, types):               # get function with name fn and datatypes types, or a suitable replacement (casting)
 
         for f in self.compiler.functions: # first seach exact matches
             if f.name == fn:
@@ -119,7 +121,7 @@ class Function:
 
 
 
-    def checkForId(self):
+    def checkForId(self):               # check next tokens for ID
 
         if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
 
@@ -129,7 +131,7 @@ class Function:
 
 
 
-    def checkForType(self):
+    def checkForType(self):             # check next tokens for Type
         signed=True
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
@@ -155,7 +157,7 @@ class Function:
 
 
 
-    def loadParameters(self):
+    def loadParameters(self):                   # load parameters into memory (first instructions) 
         countn = 0
         counts = 0
         for p in self.parameters:
@@ -172,11 +174,11 @@ class Function:
 
     
 
-    def createClosing(self):
+    def createClosing(self):                    # create end of the function
 
         self.addline(function_closer(self.getCallingLabel()))
 
-    def buildReturnStatement(self):
+    def buildReturnStatement(self):             # build a return statement
         self.advance()
         if(self.returntype.isflt()):
             instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy(), token=self.current_token))
@@ -335,7 +337,7 @@ class Function:
 
 
 
-    def buildKeywordStatement(self):
+    def buildKeywordStatement(self):                    # build a statement that starts with a keyword
         word = self.current_token.value
         
         if(word == "__asm"):
@@ -392,7 +394,7 @@ class Function:
             self.advance()
 
 
-    def buildFunctionCall(self):
+    def buildFunctionCall(self):                    
         fid = self.current_token.value
         fnstartt = self.current_token
         fn = None
@@ -459,8 +461,8 @@ class Function:
         instructions+=fncall(fn)
         return instructions, fn
 
-        
-    def performCastAndOperation(self,a, b, op, o):
+    # (used for rightside evaluation)
+    def performCastAndOperation(self,a, b, op, o):                      # Do an operation with a op b -> o:DType
         instr = ""
         apendee = None
 
@@ -565,7 +567,7 @@ class Function:
 
 
 
-    def evaluatePostfix(self, dest, pfix):
+    def evaluatePostfix(self, dest, pfix):                  # evaluate a rightside generated postfix list of EC's
         instr = ""
         stack = []
         sses = 0
@@ -777,7 +779,7 @@ class Function:
 
 
 
-    def buildExpressionComponents(self):
+    def buildExpressionComponents(self):                        # construct expression components from tokens
         exprtokens= []
         opens = 1
         instructions = ""
@@ -880,7 +882,7 @@ class Function:
         return exprtokens, instructions
 
 
-    def evaluateRightsideExpression(self, destination, otyperef=None):
+    def evaluateRightsideExpression(self, destination, otyperef=None):                  # evaluate the next tokens and return the asm instructions
         instructions = ""
         start = self.ctidx
         opens = 1
@@ -912,7 +914,7 @@ class Function:
 
 
 
-    def buildDeclaration(self):
+    def buildDeclaration(self):                     # declare new var
         t = self.checkForType()
         
 
@@ -971,14 +973,14 @@ class Function:
         
         self.checkSemi()
 
-    def buildBlankfnCall(self):
+    def buildBlankfnCall(self):                 # build function call not in an expression
         instructions, fn = self.buildFunctionCall()
         if(self.current_token.tok == ")"): self.advance()
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
         self.addline(instructions)
         self.advance()
 
-    def buildAssignment(self):
+    def buildAssignment(self):                  # assign a variable
         vt = self.current_token
         v = self.getVariable(self.current_token.value)
         self.advance()
@@ -1105,7 +1107,7 @@ class Function:
 
 
 
-    def buildIDStatement(self):
+    def buildIDStatement(self):             # build statement starting with an ID token
         
         id = self.current_token.value
 
@@ -1131,7 +1133,7 @@ class Function:
 
 
 
-    def beginRecursiveCompile(self):
+    def beginRecursiveCompile(self):            # recursive main
         opens = 1
         while opens > 0 and self.current_token.tok != T_EOF:
 
@@ -1156,7 +1158,7 @@ class Function:
 
 
 
-    def compile(self):
+    def compile(self):      # main
         
         self.addline(functionlabel(self))
         self.addline("/*%%ALLOCATOR%%*/")
@@ -1171,5 +1173,5 @@ class Function:
         self.createClosing()
 
 
-    def __repr__(self):
+    def __repr__(self):     # pretty print
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"

@@ -1,3 +1,5 @@
+
+# raw linking commands
 def link(i, o):
     return f"gcc \"include/macro.c\" -Wimplicit-function-declaration \"{i}\".o -no-pie -lm -o \"{o}\""
 

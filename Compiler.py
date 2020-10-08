@@ -10,63 +10,79 @@ from Lexer import Lexer
 from Classes.Error import *
 from globals import *
 import config
+
+#####################################
+#
+#   The Compiler class is used to compile global variables,
+#       isolate structures, and isolate functions.
+#   Functions are compiled in the Function class.
+#   
+#   \see Token
+#   \see Variable
+#   \see Function
+#   \see compile.py
+#   \see globals
+#
+######################################
 class Compiler:
 
     def __init__(self):
-        self.globals = []
-        self.constants = ""
-        self.heap = ""
-        self.initializers = ""
-        self.entry = ""
-        self.text = ""
-        self.currentfname = ""
-        self.currentTokens = []
+        self.globals = []               # all global variables
+        self.constants = ""             # raw assembly for constant definitions
+        self.heap = ""                  # raw assembly for heap definitions (.bss)
+        self.initializers = ""          # raw assembly for initialization of heap definitions
+        self.entry = ""                 # raw assembly to call the given entrypoint (usually main)
+        self.text = ""                  # raw .text assembly
+        self.currentfname = ""          # current filename
+        self.currentTokens = []         # current tokens: Token
 
         
-        self.current_token = None
-        self.ctidx = 0
+        self.current_token = None       # current token
+        self.ctidx = 0                  # index of current_token in self.currentTokens
 
 
-        self.functions = []
-        self.globals = []
-        self.types = []
-        self.tdefs = [] # (old, new)
-        for i in INTRINSICS:
+        self.functions = []             # all Function objects
+         
+        self.types = []                 # all datatypes: DType
+        self.tdefs = []                 # typedefs listed as (old, new):(DType,DType)
+        
+        
+        for i in INTRINSICS:            # fill types with primitives
             self.types.append(i.copy())
     
 
-        self.heap_unnamed = 0
+        self.heap_unnamed = 0           # int counter for unnamed heap variables
 
-        self.panicmode = False
+        self.panicmode = False          # panicmode means continue compiling, but there has already been an error
 
-    def isType(self, q):
+    def isType(self, q):                # return: if q is type
         return self.getType(q) != None
 
-    def isIntrinsic(self, q):
+    def isIntrinsic(self, q):           # return: if q is primitive
         for t in INTRINSICS:
             if q == t.name:
                 return t
         return None
 
-    def isGlob(self, q):
+    def isGlob(self, q):                # return: if q is global variable
         for g in self.globals:
             if g.name == q:
                 return True
         return False
 
-    def getGlob(self, q):
+    def getGlob(self, q):               # get global variable of name q
         for g in self.globals:
             if g.name == q:
                 return g
         return None
 
-    def getFunction(self, q):
+    def getFunction(self, q):           # get first function of name q
         for f in self.functions:
             if f.name == q:
                 return f
         return None
 
-    def advance(self):
+    def advance(self):                  # move to next token
         self.ctidx+=1
         try:
             self.current_token = self.currentTokens[self.ctidx]
@@ -74,12 +90,12 @@ class Compiler:
             throw(UnexepectedEOFError(self.current_token))
 
 
-    def Tequals(self, ta, tb):
+    def Tequals(self, ta, tb):          # determine DType equality (including typedefs)
         if(ta == tb):return True
         for tdef in self.tdefs:
             if(tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta: return True
         return False
-    def getType(self, q):
+    def getType(self, q):               # get type of name q
         pd = 0
         if "." in q:
             pd = q.count(".")
@@ -91,7 +107,7 @@ class Compiler:
                 return out
         return None
 
-    def checkType(self):
+    def checkType(self):                # check the next tokens for a type, and return it
         signed=True
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
@@ -117,7 +133,7 @@ class Compiler:
 
 
 
-    def buildIDInitiatedStatement(self):
+    def buildIDInitiatedStatement(self):    # build a statement that starts with an id token
         
         value = self.current_token.value
         if(self.isType(value)):
@@ -201,7 +217,7 @@ class Compiler:
 
 
 
-    def createStringConstant(self, content):
+    def createStringConstant(self, content):        # create a constant string value in self.constants
         
         d = createStringConstant(content)
         name = d[1]
@@ -213,7 +229,7 @@ class Compiler:
 
 
 
-    def createConstant(self):
+    def createConstant(self):                   # create an arbitrary constant in self.constants
         self.advance()
         value = self.current_token.value
         if(self.isType(value)):
@@ -259,7 +275,7 @@ class Compiler:
 
 
 
-    def createFunction(self):
+    def createFunction(self):                   # isolate a function and build a Function object
         self.advance()
 
         rettype = self.checkType()
@@ -323,7 +339,7 @@ class Compiler:
         self.functions.append(f)        
         self.globals.append(Variable( f.returntype.copy(), f.name, glob=True))
 
-    def buildStruct(self):
+    def buildStruct(self):                  # isolate and build a structure
         self.advance()
         if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
         id = self.current_token.value
@@ -364,7 +380,7 @@ class Compiler:
         self.types.append(actualType)
 
 
-    def compile(self, ftup):
+    def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentfname = ftup[1]
         raw = ftup[0]
         lex = Lexer(self.currentfname,raw)
@@ -450,7 +466,7 @@ class Compiler:
                 self.advance()
             
 
-    def finalize(self):
+    def finalize(self):                                 # compile all functions and fill in raw assembly info
         for f in self.functions:
             f.compile()
             rfreeAll() # make sure there are no register leaks between functions 

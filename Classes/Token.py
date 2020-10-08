@@ -1,4 +1,7 @@
-
+################
+#   Token strings are prefaced with T_
+#
+#############
 
 # COMPILETIME
 
@@ -96,18 +99,30 @@ KEYWORDS = [
 T_FUNCTIONCALL = "fn(x)"
 T_REGISTER = "reg"
 
-
+##################################
+#
+#   The Token class is used to abstract a body of text into
+#       one of the above listed catagories (T_...) with the
+#       original value if needed.
+#   Each token also stores its location in a file with a Location
+#       object.
+#  
+#   \see Lexer
+#   \see Compiler
+#   \see Function
+#   \see Location
+#################################
 class Token:
     def __init__(self, tok, value, start, end):
-        self.tok = tok
-        self.start = start
-        self.end = end
-        self.value = value
-        self.fn = None
+        self.tok = tok          # catagorie
+        self.start = start      # Location
+        self.end = end          # Location
+        self.value = value      # raw
+        self.fn = None          # hint
         self.thint = None # type hint
         self.tracker = 0 # usage hint
 
-    def __repr__(self):
+    def __repr__(self): # pretty print
         if(self.tok != T_FUNCTIONCALL):
             return f"[ {self.tok} : {self.value}]" 
         else:

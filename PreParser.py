@@ -7,7 +7,13 @@ def join(arr, d):
     for s in arr:
         out+=s+d
     return out
-
+##############
+#
+#   The PreParser class is used to parse a raw text file into only preprocessor directives
+#       like include, define, etc...
+#   \see PreProcessor
+#   \see Lexer
+#############
 
 class PreParser:
     def __init__(self, content, fname):
@@ -95,8 +101,17 @@ class PreParser:
 
 
 
-
-
+##############################
+#
+#   The PreProcessor class is used to execute directive tokens from 
+#       a PreParser object.
+#   It will return the new raw texts associated with their respective
+#       file names in tuples.
+#   \see compile.py
+#   \see PreParser
+#   
+#
+#############################
 
 
 class PreProcessor:

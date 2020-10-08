@@ -6,7 +6,19 @@ import time
 import Classes.ExpressionComponent as EC
 import config
 
-
+###################################
+#
+#   globals contains the majority of the raw assembly functions
+#       and lower level handling.
+#   globals also contains a lot of general information about how
+#       registers, operations, datatypes, etc... will be handled
+#       in the Compiler and the Function.
+#   globals is a mess.
+#   \see Compiler
+#   \see Function
+#   \see DType
+#
+###################################
 
 
 

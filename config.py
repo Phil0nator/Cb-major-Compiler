@@ -1,3 +1,13 @@
+#####################
+#   config contains global variables,
+#       argument parsing info, setup stuffs, etc...
+#
+#####################
+
+
+
+
+
 import argparse as arg
 parser = arg.ArgumentParser(description='Compile, link, and debug .k programs.')
 parser.add_argument("-o", "--output", required=True, help="Name of output file")
