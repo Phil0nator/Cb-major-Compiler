@@ -2,6 +2,18 @@ from Classes.Location import Location
 from Classes.Token import Token
 import Classes.Token as T
 from globals import *
+
+##########################
+#
+#   The Lexer class is used to take a raw text file
+#       and translate it into Token objects for a Compiler and Function
+#       object to compile.
+#       
+#       \see Classes.Token
+#       \see Compiler
+#       \see Function
+#
+##########################
 class Lexer:
     def __init__(self, fname, raw):
         self.loc = Location(fname,1,0)
@@ -11,7 +23,7 @@ class Lexer:
         self.chidx = 0
 
 
-    def advance(self):
+    def advance(self):  # increment the current character
 
         self.chidx+=1
         if(self.chidx < len(self.raw)):
@@ -26,7 +38,7 @@ class Lexer:
             print("Untimely Advance")
             exit()
 
-    def buildMultichar(self):
+    def buildMultichar(self): # build math operators that use more than one character (max = 3)
         op = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -40,7 +52,7 @@ class Lexer:
         self.advance()
         return Token(op,op,begin,self.loc.copy())
 
-    def buildNumber(self):
+    def buildNumber(self): # build a number based on digits, . for floats, and e for scientific notation
         num = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -60,18 +72,23 @@ class Lexer:
         return Token(t,val,begin,self.loc.copy())
             
 
-    def buildString(self):
+    def buildString(self): # build a string value with escape characters 
         self.advance()
-        content = self.ch
         begin = self.loc.copy()
+        if(self.ch == "\""):
+            self.advance()
+            return Token(T.T_STRING, "", begin, self.loc.copy())
+        content = self.ch
         self.advance()
+
+            
         while(self.ch != "\""):
             content+=self.ch
             self.advance()
         self.advance()
         return Token(T.T_STRING, content,begin,self.loc.copy())
 
-    def buildChar(self):
+    def buildChar(self): # build a char token with one char
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
