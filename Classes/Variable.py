@@ -13,6 +13,7 @@ class Variable:
         self.stackdims = isStackarr
         self.stacksizes = []
 
+
     def isflt(self):
         return (self.t.name == "float" or self.t.name == "double") and self.isptr == False
 

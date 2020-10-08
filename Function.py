@@ -851,7 +851,16 @@ class Function:
                     exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
                     self.ctidx-=2
                     self.advance()
-                
+                elif(self.tokens[self.ctidx+1].tok == T_DOT):
+                    wasfunc = True
+                    start = self.current_token.loc.copy()
+                    var = self.getVariable(self.current_token.value)
+                    if(var == None): throw(UnkownIdentifier(self.current_token))
+                    self.advance()
+                    member = self.current_token.value
+                    offset = member.offset
+                    exprtokens.append(Token(T_ID, f"{var.name}.{member.name}",start,self.current_token.end))
+
 
             if(not wasfunc):
                 exprtokens.append(self.current_token)
@@ -905,7 +914,14 @@ class Function:
 
         self.addVariable(Variable(t,name))
         var = self.variables[len(self.variables)-1]
+        
         var.isptr = t.ptrdepth>0
+        if(not var.isptr and var.t.members!=None):
+            for v in var.t.members:
+                if(isinstance(v, Variable)):
+                    
+                    self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+v.offset,isptr=v.isptr,signed=v.signed))
+
         sizes = [1]
         isarr = False
 
@@ -1000,7 +1016,15 @@ class Function:
                 self.advance()
                 idxr+=1
             depthreached = idxr
-
+        elif(v.t.members != None):
+            if(self.current_token.tok == T_DOT):
+                self.advance()
+                if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+                member = self.current_token.value
+                if(not v.t.hasMember(member)): throw(UnkownIdentifier(self.current_token))
+                v = self.getVariable(f"{v.name}.{member}")
+                offset = v.offset
+                self.advance()
 
         if(self.current_token.tok == T_EQUALS and not v.isStackarr and not isptridx): #normal
             self.advance()

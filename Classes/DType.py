@@ -12,7 +12,10 @@ class DType:
             return 8
         return self.s
 
-
+    def hasMember(self, name):
+        for m in self.members:
+            if m.name == name: return True
+        return False
 
     def load(self, other):
         self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed)

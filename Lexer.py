@@ -91,8 +91,8 @@ class Lexer:
         if( value in T.KEYWORDS ):
             if(value in ["true", "false"]):
                 if(value == "true"):
-                    return Token(T.T_BOOL, T.true, begin, self.loc.copy())
-                return Token(T.T_BOOL, T.false, begin, self.loc.copy())
+                    return Token(T.T_BOOL, True, begin, self.loc.copy())
+                return Token(T.T_BOOL, False, begin, self.loc.copy())
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
 
@@ -143,7 +143,7 @@ class Lexer:
                     tokens.append(Token(T.T_DIVIDE,T.T_DIVIDE,self.loc.copy(),self.loc.copy()))
                     
             
-            elif (self.ch in "()}{[],^*@%~"):
+            elif (self.ch in "()}{[],^*@%~."):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
 
@@ -154,7 +154,9 @@ class Lexer:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
-                    t = Token(T.T_MINUS, "-", self.loc.copy(),self.loc.copy())    
+
+                    t = Token("-","-",self.loc.copy(),self.loc.copy())
+                
                 tokens.append(t)
             elif (self.ch in T.T_MULTIOP):
                 token = self.buildMultichar()

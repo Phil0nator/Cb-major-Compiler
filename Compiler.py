@@ -101,8 +101,10 @@ class Compiler:
         
         if(not self.isType(self.current_token.value)): throw(ExpectedType(self.current_token))
 
-        t = self.getType(self.current_token.value).copy()
-
+        t = self.getType(self.current_token.value)
+        if(t == None): throw(UnkownType(self.current_token))
+        t = t.copy()
+        
         self.advance()
         ptrdepth = 0
         while self.current_token.tok == "*":
@@ -320,8 +322,45 @@ class Compiler:
         self.functions.append(f)        
         self.globals.append(Variable( f.returntype.copy(), f.name, glob=True))
 
+    def buildStruct(self):
+        self.advance()
+        if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+        id = self.current_token.value
+        self.advance()
+        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
+
+        prototypeType = DType(id,8,[],0,True)
+        self.types.append(prototypeType)
+
+        size = 0
+        members = []
 
 
+        while(self.current_token.tok != T_CLSSCOPE):
+            self.advance()
+            if(self.current_token.tok == T_ID):
+
+                t = self.checkType()
+                if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+                name = self.current_token.value
+                var = Variable(t,name,glob=False,offset=size,isptr=t.ptrdepth>0,signed=t.signed)
+                members.append(var)
+                size+=t.size(0)
+                self.advance()
+                if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
+
+            elif(self.current_token.tok == T_KEYWORD):
+                if(self.current_token.value == "function"):
+                    self.createFunction()
+                    f = self.functions.pop()
+                    gv = self.globals.pop()
+                    members.append(f)
+                    gv.name = f"{id}_{gv.name}"
+                    self.globals.append(gv)
+
+        self.types.remove(prototypeType)
+        actualType = DType(id,size,members,0,True)
+        self.types.append(actualType)
 
 
     def compile(self, ftup):
@@ -396,6 +435,9 @@ class Compiler:
                     self.advance()
                     if(self.current_token.tok != T_ENDL):
                         throw(ExpectedSemicolon(self.current_token))
+
+                elif(self.current_token.value == "struct"):
+                    self.buildStruct()
 
 
 
