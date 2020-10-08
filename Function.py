@@ -571,7 +571,6 @@ class Function:
         sses = 0
         norms= 0
         o = VOID.copy()
-        print(pfix)
         for e in pfix:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):

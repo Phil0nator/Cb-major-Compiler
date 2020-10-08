@@ -155,6 +155,7 @@ norm_scratch_registers_inuse = [
     False
 ]
 
+# register allocation and deallocation system:
 def ralloc(flt):
     if(flt):
         for i in range(len(sse_scratch_registers_inuse)):
@@ -182,7 +183,7 @@ def rfreeAll():
         sse_scratch_registers_inuse[i]=False
         norm_scratch_registers_inuse[i]=False
 
-
+# bitmasks for boolean values
 
 ensure_boolean = "and al, 00000001b\n"
 check_fortrue = f"{ensure_boolean}cmp al, 1\n"
@@ -192,10 +193,11 @@ check_fortrue = f"{ensure_boolean}cmp al, 1\n"
 
 
 
-
+# return registers
 norm_return_register = "rax"
 sse_return_register = "xmm0"
 
+#Load template stub
 with open("include/stub.asm", "rb") as f:
     stub = f.read().decode()
 
@@ -205,7 +207,7 @@ with open("include/io64.inc", "rb") as f:
 fileTemplate = "%s\n\n%s"%(io64,stub)
 
 
-# intrinsic types:
+# primitive types:
 
 INT = DType("int", 8, signed=True)
 CHAR = DType("char", 1, signed=True)
@@ -217,8 +219,6 @@ BOOL = DType("bool", 1, signed=True)
 
 INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,VOID]
 
-false = (0)
-true = (255)
 
 
 
@@ -252,7 +252,7 @@ def getComparater(signed, op):
 
 
 
-
+# Operator priority (complicated pemdas)
 PRIORITY = {
 
     "(":0,
@@ -396,7 +396,7 @@ leave
 ret
 
 """%(name)
-
+# get size specifier for address
 def psizeof(v):
     if v.isptr: return "qword"
     if v.t.size(0) == 1:
@@ -404,7 +404,7 @@ def psizeof(v):
     if v.t.size(0) == 8:
         return "qword"
     return "qword"
-
+# section reserver sizes
 constantReservers = ["DB", "DW", "DD", "DQ"]
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 def getConstantReserver(t):
@@ -472,6 +472,7 @@ def isIntrinsic(q):
             return True
     return False
 
+# determine compatibility of two types
 def TsCompatible(typea, typeb, fni):
     return typematch(typea, typeb)
 
@@ -518,6 +519,8 @@ def movVarToReg(reg, var):
             return f"cvtsi2sd {reg}, {valueOf(var)}\n"
         else:
             return f"mov {reg},  {valueOf(var)}\n"
+
+#push to stack
 def spush(v: EC.ExpressionComponent):
     if(v.type.isflt()):
         return f"movq {rax}, {v.accessor}\npush {rax}\n"
@@ -528,6 +531,7 @@ def spush(v: EC.ExpressionComponent):
 def fncall(fn):
     return "call %s\n"%fn.getCallingLabel()
 
+# get the value of x (if x is register, return x;  if x is variable, return address; etc...)
 def valueOf(x, dflt = False):
     if (isinstance(x,str)):
         return x
@@ -568,7 +572,7 @@ def loadToReg(reg, value):
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
     
-
+# determine if unkown type x refers to float value
 def isfloat(x):
     if (isinstance(x, T.Token)):
         if(x.tok == T.T_REGISTER):
@@ -585,7 +589,7 @@ def isfloat(x):
 
 
 
-
+# logic label handling
 total_labelCounter = -1
 def getLogicLabel(inf):
     global total_labelCounter

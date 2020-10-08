@@ -1816,73 +1816,11 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 132
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-lea rbx, [rbp-24]
-;[[ int : 0]]
-;------------
-mov rcx, 0
-sub rbx, rcx
-push rbx
-;[[ id : true]]
-;------------
-mov r10, [true]
-mov rcx, r10
-pop rbx
-mov [rbx], cl
-lea rbx, [rbp-24]
-;[[ int : 1]]
-;------------
-mov r10, 1
-sub rbx, r10
-push rbx
-;[[ id : false]]
-;------------
-mov r11, [false]
-mov r10, r11
-pop rbx
-mov [rbx], r10b
-lea rbx, [rbp-24]
-;[[ int : 2]]
-;------------
-mov r11, 2
-sub rbx, r11
-push rbx
-;[[ int : 100]]
-;------------
-mov r11, 100
-pop rbx
-mov [rbx], r11b
-;[[ ( : (], [ @ : @], [ ( : (], [ & : &], [ id : a], [ - : -], [ ( : (], [ int : 0], [ ) : )], [ * : *], [ int : 1], [ ) : )], [ ) : )]]
-lea rbx, [rbp-24]
-mov r11, 0
-sub rbx, r11
-mov r11, [rbx]
-;------------
-mov rdi, r11
-mov rax, 0
-call _void_print_pbool
-;[[ ( : (], [ @ : @], [ ( : (], [ & : &], [ id : a], [ - : -], [ ( : (], [ int : 1], [ ) : )], [ * : *], [ int : 1], [ ) : )], [ ) : )]]
-lea rbx, [rbp-24]
-mov r11, 1
-sub rbx, r11
-mov r11, [rbx]
-;------------
-mov rdi, r11
-mov rax, 0
-call _void_print_pbool
-;[[ ( : (], [ @ : @], [ ( : (], [ & : &], [ id : a], [ - : -], [ ( : (], [ int : 2], [ ) : )], [ * : *], [ int : 1], [ ) : )], [ ) : )]]
-lea rbx, [rbp-24]
-mov r11, 2
-sub rbx, r11
-mov r11, [rbx]
-;------------
-mov rdi, r11
-mov rax, 0
-call _void_print_pbool
 ;[[ int : 0]]
 ;------------
 mov rax, 0
