@@ -1795,11 +1795,23 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ id : true]]
+;------------
+mov rbx, [true]
+mov QWORD[rbp-24], rbx
+;[[ ! : !], [ id : a]]
+mov rbx, QWORD[rbp-24]
+cmp rbx, 0
+sete bl
+;------------
+mov rdi, rbx
+mov rax, 0
+call _void_print_pbool
 ;[[ int : 0]]
 ;------------
 mov rax, 0

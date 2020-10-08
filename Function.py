@@ -416,6 +416,11 @@ class Function:
     def performCastAndOperation(self,a, b, op, o):
         instr = ""
         apendee = None
+
+        if(op in ["<<", ">>"] and (a.type.isflt() or b.type.isflt())):
+            throw(InvalidOperationOperands(a.token,op,a.type,b.type))
+
+
         if(a.type.__eq__(b.type)):
             #same type
 

@@ -663,9 +663,10 @@ def boolmath(areg, breg,op):
     elif(op == "^"):
         cmd = "xor"
     elif(op == "!"):
-        instr = f"not {areg}\n"
-        instr += f"and {areg}, 00000001b\n"
-        return instr
+        #instr = f"not {areg}\n"
+        #instr += f"and {areg}, 00000001b\n"
+        #return instr
+        return cmpI(areg,0,False,"==")
         
     instr = f"{cmd} {areg}, {breg}\n"
     return instr
@@ -679,8 +680,16 @@ def boolmath(areg, breg,op):
 
 
 
-
-
+def bitmathf(areg, breg, op):
+    cmd = ""
+    if(op == "&&"):
+        cmd = "pand"
+    elif(op == "||"):
+        cmd = "por"
+    elif(op == "^"):
+        cmd = "pxor"
+    elif(op == "!"):
+        return cmpF(areg,0,"==")
 
 
 def doFloatOperation(areg, breg, op):
@@ -698,6 +707,8 @@ def doFloatOperation(areg, breg, op):
     
     elif(op in ["==","!=",">","<","<=",">="]):
         return cmpF(areg,breg,op)
+    elif(op in ["&&","||","^","!"]):
+        return bitmathf(areg,breg,op)
 
     return f"{asmop} {areg}, {breg}\n"
     

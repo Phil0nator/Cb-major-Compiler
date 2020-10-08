@@ -17,8 +17,8 @@ class Error:
                 file = f[0]
                 break
 
-            
-        file = file[0:char-1] + error_indicator + self.tok.value + Style.RESET_ALL + file[char+len(self.tok.value):len(file)-1]
+
+        file = file[0:char] + error_indicator + self.tok.value + Style.RESET_ALL + file[char+len(self.tok.value):len(file)-1]
         lines = file.split("\n")
         
         
@@ -172,3 +172,8 @@ class VariableRedeclaration(Error):
     def __init__(self, tok,v):
         self.tok = tok
         self.message = f"Existing declaration for variable [{v}] :"
+
+class InvalidOperationOperands(Error):
+    def __init__(self, tok, op, a, b):
+        self.tok = tok
+        self.message = f"Invalid operation [ '{op}' ] for operands of type [ '{a}', '{b}' ] :"
