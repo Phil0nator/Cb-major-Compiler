@@ -571,6 +571,7 @@ class Function:
         sses = 0
         norms= 0
         o = VOID.copy()
+        print(pfix)
         for e in pfix:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):
@@ -588,6 +589,7 @@ class Function:
                         instr+=newinstr
                         o = newt.copy()
                 else:
+                    if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
                     a = stack.pop()
 
                     if(e.accessor == T_NOT):
@@ -824,6 +826,7 @@ class Function:
 
 
                     # @ (&c+idxa*8+idxb)
+                    exprtokens.append(Token(T_OPENP,T_OPENP,self.current_token.start,self.current_token.end))
                     exprtokens.append(Token(T_DEREF,T_DEREF,self.current_token.start,self.current_token.end))
                     exprtokens.append(Token(T_OPENP,T_OPENP,self.current_token.start,self.current_token.end))
                     
@@ -854,6 +857,8 @@ class Function:
                         i+=1
                         self.advance()
                     exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
+                    exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
+
                     self.ctidx-=2
                     self.advance()
                 elif(self.tokens[self.ctidx+1].tok == T_DOT):
@@ -955,7 +960,9 @@ class Function:
 
         
 
-        if(self.current_token.tok == T_ENDL): return
+        if(self.current_token.tok == T_ENDL): 
+            self.advance()
+            return
 
         if(self.current_token.tok != T_EQUALS): throw(ExpectedToken(self.current_token, " = or ; "))
 
