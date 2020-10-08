@@ -379,6 +379,7 @@ class Compiler:
                     v.signed = False
                     v.t = v.t.copy()
                     v.t.signed=False
+                    v.glob = True
                 elif(self.current_token.value == "typedef"):
                     s = self.current_token
                     self.advance()

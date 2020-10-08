@@ -236,6 +236,7 @@ class Function:
         endlabel = getLogicLabel("FOREND")
 
         self.buildDeclaration()
+        var = self.variables[len(self.variables)-1]
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
         self.advance()
 
@@ -269,7 +270,8 @@ class Function:
 
         self.advance()
 
-
+        #clean up var
+        self.variables.remove(var)
 
         
         
@@ -509,6 +511,7 @@ class Function:
         stack = []
         sses = 0
         norms= 0
+        print(pfix)
         o = VOID.copy()
         for e in pfix:
             if(e.isoperation):
@@ -932,7 +935,7 @@ class Function:
         if(self.current_token.tok == T_EQUALS and not v.isStackarr and not isptridx): #normal
             self.advance()
 
-            ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset),v.t,token=vt)                )
+            ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset,glob=v.glob),v.t,token=vt)                )
             self.addline(inst)
             self.addline(ev)
         elif(self.current_token.tok == T_EQUALS and v.isStackarr and not isptridx):

@@ -42,6 +42,7 @@ def main():
         config.raw_filedata.append(file)
         c.compile(file)
 
+
     c.finalize()
 
     if(c.panicmode):

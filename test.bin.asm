@@ -1020,9 +1020,7 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    FLT_CONSTANT_0: dq 0x1.4000000000000p+1
-FLT_CONSTANT_1: dq 0x1.4000000000000p+1
-nullptr: DQ 0
+    nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
@@ -1036,20 +1034,20 @@ STRING_CONSTANT_5: db `[]`, 0
 STRING_CONSTANT_6: db `[`, 0
 STRING_CONSTANT_7: db ` %i ,`, 0
 STRING_CONSTANT_8: db ` %i ]\n`, 0
-FLT_CONSTANT_2: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_3: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_4: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_5: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_6: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_7: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_8: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_9: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_10: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_11: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_12: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_13: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_14: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_15: dq -0x0.0p+0
+FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_13: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1067,9 +1065,54 @@ M_MINZERO: dq -0x0.0p+0
 section .bss
 align 16
     MAXUINT: RESB 8
+rand_next: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
+
+;[ function void srand( [[ Variable: uint seed @ 8]] ) ]
+
+_void_srand_puint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: uint seed @ 8]
+mov [rbp-8], rdi
+;[[ id : seed]]
+;------------
+mov rbx, QWORD[rbp-8]
+mov [rand_next], rbx
+___void_srand_puint__return:
+leave
+ret
+
+;[ function int rand( [] ) ]
+
+_int_rand_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+;[[ id : rand_next], [ * : *], [ int : 235495089223452]]
+mov rbx, 235495089223452
+mov rcx, [rand_next]
+imul rbx, rcx
+;------------
+mov [rand_next], rbx
+;[[ ( : (], [ id : rand_next], [ % : %], [ int : 13791369], [ ) : )], [ >> : >>], [ int : 5]]
+mov rbx, 13791369
+mov rcx, [rand_next]
+xor rdx, rdx
+mov rax, rbx
+idiv rcx
+ mov rbx, rdx
+mov rcx, 5
+sar rbx, cl
+;------------
+mov rax, rbx
+jmp ___int_rand_p__return
+___int_rand_p__return:
+leave
+ret
 
 ;[ function double abs( [[ Variable: double x @ 8]] ) ]
 
@@ -1729,7 +1772,7 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 56
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
@@ -1766,38 +1809,17 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x0
-;[[ id : FLT_CONSTANT_0]]
+;[[ int : 5]]
 ;------------
-movq xmm7, [FLT_CONSTANT_0] ;<-
-movsd QWORD[rbp-32], xmm7
-;[[ id : FLT_CONSTANT_1]]
+mov QWORD[rbp-32], 5
+;[[ int : 400], [ >> : >>], [ id : b]]
+mov rcx, QWORD[rbp-32]
+mov rbx, 400
+sar rbx, cl
 ;------------
-movq xmm7, [FLT_CONSTANT_1] ;<-
-movsd QWORD[rbp-40], xmm7
-;[[ id : a], [ == : ==], [ id : b]]
-movq xmm8, QWORD[rbp-40] ;<-
-movq xmm7, QWORD[rbp-32] ;<-
-ucomisd xmm7, xmm8
-sete al
-;------------
-mov QWORD[rbp-48], rax
-;[[ id : e]]
-;------------
-mov rbx, QWORD[rbp-48]
 mov rdi, rbx
 mov rax, 0
-call _void_print_pbool
-;[[ id : a], [ >= : >=], [ id : b], [ && : &&], [ id : false]]
-movq xmm8, QWORD[rbp-40] ;<-
-movq xmm7, QWORD[rbp-32] ;<-
-ucomisd xmm7, xmm8
-setge al
-mov rbx, [false]
-and al, bl
-;------------
-mov rdi, rax
-mov rax, 0
-call _void_print_pbool
+call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0
@@ -1812,5 +1834,6 @@ CMAIN:
     ;rsi     ;commandline args
     ;rdi
     mov QWORD[MAXUINT], -1
+mov QWORD[rand_next], 1
     call _int_main_pintchar..
     ret

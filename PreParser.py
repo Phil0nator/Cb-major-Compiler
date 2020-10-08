@@ -126,7 +126,7 @@ class PreProcessor:
                             
                         pp = PreParser(self.texts[len(self.texts)-1][0],path)
                         tokens = pp.getTokens()
-                        i = 0
+                        i = 1
                         for t in tokens:
                             if(t.tok != T_EOF):
                                 self.tokens.insert(self.tkidx+i, t)

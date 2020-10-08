@@ -21,6 +21,8 @@ class Lexer:
                 self.loc.line+=1
             return
         else:
+            print(self.ch)
+            print(self.loc)
             print("Untimely Advance")
             exit()
 
@@ -141,7 +143,7 @@ class Lexer:
                     tokens.append(Token(T.T_DIVIDE,T.T_DIVIDE,self.loc.copy(),self.loc.copy()))
                     
             
-            elif (self.ch in "()}{[],^*@"):
+            elif (self.ch in "()}{[],^*@%"):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
 

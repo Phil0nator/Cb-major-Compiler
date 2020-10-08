@@ -267,8 +267,8 @@ PRIORITY = {
     "<":3,
     ">=":3,
     "<=":3,
-    ">>>":2,
-    "<<<":2,
+    ">>":2,
+    "<<":2,
     "^":2,
     "*":3,
     "/":3,
@@ -450,8 +450,9 @@ def typematch(a, b):
     if(isinstance(a, DType) and isinstance(b, DType)):
         if(a.__eq__(VOID.copy()) or b.__eq__(VOID.copy())): return True
         if(a.__eq__(INT.copy()) and b.ptrdepth > 0): return True
-        if(a.ptrdepth != b.ptrdepth): return False
         if(a.__eq__(b)):return True
+        elif(DType(a.name,a.size,None,a.ptrdepth,False).__eq__(DType(b.name,b.size,None,b.ptrdepth,False))): return True
+        if(a.ptrdepth != b.ptrdepth): return False
         if(a.isflt() and b.isflt()): return True
         
         if(isIntrinsic(a.name) and isIntrinsic(b.name)):
@@ -506,6 +507,7 @@ def valueOf(x, dflt = False):
                 return f"{x.name}"
             return f"[{x.name}]"
         else:
+            
             return f"{getSizeSpecifier(x.t)}[rbp-{x.offset}]"
     elif (isinstance(x, int)):
         return (x)
@@ -586,8 +588,12 @@ def calculateConstant(a, b, op):
         return EC.ExpressionComponent(int(a.accessor>b.accessor),INT.copy(), constint=True)
     elif(op == "<"):
         return EC.ExpressionComponent(int(a.accessor<b.accessor),INT.copy(), constint=True)
-
-
+    elif(op == "%"):
+        return EC.ExpressionComponent(int(a.accessor%b.accessor),INT.copy(), constint=True)
+    elif(op == ">>"):
+        return EC.ExpressionComponent(int(a.accessor>>b.accessor), INT.copy(), constint=True)
+    elif(op == "<<"):
+        return EC.ExpressionComponent(int(a.accessor<<b.accessor), INT.copy(), constint=True) 
 
 def doIntOperation(areg, breg, op, signed, size=8):
 
@@ -606,7 +612,23 @@ def doIntOperation(areg, breg, op, signed, size=8):
             asmop = "div"
         
         return f"xor rdx, rdx\nmov {rax},{areg}\n{asmop} {breg}\nmov {areg}, {rax}\n"
-    
+    elif(op == "%"):
+        if(signed):
+            asmop = "idiv"
+        else:
+            asmop = "div"
+
+        return f"xor rdx, rdx\nmov {rax}, {areg}\n{asmop} {breg}\n mov {areg}, {rdx}\n"
+    elif(op == ">>"):
+        if(signed):
+            return f"sar {areg}, {boolchar_version[breg]}\n"
+        else:
+            return f"shr {areg}, {boolchar_version[breg]}\n"
+    elif(op == "<<"):
+        if(signed):
+            return f"sal {areg}, {boolchar_version[breg]}\n"
+        else:
+            return f"shl {areg}, {boolchar_version[breg]}\n"
     elif(op == "mov"):
         return f"mov {areg}, {breg}\n"
 
