@@ -43,6 +43,9 @@ T_OR = "||"
 T_AND = "&&"
 T_XOR = "^"
 
+T_ANOT = "~"
+T_AOR = "|"
+T_AAND = "&"
 
 T_MULTIOP = "-><=!|&"
 

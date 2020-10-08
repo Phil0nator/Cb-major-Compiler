@@ -1020,7 +1020,8 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullptr: DQ 0
+    FLT_CONSTANT_0: dq 0x1.0000000000000p+2
+nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
@@ -1034,20 +1035,20 @@ STRING_CONSTANT_5: db `[]`, 0
 STRING_CONSTANT_6: db `[`, 0
 STRING_CONSTANT_7: db ` %i ,`, 0
 STRING_CONSTANT_8: db ` %i ]\n`, 0
-FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
+FLT_CONSTANT_1: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_2: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_3: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_4: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_5: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_6: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_8: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_10: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_11: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_13: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_14: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1384,14 +1385,14 @@ add rbx, rcx
 mov QWORD[rbp-24], rbx
 _LFORCMP_0x5:
 ;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
-mov rcx, QWORD[rbp-16]
-mov rbx, QWORD[rbp-24]
-cmp bl, cl
-setl bl
 mov rcx, 1
+mov rbx, QWORD[rbp-16]
 sub rbx, rcx
+mov rcx, QWORD[rbp-24]
+cmp cl, bl
+setl cl
 ;------------
-mov rax, rbx
+mov rax, rcx
 and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x4
@@ -1800,16 +1801,27 @@ sub rsp, 32
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : true]]
+;[[ ( : (], [ id : argc], [ * : *], [ int : 3], [ + : +], [ int : 7], [ ) : )], [ % : %], [ int : 6]]
+mov rcx, 3
+mov rbx, QWORD[rbp-8]
+imul rbx, rcx
+mov rcx, 7
+add rbx, rcx
+mov rcx, 6
+xor rdx, rdx
+mov rax, rbx
+idiv rcx
+ mov rbx, rdx
 ;------------
-mov rbx, [true]
 mov QWORD[rbp-24], rbx
-;[[ ! : !], [ id : a]]
+;[[ id : a], [ == : ==], [ id : FLT_CONSTANT_0]]
+movq xmm7, [FLT_CONSTANT_0] ;<-
 mov rbx, QWORD[rbp-24]
-cmp rbx, 0
-sete bl
+cvtsi2sd xmm8, rbx
+ucomisd xmm7, xmm8
+sete al
 ;------------
-mov rdi, rbx
+mov rdi, rax
 mov rax, 0
 call _void_print_pbool
 ;[[ int : 0]]

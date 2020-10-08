@@ -256,26 +256,55 @@ def getComparater(signed, op):
 PRIORITY = {
 
     "(":0,
-    "+":2,
-    "-":2,
-    "!":2,
-    "||":2,
+
+
+
+
+    
+
+
+    
+    
+    "||":1,
+
     "&&":2,
-    "==":3,
-    "!=":3,
-    ">":3,
-    "<":3,
-    ">=":3,
-    "<=":3,
-    ">>":2,
-    "<<":2,
-    "^":2,
-    "*":3,
-    "/":3,
-    "%":3,
-    "&":4,
-    "@":4,
-    "$":5
+    
+    "|":3,
+    
+    "^":4,
+    
+    "&":5,
+
+
+
+    "==":6,
+    "!=":6,
+    
+    
+    ">":7,
+    "<":7,
+    ">=":7,
+    "<=":7,
+    
+    ">>":8,
+    "<<":8,
+
+    "+":9,
+    "-":9,
+    
+    "*":10,
+    "/":10,
+    "%":10,
+
+
+
+    "&":11,
+    "@":11,
+    "~":11,
+    "!":11,
+
+
+    "$":12
 
 
 }
@@ -287,6 +316,9 @@ OPERATORS = [
     "+",
     "-",
     "!",
+    "~",
+    "&",
+    "|",
     "||",
     "&&",
     "==",
@@ -310,10 +342,8 @@ OPERATORS = [
 
 integer_only = [
 
-    "||",
-    "&&",
-    "^",
-    "!"
+    ">>",
+    "<<"
 
 
 ]
@@ -564,7 +594,7 @@ def getLogicLabel(inf):
 
 
 def operatorISO(op):
-    return op in ["!", "@", "&", "$"]
+    return op in ["!", "@", "&", "$","~"]
 
 
 def calculateConstant(a, b, op):
@@ -634,7 +664,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
 
     elif(op in ["==","!=",">","<","<=",">="]):
         return cmpI(boolchar_version[areg],boolchar_version[breg],signed,op)
-    elif(op in ["!","&&","||","^"]):
+    elif(op in ["!","&&","||","^","~","|","&"]):
         return boolmath(areg,breg,op)
 
 
@@ -667,7 +697,10 @@ def boolmath(areg, breg,op):
         #instr += f"and {areg}, 00000001b\n"
         #return instr
         return cmpI(areg,0,False,"==")
-        
+    elif(op == "~"):
+        return f"not {areg}\n"
+
+
     instr = f"{cmd} {areg}, {breg}\n"
     return instr
 
@@ -690,6 +723,11 @@ def bitmathf(areg, breg, op):
         cmd = "pxor"
     elif(op == "!"):
         return cmpF(areg,0,"==")
+    elif(op == "~"):
+        return f"movq {rax}, {areg}\nnot {rax}\nmovq {areg}, {rax}\n"
+
+    return f"{cmd} {areg}, {breg}\n"
+
 
 
 def doFloatOperation(areg, breg, op):
@@ -707,7 +745,7 @@ def doFloatOperation(areg, breg, op):
     
     elif(op in ["==","!=",">","<","<=",">="]):
         return cmpF(areg,breg,op)
-    elif(op in ["&&","||","^","!"]):
+    elif(op in ["&&","||","^","!","~","&","|"]):
         return bitmathf(areg,breg,op)
 
     return f"{asmop} {areg}, {breg}\n"

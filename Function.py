@@ -444,9 +444,10 @@ class Function:
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
             instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
 
-            if(op in ["==","!=",">","<","<=",">="] and a.type.isflt()):
-                rfree(areg)
-                areg = f"{rax}"
+            if(op in ["==","!=",">","<","<=",">="]):
+                if(a.type.isflt() or b.type.isflt()):
+                    rfree(areg)
+                    areg = f"{rax}"
                 a.type = BOOL.copy()
 
             apendee = (EC.ExpressionComponent(areg,a.type,token=a.token))
@@ -494,18 +495,24 @@ class Function:
                 rfree(newcoreg)
                 newcoreg = coreg
             
-            instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
 
+            instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
             # handle float comparison
-            if(op in ["==","!=",">","<","<=",">="] and caster.type.isflt()):
-                rfree(creg)
-                creg = f"{rax}"
+            if(op in ["==","!=",">","<","<=",">="]):
+
+                if( caster.type.isflt() or castee.type.isflt()):                    
+                    rfree(creg)
+                    creg = f"{rax}"
                 caster.type = BOOL.copy()
+
 
             apendee = (EC.ExpressionComponent(creg,caster.type,token=caster.token))
             rfree(newcoreg)
             rfree(coreg)
 
+
+        if(op in ["==","!=",">","<","<=",">="]):
+            o = BOOL.copy()
         
         return instr, o, apendee
 
@@ -550,6 +557,17 @@ class Function:
                         o = BOOL.copy()
                         stack.append(EC.ExpressionComponent(areg,BOOL.copy(),token=a.token))
 
+                    elif(e.accessor == T_ANOT):
+                        needload=True
+                        if(a.isRegister()):
+                            areg = a.accessor
+                            needload=False
+                        else:
+                            areg = ralloc(False)
+                        if(needload): instr+=loadToReg(areg,a.accessor)
+                        instr+=doOperation(a.type,areg,areg,T_ANOT,a.type.signed)
+                        o = a.type.copy()
+                        stack.append(EC.ExpressionComponent(areg,o.copy(),token=a.token))
                     
                     elif(e.accessor == T_REFRIZE):
                         
