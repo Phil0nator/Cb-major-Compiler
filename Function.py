@@ -818,10 +818,9 @@ class Function:
                         i = 0
                     else:
                         sizes = []
+                        for i in range((var.t.ptrdepth+1)):
+                            sizes.append(var.t.size(i))
                         i = 0
-                        for i in range((var.t.ptrdepth)):
-                            sizes.append(8)
-                        sizes.append(var.t.s)
 
 
                     # @ (&c+idxa*8+idxb)

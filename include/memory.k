@@ -70,3 +70,18 @@ function void memcpy(void *dest, void* source, int bytes){
     "}
 
 }
+
+function size_t strlen(char *str){
+
+    __asm{"
+    mov rax, -1
+    _size_t_strlen_pchar._flp:
+    mov bl, [rdi]
+    inc rax
+    inc rdi
+    cmp bl, 0
+    jnz _size_t_strlen_pchar._flp
+    
+    "}
+
+}
