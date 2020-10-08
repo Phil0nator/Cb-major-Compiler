@@ -589,6 +589,7 @@ class Function:
                         o = newt.copy()
                 else:
                     a = stack.pop()
+
                     if(e.accessor == T_NOT):
 
                         if(not typematch(BOOL, a.type) and not a.isconstint()):
@@ -840,17 +841,17 @@ class Function:
                             exprtokens.append(Token(T_MINUS,T_MINUS,self.current_token.start,self.current_token.end))
                             size = sizes[i]*var.t.size(i)
                         else:
-                            exprtokens.append(Token(T_PLUS, T_PLUS,None,None))
+                            exprtokens.append(Token(T_PLUS, T_PLUS,start,start))
                             size = sizes[i]
 
                         newtoks, newinstrs = self.buildExpressionComponents()
                         instructions+=newinstrs
-                        exprtokens.append(Token(T_OPENP,T_OPENP,None,None))
+                        exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
                         for t in newtoks:
                             exprtokens.append(t)
-                        exprtokens.append(Token(T_CLSP,T_CLSP,None,None))
-                        exprtokens.append(Token(T_TIMES,T_TIMES, None,None))
-                        exprtokens.append(Token(T_INT,size,None,None))
+                        exprtokens.append(Token(T_CLSP,T_CLSP,start,start))
+                        exprtokens.append(Token(T_TIMES,T_TIMES, start,start))
+                        exprtokens.append(Token(T_INT,size,start,start))
                         i+=1
                         self.advance()
                     exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
@@ -1044,10 +1045,12 @@ class Function:
 
             self.advance()
             result = ralloc(v.t.isfltdepth(depthreached))
+            inst+=f"push {startaddr}\n"
             ev = self.evaluateRightsideExpression(  EC.ExpressionComponent(result, v.t,token=vt)  )
             if(v.t.size(depthreached) == 1 and not v.t.isfltdepth(depthreached)): result = boolchar_version[result]
             self.addline(inst)
             self.addline(ev)
+            self.addline(f"pop {startaddr}")
             if(v.t.isfltdepth(depthreached)):
                 self.addline(f"movsd [{startaddr}], {result}\n")
             else:
@@ -1063,9 +1066,13 @@ class Function:
             if(v.t.size(depthreached) == 1): result = boolchar_version[result]
             newt = v.t.copy()
             newt.ptrdepth-=1
+            inst+=f"push {startaddr}\n"
+
             ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,newt,token=vt) )
             self.addline(inst)
             self.addline(ev)
+            self.addline(f"pop {startaddr}")
+
             if(newt.isflt()):
                 self.addline(f"movsd [{startaddr}], {result}\n")
             else:

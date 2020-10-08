@@ -1020,35 +1020,35 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `BEANS BEANS BEANS`, 0
+    FLT_CONSTANT_0: dq 0x1.2000000000000p+1
 nullptr: DQ 0
 null: DQ 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_1: db `%li\n`, 0
-STRING_CONSTANT_2: db `%lu\n`, 0
-STRING_CONSTANT_3: db `%lf\n`, 0
-STRING_CONSTANT_4: db `True`, 0
-STRING_CONSTANT_5: db `False`, 0
-STRING_CONSTANT_6: db `[]`, 0
-STRING_CONSTANT_7: db `[`, 0
-STRING_CONSTANT_8: db ` %i ,`, 0
-STRING_CONSTANT_9: db ` %i ]\n`, 0
-FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
+STRING_CONSTANT_5: db `[]`, 0
+STRING_CONSTANT_6: db `[`, 0
+STRING_CONSTANT_7: db ` %i ,`, 0
+STRING_CONSTANT_8: db ` %i ]\n`, 0
+FLT_CONSTANT_1: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_2: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_3: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_4: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_5: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_6: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_8: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_10: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_11: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_13: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_14: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -1336,9 +1336,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x2
-;[[ id : STRING_CONSTANT_6]]
+;[[ id : STRING_CONSTANT_5]]
 ;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1349,9 +1349,9 @@ jmp ___void_print_pint.int__return
 jmp _LIFELSE_0x3
 _LIFPOST_0x2:
 _LIFELSE_0x3:
-;[[ id : STRING_CONSTANT_7]]
+;[[ id : STRING_CONSTANT_6]]
 ;------------
-mov rbx, STRING_CONSTANT_7
+mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
 ;[[ int : 0]]
 ;------------
@@ -1363,9 +1363,9 @@ call _void_printf_pchar.int
 mov QWORD[rbp-24], 0
 jmp _LFORCMP_0x5
 _LFORTOP_0x4:
-;[[ id : STRING_CONSTANT_8]]
+;[[ id : STRING_CONSTANT_7]]
 ;------------
-mov rbx, STRING_CONSTANT_8
+mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
 ;[[ @ : @], [ ( : (], [ id : a], [ + : +], [ ( : (], [ id : i], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
 mov rcx, 8
@@ -1398,9 +1398,9 @@ and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x4
 _LFOREND_0x7:
-;[[ id : STRING_CONSTANT_9]]
+;[[ id : STRING_CONSTANT_8]]
 ;------------
-mov rbx, STRING_CONSTANT_9
+mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
 ;[[ @ : @], [ ( : (], [ id : a], [ + : +], [ ( : (], [ id : len], [ - : -], [ int : 1], [ ) : )], [ * : *], [ int : 8], [ ) : )]]
 mov rcx, 1
@@ -1456,9 +1456,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
-;[[ id : STRING_CONSTANT_4]]
+;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1469,9 +1469,9 @@ jmp ___void_print_pbool__return
 jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
-;[[ id : STRING_CONSTANT_5]]
+;[[ id : STRING_CONSTANT_4]]
 ;------------
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1519,9 +1519,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;[[ id : STRING_CONSTANT_3]]
+;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rbx, STRING_CONSTANT_3
+mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1541,9 +1541,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_2]]
+;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rbx, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1563,9 +1563,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_1]]
+;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rbx, STRING_CONSTANT_1
+mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1798,43 +1798,41 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 48
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : STRING_CONSTANT_0]]
+;[[ $ : bool], [ id : argc]]
 ;------------
-mov rbx, STRING_CONSTANT_0
+mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-24], rbx
-;[[ id : beans]]
+;[[ $ : int], [ id : a]]
 ;------------
 mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-mov rbx, [rbp-24]
-;[[ int : 0]]
+mov QWORD[rbp-8], rbx
+;[[ $ : double], [ id : argc]]
+mov rbx, QWORD[rbp-8]
+cvtsi2sd xmm7, rbx
 ;------------
-mov rcx, 0
-imul rcx, 8
-add rbx, rcx
-;[[ char : 104]]
+movsd QWORD[rbp-32], xmm7
+;[[ id : FLT_CONSTANT_0], [ + : +], [ $ : double], [ id : argc]]
+mov rbx, QWORD[rbp-8]
+cvtsi2sd xmm7, rbx
+movq xmm8, [FLT_CONSTANT_0] ;<-
+addsd xmm8, xmm7
 ;------------
-mov cl, 104
-mov [rbx], cl
-;[[ id : beans]]
-;------------
-mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-;[[ ! : !], [ int : 5]]
+movsd QWORD[rbp-40], xmm8
+;[[ $ : float], [ id : argc], [ - : -], [ int : 5]]
+mov rbx, QWORD[rbp-8]
+cvtsi2sd xmm7, rbx
 mov rbx, 5
-cmp rbx, 0
-sete bl
+cvtsi2sd xmm8, rbx
+subsd xmm7, xmm8
 ;------------
-mov QWORD[rbp-32], rbx
+movq xmm0, xmm7 ;<-
+mov rax, 1
+call _void_print_pdouble
 ;[[ int : 0]]
 ;------------
 mov rax, 0

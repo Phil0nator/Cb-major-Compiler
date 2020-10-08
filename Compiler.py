@@ -1,6 +1,7 @@
 from Classes.Variable import Variable
 from Function import Function
 from Classes.DType import DType
+from Classes.DType import type_precedence
 import Classes.DType as Type
 from Classes.Token import Token
 from Classes.Token import *
@@ -427,7 +428,7 @@ class Compiler:
                     ntn = self.current_token.value
                     newtype = ta.copy()
                     newtype.name=ntn
-
+                    type_precedence[ntn] = type_precedence[ta.name]
                     self.types.append(newtype.copy())
                     self.tdefs.append((ta,newtype))
                     if(self.isIntrinsic(ntn)):

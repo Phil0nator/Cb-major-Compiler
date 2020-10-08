@@ -4,15 +4,15 @@
 
 function int main(int argc, char** argv){
 
+    bool a = $bool argc;
+    argc = $int a;
     
-    char * beans = "BEANS BEANS BEANS";
-    print(beans);
-    beans[0] = 'h';
-    print(beans);
+    double ab = $double argc;
 
-    int c = !5;
+    float bruh = 2.25+$double argc;
 
-    
+    print($float argc-5);
+
 
     return 0;
 }
