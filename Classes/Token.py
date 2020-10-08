@@ -75,12 +75,15 @@ KEYWORDS = [
     "else",
     
     "function",
+    "struct",
     "const",
     "unsigned",
     
     "for",
     "while",
     "if",
+    "break",
+    "continue",
     "__asm",
     "return",
     "typedef"

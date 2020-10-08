@@ -35,6 +35,9 @@ class Function:
         self.stackCounter = 8
         self.variables = []
 
+        self.continues = []
+        self.breaks = []
+
 
         self.current_token = self.tokens[0]
         self.ctidx = 0
@@ -46,6 +49,9 @@ class Function:
     def getCallingLabel(self):
         return functionlabel(self).replace(":","").replace("\n","")
 
+    def checkSemi(self):
+        if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
+        self.advance()
 
     def getClosingLabel(self):
         return function_closer(self.getCallingLabel()).split("\n")[0]
@@ -190,6 +196,10 @@ class Function:
             
         postlabel = getLogicLabel("IFPOST")
         jmpafter = getLogicLabel("IFELSE")
+
+        self.continues.append(postlabel)
+
+
         preInstructions+= f"{check_fortrue}jne {postlabel}\n"
 
         self.addline(preInstructions)
@@ -223,6 +233,11 @@ class Function:
             self.addline(jmpafter+":\n")
 
 
+                #clean up var
+        if(len(self.continues)>0):
+            if(self.continues[len(self.continues)-1] == postlabel): self.continues.pop()
+
+
 
 
     def buildForloop(self):
@@ -234,7 +249,8 @@ class Function:
         comparisonlabel = getLogicLabel("FORCMP")
         updatelabel = getLogicLabel("FORUPDATE")
         endlabel = getLogicLabel("FOREND")
-
+        self.continues.append(comparisonlabel)
+        self.breaks.append(endlabel)
         self.buildDeclaration()
         var = self.variables[len(self.variables)-1]
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
@@ -263,14 +279,23 @@ class Function:
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
         self.advance()
         self.beginRecursiveCompile()
+        self.addline(f"{updatelabel}:")
         self.addline(updatev)
         self.addline(f"{comparisonlabel}:\n")
         self.addline(getCondition)
         self.addline(f"{check_fortrue}\nje {toplabel}\n")
-
+        self.addline(f"{endlabel}:")
         self.advance()
 
+
+
+
         #clean up var
+        if(len(self.continues)>0):
+            if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
+        if(len(self.breaks)>0):
+            if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
+
         self.variables.remove(var)
 
         
@@ -285,7 +310,9 @@ class Function:
         
         startlabel = getLogicLabel("WHILESTART")
         comparisonlabel = getLogicLabel("WHILECMP")
-        
+        endlabel = getLogicLabel("WHILEEND")
+        self.continues.append(comparisonlabel)
+        self.breaks.append(endlabel)
         
         self.addline(f"jmp {comparisonlabel}")
         self.addline(f"{startlabel}:")
@@ -297,7 +324,15 @@ class Function:
         self.beginRecursiveCompile()
         self.addline(f"{comparisonlabel}:")
         self.addline(cmpinst)
+        self.addline(f"{endlabel}:")
         self.advance()
+
+        #clean up var
+        if(len(self.continues)>0):
+            if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
+        if(len(self.breaks)>0):
+            if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
+
 
 
 
@@ -340,6 +375,19 @@ class Function:
 
         elif(word == "for"):
             self.buildForloop()
+
+        elif(word == "break"):
+            l = self.breaks.pop()
+            self.addline(f"jmp {l}\n")
+            self.advance()
+            self.checkSemi()
+
+
+        elif(word == "continue"):
+            l = self.continues.pop()
+            self.addline(f"jmp {l}\n")
+            self.advance()
+            self.checkSemi()
 
         else:
             self.advance()
