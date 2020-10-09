@@ -3,4 +3,5 @@
 #include "include/printf.k"
 #include "include/math.k"
 #include "include/random.k"
-#include "include/time.k"
+
+#include "include/sys/time.k"

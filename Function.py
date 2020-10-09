@@ -319,7 +319,7 @@ class Function:
         self.addline(f"{startlabel}:")
         cmpinst = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy(),token=self.current_token))
         cmpinst += f"{check_fortrue}je {startlabel}\n"
-
+        self.advance()
         if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
         self.advance()
         self.beginRecursiveCompile()

@@ -1,3 +1,6 @@
+#include "include/stddef.k"
+
+
 struct timeval_t{
     int tv_sec;         /* seconds */
     int tv_usec;        /* and microseconds */
@@ -62,6 +65,12 @@ function int settimeofday(timeval_t* tv, timezone_t* tz){
 function int utimes(char* filename, timeval_t*utimes){
     __asm{"
     mov rax, 235
+    syscall
+    "}
+}
+function time_t time(time_t *tloc){
+    __asm{"
+    mov rax, 201
     syscall
     "}
 }

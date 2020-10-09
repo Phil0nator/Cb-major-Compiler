@@ -144,16 +144,24 @@ class PreProcessor:
 
                         path = self.current_token.value
                         print(f"[including: {path} ]")
-                        with open(path, "rb") as f:
-                            self.texts.append([f.read().decode(), path])
-                            
-                        pp = PreParser(self.texts[-1][0],path)
-                        tokens = pp.getTokens()
-                        i = 1
-                        for t in tokens:
-                            if(t.tok != T_EOF):
-                                self.tokens.insert(self.tkidx+i, t)
-                            i+=1
+
+                        exists = False
+                        for text in self.texts:
+                            if text[1] == path:
+                                exists=True
+
+                        if(not exists):
+
+                            with open(path, "rb") as f:
+                                self.texts.append([f.read().decode(), path])
+                                
+                            pp = PreParser(self.texts[-1][0],path)
+                            tokens = pp.getTokens()
+                            i = 1
+                            for t in tokens:
+                                if(t.tok != T_EOF):
+                                    self.tokens.insert(self.tkidx+i, t)
+                                i+=1
                         self.advance()
                     else:
 

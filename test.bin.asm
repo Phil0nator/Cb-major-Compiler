@@ -1020,9 +1020,7 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullptr: DQ 0
-null: DQ 0
-nullterm: DB 0
+    nullterm: DB 0
 true: DB 1
 false: DB 0
 STRING_CONSTANT_0: db `%li\n`, 0
@@ -1074,11 +1072,28 @@ ITIMER_VIRTUAL: DQ 1
 ITIMER_PROF: DQ 2
 section .bss
 align 16
-    MAXUINT: RESB 8
+    HvptrDest_0: RESB 8
+nullptr: RESQ 1
+null: RESB 8
+MAXUINT: RESB 8
 rand_next: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
+
+;[ function time_t time( [[ Variable: time_t. tloc @ 8]] ) ]
+
+_time_t_time_ptime_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: time_t. tloc @ 8]
+mov [rbp-8], rdi
+mov rax, 201
+    syscall
+___time_t_time_ptime_t.__return:
+leave
+ret
 
 ;[ function int utimes( [[ Variable: char. filename @ 8], [ Variable: timeval_t. utimes @ 16]] ) ]
 
@@ -1936,27 +1951,11 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : DST_NONE]]
-;------------
-mov rcx, [DST_NONE]
-mov rbx, rcx
-mov DWORD[rbp-28], ebx
-;[[ int : 100]]
-;------------
-mov rbx, 100
-mov DWORD[rbp-24], ebx
-;[[ id : test.tz_dsttime]]
-;------------
-mov rcx, QWORD[rbp-28]
-mov rbx, rcx
-mov esi, ebx
-mov rax, 0
-call _void_print_pshort
 ;[[ int : 0]]
 ;------------
 mov rax, 0
@@ -1970,7 +1969,10 @@ CMAIN:
     xor rax, rax
     ;rsi     ;commandline args
     ;rdi
-    mov QWORD[MAXUINT], -1
+    mov QWORD[HvptrDest_0], 0
+mov QWORD[nullptr], HvptrDest_0
+mov QWORD[null], 0
+mov QWORD[MAXUINT], -1
 mov QWORD[rand_next], 1
     call _int_main_pintchar..
     ret
