@@ -869,6 +869,7 @@ class Function:
 
                     # @ (&c+idxa*8+idxb)
                     exprtokens.append(Token(T_OPENP,T_OPENP,self.current_token.start,self.current_token.end))
+                    
                     exprtokens.append(Token(T_DEREF,T_DEREF,self.current_token.start,self.current_token.end))
                     exprtokens.append(Token(T_OPENP,T_OPENP,self.current_token.start,self.current_token.end))
                     
