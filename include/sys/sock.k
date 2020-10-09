@@ -64,7 +64,7 @@ const char AF_MAX = 12;
 
 
 function in_addr get_inaddr(char* address){
-    unsigned int v;
+    in_addr v;
     int idx = 0;
     char* start = address;
     for(int i = 0 ; i < 4; i ++){
