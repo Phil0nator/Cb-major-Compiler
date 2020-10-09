@@ -53,6 +53,11 @@ class UnexepectedEOFError(Error):
         self.tok = tok
         self.message = "Unexpected EOF: "
 
+class UnkownCharSequence(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = "Unkown Character Sequence: "
+
 
 class UnexpectedIdentifier(Error):
     def __init__(self,tok):

@@ -1821,12 +1821,6 @@ sub rsp, 24
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : true]]
-;------------
-mov rbx, [true]
-mov rdi, rbx
-mov rax, 0
-call _void_print_pbool
 ;[[ int : 0]]
 ;------------
 mov rax, 0

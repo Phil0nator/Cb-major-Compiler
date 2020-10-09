@@ -1,6 +1,8 @@
 from Classes.Location import Location
 from Classes.Token import Token
 import Classes.Token as T
+from Classes.Error import throw
+from Classes.Error import UnkownCharSequence
 from globals import *
 
 ##########################
@@ -200,7 +202,8 @@ class Lexer:
                 tokens.append(token)
             
             else:
-                print("Unkown character sequence at: %s"%self.loc)
+                throw(UnkownCharSequence(Token(self.ch, self.ch,self.loc.copy(),self.loc.copy())))
+
 
         tokens.append(Token(T.T_EOF,T.T_EOF,self.loc.copy(),self.loc.copy()))
         
