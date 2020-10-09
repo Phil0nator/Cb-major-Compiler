@@ -63,11 +63,13 @@ type_precedence = {
     "char":0,
     "unsigned char": 1,
     "unsigned bool": 1,
-    "short":2,
-    "unsigned short":3,
-    "int" :4,
-    "unsigned int":5,
-    "double":6,
+    "small":2,
+    "unsigned small":3,
+    "short":4,
+    "unsigned short":5,
+    "int" :6,
+    "unsigned int":10,
+    "double":11,
     "void":7
 
 

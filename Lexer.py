@@ -58,10 +58,11 @@ class Lexer:
         num = self.ch
         begin = self.loc.copy()
         self.advance()
+        pchars = T.T_DIGITS+T.T_DOT+"e"
         if(self.ch == "x"):
             num+=self.ch
             self.advance()
-        pchars = T.T_DIGITS+T.T_DOT+"e"
+            pchars+="abcdefABCDEF"
         while self.ch in pchars:
             num+=self.ch
             self.advance()

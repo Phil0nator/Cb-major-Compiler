@@ -462,6 +462,8 @@ class Function:
                         instructions+=f"mov {boolchar_version[norm_parameter_registers[normused]]}, {boolchar_version[result]}\n"
                     elif(fn.parameters[i].t.csize() == 4):
                         instructions += f"mov {dwordize(norm_parameter_registers[normused])}, {dwordize(result)}\n"
+                    elif(fn.parameters[i].t.csize() == 2):
+                        instructions += f"mov {small_version[norm_parameter_registers[normused]]}, {small_version[result]}\n"
                     rfree(result)
 
             if(self.current_token.tok == ","):
@@ -1122,11 +1124,15 @@ class Function:
                     self.addline(f"mov BYTE[rbp-{v.offset}], {boolchar_version[result]}")
                 elif(v.t.csize() == 4):
                     self.addline(f"mov DWORD[rbp-{v.offset}], {dword_version[result]}")
+                elif(v.t.csize() == 2):
+                    self.addline(f"mov WORD[rbp-{v.offset}], {small_version[result]}")
             elif(ispMember):
                 if(v.t.csize() == 1):
                     self.addline(f"mov BYTE[{startaddr}], {boolchar_version[result]}")
                 elif(v.t.csize() == 4):
                     self.addline(f"mov DWORD[{startaddr}], {dword_version[result]}")
+                elif(v.t.csize() == 2):
+                    self.addline(f"mov WORD[{startaddr}], {small_version[result]}")
                 rfree(startaddr)
 
             rfree(result)

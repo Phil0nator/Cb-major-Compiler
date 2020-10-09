@@ -113,6 +113,25 @@ dword_version = {
 
 }
 
+small_version = {
+
+    rax:"ax",
+    rbx:"bx",
+    rcx:"cx",
+    rdx:"dx",
+    r8:"r8w",
+    r9:"r9w",
+    r10:"r10w",
+    r11:"r11w",
+    r12:"r12w",
+    r13:"r13w",
+    r14:"r14w",
+    r15:"r15w",
+    rsi:"si",
+    rdi:"di"
+
+
+}
 
 # parameters:
 
@@ -206,7 +225,7 @@ def ralloc(flt, size=8):
 
                 if(size==1): out = boolchar_version[out]
                 elif(size == 4): out = dword_version[out]
-
+                elif(size == 2): out = small_version[out]
                 return out
 
                 
@@ -249,6 +268,7 @@ fileTemplate = "%s\n\n%s"%(io64,stub)
 
 INT = DType("int", 8, signed=True)
 SHORT = DType("short", 4, signed=True)
+SMALL = DType("small", 2, signed=True)
 CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
 VOID = DType("void", 8, signed=False)
@@ -256,7 +276,7 @@ BOOL = DType("bool", 1, signed=True)
 
 
 
-INTRINSICS = [INT,SHORT,BOOL,DOUBLE,CHAR,BOOL,VOID]
+INTRINSICS = [INT,SHORT,BOOL,DOUBLE,CHAR,BOOL,VOID,SMALL]
 
 
 
@@ -821,6 +841,8 @@ def castABD(a, b, areg, breg, newbreg):
                 return f"mov {boolchar_version[newbreg]}, {boolchar_version[breg]}\n"
             elif(a.type.csize() == 4 and b.type.csize() == 8):
                 return f"mov {dwordize(newbreg)}, {dwordize(breg)}\n"
+            elif(a.type.csize() == 2 and b.type.csize() == 8):
+                return f"mov {small_version[newbreg]}, {small_version[breg]}\n"
         return False
     if(a.type.isflt() and not b.type.isflt()):
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"

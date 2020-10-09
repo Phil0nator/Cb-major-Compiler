@@ -6,5 +6,6 @@
 
 #include "include/sys/time.k"
 #include "include/sys/files.k"
+#include "include/sys/sock.k"
 
 #include "include/string.k"
