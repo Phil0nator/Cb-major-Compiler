@@ -1,14 +1,21 @@
-#include "include/std.k"
+#include "include/stddef.k"
+#include "include/memory.k"
+#include "include/printf.k"
 
+struct Alex{
 
+    int age;
+    bool stupid;
+
+};
 
 
 function int main(int argc, char** argv){
 
-    fd_t sock = socket(AF_INET, SOCK_STREAM, 0);
+    Alex* dumb = malloc(10*Alex);
     
-    print(get_inaddr("127.0.0.1"));
 
+    bool isdumb = dumb[0].stupid;
 
     return 0;
 }

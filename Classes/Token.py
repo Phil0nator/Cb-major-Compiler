@@ -97,6 +97,7 @@ KEYWORDS = [
 
 
 T_FUNCTIONCALL = "fn(x)"
+T_IDXER = "[x]"
 T_REGISTER = "reg"
 
 ##################################
