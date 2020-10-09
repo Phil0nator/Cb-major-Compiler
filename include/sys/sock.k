@@ -63,6 +63,41 @@ const char AF_INET6=10;
 const char AF_MAX = 12; 
 
 
+function in_addr get_inaddr(char* address){
+    unsigned int v;
+    int idx = 0;
+    char* start = address;
+    for(int i = 0 ; i < 4; i ++){
+        char c;
+        int n = 0;
+        while(1){
+            c = @start;
+            start++;
+            if(c>='0' && c <='9'){
+                n=n*10;
+                n=n+c-'0';
+            }else{
+            
+                if((i < 3 && c == '.') || i == 3){
+                    break;
+                }
+                return 0;
+            }
+        }
+        if(n>=256){
+            return 0;
+        }
+        v=v*256;
+        v=v*n;
+
+    }
+    return v;
+
+
+}
+
+
+
 function fd_t socket(int family, int type, int protocol){
     __asm{"
     mov rax, 41

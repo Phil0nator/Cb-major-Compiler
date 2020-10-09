@@ -1020,18 +1020,19 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullterm: DB 0
+    STRING_CONSTANT_0: db `127.0.0.1`, 0
+nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_0: db `%li\n`, 0
-STRING_CONSTANT_1: db `%lu\n`, 0
-STRING_CONSTANT_2: db `%lf\n`, 0
-STRING_CONSTANT_3: db `True`, 0
-STRING_CONSTANT_4: db `False`, 0
-STRING_CONSTANT_5: db `[]`, 0
-STRING_CONSTANT_6: db `[`, 0
-STRING_CONSTANT_7: db ` %i ,`, 0
-STRING_CONSTANT_8: db ` %i ]\n`, 0
+STRING_CONSTANT_1: db `%li\n`, 0
+STRING_CONSTANT_2: db `%lu\n`, 0
+STRING_CONSTANT_3: db `%lf\n`, 0
+STRING_CONSTANT_4: db `True`, 0
+STRING_CONSTANT_5: db `False`, 0
+STRING_CONSTANT_6: db `[]`, 0
+STRING_CONSTANT_7: db `[`, 0
+STRING_CONSTANT_8: db ` %i ,`, 0
+STRING_CONSTANT_9: db ` %i ]\n`, 0
 FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
 FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
 FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
@@ -1197,6 +1198,140 @@ mov [rbp-24], rdx
 mov rax, 41
     syscall
 ___fd_t_socket_pintintint__return:
+leave
+ret
+_in_addr_get_inaddr_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 64
+mov [rbp-8], rdi
+;------------
+mov QWORD[rbp-24], 0
+;------------
+mov rbx, QWORD[rbp-8]
+mov QWORD[rbp-32], rbx
+;------------
+mov QWORD[rbp-40], 0
+jmp _LFORCMP_0x9
+_LFORTOP_0x8:
+;------------
+mov QWORD[rbp-56], 0
+jmp _LWHILECMP_0xd
+_LWHILESTART_0xc:
+mov rbx, QWORD[rbp-32]
+mov rcx, [rbx]
+;------------
+mov QWORD[rbp-48], rcx
+mov rbx, QWORD[rbp-32]
+mov rcx, 1
+add rbx, rcx
+;------------
+mov QWORD[rbp-32], rbx
+mov rcx, 48
+mov rbx, QWORD[rbp-48]
+cmp bl, cl
+setge bl
+mov r10, 57
+mov rcx, QWORD[rbp-48]
+cmp cl, r10b
+setle cl
+and rbx, rcx
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0xf
+mov rcx, 10
+mov rbx, QWORD[rbp-56]
+imul rbx, rcx
+;------------
+mov QWORD[rbp-56], rbx
+mov rbx, QWORD[rbp-56]
+mov rcx, QWORD[rbp-48]
+add rbx, rcx
+mov rcx, 48
+sub rbx, rcx
+;------------
+mov QWORD[rbp-56], rbx
+jmp _LIFELSE_0x10
+_LIFPOST_0xf:
+mov rcx, 3
+mov rbx, QWORD[rbp-40]
+cmp bl, cl
+setl bl
+mov r10, 46
+mov rcx, QWORD[rbp-48]
+cmp cl, r10b
+sete cl
+and rbx, rcx
+mov r10, 3
+mov rcx, QWORD[rbp-40]
+cmp cl, r10b
+sete cl
+or rbx, rcx
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x11
+jmp _LWHILEEND_0xe
+jmp _LIFELSE_0x12
+_LIFPOST_0x11:
+_LIFELSE_0x12:
+;------------
+mov rax, 0
+jmp ___in_addr_get_inaddr_pchar.__return
+_LIFELSE_0x10:
+_LWHILECMP_0xd:
+;------------
+mov rax, 1
+and al, 00000001b
+cmp al, 1
+je _LWHILESTART_0xc
+_LWHILEEND_0xe:
+_LFORUPDATE_0xa:
+mov rcx, 1
+mov rbx, QWORD[rbp-40]
+add rbx, rcx
+;------------
+mov QWORD[rbp-40], rbx
+_LFORCMP_0x9:
+mov rcx, 4
+mov rbx, QWORD[rbp-40]
+cmp bl, cl
+setl bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+je _LFORTOP_0x8
+_LFOREND_0xb:
+mov rcx, 256
+mov rbx, QWORD[rbp-56]
+cmp bl, cl
+setge bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x13
+;------------
+mov rax, 0
+jmp ___in_addr_get_inaddr_pchar.__return
+jmp _LIFELSE_0x14
+_LIFPOST_0x13:
+_LIFELSE_0x14:
+mov rbx, 256
+mov rcx, QWORD[rbp-16]
+imul rbx, rcx
+;------------
+mov QWORD[rbp-16], rbx
+mov rbx, QWORD[rbp-56]
+mov rcx, QWORD[rbp-16]
+imul rbx, rcx
+;------------
+mov QWORD[rbp-16], rbx
+___in_addr_get_inaddr_pchar.__return:
 leave
 ret
 _int_chdir_pchar.:
@@ -1560,7 +1695,7 @@ and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x2
 ;------------
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1571,7 +1706,7 @@ jmp _LIFELSE_0x3
 _LIFPOST_0x2:
 _LIFELSE_0x3:
 ;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
 ;------------
 mov rsi, 0
@@ -1582,7 +1717,7 @@ mov QWORD[rbp-24], 0
 jmp _LFORCMP_0x5
 _LFORTOP_0x4:
 ;------------
-mov rbx, STRING_CONSTANT_7
+mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
 mov rcx, 8
 mov rbx, QWORD[rbp-24]
@@ -1614,7 +1749,7 @@ cmp al, 1
 je _LFORTOP_0x4
 _LFOREND_0x7:
 ;------------
-mov rbx, STRING_CONSTANT_8
+mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
 mov rcx, 1
 mov rbx, QWORD[rbp-16]
@@ -1659,7 +1794,7 @@ and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
 ;------------
-mov rbx, STRING_CONSTANT_3
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1670,7 +1805,7 @@ jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
 ;------------
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1706,7 +1841,7 @@ mov rbp, rsp
 sub rsp, 16
 movsd [rbp-8], xmm0
 ;------------
-mov rbx, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 ;------------
 movq xmm7, QWORD[rbp-8] ;<-
@@ -1722,7 +1857,7 @@ mov rbp, rsp
 sub rsp, 16
 mov [rbp-8], rdi
 ;------------
-mov rbx, STRING_CONSTANT_1
+mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;------------
 mov rbx, QWORD[rbp-8]
@@ -1748,7 +1883,7 @@ mov rbp, rsp
 sub rsp, 16
 mov [rbp-8], rdi
 ;------------
-mov rbx, STRING_CONSTANT_0
+mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;------------
 mov rbx, QWORD[rbp-8]
@@ -1936,6 +2071,16 @@ mov rbp, rsp
 sub rsp, 24
 mov [rbp-8], rdi
 mov [rbp-16], rsi
+;------------
+mov rbx, STRING_CONSTANT_0
+mov rdi, rbx
+mov rax, 0
+call _in_addr_get_inaddr_pchar.
+push rax
+;------------
+pop rdi
+mov rax, 0
+call _void_print_pint
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
