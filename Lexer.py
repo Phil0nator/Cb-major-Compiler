@@ -202,8 +202,10 @@ class Lexer:
                 tokens.append(token)
             
             else:
-                throw(UnkownCharSequence(Token(self.ch, self.ch,self.loc.copy(),self.loc.copy())))
-
+                print("Unkown char sequence")
+                print(Token(self.ch, self.ch,self.loc.copy(),self.loc.copy()))
+                print(self.loc)
+                exit()
 
         tokens.append(Token(T.T_EOF,T.T_EOF,self.loc.copy(),self.loc.copy()))
         
