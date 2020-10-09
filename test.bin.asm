@@ -1020,18 +1020,19 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullterm: DB 0
+    STRING_CONSTANT_0: db `BRUH`, 0
+nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_0: db `%li\n`, 0
-STRING_CONSTANT_1: db `%lu\n`, 0
-STRING_CONSTANT_2: db `%lf\n`, 0
-STRING_CONSTANT_3: db `True`, 0
-STRING_CONSTANT_4: db `False`, 0
-STRING_CONSTANT_5: db `[]`, 0
-STRING_CONSTANT_6: db `[`, 0
-STRING_CONSTANT_7: db ` %i ,`, 0
-STRING_CONSTANT_8: db ` %i ]\n`, 0
+STRING_CONSTANT_1: db `%li\n`, 0
+STRING_CONSTANT_2: db `%lu\n`, 0
+STRING_CONSTANT_3: db `%lf\n`, 0
+STRING_CONSTANT_4: db `True`, 0
+STRING_CONSTANT_5: db `False`, 0
+STRING_CONSTANT_6: db `[]`, 0
+STRING_CONSTANT_7: db `[`, 0
+STRING_CONSTANT_8: db ` %i ,`, 0
+STRING_CONSTANT_9: db ` %i ]\n`, 0
 FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
 FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
 FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
@@ -1070,6 +1071,21 @@ DST_CAN: DQ 6
 ITIMER_REAL: DQ 0
 ITIMER_VIRTUAL: DQ 1
 ITIMER_PROF: DQ 2
+O_RDONLY: DQ 0
+O_WRONLY: DQ 1
+O_RDWR: DQ 2
+O_ACCMODE: DQ 3
+FREAD: DQ 1
+FWRITE: DQ 2
+O_NONBLOCK: DQ 4
+O_APPEND: DQ 8
+O_SHLOCK: DQ 16
+O_EXLOCK: DQ 32
+O_ASYNC: DQ 64
+O_FSYNC: DQ 128
+O_CREAT: DQ 512
+O_TRUNC: DQ 1024
+O_EXCL: DQ 2048
 section .bss
 align 16
     HvptrDest_0: RESB 8
@@ -1080,6 +1096,156 @@ rand_next: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
+
+;[ function void createString( [[ Variable: String. this @ 8], [ Variable: char. stuff @ 16]] ) ]
+
+_void_createString_pString.char.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: String. this @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. stuff @ 16]
+mov [rbp-16], rsi
+mov rbx, [rbp-8]
+lea rbx, [rbx+0]
+push rbx
+;[[ id : stuff]]
+;------------
+mov rcx, QWORD[rbp-16]
+pop rbx
+mov [rbx], rcx
+___void_createString_pString.char.__return:
+leave
+ret
+
+;[ function int chdir( [[ Variable: char. pathname @ 8]] ) ]
+
+_int_chdir_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+mov rax, 80
+    syscall
+___int_chdir_pchar.__return:
+leave
+ret
+
+;[ function int creat( [[ Variable: char. pathname @ 8], [ Variable: mode_t mode @ 16]] ) ]
+
+_int_creat_pchar.mode_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: mode_t mode @ 16]
+mov [rbp-16], rsi
+mov rax, 85
+    syscall
+___int_creat_pchar.mode_t__return:
+leave
+ret
+
+;[ function int rmdir( [[ Variable: char. pathname @ 8]] ) ]
+
+_int_rmdir_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+mov rax, 84
+    syscall
+___int_rmdir_pchar.__return:
+leave
+ret
+
+;[ function int mkdir( [[ Variable: char. pathname @ 8], [ Variable: mode_t mode @ 16]] ) ]
+
+_int_mkdir_pchar.mode_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: mode_t mode @ 16]
+mov [rbp-16], rsi
+mov rax, 83
+    syscall
+___int_mkdir_pchar.mode_t__return:
+leave
+ret
+
+;[ function int close( [[ Variable: fd_t fd @ 8]] ) ]
+
+_int_close_pfd_t:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+mov rax, 3
+    syscall
+___int_close_pfd_t__return:
+leave
+ret
+
+;[ function fd_t open( [[ Variable: char. fname @ 8], [ Variable: int flags @ 16], [ Variable: mode_t mode @ 24]] ) ]
+
+_fd_t_open_pchar.intmode_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: char. fname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int flags @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: mode_t mode @ 24]
+mov [rbp-24], rdx
+mov rax, 2
+        syscall
+___fd_t_open_pchar.intmode_t__return:
+leave
+ret
+
+;[ function ssize_t write( [[ Variable: fd_t fd @ 8], [ Variable: char. buf @ 16], [ Variable: size_t count @ 24]] ) ]
+
+_ssize_t_write_pfd_tchar.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. buf @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t count @ 24]
+mov [rbp-24], rdx
+mov rax, 1
+        syscall
+___ssize_t_write_pfd_tchar.size_t__return:
+leave
+ret
+
+;[ function ssize_t read( [[ Variable: fd_t fd @ 8], [ Variable: char. buf @ 16], [ Variable: size_t count @ 24]] ) ]
+
+_ssize_t_read_pfd_tchar.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. buf @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t count @ 24]
+mov [rbp-24], rdx
+xor rax, rax
+    syscall
+___ssize_t_read_pfd_tchar.size_t__return:
+leave
+ret
 
 ;[ function time_t time( [[ Variable: time_t. tloc @ 8]] ) ]
 
@@ -1456,9 +1622,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x2
-;[[ id : STRING_CONSTANT_5]]
+;[[ id : STRING_CONSTANT_6]]
 ;------------
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1469,9 +1635,9 @@ jmp ___void_print_pint.int__return
 jmp _LIFELSE_0x3
 _LIFPOST_0x2:
 _LIFELSE_0x3:
-;[[ id : STRING_CONSTANT_6]]
+;[[ id : STRING_CONSTANT_7]]
 ;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
 ;[[ int : 0]]
 ;------------
@@ -1483,9 +1649,9 @@ call _void_printf_pchar.int
 mov QWORD[rbp-24], 0
 jmp _LFORCMP_0x5
 _LFORTOP_0x4:
-;[[ id : STRING_CONSTANT_7]]
+;[[ id : STRING_CONSTANT_8]]
 ;------------
-mov rbx, STRING_CONSTANT_7
+mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
 ;[[ ( : (], [ @ : @], [ ( : (], [ id : a], [ + : +], [ ( : (], [ id : i], [ ) : )], [ * : *], [ int : 8], [ ) : )], [ ) : )]]
 mov rcx, 8
@@ -1518,9 +1684,9 @@ and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x4
 _LFOREND_0x7:
-;[[ id : STRING_CONSTANT_8]]
+;[[ id : STRING_CONSTANT_9]]
 ;------------
-mov rbx, STRING_CONSTANT_8
+mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
 ;[[ ( : (], [ @ : @], [ ( : (], [ id : a], [ + : +], [ ( : (], [ id : len], [ - : -], [ int : 1], [ ) : )], [ * : *], [ int : 8], [ ) : )], [ ) : )]]
 mov rcx, 1
@@ -1576,9 +1742,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
-;[[ id : STRING_CONSTANT_3]]
+;[[ id : STRING_CONSTANT_4]]
 ;------------
-mov rbx, STRING_CONSTANT_3
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1589,9 +1755,9 @@ jmp ___void_print_pbool__return
 jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
-;[[ id : STRING_CONSTANT_4]]
+;[[ id : STRING_CONSTANT_5]]
 ;------------
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1639,9 +1805,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;[[ id : STRING_CONSTANT_2]]
+;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rbx, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1661,9 +1827,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_1]]
+;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rbx, STRING_CONSTANT_1
+mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1697,9 +1863,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_0]]
+;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rbx, STRING_CONSTANT_0
+mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1951,11 +2117,27 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ & : &], [ id : test]]
+lea rbx, [rbp-24]
+;------------
+mov rdi, rbx
+;[[ id : STRING_CONSTANT_0]]
+;------------
+mov rbx, STRING_CONSTANT_0
+mov rsi, rbx
+mov rax, 0
+call _void_createString_pString.char.
+;[[ id : test.content]]
+;------------
+mov rbx, QWORD[rbp-24]
+mov rdi, rbx
+mov rax, 0
+call _void_print_pchar.
 ;[[ int : 0]]
 ;------------
 mov rax, 0

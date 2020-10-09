@@ -58,18 +58,25 @@ class Lexer:
         num = self.ch
         begin = self.loc.copy()
         self.advance()
+        if(self.ch == "x"):
+            num+=self.ch
+            self.advance()
         pchars = T.T_DIGITS+T.T_DOT+"e"
         while self.ch in pchars:
             num+=self.ch
             self.advance()
             if("e" in num): pchars+="-"
+            
         
         t = T.T_INT
         if(T.T_DOT in num or "e" in num):
             val = float(num)
             t=T.T_DOUBLE
         else:
-            val = int(num)
+            if("x" in num):
+                val = int(num,16)
+            else:
+                val = int(num)
         
         return Token(t,val,begin,self.loc.copy())
             

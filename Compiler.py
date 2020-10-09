@@ -373,7 +373,9 @@ class Compiler:
                     gv = self.globals.pop()
                     members.append(f)
                     gv.name = f"{id}_{gv.name}"
+                    #f.name = f"{id}_{gv.name}"
                     self.globals.append(gv)
+                    #self.functions.append(f)
 
         self.types.remove(prototypeType)
         actualType = DType(id,size,members,0,True)

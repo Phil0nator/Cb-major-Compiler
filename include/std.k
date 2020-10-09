@@ -5,3 +5,6 @@
 #include "include/random.k"
 
 #include "include/sys/time.k"
+#include "include/sys/files.k"
+
+#include "include/string.k"

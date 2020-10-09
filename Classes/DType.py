@@ -1,5 +1,5 @@
 import config
-
+from Classes.Error import *
 
 ###########################
 #   The DType class is used to represent datatypes.
@@ -73,9 +73,9 @@ type_precedence = {
 
 }
 # determine weather to cast a to b, or b to a based on precedence, pointerdepth, voids, etc...
-def determinePrecedence(a, b):
+def determinePrecedence(a, b, fn):
     # preq : must have typematch
-    
+    if( a.name not in type_precedence) ^ (b.name not in type_precedence): throw(TypeMismatch(fn.current_token,a,b))
     if(type_precedence[a.name] > type_precedence[b.name] and a.ptrdepth == b.ptrdepth):
         
         

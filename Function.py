@@ -523,7 +523,7 @@ class Function:
         else: #situation is different when casting is directional
             if(not typematch(a.type,b.type) and not typematch(b.type, a.type) and not (a.isconstint() or b.isconstint())):
                 throw(TypeMismatch(a.token, a.type, b.type))
-            newtype, toConvert = determinePrecedence(a.type, b.type)
+            newtype, toConvert = determinePrecedence(a.type, b.type,self)
             o = newtype.copy()
             if(newtype.__eq__(a.type)):
                 # cast to a
@@ -892,7 +892,27 @@ class Function:
                     memvar = var.t.getMember(member)
                     offset = memvar.offset
                     exprtokens.append(Token(T_ID, f"{var.name}.{memvar.name}",start,self.current_token.end))
+                
+                elif(self.tokens[self.ctidx+1].tok == T_MINUS and self.tokens[self.ctidx+2].tok == ">"):
+                    wasfunc = True
+                    start = self.current_token.start.copy()
+                    var = self.getVariable(self.current_token.value)
+                    if(var == None): throw(UnkownIdentifier(self.current_token))
+                    self.advance()
+                    self.advance()
+                    self.advance()
+                    member = self.current_token.value
+                    memvar = var.t.getMember(member)
 
+                    offset = memvar.offset
+                    exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
+                    exprtokens.append(Token(T_DEREF,T_DEREF,start,start))
+                    exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
+                    exprtokens.append(Token(T_ID, var.name,start,start))
+                    exprtokens.append(Token(T_PLUS,T_PLUS,start,start))
+                    exprtokens.append(Token(T_INT, offset,start,start))
+                    exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
+                    exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
 
             if(not wasfunc):
                 exprtokens.append(self.current_token)
@@ -1010,6 +1030,7 @@ class Function:
         isptridx = False
         depthreached = 0
         isMember = False
+        ispMember = False
         if(v.isStackarr):
 
 
@@ -1031,7 +1052,7 @@ class Function:
                 idxr+=1
             depthreached = idxr
 
-        elif(v.t.ptrdepth > 0):
+        elif(v.t.ptrdepth > 0 and self.tokens[self.ctidx+1].tok == T_OPENIDX):
             startaddr = ralloc(False)
             inst += f"mov {startaddr}, [rbp-{v.offset}]\n"
             idxr=0
@@ -1067,29 +1088,72 @@ class Function:
                 self.advance()
                 isMember = True
 
+            elif(self.current_token.tok == T_MINUS):
+                self.advance()
 
+                if(self.current_token.tok == ">"):
+                    self.advance()
+                    if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+                    member = self.current_token.value
+                    if(not v.t.hasMember(member)): throw(UnkownIdentifier(self.current_token))
+                    memv = v.t.getMember(member)
+                    startaddr = ralloc(False)
+                    inst += f"mov {startaddr}, [rbp-{v.offset}]\n"
+                    inst += f"lea {startaddr}, [{startaddr}+{memv.offset}]\n"
+                    isptridx = True
+                    
+                    self.advance()
 
+        
+        
+        
+        
+        
+        
         if(isMember and self.current_token.tok == T_EQUALS and not v.t.isflt() and v.t.csize() != 8):
             self.advance()
+
             result = ralloc(False)
             ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,v.t,token=vt))
             self.addline(inst)
             self.addline(ev)
-            if(v.t.csize() == 1):
-                self.addline(f"mov BYTE[rbp-{v.offset}], {boolchar_version[result]}")
-            elif(v.t.csize() == 4):
-                self.addline(f"mov DWORD[rbp-{v.offset}], {dword_version[result]}")
-            
+            if(isMember): 
+                if(v.t.csize() == 1):
+                    self.addline(f"mov BYTE[rbp-{v.offset}], {boolchar_version[result]}")
+                elif(v.t.csize() == 4):
+                    self.addline(f"mov DWORD[rbp-{v.offset}], {dword_version[result]}")
+            elif(ispMember):
+                if(v.t.csize() == 1):
+                    self.addline(f"mov BYTE[{startaddr}], {boolchar_version[result]}")
+                elif(v.t.csize() == 4):
+                    self.addline(f"mov DWORD[{startaddr}], {dword_version[result]}")
+                rfree(startaddr)
 
             rfree(result)
+
+        elif(ispMember and self.current_token.tok == T_EQUALS):
+            self.advance()
+            result = ralloc(v.t.isflt())
+            ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,v.t,token=vt))
+            self.addline(inst)
+            self.addline(ev)
+            if(v.t.isflt()):
+                self.addline(f"movsd [{startaddr}], {result}\n")
+            else:
+                self.addline(f"mov [{startaddr}], {result}\n")
+            rfree(result)
+            rfree(startaddr)
+
+
+
+
+            
         elif(self.current_token.tok == T_EQUALS and not v.isStackarr and not isptridx): #normal
             self.advance()
-
             ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset,glob=v.glob),v.t,token=vt)                )
             self.addline(inst)
             self.addline(ev)
         elif(self.current_token.tok == T_EQUALS and v.isStackarr and not isptridx):
-
             self.advance()
             result = ralloc(v.t.isfltdepth(depthreached))
             inst+=f"push {startaddr}\n"
