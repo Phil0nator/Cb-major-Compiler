@@ -606,8 +606,7 @@ class Function:
                         if(op == T_PTRACCESS):
 
                             member = b.accessor
-                            memv = a.type.getMember(b.token)
-                            
+                            memv = a.type.getMember(member)
                             if(memv == None): throw(UnkownIdentifier(b.token))
                             o = memv.t.copy()
 
