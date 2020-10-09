@@ -71,7 +71,7 @@ function in_addr get_inaddr(char* address){
         char c;
         int n = 0;
         while(1){
-            c = @start;
+            c = start[0];
             start++;
             if(c>='0' && c <='9'){
                 n=n*10;

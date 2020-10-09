@@ -605,10 +605,26 @@ class Function:
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
                     else:
-                        newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
-                        stack.append(apendee)
-                        instr+=newinstr
-                        o = newt.copy()
+                        if(op == T_PTRACCESS):
+                            member = b.accessor
+                            memv = a.accessor.t.getMember(member)
+                            o = memv.t.copy()
+                            tmpaddr = ralloc(False)
+                            instr+=f"mov {tmpaddr}, {valueOf(a.accessor)}\n"
+                            instr+=f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
+                            if(memv.t.isflt()):
+                                rfree(tmpaddr)
+                                result = ralloc(True)
+                                instr+=f"movsd {result}, [{tmpaddr}]\n"
+                                stack.append(EC.ExpressionComponent(result, memv.t.copy(),token=b.token))
+                            else:
+                                instr+=f"mov {tmpaddr}, [{tmpaddr}]\n"
+                                stack.append(EC.ExpressionComponent(tmpaddr,memv.t.copy(),token=b.token))
+                        else:
+                            newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
+                            stack.append(apendee)
+                            instr+=newinstr
+                            o = newt.copy()
                 else:
                     if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
                     a = stack.pop()
@@ -907,14 +923,17 @@ class Function:
                     memvar = var.t.getMember(member)
 
                     offset = memvar.offset
-                    exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
-                    exprtokens.append(Token(T_DEREF,T_DEREF,start,start))
-                    exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
+                    # exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
+                    # exprtokens.append(Token(T_DEREF,T_DEREF,start,start))
+                    # exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
+                    # exprtokens.append(Token(T_ID, var.name,start,start))
+                    # exprtokens.append(Token(T_PLUS,T_PLUS,start,start))
+                    # exprtokens.append(Token(T_INT, offset,start,start))
+                    # exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
+                    # exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
                     exprtokens.append(Token(T_ID, var.name,start,start))
-                    exprtokens.append(Token(T_PLUS,T_PLUS,start,start))
-                    exprtokens.append(Token(T_INT, offset,start,start))
-                    exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
-                    exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
+                    exprtokens.append(Token(T_PTRACCESS, T_PTRACCESS, start,start))
+                    exprtokens.append(Token(T_AMBIGUOUS, member, start,start))
 
             if(not wasfunc):
                 exprtokens.append(self.current_token)

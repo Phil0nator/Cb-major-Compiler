@@ -51,6 +51,8 @@ class Postfixer:
                 ec = EC.ExpressionComponent("pop",t.fn.returntype)
             elif(t.tok == T_CHAR):
                 ec = EC.ExpressionComponent(t.value,CHAR.copy(),constint=True)
+            elif(t.tok == T_AMBIGUOUS):
+                ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
         ec.token = t
         self.pfix.append(ec)
 

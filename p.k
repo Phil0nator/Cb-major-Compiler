@@ -1,11 +1,18 @@
 #include "include/std.k"
 
-
+struct Test{
+    int a;
+    int b;
+}
 
 
 function int main(int argc, char** argv){
 
-    print(get_inaddr("127.0.0.1"));
+    Test *tester = malloc(Test);
+    tester->a = 6;
+    tester->b = 10;
+
+    print(tester->a+tester->b);
 
 
 
