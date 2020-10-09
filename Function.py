@@ -436,6 +436,12 @@ class Function:
         sseused = 0
         normused = 0
 
+
+
+
+
+
+
         for i in range(pcount):
             if(fn.parameters[i].isflt()):
                 
@@ -443,8 +449,20 @@ class Function:
                 sseused+=1
 
             else:
-                instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normused], fn.parameters[i].t.copy(),token=self.current_token))
+                if(fn.parameters[i].t.csize() != 8):
+                    result = ralloc(False)
+                else:
+                    result =  norm_parameter_registers[normused]
+                ec = EC.ExpressionComponent(result, fn.parameters[i].t.copy(),token=self.current_token)
+                instructions+=self.evaluateRightsideExpression(ec)
                 normused+=1
+                
+                if(fn.parameters[i].t.csize() != 8):
+                    if(fn.parameters[i].t.csize() == 1):
+                        instructions+=f"mov {boolchar_version[norm_parameter_registers[normused]]}, {boolchar_version[result]}\n"
+                    elif(fn.parameters[i].t.csize() == 4):
+                        instructions += f"mov {dwordize(norm_parameter_registers[normused])}, {dwordize(result)}\n"
+                    rfree(result)
 
             if(self.current_token.tok == ","):
                     self.advance()
@@ -702,7 +720,8 @@ class Function:
         
         
         o = final.type.copy()
-        
+        #TODO: Make own function:
+        #       make able to handle different data sizes
         instr+=";------------\n"
         if(dest == "AMB"):
             if(final.isRegister()):
@@ -864,13 +883,15 @@ class Function:
                     self.advance()
                 elif(self.tokens[self.ctidx+1].tok == T_DOT):
                     wasfunc = True
-                    start = self.current_token.loc.copy()
+                    start = self.current_token.start.copy()
                     var = self.getVariable(self.current_token.value)
                     if(var == None): throw(UnkownIdentifier(self.current_token))
                     self.advance()
+                    self.advance()
                     member = self.current_token.value
-                    offset = member.offset
-                    exprtokens.append(Token(T_ID, f"{var.name}.{member.name}",start,self.current_token.end))
+                    memvar = var.t.getMember(member)
+                    offset = memvar.offset
+                    exprtokens.append(Token(T_ID, f"{var.name}.{memvar.name}",start,self.current_token.end))
 
 
             if(not wasfunc):
@@ -988,6 +1009,7 @@ class Function:
         inst = ""
         isptridx = False
         depthreached = 0
+        isMember = False
         if(v.isStackarr):
 
 
@@ -1034,6 +1056,8 @@ class Function:
             depthreached = idxr
         elif(v.t.members != None):
             if(self.current_token.tok == T_DOT):
+
+
                 self.advance()
                 if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
                 member = self.current_token.value
@@ -1041,8 +1065,24 @@ class Function:
                 v = self.getVariable(f"{v.name}.{member}")
                 offset = v.offset
                 self.advance()
+                isMember = True
 
-        if(self.current_token.tok == T_EQUALS and not v.isStackarr and not isptridx): #normal
+
+
+        if(isMember and self.current_token.tok == T_EQUALS and not v.t.isflt() and v.t.csize() != 8):
+            self.advance()
+            result = ralloc(False)
+            ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,v.t,token=vt))
+            self.addline(inst)
+            self.addline(ev)
+            if(v.t.csize() == 1):
+                self.addline(f"mov BYTE[rbp-{v.offset}], {boolchar_version[result]}")
+            elif(v.t.csize() == 4):
+                self.addline(f"mov DWORD[rbp-{v.offset}], {dword_version[result]}")
+            
+
+            rfree(result)
+        elif(self.current_token.tok == T_EQUALS and not v.isStackarr and not isptridx): #normal
             self.advance()
 
             ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset,glob=v.glob),v.t,token=vt)                )

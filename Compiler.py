@@ -60,7 +60,7 @@ class Compiler:
 
     def isIntrinsic(self, q):           # return: if q is primitive
         for t in INTRINSICS:
-            if q == t.name:
+            if self.Tequals(t.name,q):
                 return t
         return None
 

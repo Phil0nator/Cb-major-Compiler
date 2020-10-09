@@ -17,11 +17,19 @@ class DType:
         if(depth < self.ptrdepth):
             return 8
         return self.s
+    
+    def csize(self):
+        return self.size(0)
 
     def hasMember(self, name): # structures
         for m in self.members:
             if m.name == name: return True
         return False
+    
+    def getMember(self, name):
+        for m in self.members:
+            if m.name == name: return m
+        return None
 
     def load(self, other): # accept properties of another DType object
         self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed)
@@ -55,10 +63,12 @@ type_precedence = {
     "char":0,
     "unsigned char": 1,
     "unsigned bool": 1,
-    "int" :2,
-    "unsigned int":3,
-    "double":4,
-    "void":5
+    "short":2,
+    "unsigned short":3,
+    "int" :4,
+    "unsigned int":5,
+    "double":6,
+    "void":7
 
 
 }

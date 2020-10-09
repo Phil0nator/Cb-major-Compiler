@@ -136,7 +136,6 @@ class PreProcessor:
     def process(self):
         while self.current_token.tok != T_EOF and self.tkidx < len(self.tokens)-1:
             if ( self.current_token.tok == T_KEYWORD):
-                
                 if ( self.current_token.value == "include"):
 
                     self.advance()

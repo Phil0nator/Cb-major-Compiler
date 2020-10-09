@@ -86,7 +86,29 @@ boolchar_version = {
     r12:r12b,
     r13:r13b,
     r14:r14b,
-    r15:r15b
+    r15:r15b,
+    rdi:"DIL",
+    rsi:"SIL"
+
+
+}
+
+dword_version = {
+
+    rax:"eax",
+    rbx:"ebx",
+    rcx:"ecx",
+    rdx:"edx",
+    r8:"r8d",
+    r9:"r9d",
+    r10:"r10d",
+    r11:"r11d",
+    r12:"r12d",
+    r13:"r13d",
+    r14:"r14d",
+    r15:"r15d",
+    rsi:"esi",
+    rdi:"edi"
 
 
 }
@@ -168,7 +190,7 @@ norm_scratch_registers_inuse = [
 ]
 
 # register allocation and deallocation system:
-def ralloc(flt):
+def ralloc(flt, size=8):
     if(flt):
         for i in range(len(sse_scratch_registers_inuse)):
             if(not sse_scratch_registers_inuse[i]):
@@ -181,6 +203,10 @@ def ralloc(flt):
             if(not norm_scratch_registers_inuse[i]):
                 out = norm_scratch_registers[i]
                 norm_scratch_registers_inuse[i]=True
+
+                if(size==1): out = boolchar_version[out]
+                elif(size == 4): out = dword_version[out]
+
                 return out
 
                 
@@ -222,6 +248,7 @@ fileTemplate = "%s\n\n%s"%(io64,stub)
 # primitive types:
 
 INT = DType("int", 8, signed=True)
+SHORT = DType("short", 4, signed=True)
 CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
 VOID = DType("void", 8, signed=False)
@@ -229,7 +256,7 @@ BOOL = DType("bool", 1, signed=True)
 
 
 
-INTRINSICS = [INT,BOOL,DOUBLE,CHAR,BOOL,VOID]
+INTRINSICS = [INT,SHORT,BOOL,DOUBLE,CHAR,BOOL,VOID]
 
 
 
@@ -558,6 +585,12 @@ def valueOf(x, dflt = False):
     elif (isinstance(x, int)):
         return (x)
 
+def dwordize(value):
+    if(isinstance(value, int)):
+        return value
+    if(isinstance(value, Variable)):
+        return valueOf(value)
+    return dword_version[value]
 
 def loadToReg(reg, value):
     
@@ -582,8 +615,9 @@ def loadToReg(reg, value):
         if(reg.t.isflt()):
             
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
-    
+
 # determine if unkown type x refers to float value
 def isfloat(x):
     if (isinstance(x, T.Token)):
@@ -782,6 +816,11 @@ def doOperation(t, areg, breg, op, signed = False):
 
 def castABD(a, b, areg, breg, newbreg):
     if(not a.type.isflt() and not b.type.isflt()):
+        if(a.type.csize() != b.type.csize()):
+            if(a.type.csize() == 1 and b.type.csize() == 8):
+                return f"mov {boolchar_version[newbreg]}, {boolchar_version[breg]}\n"
+            elif(a.type.csize() == 4 and b.type.csize() == 8):
+                return f"mov {dwordize(newbreg)}, {dwordize(breg)}\n"
         return False
     if(a.type.isflt() and not b.type.isflt()):
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"

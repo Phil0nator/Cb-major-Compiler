@@ -1062,6 +1062,16 @@ M_2_SQRTPI: dq 0x1.20dd750429b6dp+0
 M_SQRT2: dq 0x1.6a09e667f3bcdp+0
 M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
 M_MINZERO: dq -0x0.0p+0
+DST_NONE: DQ 0
+DST_USA: DQ 1
+DST_AUST: DQ 2
+DST_WET: DQ 3
+DST_MET: DQ 4
+DST_EET: DQ 5
+DST_CAN: DQ 6
+ITIMER_REAL: DQ 0
+ITIMER_VIRTUAL: DQ 1
+ITIMER_PROF: DQ 2
 section .bss
 align 16
     MAXUINT: RESB 8
@@ -1069,6 +1079,102 @@ rand_next: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
+
+;[ function int utimes( [[ Variable: char. filename @ 8], [ Variable: timeval_t. utimes @ 16]] ) ]
+
+_int_utimes_pchar.timeval_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. filename @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timeval_t. utimes @ 16]
+mov [rbp-16], rsi
+mov rax, 235
+    syscall
+___int_utimes_pchar.timeval_t.__return:
+leave
+ret
+
+;[ function int settimeofday( [[ Variable: timeval_t. tv @ 8], [ Variable: timezone_t. tz @ 16]] ) ]
+
+_int_settimeofday_ptimeval_t.timezone_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: timeval_t. tv @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timezone_t. tz @ 16]
+mov [rbp-16], rsi
+mov rax, 164
+    syscall
+___int_settimeofday_ptimeval_t.timezone_t.__return:
+leave
+ret
+
+;[ function int setitimer( [[ Variable: int which @ 8], [ Variable: itimerval_t. value @ 16], [ Variable: itimerval_t. ovalue @ 24]] ) ]
+
+_int_setitimer_pintitimerval_t.itimerval_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: int which @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: itimerval_t. value @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: itimerval_t. ovalue @ 24]
+mov [rbp-24], rdx
+mov rax, 38
+    syscall
+___int_setitimer_pintitimerval_t.itimerval_t.__return:
+leave
+ret
+
+;[ function int gettimeofday( [[ Variable: timeval_t. tv @ 8], [ Variable: timezone_t. tz @ 16]] ) ]
+
+_int_gettimeofday_ptimeval_t.timezone_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: timeval_t. tv @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timezone_t. tz @ 16]
+mov [rbp-16], rsi
+mov rax, 96
+    syscall
+___int_gettimeofday_ptimeval_t.timezone_t.__return:
+leave
+ret
+
+;[ function int getitimer( [[ Variable: int which @ 8], [ Variable: itimerval_t. value @ 16]] ) ]
+
+_int_getitimer_pintitimerval_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int which @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: itimerval_t. value @ 16]
+mov [rbp-16], rsi
+mov rax, 36
+        syscall
+___int_getitimer_pintitimerval_t.__return:
+leave
+ret
+
+;[ function int adjtime( [[ Variable: timeval_t. t1 @ 8], [ Variable: timeval_t t2 @ 16]] ) ]
+
+_int_adjtime_ptimeval_t.timeval_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: timeval_t. t1 @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timeval_t t2 @ 16]
+mov [rbp-16], rsi
+___int_adjtime_ptimeval_t.timeval_t__return:
+leave
+ret
 
 ;[ function void srand( [] ) ]
 
@@ -1554,6 +1660,20 @@ ___void_print_puint__return:
 leave
 ret
 
+;[ function void print( [[ Variable: short a @ 8]] ) ]
+
+_void_print_pshort:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: short a @ 8]
+mov [rbp-8], rdi
+PRINT_DEC 4, rdi
+        NEWLINE
+___void_print_pshort__return:
+leave
+ret
+
 ;[ function void print( [[ Variable: int a @ 8]] ) ]
 
 _void_print_pint:
@@ -1816,11 +1936,27 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ id : DST_NONE]]
+;------------
+mov rcx, [DST_NONE]
+mov rbx, rcx
+mov DWORD[rbp-28], ebx
+;[[ int : 100]]
+;------------
+mov rbx, 100
+mov DWORD[rbp-24], ebx
+;[[ id : test.tz_dsttime]]
+;------------
+mov rcx, QWORD[rbp-28]
+mov rbx, rcx
+mov esi, ebx
+mov rax, 0
+call _void_print_pshort
 ;[[ int : 0]]
 ;------------
 mov rax, 0

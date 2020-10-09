@@ -111,6 +111,13 @@ function void print(int a){
     printf("%li\n", a);
 
 }
+function void print(short a){
+    __asm{
+        "PRINT_DEC 4, rdi
+        NEWLINE
+        "
+    }
+}
 
 function void print(unsigned int a){
 

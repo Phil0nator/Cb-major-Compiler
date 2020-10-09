@@ -100,14 +100,6 @@ function double pow(double base, int exp){
 
 
 
-
-
-
-
-
-
-
-
 function int round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
@@ -121,14 +113,6 @@ function int floor(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
-
-
-
-
-
-
-
-
 function int abs(int x){
 
   __asm{"
@@ -141,7 +125,6 @@ function int abs(int x){
   "}
 
 }
-
 function double abs(double x){
 
   __asm{"
@@ -152,3 +135,4 @@ function double abs(double x){
   "}
 
 }
+

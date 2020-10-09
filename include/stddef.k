@@ -37,3 +37,5 @@ const bool false = 0;
   * float == double
 */
 typedef double float;
+
+typedef short int32;
