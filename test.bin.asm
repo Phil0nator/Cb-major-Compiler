@@ -1560,35 +1560,11 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 10], [ * : *], [ id : Alex]]
-;------------
-mov rdi, 90
-mov rax, 0
-call _void._malloc_psize_t
-push rax
-;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-24], rax
-mov rbx, QWORD[rbp-24]
-;[[ int : 0]]
-;------------
-mov rcx, 0
-imul rcx, 9
-lea rbx, [rbx+rcx]
-mov rbx, [rbx]
-push rbx
-;[[ [x] : Alex], [ -> : ->], [ T?T : stupid]]
-pop rbx
-lea rbx, [rbx+8]
-mov rbx, [rbx]
-;------------
-mov QWORD[rbp-32], rbx
 ;[[ int : 0]]
 ;------------
 mov rax, 0

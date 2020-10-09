@@ -606,7 +606,7 @@ class Function:
                         if(op == T_PTRACCESS):
 
                             member = b.accessor
-                            memv = a.type.getMember(member)
+                            memv = a.type.getMember(b.token)
                             
                             if(memv == None): throw(UnkownIdentifier(b.token))
                             o = memv.t.copy()
@@ -968,6 +968,7 @@ class Function:
                 self.advance()
                 exprtokens.append(Token(T_PTRACCESS,T_PTRACCESS,self.current_token.start,self.current_token.start))
                 exprtokens.append(Token(T_AMBIGUOUS, self.current_token.value,self.current_token.start,self.current_token.start))
+
 
 
             if(not wasfunc):
