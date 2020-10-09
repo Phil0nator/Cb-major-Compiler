@@ -590,8 +590,7 @@ class Function:
     def evaluatePostfix(self, dest, pfix):                  # evaluate a rightside generated postfix list of EC's
         instr = ""
         stack = []
-        sses = 0
-        norms= 0
+
         o = VOID.copy()
         for e in pfix:
             if(e.isoperation):
@@ -606,8 +605,11 @@ class Function:
                         stack.append(calculateConstant(a,b,op))
                     else:
                         if(op == T_PTRACCESS):
+
+
                             member = b.accessor
                             memv = a.accessor.t.getMember(member)
+                            if(memv == None): throw(UnkownIdentifier(b.token))
                             o = memv.t.copy()
                             tmpaddr = ralloc(False)
                             instr+=f"mov {tmpaddr}, {valueOf(a.accessor)}\n"
@@ -620,6 +622,8 @@ class Function:
                             else:
                                 instr+=f"mov {tmpaddr}, [{tmpaddr}]\n"
                                 stack.append(EC.ExpressionComponent(tmpaddr,memv.t.copy(),token=b.token))
+
+
                         else:
                             newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
                             stack.append(apendee)
@@ -921,7 +925,7 @@ class Function:
                     self.advance()
                     member = self.current_token.value
                     memvar = var.t.getMember(member)
-
+                    if(memvar == None): throw(UnkownIdentifier(self.current_token))
                     offset = memvar.offset
                     # exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
                     # exprtokens.append(Token(T_DEREF,T_DEREF,start,start))

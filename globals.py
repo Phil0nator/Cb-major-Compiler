@@ -540,7 +540,8 @@ def TsCompatible(typea, typeb, fni):
 
 def typematch(a, b):
     if(isinstance(a, DType) and isinstance(b, DType)):
-        if(a.__eq__(VOID.copy()) or b.__eq__(VOID.copy())): return True
+        
+        if(config.GlobalCompiler.Tequals(a.name,"void") or config.GlobalCompiler.Tequals(b.name,"void")): return True
         if(a.__eq__(INT.copy()) and b.ptrdepth > 0): return True
         if(a.__eq__(b)):return True
         elif(DType(a.name,a.size,None,a.ptrdepth,False).__eq__(DType(b.name,b.size,None,b.ptrdepth,False))): return True

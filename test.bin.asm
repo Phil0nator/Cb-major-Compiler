@@ -2069,7 +2069,7 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 48
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 ;------------
@@ -2094,17 +2094,10 @@ push rbx
 mov rcx, 10
 pop rbx
 mov [rbx], rcx
-mov rbx, QWORD[rbp-24]
-lea rbx, [rbx+0]
-mov rbx, [rbx]
-mov rcx, QWORD[rbp-24]
-lea rcx, [rcx+8]
-mov rcx, [rcx]
-add rbx, rcx
 ;------------
-mov rdi, rbx
-mov rax, 0
-call _void_print_pint
+mov QWORD[rbp-32], 6
+;------------
+mov QWORD[rbp-40], 10
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
