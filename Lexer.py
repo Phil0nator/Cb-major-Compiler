@@ -68,7 +68,6 @@ class Lexer:
             self.advance()
             if("e" in num): pchars+="-"
             
-        
         t = T.T_INT
         if(T.T_DOT in num or "e" in num):
             val = float(num)
@@ -114,7 +113,6 @@ class Lexer:
         while self.ch in T.T_IDCHARS+T.T_DIGITS:
             value += self.ch
             self.advance()
-
         if( value in T.KEYWORDS ):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())

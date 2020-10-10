@@ -335,7 +335,98 @@ class Function:
             if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
 
 
+    def buildSIMD(self):
+        self.advance()
+        if(self.current_token.tok != T_INT): throw(ExpectedToken(self.current_token, "SIMD opsize"))
+        
+        op = self.current_token.value
+        self.advance()
+        
+        if(self.current_token.tok != T_ID): throw(ExpectedType(self.current_token))
+        t = self.compiler.getType(self.current_token.value)
+        vsize = t.csize()
+        if(t == None): throw(UnkownIdentifier(self.current_token))
+        self.advance()
+        
+        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
+        self.advance()
+        
+        arr1 = self.getVariable(self.current_token.value)
+        if(arr1 == None): throw(UnkownIdentifier(self.current_token))
+        self.advance()
+        
+        if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
+        idx1 = ralloc(False)
+        self.advance()
+        
+        determine_index1 = self.evaluateRightsideExpression(EC.ExpressionComponent(idx1, INT.copy(),token=self.current_token))
+        if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
+        
+        self.advance()
+        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
+        self.advance()
+        
 
+        avx1 = avx_ralloc()
+        avx1 = avx_correctSize(avx1,op)
+        self.addline(determine_index1)
+        self.addline(avx_loadToReg(op, avx1, arr1, idx1))
+        
+
+
+        while self.current_token.tok != T_CLSSCOPE:
+            
+            if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
+            self.advance()
+            opn = self.current_token.tok
+            if(not Postfixer.isOperator(None,self.current_token)):
+                throw(ExpectedToken(self.current_token, "operator"))
+            self.advance()
+            if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
+            self.advance()
+            arrn = self.getVariable(self.current_token.value)
+            if(arrn == None):
+                throw(UnkownIdentifier(self.current_token))
+            self.advance()
+            if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
+            self.advance()
+            idxn = ralloc(False)
+            determine_idxn = self.evaluateRightsideExpression(EC.ExpressionComponent(idxn, INT.copy(), token=self.current_token))
+            self.advance()
+            avxn = avx_ralloc()
+            avxn = avx_correctSize(avxn, op)
+            self.addline(determine_idxn)
+            self.addline(avx_loadToReg(op, avxn, arrn, idxn))
+            self.addline(avx_doToReg(opn, op, vsize, avx1, avxn))
+
+            avx_rfree(avxn)
+            rfree(idxn)
+
+
+
+
+        self.advance()
+        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
+        self.advance()
+        destarr = self.getVariable(self.current_token.value)
+        if(destarr == None): throw(UnkownIdentifier(self.current_token))
+        self.advance()
+        if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
+        self.advance()
+
+        determineidxf = self.evaluateRightsideExpression(EC.ExpressionComponent(idx1, INT.copy(),token=self.current_token)) 
+        if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
+        self.advance()
+        self.checkSemi()
+
+
+        self.addline(determineidxf)
+        self.addline(avx_dropToAddress(op,avx1,destarr,idx1))
+
+        rfree(idx1)
+        avx_rfree(avx1)
+        
+        
 
     def buildKeywordStatement(self):                    # build a statement that starts with a keyword
         word = self.current_token.value
@@ -389,6 +480,9 @@ class Function:
             self.addline(f"jmp {l}\n")
             self.advance()
             self.checkSemi()
+
+        elif(word == "__simd"):
+            self.buildSIMD()
 
         else:
             self.advance()
@@ -1101,6 +1195,7 @@ class Function:
         depthreached = 0
         isMember = False
         ispMember = False
+
         if(v.isStackarr):
 
 
@@ -1130,8 +1225,8 @@ class Function:
                 self.advance()
                 idxr+=1
             depthreached = idxr
+        elif(v.t.ptrdepth > 0 and self.tokens[self.ctidx].tok == T_OPENIDX):
 
-        elif(v.t.ptrdepth > 0 and self.tokens[self.ctidx+1].tok == T_OPENIDX):
             startaddr = ralloc(False)
             inst += f"mov {startaddr}, [rbp-{v.offset}]\n"
             idxr=0
@@ -1159,6 +1254,7 @@ class Function:
                 self.advance()
                 idxr+=1
             depthreached = idxr
+
         elif(v.t.members != None):
             if(self.current_token.tok == T_DOT):
 
