@@ -88,6 +88,13 @@ KEYWORDS = [
     "break",
     "continue",
     "__asm",
+    "__simd",
+    "__add2",
+    "__sub2",
+    "__mul2",
+    "__add4",
+    "__sub4",
+    "__mul4",
     "return",
     "typedef"
 
