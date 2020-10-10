@@ -39,6 +39,8 @@ class Postfixer:
                 v:Variable = self.fn.getVariable(t.value)
                 if(v == None): 
                     
+                    
+
                     v = self.fn.compiler.getType(t.value)
                     if(v == None):  throw(UnkownIdentifier(t))
                     
@@ -49,10 +51,13 @@ class Postfixer:
                     ec = EC.ExpressionComponent(v,v.t)
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop",t.fn.returntype)
+            elif(t.tok == T_IDXER):
+                ec = EC.ExpressionComponent("pop", t.value)
             elif(t.tok == T_CHAR):
                 ec = EC.ExpressionComponent(t.value,CHAR.copy(),constint=True)
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
+        
         ec.token = t
         self.pfix.append(ec)
 

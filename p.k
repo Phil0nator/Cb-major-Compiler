@@ -1,14 +1,18 @@
-#include "include/std.k"
-
-
+#include "include/stddef.k"
+#include "include/memory.k"
+#include "include/printf.k"
+#include "include/string.k"
 
 
 function int main(int argc, char** argv){
 
-    fd_t sock = socket(AF_INET, SOCK_STREAM, 0);
-    
-    print(get_inaddr("127.0.0.1"));
+    String str;
+    createString(&str, "Test");
+    appendString(&str, " things");
+
+    print(str.value);
 
 
+    freeString(&str);
     return 0;
 }

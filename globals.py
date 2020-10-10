@@ -396,6 +396,7 @@ OPERATORS = [
     "&",
     "@",
     "->",
+    ".",
     "$"
 
 
@@ -522,7 +523,11 @@ def movVarHeap(vd, vs):
     return "xor rax, rax\nmov rax, %s[%s]\n%s"%( psizeof(vs), vs.name, "mov %s[%s], rax\n"%( psizeof(vd), vd.name )  )
 
 
-
+def setSize(reg, size):
+    if(size == 1): return boolchar_version[reg]
+    elif(size == 2): return small_version[reg]
+    elif(size == 4): return dword_version[reg]
+    return reg
 
 
 
