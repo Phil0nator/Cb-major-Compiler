@@ -946,15 +946,26 @@ def avx_getLoader(opspec):
     if(2 == opspec):
         return avx_load2
     return avx_load4
+def shiftmul(i):
+    if(i == 1):
+        return 0
+    elif(i == 2):
+        return 1
 
+    elif(i == 4):
+        return 2
+
+    elif(i == 8):
+        return 3
 
 def avx_loadToReg(loadop, avxreg, arr, idx):
     out = ""
     if(arr.isStackarr):
-        out+=(f"lea {idx}, [rbp+{idx}]\n")
+        out+=(f"lea {idx}, [rbp+{idx}*{arr.t.csize()}]\n")
         out+=(f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out+=(f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     else:
+        out+=(f"shl {idx}, {shiftmul(arr.t.csize())}\n")
         out+=(f"add {idx}, [rbp-{arr.offset}]\n")
         out+=(f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     return out
@@ -972,7 +983,7 @@ def avx_doToReg(op, opcount, size, dest, source):
 def avx_dropToAddress(loadop, avxreg, arr, idx):
     out = ""
     if(arr.isStackarr):
-        out+=(f"lea {idx}, [rbp+{idx}]\n")
+        out+=(f"lea {idx}, [rbp+{idx}*{arr.t.csize()}]\n")
         out+=(f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out+=(f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     else:
