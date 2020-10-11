@@ -696,6 +696,9 @@ class Function:
 
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
+                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt() and op == "*"): # optimize for semi constexpr
+                        if(canShiftmul(b.accessor)):
+                            instr+=f"shl {b.accessor}, {shiftmul(b.accessor)}\n"
                     else:
                         if(op == T_PTRACCESS):
 
@@ -773,6 +776,7 @@ class Function:
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
                         
+
                         else:
                             throw(AddressOfConstant(a.token))
                         

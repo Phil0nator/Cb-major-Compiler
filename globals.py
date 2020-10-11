@@ -5,7 +5,7 @@ import Classes.Token as T
 import time
 import Classes.ExpressionComponent as EC
 import config
-
+import math
 ###################################
 #
 #   globals contains the majority of the raw assembly functions
@@ -710,6 +710,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op == "-"):
         return f"sub {areg}, {breg}\n"
     elif(op == "*" and signed):
+        
         return f"imul {areg}, {breg}\n"
     elif(op == "*"):
         return f"mov {rax},{areg}\nmul {breg}\nmov {areg}, {rax}\n"
@@ -860,6 +861,26 @@ def castABD(a, b, areg, breg, newbreg):
 
 
 
+# optimizations
+def canShiftmul(val):
+    
+    x = math.log2(val)
+    if(not x.is_integer()):
+        return False
+    return True
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -947,16 +968,7 @@ def avx_getLoader(opspec):
         return avx_load2
     return avx_load4
 def shiftmul(i):
-    if(i == 1):
-        return 0
-    elif(i == 2):
-        return 1
-
-    elif(i == 4):
-        return 2
-
-    elif(i == 8):
-        return 3
+    return int(math.log2(i))
 
 def avx_loadToReg(loadop, avxreg, arr, idx):
     out = ""

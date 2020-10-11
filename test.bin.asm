@@ -1020,25 +1020,113 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `[ %i, %i, %i ]\n`, 0
-nullterm: DB 0
+    nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_1: db `%li\n`, 0
-STRING_CONSTANT_2: db `%lu\n`, 0
-STRING_CONSTANT_3: db `%lf\n`, 0
-STRING_CONSTANT_4: db `True`, 0
-STRING_CONSTANT_5: db `False`, 0
-STRING_CONSTANT_6: db `[]`, 0
-STRING_CONSTANT_7: db `[`, 0
-STRING_CONSTANT_8: db ` %i ,`, 0
-STRING_CONSTANT_9: db ` %i ]\n`, 0
-STRING_CONSTANT_10: db `Bad realloc`, 0
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
+STRING_CONSTANT_5: db `[]`, 0
+STRING_CONSTANT_6: db `[`, 0
+STRING_CONSTANT_7: db ` %i ,`, 0
+STRING_CONSTANT_8: db ` %i ]\n`, 0
+FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_13: dq -0x0.0p+0
+EPSILON: dq 0x1.ef2d0f6115f51p-107
+M_PI: dq 0x1.921fb54442d18p+1
+M_E: dq 0x1.5bf0a8b145769p+1
+M_LOG2E: dq 0x1.71547652b82fep+0
+M_LOG10E: dq 0x1.bcb7b1526e50ep-2
+M_LN2: dq 0x1.62e42fefa39efp-1
+M_PI_2: dq 0x1.921fb54442d18p+0
+M_PI_4: dq 0x1.921fb54442d18p-1
+M_1_PI: dq 0x1.45f306dc9c883p-2
+M_2_PI: dq 0x1.45f306dc9c883p-1
+M_2_SQRTPI: dq 0x1.20dd750429b6dp+0
+M_SQRT2: dq 0x1.6a09e667f3bcdp+0
+M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
+M_MINZERO: dq -0x0.0p+0
+DST_NONE: DQ 0
+DST_USA: DQ 1
+DST_AUST: DQ 2
+DST_WET: DQ 3
+DST_MET: DQ 4
+DST_EET: DQ 5
+DST_CAN: DQ 6
+ITIMER_REAL: DQ 0
+ITIMER_VIRTUAL: DQ 1
+ITIMER_PROF: DQ 2
+O_RDONLY: DQ 0
+O_WRONLY: DQ 1
+O_RDWR: DQ 2
+O_ACCMODE: DQ 3
+FREAD: DQ 1
+FWRITE: DQ 2
+O_NONBLOCK: DQ 4
+O_APPEND: DQ 8
+O_SHLOCK: DQ 16
+O_EXLOCK: DQ 32
+O_ASYNC: DQ 64
+O_FSYNC: DQ 128
+O_CREAT: DQ 512
+O_TRUNC: DQ 1024
+O_EXCL: DQ 2048
+SOCK_STREAM: DQ 1
+SOCK_DGRAM: DQ 2
+SOCK_RAW: DQ 3
+SOCK_SEQPACKET: DQ 5
+SO_DEBUG: DQ 1
+SO_ACCEPTCONN: DQ 2
+SO_REUSEADDR: DQ 4
+SO_KEEPALIVE: DQ 8
+SO_DONTROUTE: DQ 16
+SO_BROADCAST: DQ 32
+SO_USELOOPBACK: DQ 64
+SO_LINGER: DQ 128
+SO_OOBINLINE: DQ 256
+SO_SNDBUF: DQ 4097
+SO_RCVBUF: DQ 4098
+SO_SNDLOWAT: DQ 4099
+SO_RCVLOWAT: DQ 4100
+SO_SNDTIMEO: DQ 4101
+SO_RECVTIMEO: DQ 4102
+SO_ERROR: DQ 4103
+SO_TYPE: DQ 4104
+SOL_SOCKET: DQ 65535
+AF_UNSPEC: DB 0
+AF_UNIX: DB 1
+AF_INET: DB 2
+AF_AX25: DB 3
+AF_IPX: DB 4
+AF_APPLETALK: DB 5
+AF_NETROM: DB 6
+AF_BRIDGE: DB 7
+AF_AAL5: DB 8
+AF_X25: DB 9
+AF_INET6: DB 10
+AF_MAX: DB 12
+STRING_CONSTANT_9: db `Bad realloc`, 0
 section .bss
 align 16
     HvptrDest_0: RESB 8
 nullptr: RESQ 1
 null: RESB 8
+MAXUINT: RESB 8
+rand_next: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
@@ -1114,16 +1202,16 @@ sete bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0xc
-;[[ id : STRING_CONSTANT_10]]
+jne _LIFPOST_0x15
+;[[ id : STRING_CONSTANT_9]]
 ;------------
-mov rbx, STRING_CONSTANT_10
+mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
-jmp _LIFELSE_0xd
-_LIFPOST_0xc:
-_LIFELSE_0xd:
+jmp _LIFELSE_0x16
+_LIFPOST_0x15:
+_LIFELSE_0x16:
 ;[[ id : newvalue], [ + : +], [ id : ol], [ - : -], [ int : 3]]
 mov rbx, QWORD[rbp-32]
 mov rcx, QWORD[rbp-24]
@@ -1219,6 +1307,753 @@ ___void_createString_pString.char.__return:
 leave
 ret
 
+;[ function int shutdown( [[ Variable: fd_t sockfd @ 8], [ Variable: int how @ 16]] ) ]
+
+_int_shutdown_pfd_tint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: fd_t sockfd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int how @ 16]
+mov [rbp-16], rsi
+mov rax, 48
+    syscall
+___int_shutdown_pfd_tint__return:
+leave
+ret
+
+;[ function int listen( [[ Variable: fd_t fd @ 8], [ Variable: int backlog @ 16]] ) ]
+
+_int_listen_pfd_tint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int backlog @ 16]
+mov [rbp-16], rsi
+mov rax, 50
+    syscall
+___int_listen_pfd_tint__return:
+leave
+ret
+
+;[ function int bind( [[ Variable: fd_t fd @ 8], [ Variable: sockaddr_in. umyaddr @ 16], [ Variable: int addrlen @ 24]] ) ]
+
+_int_bind_pfd_tsockaddr_in.int:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: sockaddr_in. umyaddr @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: int addrlen @ 24]
+mov [rbp-24], rdx
+mov rax, 49
+    syscall
+___int_bind_pfd_tsockaddr_in.int__return:
+leave
+ret
+
+;[ function int accept( [[ Variable: fd_t fd @ 8], [ Variable: sockaddr_in. uservaddr @ 16], [ Variable: int addrlen @ 24]] ) ]
+
+_int_accept_pfd_tsockaddr_in.int:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: sockaddr_in. uservaddr @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: int addrlen @ 24]
+mov [rbp-24], rdx
+mov rax, 43
+    syscall
+___int_accept_pfd_tsockaddr_in.int__return:
+leave
+ret
+
+;[ function int connect( [[ Variable: fd_t fd @ 8], [ Variable: sockaddr_in. uservaddr @ 16], [ Variable: int addrlen @ 24]] ) ]
+
+_int_connect_pfd_tsockaddr_in.int:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: sockaddr_in. uservaddr @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: int addrlen @ 24]
+mov [rbp-24], rdx
+mov rax, 42
+    syscall
+___int_connect_pfd_tsockaddr_in.int__return:
+leave
+ret
+
+;[ function fd_t socket( [[ Variable: int family @ 8], [ Variable: int type @ 16], [ Variable: int protocol @ 24]] ) ]
+
+_fd_t_socket_pintintint:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: int family @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int type @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: int protocol @ 24]
+mov [rbp-24], rdx
+mov rax, 41
+    syscall
+___fd_t_socket_pintintint__return:
+leave
+ret
+
+;[ function in_addr get_inaddr( [[ Variable: char. address @ 8]] ) ]
+
+_in_addr_get_inaddr_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 64
+;Load Parameter: [ Variable: char. address @ 8]
+mov [rbp-8], rdi
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-24], 0
+;[[ id : address]]
+;------------
+mov rbx, QWORD[rbp-8]
+mov QWORD[rbp-32], rbx
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-40], 0
+jmp _LFORCMP_0x9
+_LFORTOP_0x8:
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-56], 0
+jmp _LWHILECMP_0xd
+_LWHILESTART_0xc:
+mov rbx, QWORD[rbp-32]
+;[[ int : 0]]
+;------------
+mov rcx, 0
+lea rbx, [rbx+rcx*1]
+mov bl, [rbx]
+push rbx
+;[[ [x] : char]]
+;------------
+pop rax
+mov QWORD[rbp-48], rax
+mov rbx, QWORD[rbp-32]
+mov rcx, 1
+add rbx, rcx
+;------------
+mov QWORD[rbp-32], rbx
+;[[ id : c], [ >= : >=], [ char : 48], [ && : &&], [ id : c], [ <= : <=], [ char : 57]]
+mov rcx, 48
+mov rbx, QWORD[rbp-48]
+cmp bl, cl
+setge bl
+mov r10, 57
+mov rcx, QWORD[rbp-48]
+cmp cl, r10b
+setle cl
+and rbx, rcx
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0xf
+;[[ id : n], [ * : *], [ int : 10]]
+mov rcx, 10
+mov rbx, QWORD[rbp-56]
+imul rbx, rcx
+;------------
+mov QWORD[rbp-56], rbx
+;[[ id : n], [ + : +], [ id : c], [ - : -], [ char : 48]]
+mov rbx, QWORD[rbp-56]
+mov rcx, QWORD[rbp-48]
+add rbx, rcx
+mov rcx, 48
+sub rbx, rcx
+;------------
+mov QWORD[rbp-56], rbx
+jmp _LIFELSE_0x10
+_LIFPOST_0xf:
+;[[ ( : (], [ id : i], [ < : <], [ int : 3], [ && : &&], [ id : c], [ == : ==], [ char : 46], [ ) : )], [ || : ||], [ id : i], [ == : ==], [ int : 3]]
+mov rcx, 3
+mov rbx, QWORD[rbp-40]
+cmp bl, cl
+setl bl
+mov r10, 46
+mov rcx, QWORD[rbp-48]
+cmp cl, r10b
+sete cl
+and rbx, rcx
+mov r10, 3
+mov rcx, QWORD[rbp-40]
+cmp cl, r10b
+sete cl
+or rbx, rcx
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x11
+jmp _LWHILEEND_0xe
+jmp _LIFELSE_0x12
+_LIFPOST_0x11:
+_LIFELSE_0x12:
+;[[ int : 0]]
+;------------
+mov rax, 0
+jmp ___in_addr_get_inaddr_pchar.__return
+_LIFELSE_0x10:
+_LWHILECMP_0xd:
+;[[ int : 1]]
+;------------
+mov rax, 1
+and al, 00000001b
+cmp al, 1
+je _LWHILESTART_0xc
+_LWHILEEND_0xe:
+_LFORUPDATE_0xa:
+mov rcx, 1
+mov rbx, QWORD[rbp-40]
+add rbx, rcx
+;------------
+mov QWORD[rbp-40], rbx
+_LFORCMP_0x9:
+;[[ id : i], [ < : <], [ int : 4]]
+mov rcx, 4
+mov rbx, QWORD[rbp-40]
+cmp bl, cl
+setl bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+je _LFORTOP_0x8
+_LFOREND_0xb:
+;[[ id : n], [ >= : >=], [ int : 256]]
+mov rcx, 256
+mov rbx, QWORD[rbp-56]
+cmp bl, cl
+setge bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x13
+;[[ int : 0]]
+;------------
+mov rax, 0
+jmp ___in_addr_get_inaddr_pchar.__return
+jmp _LIFELSE_0x14
+_LIFPOST_0x13:
+_LIFELSE_0x14:
+;[[ id : v], [ * : *], [ int : 256]]
+mov rbx, 256
+mov rcx, QWORD[rbp-16]
+imul rbx, rcx
+;------------
+mov QWORD[rbp-16], rbx
+;[[ id : v], [ * : *], [ id : n]]
+mov rbx, QWORD[rbp-56]
+mov rcx, QWORD[rbp-16]
+imul rbx, rcx
+;------------
+mov QWORD[rbp-16], rbx
+___in_addr_get_inaddr_pchar.__return:
+leave
+ret
+
+;[ function int chdir( [[ Variable: char. pathname @ 8]] ) ]
+
+_int_chdir_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+mov rax, 80
+    syscall
+___int_chdir_pchar.__return:
+leave
+ret
+
+;[ function int creat( [[ Variable: char. pathname @ 8], [ Variable: mode_t mode @ 16]] ) ]
+
+_int_creat_pchar.mode_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: mode_t mode @ 16]
+mov [rbp-16], rsi
+mov rax, 85
+    syscall
+___int_creat_pchar.mode_t__return:
+leave
+ret
+
+;[ function int rmdir( [[ Variable: char. pathname @ 8]] ) ]
+
+_int_rmdir_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+mov rax, 84
+    syscall
+___int_rmdir_pchar.__return:
+leave
+ret
+
+;[ function int mkdir( [[ Variable: char. pathname @ 8], [ Variable: mode_t mode @ 16]] ) ]
+
+_int_mkdir_pchar.mode_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. pathname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: mode_t mode @ 16]
+mov [rbp-16], rsi
+mov rax, 83
+    syscall
+___int_mkdir_pchar.mode_t__return:
+leave
+ret
+
+;[ function int close( [[ Variable: fd_t fd @ 8]] ) ]
+
+_int_close_pfd_t:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+mov rax, 3
+    syscall
+___int_close_pfd_t__return:
+leave
+ret
+
+;[ function fd_t open( [[ Variable: char. fname @ 8], [ Variable: int flags @ 16], [ Variable: mode_t mode @ 24]] ) ]
+
+_fd_t_open_pchar.intmode_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: char. fname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int flags @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: mode_t mode @ 24]
+mov [rbp-24], rdx
+mov rax, 2
+        syscall
+___fd_t_open_pchar.intmode_t__return:
+leave
+ret
+
+;[ function ssize_t write( [[ Variable: fd_t fd @ 8], [ Variable: char. buf @ 16], [ Variable: size_t count @ 24]] ) ]
+
+_ssize_t_write_pfd_tchar.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. buf @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t count @ 24]
+mov [rbp-24], rdx
+mov rax, 1
+        syscall
+___ssize_t_write_pfd_tchar.size_t__return:
+leave
+ret
+
+;[ function ssize_t read( [[ Variable: fd_t fd @ 8], [ Variable: char. buf @ 16], [ Variable: size_t count @ 24]] ) ]
+
+_ssize_t_read_pfd_tchar.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: fd_t fd @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. buf @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t count @ 24]
+mov [rbp-24], rdx
+xor rax, rax
+    syscall
+___ssize_t_read_pfd_tchar.size_t__return:
+leave
+ret
+
+;[ function time_t time( [[ Variable: time_t. tloc @ 8]] ) ]
+
+_time_t_time_ptime_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: time_t. tloc @ 8]
+mov [rbp-8], rdi
+mov rax, 201
+    syscall
+___time_t_time_ptime_t.__return:
+leave
+ret
+
+;[ function int utimes( [[ Variable: char. filename @ 8], [ Variable: timeval_t. utimes @ 16]] ) ]
+
+_int_utimes_pchar.timeval_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. filename @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timeval_t. utimes @ 16]
+mov [rbp-16], rsi
+mov rax, 235
+    syscall
+___int_utimes_pchar.timeval_t.__return:
+leave
+ret
+
+;[ function int settimeofday( [[ Variable: timeval_t. tv @ 8], [ Variable: timezone_t. tz @ 16]] ) ]
+
+_int_settimeofday_ptimeval_t.timezone_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: timeval_t. tv @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timezone_t. tz @ 16]
+mov [rbp-16], rsi
+mov rax, 164
+    syscall
+___int_settimeofday_ptimeval_t.timezone_t.__return:
+leave
+ret
+
+;[ function int setitimer( [[ Variable: int which @ 8], [ Variable: itimerval_t. value @ 16], [ Variable: itimerval_t. ovalue @ 24]] ) ]
+
+_int_setitimer_pintitimerval_t.itimerval_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: int which @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: itimerval_t. value @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: itimerval_t. ovalue @ 24]
+mov [rbp-24], rdx
+mov rax, 38
+    syscall
+___int_setitimer_pintitimerval_t.itimerval_t.__return:
+leave
+ret
+
+;[ function int gettimeofday( [[ Variable: timeval_t. tv @ 8], [ Variable: timezone_t. tz @ 16]] ) ]
+
+_int_gettimeofday_ptimeval_t.timezone_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: timeval_t. tv @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timezone_t. tz @ 16]
+mov [rbp-16], rsi
+mov rax, 96
+    syscall
+___int_gettimeofday_ptimeval_t.timezone_t.__return:
+leave
+ret
+
+;[ function int getitimer( [[ Variable: int which @ 8], [ Variable: itimerval_t. value @ 16]] ) ]
+
+_int_getitimer_pintitimerval_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int which @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: itimerval_t. value @ 16]
+mov [rbp-16], rsi
+mov rax, 36
+        syscall
+___int_getitimer_pintitimerval_t.__return:
+leave
+ret
+
+;[ function int adjtime( [[ Variable: timeval_t. t1 @ 8], [ Variable: timeval_t t2 @ 16]] ) ]
+
+_int_adjtime_ptimeval_t.timeval_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: timeval_t. t1 @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: timeval_t t2 @ 16]
+mov [rbp-16], rsi
+___int_adjtime_ptimeval_t.timeval_t__return:
+leave
+ret
+
+;[ function void srand( [] ) ]
+
+_void_srand_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+mov rax, 0
+call _int_rdrand_p
+push rax
+;[[ fn(x) : [ function int rdrand( [] ) ] ]]
+;------------
+pop rax
+mov [rand_next], rax
+___void_srand_p__return:
+leave
+ret
+
+;[ function int rand( [] ) ]
+
+_int_rand_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ << : <<], [ int : 13], [ ) : )]]
+mov rcx, 13
+mov rbx, [rand_next]
+sal rbx, cl
+mov rcx, [rand_next]
+xor rcx, rbx
+;------------
+mov [rand_next], rcx
+;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ >> : >>], [ int : 17], [ ) : )]]
+mov rcx, 17
+mov rbx, [rand_next]
+sar rbx, cl
+mov rcx, [rand_next]
+xor rcx, rbx
+;------------
+mov [rand_next], rcx
+;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ << : <<], [ int : 5], [ ) : )]]
+mov rcx, 5
+mov rbx, [rand_next]
+sal rbx, cl
+mov rcx, [rand_next]
+xor rcx, rbx
+;------------
+mov [rand_next], rcx
+;[[ id : rand_next]]
+;------------
+mov rbx, [rand_next]
+mov rax, rbx
+jmp ___int_rand_p__return
+___int_rand_p__return:
+leave
+ret
+
+;[ function int rdrand( [] ) ]
+
+_int_rdrand_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+rdrand rax
+___int_rdrand_p__return:
+leave
+ret
+
+;[ function double abs( [[ Variable: double x @ 8]] ) ]
+
+_double_abs_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+movsd xmm1, xmm0
+  movsd xmm2, [M_MINZERO]
+  xorpd xmm1, xmm2
+  andpd xmm0, xmm1
+___double_abs_pdouble__return:
+leave
+ret
+
+;[ function int abs( [[ Variable: int x @ 8]] ) ]
+
+_int_abs_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int x @ 8]
+mov [rbp-8], rdi
+mov rax, rdi
+  sar rdi, 63
+  xor rax, rdi
+  sub rax, rdi
+___int_abs_pint__return:
+leave
+ret
+
+;[ function int floor( [[ Variable: double x @ 8]] ) ]
+
+_int_floor_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+___int_floor_pdouble__return:
+leave
+ret
+
+;[ function int ceil( [[ Variable: double x @ 8]] ) ]
+
+_int_ceil_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+  inc rax
+___int_ceil_pdouble__return:
+leave
+ret
+
+;[ function int round( [[ Variable: double x @ 8]] ) ]
+
+_int_round_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvtsd2si rax, xmm0
+___int_round_pdouble__return:
+leave
+ret
+
+;[ function double pow( [[ Variable: double base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_double_pow_pdoubleint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: double base @ 8]
+movsd [rbp-8], xmm0
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rdi
+dec rdi
+    _double_pow_pdoubleint_flp:
+    mulsd xmm0, xmm0
+    dec rdi
+    jnz _int_pow_pintint_flp
+___double_pow_pdoubleint__return:
+leave
+ret
+
+;[ function double pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_double_pow_pintint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rsi
+;[[ id : base]]
+;------------
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+;[[ id : exp]]
+;------------
+mov rbx, QWORD[rbp-16]
+mov rsi, rbx
+mov rax, 0
+call _int_pow_pintint
+cvtsi2sd xmm0, rax
+___double_pow_pintint__return:
+leave
+ret
+
+;[ function int pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_int_pow_pintint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rsi
+mov rax, rdi
+  dec rsi
+  _int_pow_pintint_flp:
+  mul rdi
+  dec rsi
+  jnz _int_pow_pintint_flp
+___int_pow_pintint__return:
+leave
+ret
+
+;[ function int sqrt( [[ Variable: int a @ 8]] ) ]
+
+_int_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+  sqrtsd xmm0, xmm0
+  cvttsd2si rax, xmm0
+___int_sqrt_pint__return:
+leave
+ret
+
+;[ function double sqrt( [[ Variable: int a @ 8]] ) ]
+
+_double_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+    sqrtsd xmm0, xmm0
+___double_sqrt_pint__return:
+leave
+ret
+
+;[ function double sqrt( [[ Variable: double a @ 8]] ) ]
+
+_double_sqrt_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
+movsd [rbp-8], xmm0
+sqrtsd xmm0, xmm0
+___double_sqrt_pdouble__return:
+leave
+ret
+
 ;[ function void print( [[ Variable: int. a @ 8], [ Variable: int len @ 16]] ) ]
 
 _void_print_pint.int:
@@ -1238,10 +2073,10 @@ sete bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x6
-;[[ id : STRING_CONSTANT_6]]
+jne _LIFPOST_0x2
+;[[ id : STRING_CONSTANT_5]]
 ;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1249,12 +2084,12 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pint.int__return
-jmp _LIFELSE_0x7
-_LIFPOST_0x6:
-_LIFELSE_0x7:
-;[[ id : STRING_CONSTANT_7]]
+jmp _LIFELSE_0x3
+_LIFPOST_0x2:
+_LIFELSE_0x3:
+;[[ id : STRING_CONSTANT_6]]
 ;------------
-mov rbx, STRING_CONSTANT_7
+mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
 ;[[ int : 0]]
 ;------------
@@ -1264,11 +2099,11 @@ call _void_printf_pchar.int
 ;[[ int : 0]]
 ;------------
 mov QWORD[rbp-24], 0
-jmp _LFORCMP_0x9
-_LFORTOP_0x8:
-;[[ id : STRING_CONSTANT_8]]
+jmp _LFORCMP_0x5
+_LFORTOP_0x4:
+;[[ id : STRING_CONSTANT_7]]
 ;------------
-mov rbx, STRING_CONSTANT_8
+mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
 ;[[ id : i]]
@@ -1283,13 +2118,13 @@ push rbx
 pop rsi
 mov rax, 0
 call _void_printf_pchar.int
-_LFORUPDATE_0xa:
+_LFORUPDATE_0x6:
 mov rcx, 1
 mov rbx, QWORD[rbp-24]
 add rbx, rcx
 ;------------
 mov QWORD[rbp-24], rbx
-_LFORCMP_0x9:
+_LFORCMP_0x5:
 ;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
 mov rcx, 1
 mov rbx, QWORD[rbp-16]
@@ -1301,11 +2136,11 @@ setl cl
 mov rax, rcx
 and al, 00000001b
 cmp al, 1
-je _LFORTOP_0x8
-_LFOREND_0xb:
-;[[ id : STRING_CONSTANT_9]]
+je _LFORTOP_0x4
+_LFOREND_0x7:
+;[[ id : STRING_CONSTANT_8]]
 ;------------
-mov rbx, STRING_CONSTANT_9
+mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
 ;[[ id : len], [ - : -], [ int : 1]]
@@ -1362,10 +2197,10 @@ mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x4
-;[[ id : STRING_CONSTANT_4]]
+jne _LIFPOST_0x0
+;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1373,12 +2208,12 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
-jmp _LIFELSE_0x5
-_LIFPOST_0x4:
-_LIFELSE_0x5:
-;[[ id : STRING_CONSTANT_5]]
+jmp _LIFELSE_0x1
+_LIFPOST_0x0:
+_LIFELSE_0x1:
+;[[ id : STRING_CONSTANT_4]]
 ;------------
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -1426,9 +2261,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;[[ id : STRING_CONSTANT_3]]
+;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rbx, STRING_CONSTANT_3
+mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1448,9 +2283,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_2]]
+;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rbx, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1484,9 +2319,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_1]]
+;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rbx, STRING_CONSTANT_1
+mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -1760,219 +2595,16 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 96
+sub rsp, 24
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 100], [ * : *], [ id : int]]
-;------------
-mov rdi, 800
-mov rax, 0
-call _void._malloc_psize_t
-push rax
-;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-24], rax
-;[[ int : 100], [ * : *], [ id : int]]
-;------------
-mov rdi, 800
-mov rax, 0
-call _void._malloc_psize_t
-push rax
-;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-32], rax
-;[[ int : 100], [ * : *], [ id : int]]
-;------------
-mov rdi, 800
-mov rax, 0
-call _void._malloc_psize_t
-push rax
-;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-40], rax
-;[[ & : &], [ id : test]]
-lea rbx, [rbp-72]
-;------------
-mov rdi, rbx
-;[[ int : 1]]
-;------------
-mov rsi, 1
-;[[ int : 2]]
-;------------
-mov rdx, 2
-;[[ int : 3]]
-;------------
-mov rcx, 3
-mov rax, 0
-call _void_Vec3i_pVec3i.intintint
-;[[ int : 0]]
-;------------
-mov QWORD[rbp-80], 0
-jmp _LFORCMP_0x1
-_LFORTOP_0x0:
-mov rbx, [rbp-24]
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-80]
-mov rcx, r10
-lea rbx, [rbx+rcx*8]
-push rbx
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-80]
-mov rcx, r10
-pop rbx
-mov [rbx], rcx
-mov rbx, [rbp-32]
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-80]
-mov rcx, r10
-lea rbx, [rbx+rcx*8]
-push rbx
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-80]
-mov rcx, r10
-pop rbx
-mov [rbx], rcx
-_LFORUPDATE_0x2:
-mov rcx, 1
-mov rbx, QWORD[rbp-80]
-add rbx, rcx
-;------------
-mov QWORD[rbp-80], rbx
-_LFORCMP_0x1:
-;[[ id : i], [ < : <], [ int : 100]]
-mov rcx, 100
-mov rbx, QWORD[rbp-80]
-cmp bl, cl
-setl bl
-;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-je _LFORTOP_0x0
-_LFOREND_0x3:
-;[[ int : 232]]
-;------------
-mov QWORD[rbp-88], 232
-;[[ & : &], [ id : test]]
-lea rbx, [rbp-72]
-;------------
-mov rdi, rbx
-mov rax, 0
-call _void_print_pVec3i.
-;[[ @ : @], [ ( : (], [ & : &], [ id : t2], [ ) : )]]
-lea rbx, [rbp-88]
-mov rcx, [rbx]
-;------------
-mov rdi, rcx
-mov rax, 0
-call _void_print_pint
-;[[ id : arr1]]
-;------------
-mov rdi, QWORD[rbp-24]
-mov rax, 0
-call _void_free_pvoid.
-;[[ id : arr2]]
-;------------
-mov rdi, QWORD[rbp-32]
-mov rax, 0
-call _void_free_pvoid.
-;[[ id : arr3]]
-;------------
-mov rdi, QWORD[rbp-40]
-mov rax, 0
-call _void_free_pvoid.
 ;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
-leave
-ret
-
-;[ function void print( [[ Variable: Vec3i. this @ 8]] ) ]
-
-_void_print_pVec3i.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: Vec3i. this @ 8]
-mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_0]]
-;------------
-mov rbx, STRING_CONSTANT_0
-mov rdi, rbx
-;[[ id : this], [ -> : ->], [ T?T : x]]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rbx, [rbx]
-;------------
-mov rsi, rbx
-;[[ id : this], [ -> : ->], [ T?T : y]]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov rbx, [rbx]
-;------------
-mov rdx, rbx
-;[[ id : this], [ -> : ->], [ T?T : z]]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+16]
-mov rbx, [rbx]
-;------------
-mov rcx, rbx
-mov rax, 0
-call _void_printf_pchar.voidvoidvoid
-___void_print_pVec3i.__return:
-leave
-ret
-
-;[ function void Vec3i( [[ Variable: Vec3i. this @ 8], [ Variable: int x @ 16], [ Variable: int y @ 24], [ Variable: int z @ 32]] ) ]
-
-_void_Vec3i_pVec3i.intintint:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-;Load Parameter: [ Variable: Vec3i. this @ 8]
-mov [rbp-8], rdi
-;Load Parameter: [ Variable: int x @ 16]
-mov [rbp-16], rsi
-;Load Parameter: [ Variable: int y @ 24]
-mov [rbp-24], rdx
-;Load Parameter: [ Variable: int z @ 32]
-mov [rbp-32], rcx
-mov rbx, [rbp-8]
-lea rbx, [rbx+0]
-push rbx
-;[[ id : x]]
-;------------
-mov rcx, QWORD[rbp-16]
-pop rbx
-mov [rbx], rcx
-mov rbx, [rbp-8]
-lea rbx, [rbx+8]
-push rbx
-;[[ id : y]]
-;------------
-mov rcx, QWORD[rbp-24]
-pop rbx
-mov [rbx], rcx
-mov rbx, [rbp-8]
-lea rbx, [rbx+16]
-push rbx
-;[[ id : z]]
-;------------
-mov rcx, QWORD[rbp-32]
-pop rbx
-mov [rbx], rcx
-___void_Vec3i_pVec3i.intintint__return:
 leave
 ret
 
@@ -1984,5 +2616,7 @@ CMAIN:
     mov QWORD[HvptrDest_0], 0
 mov QWORD[nullptr], HvptrDest_0
 mov QWORD[null], 0
+mov QWORD[MAXUINT], -1
+mov QWORD[rand_next], 1
     call _int_main_pintchar..
     ret

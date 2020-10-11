@@ -362,7 +362,7 @@ class Compiler:
                 name = self.current_token.value
                 var = Variable(t,name,glob=False,offset=size,isptr=t.ptrdepth>0,signed=t.signed)
                 members.append(var)
-                size+=t.size(0)
+                size+=t.csize()
                 self.advance()
                 if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
 
@@ -374,13 +374,12 @@ class Compiler:
                     members.append(f)
                     gv.name = f"{id}_{gv.name}"
                     #f.name = f"{id}_{gv.name}"
-                    self.globals.append(gv)
+                    #self.globals.append(gv)
                     #self.functions.append(f)
 
         self.types.remove(prototypeType)
         actualType = DType(id,size,members,0,True)
         self.types.append(actualType)
-
 
     def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentfname = ftup[1]
