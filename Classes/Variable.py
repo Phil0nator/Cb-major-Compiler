@@ -21,7 +21,7 @@ class Variable:
         self.mutable = mutable          # bool: is constant or mutable
         self.signed = signed            # bool: is signed (redundant to DType.signed)
         self.isStackarr = isStackarr    # bool: is stack based array
-        self.stackarrsize = t.size(0)   # if it's a stack based array, how big is it?
+        self.stackarrsize = t.csize()   # if it's a stack based array, how big is it?
         self.stackdims = isStackarr     # if it's a stack based array, what are the dimentions
         self.stacksizes = []            # ^ sizes
 

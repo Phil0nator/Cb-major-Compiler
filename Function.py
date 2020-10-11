@@ -73,7 +73,7 @@ class Function:
         v.offset = self.stackCounter
         #self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8: self.stackCounter += 8
-        else: self.stackCounter += v.t.size(0)
+        else: self.stackCounter += v.t.csize()
         self.variables.append(v)
 
 
@@ -768,7 +768,7 @@ class Function:
                         elif( isinstance(a.accessor, Variable) ):
                             
                             result = ralloc(False)
-                            instr+=f"lea {result}, [rbp-{a.accessor.offset}]\n"
+                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize-8}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
@@ -1118,7 +1118,6 @@ class Function:
 
         self.addVariable(Variable(t,name))
         var = self.variables[len(self.variables)-1]
-        
         var.isptr = t.ptrdepth>0
         if(not var.isptr and var.t.members!=None):
             for v in var.t.members:
@@ -1399,7 +1398,7 @@ class Function:
         
         id = self.current_token.value
 
-        if (self.compiler.isType(id)):
+        if (self.compiler.isType(id) and self.tokens[self.ctidx+1].tok != T_OPENP):
             self.buildDeclaration() # declaration
         elif (self.getVariable(id)!=None):
             # assignment or blank call

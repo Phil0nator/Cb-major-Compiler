@@ -3,6 +3,26 @@
 #include "include/printf.k"
 #include "include/string.k"
 
+struct Vec3i{
+    int x;
+    int y;
+    int z;
+    int padd;
+}
+
+function void Vec3i(Vec3i *this, int x, int y, int z){
+    this->x = x;
+    this->y = y;
+    this->z = z;
+}
+
+function void print(Vec3i *this){
+
+    printf("[ %i, %i, %i ]\n", this->x, this->y, this->z);
+
+}
+
+
 
 function int main(int argc, char** argv){
 
@@ -10,27 +30,15 @@ function int main(int argc, char** argv){
     int* arr2 = malloc(100*int);
     int* arr3 = malloc(100*int);
 
+    Vec3i test;
+    Vec3i(&test, 1,2,3);
+
     for(int i = 0 ; i < 100; i++){
         arr1[i] = i;
         arr2[i] = i;
     }
 
-
-    for(int i = 0 ; i < 100;i=i+4){
-
-        __simd 4 int (arr1, i) { 
-        
-        (+, arr2, i) 
-
-        } (arr3, i);
-
-
-    }
-
-
-
-    print(arr3, 100);
-
+    
 
     free(arr1);
     free(arr2);
