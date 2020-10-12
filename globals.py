@@ -705,9 +705,6 @@ def loadToReg(reg, value):
             #TODO:
             # SEE IF THIS IS FINE
             return f"movq {reg}, {valueOf(value)} ;<-\n" 
-
-
-
         return f"mov {reg}, {valueOf(value)}\n"
     
     

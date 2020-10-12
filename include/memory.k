@@ -53,7 +53,7 @@ function void free(void *ptr){
 
 }
 
-function void memcpy(void *dest, void* source, int bytes){
+function void memcpy(void *dest, void* source, size_t bytes){
 
     __asm{"
     ; rax = final dest:
@@ -69,6 +69,18 @@ function void memcpy(void *dest, void* source, int bytes){
     
     "}
 
+}
+
+function void avx_memcpy(void* dest, void* source, size_t bytes){
+
+    int offset = bytes%32;
+    size_t avxcount = (bytes-offset)/4;
+    for(int i = 0; i < avxcount;i=i+4){
+        __simd 4 char (source, i) {} (dest, i);
+    }
+    if(offset != 0){
+        memcpy(dest+avxcount, source+avxcount, offset);
+    }
 }
 
 function void strcpy(char* dest, char* source){
