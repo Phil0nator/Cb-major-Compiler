@@ -780,7 +780,7 @@ class Function:
                         elif( isinstance(a.accessor, Variable) ):
                             
                             result = ralloc(False)
-                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize-8}]\n"
+                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
@@ -1120,7 +1120,7 @@ class Function:
         if(var.t.ptrdepth > 0):
             params = f"mov {rdi}, {valueOf(var)}\n"
         else:
-            params = f"lea {rdi}, [rbp-{var.offset+var.stackarrsize}]\n"
+            params = f"lea {rdi}, [rbp-{var.offset}]\n"
         instructions = f"{params}call {call_label.replace(':','')}\n"
         return instructions
 
@@ -1143,7 +1143,7 @@ class Function:
             for v in var.t.members:
                 if(isinstance(v, Variable)):
                     
-                    self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+v.offset,isptr=v.isptr,signed=v.signed))
+                    self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+var.t.csize()-v.offset,isptr=v.isptr,signed=v.signed))
 
         sizes = [1]
         isarr = False
@@ -1284,8 +1284,9 @@ class Function:
                 if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
                 member = self.current_token.value
                 if(not v.t.hasMember(member)): throw(UnkownIdentifier(self.current_token))
-                v = self.getVariable(f"{v.name}.{member}")
-                offset = v.offset
+                memv = self.getVariable(f"{v.name}.{member}")
+                offset = memv.offset
+                v = memv
                 self.advance()
                 isMember = True
 
