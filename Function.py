@@ -698,9 +698,12 @@ class Function:
 
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
-                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt() and op == "*"): # optimize for semi constexpr
+                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt() and op == "*" or op == "/"): # optimize for semi constexpr
                         if(canShiftmul(b.accessor)):
-                            instr+=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                            if(op == "*"):
+                                instr+=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                            else:
+                                instr+=f"shr {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
                             stack.append(a)
 
                         else:
@@ -708,6 +711,10 @@ class Function:
                             stack.append(apendee)
                             instr+=newinstr
                             o = newt.copy()
+
+
+
+
                     else:
                         if(op == T_PTRACCESS):
 
@@ -1120,7 +1127,7 @@ class Function:
         if(var.t.ptrdepth > 0):
             params = f"mov {rdi}, {valueOf(var)}\n"
         else:
-            params = f"lea {rdi}, [rbp-{var.offset}]\n"
+            params = f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n"
         instructions = f"{params}call {call_label.replace(':','')}\n"
         return instructions
 

@@ -27,11 +27,11 @@ function void appendString(String* this, char* other){
         print("Bad realloc");
         
     }
-
-    char* ostart = newvalue+ol-3;
+    
+    char* ostart = newvalue+this->len;
     memcpy(ostart, other, ol);
     this->value = newvalue;
-
+    this->len = this->len + ol;
 }
 
 function void freeString(String* this){
