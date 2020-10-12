@@ -331,6 +331,7 @@ class Function:
         self.addline(f"{endlabel}:")
         self.advance()
 
+
         #clean up var
         if(len(self.continues)>0):
             if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
@@ -552,7 +553,6 @@ class Function:
                     result =  norm_parameter_registers[normused]
                 ec = EC.ExpressionComponent(result, fn.parameters[i].t.copy(),token=self.current_token)
                 instructions+=self.evaluateRightsideExpression(ec)
-                normused+=1
                 
                 if(fn.parameters[i].t.csize() != 8):
                     if(fn.parameters[i].t.csize() == 1):
@@ -561,7 +561,9 @@ class Function:
                         instructions += f"mov {dwordize(norm_parameter_registers[normused])}, {dwordize(result)}\n"
                     elif(fn.parameters[i].t.csize() == 2):
                         instructions += f"mov {small_version[norm_parameter_registers[normused]]}, {small_version[result]}\n"
+                    instructions+=maskset(norm_parameter_registers[normused],fn.parameters[i].t.csize())
                     rfree(result)
+                normused+=1
 
             if(self.current_token.tok == ","):
                     self.advance()
@@ -652,7 +654,6 @@ class Function:
             
             if(needLoadC): instr+=loadToReg(creg, caster.accessor)
             if(needLoadCO): instr+=loadToReg(coreg, castee.accessor)
-
             cst=castABD(caster,castee,creg,coreg,newcoreg)
             #cst represents if actual extra instructions are needed to cast
             if(cst!=False):
@@ -1018,6 +1019,7 @@ class Function:
                         else:
                             rfree(addr)
                             idxinstr+=f"mov {setSize(addr, ot.csize())}, [{addr}]\n"
+                            if(ot.csize() != 8): idxinstr += maskset(addr, ot.csize())
                             idxinstr+=f"push {addr}\n"
                         instructions+=idxinstr
                         exprtokens.append(Token(T_IDXER,ot,start,self.current_token.start.copy()))
@@ -1051,6 +1053,7 @@ class Function:
                         else:
                             rfree(addr)
                             idxinstr+=f"mov {setSize(addr, ot.csize())}, [{addr}]\n"
+                            if(ot.csize() != 8): idxinstr += maskset(addr, ot.csize())
                             idxinstr+=f"push {addr}\n"
                         instructions+=idxinstr
                         exprtokens.append(Token(T_IDXER,ot,start,self.current_token.start.copy()))

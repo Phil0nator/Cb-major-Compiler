@@ -304,8 +304,14 @@ def rfreeAll():
         norm_scratch_registers_inuse[i]=False
 
 # bitmasks for boolean values
-
+# 4 = 4 bytes = 32 bits = 4 nibs
 ensure_boolean = "and al, 00000001b\n"
+def maskset(reg, size):
+    if(size == 8): return ""
+    if(size == 4): return f"and {reg}, 0xffffffff\n"
+    if(size == 2): return f"and {reg}, 0xffff\n"
+    if(size == 1): return f"and {reg}, 0xff\n"
+
 check_fortrue = f"{ensure_boolean}cmp al, 1\n"
 
 
@@ -537,7 +543,8 @@ def getConstantReserver(t):
 
 def getHeapReserver(t):
     if t.isptr: return "RESQ 1"
-    return "RESB %s"%t.t.size(0)
+    if(t.t.csize()<=8): return "RESQ 1"
+    return "RESB %s"%t.t.csize()
 
 def getSizeSpecifier(t):
     return "QWORD"
@@ -912,12 +919,14 @@ def doOperation(t, areg, breg, op, signed = False):
 def castABD(a, b, areg, breg, newbreg):
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
+            out = maskset(newbreg,a.type.csize())
             if(a.type.csize() == 1 and b.type.csize() == 8):
-                return f"mov {boolchar_version[newbreg]}, {boolchar_version[breg]}\n"
+                out+= f"mov {boolchar_version[newbreg]}, {boolchar_version[breg]}\n"
             elif(a.type.csize() == 4 and b.type.csize() == 8):
-                return f"mov {dwordize(newbreg)}, {dwordize(breg)}\n"
+                out+= f"mov {dwordize(newbreg)}, {dwordize(breg)}\n"
             elif(a.type.csize() == 2 and b.type.csize() == 8):
-                return f"mov {small_version[newbreg]}, {small_version[breg]}\n"
+                out+= f"mov {small_version[newbreg]}, {small_version[breg]}\n"
+            return out
         return False
     if(a.type.isflt() and not b.type.isflt()):
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
