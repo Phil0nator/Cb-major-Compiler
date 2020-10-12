@@ -71,6 +71,21 @@ function void memcpy(void *dest, void* source, int bytes){
 
 }
 
+function void strcpy(char* dest, char* source){
+    __asm{"
+    
+    _void_strcpy_pchar.char._flp:
+    mov bl, [rsi]
+    cmp bl, 0
+    mov [rdi], bl
+    jnz _void_strcpy_pchar.char._flp
+    
+    
+    
+    "}
+}
+
+
 function size_t strlen(char *str){
 
     __asm{"

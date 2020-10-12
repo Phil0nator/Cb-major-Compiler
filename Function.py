@@ -75,7 +75,8 @@ class Function:
         v.offset = self.stackCounter
         #self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8: self.stackCounter += 8
-        else: self.stackCounter += v.t.csize()
+        else: 
+            self.stackCounter += v.t.csize()+8
         self.variables.append(v)
 
 
@@ -698,19 +699,37 @@ class Function:
 
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
-                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt() and op == "*" or op == "/"): # optimize for semi constexpr
-                        if(canShiftmul(b.accessor)):
-                            if(op == "*"):
-                                instr+=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
-                            else:
-                                instr+=f"shr {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
-                            stack.append(a)
+                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr
+                        newinstr = None
+                        if(b.accessor == 0 and op not in  ["/"] and op not in signed_comparisons):
+                            apendee = a
+                            newinstr = ""
+                            newt = a.type.copy()
+                        if(op == "*" or op == "/"):
+                            
+                            if(canShiftmul(b.accessor)):
+                                if(op == "*"):
+                                    newinstr=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                                else:
+                                    newinstr=f"shr {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                                apendee = a
+                            newt = a.type.copy()
 
-                        else:
-                            newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
-                            stack.append(apendee)
-                            instr+=newinstr
-                            o = newt.copy()
+                        elif(op == "+" or op == "-"):
+
+                            if(b.accessor == 1):
+                                cmd = "dec"
+                                if(op == "+"): cmd = "inc"
+                                newinstr = f"{cmd} {valueOf(a.accessor)}\n"
+                                apendee = (a)
+                            newt = a.type.copy()
+                            
+
+
+                        if(newinstr == None): newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
+                        stack.append(apendee)
+                        instr+=newinstr
+                        o = newt.copy()
 
 
 
@@ -1151,12 +1170,37 @@ class Function:
                 if(isinstance(v, Variable)):
                     
                     self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+var.t.csize()-v.offset,isptr=v.isptr,signed=v.signed))
+                    self.addline(f"mov {valueOf(self.variables[-1])}, 0") # initialize to null
+            
+            if(self.current_token.tok == T_OPENP):
+                # constructor
+                self.advance()
+                fnt = var.t.constructor
+                if(fnt == None): throw(UnkownFunction(self.current_token,f"{var.t.name}.constructor",[None]))
+                call_label = fncall(fnt)
+                self.addline(f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n")
+                normsused = 1
+                sseused = 0
+                for p in fnt.parameters[1:]:
+                    if(p.t.isflt()):
+                        self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[sseused], p.t.copy() )))
+                        sseused+=1
+                    else:
+                        self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normsused], p.t.copy() )))
+                        normsused+=1
+                if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
+                self.advance()
+                self.addline(call_label)
+                self.checkSemi()
+                self.destructor_text+= self.createDestructor(var)
+                return
 
         sizes = [1]
         isarr = False
         if(not isIntrinsic(var.t.name) and var.t.destructor != None):
             
             self.destructor_text+= self.createDestructor(var)
+
 
         while self.current_token.tok == "[":
             isarr=True

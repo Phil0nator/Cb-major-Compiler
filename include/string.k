@@ -5,19 +5,16 @@ struct String{
 
     destructor{
         free(this->value);
-    }
+    };
+
+    constructor(char* starter){
+        int l = strlen(starter);
+        this->len=l;
+        this->value = malloc(l);
+        memcpy(this->value, starter, l);
+    };
 
 };
-
-function void createString(String* dest, char* starter){
-
-    int l = strlen(starter);
-    dest->len=l;
-    dest->value = malloc(l);
-    memcpy(dest->value, starter, l);
-
-
-}
 
 function void appendString(String* this, char* other){
 

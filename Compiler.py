@@ -396,12 +396,44 @@ class Compiler:
                     destructor = fn
                     self.advance()
                     self.functions.append(fn)
+                    self.globals.append(Variable(VOID.copy(),name, glob=True))
+                
+                elif(self.current_token.value == "constructor"):
+                    self.advance()
+                    if(self.current_token.tok != "("): throw(ExpectedToken(self.current_token, "("))
+                    name = f"i{id}"
+                    parameters = [Variable(prototypeType,"this",isptr=True)]
+                    fntks = []
+                    while self.current_token.tok != ")":
+                        self.advance()
+                        t = self.checkType()
+                        if(t == None):
+                            throw(UnkownType(self.current_token))
+                        if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+                        pname = self.current_token.value
+                        parameters.append(Variable(t,pname))
+                        self.advance()
+                    self.advance()
+                    if(self.current_token.tok != "{"): throw(ExpectedToken(self.current_token, "{"))
+                    self.advance()
+                    while(self.current_token.tok != "}"):
+                        fntks.append(self.current_token)
+                        self.advance()
+                    fntks.append(self.current_token)
+                    
+                    fn = Function(name,parameters,VOID.copy(),self,fntks)
+                    constructor = fn
+                    self.functions.append(fn)
+                    self.globals.append(Variable(VOID.copy(),name, glob=True))
 
 
         self.types.remove(prototypeType)
         actualType = DType(id,size,members,0,True, destructor=destructor,constructor=constructor)
-        if(destructor!=None): actualType.destructor.parameters[0].t = actualType
-        if(constructor!=None): actualType.constructor.parameters[0].t = actualType
+        actualTypeptr = DType(id,size)
+        actualTypeptr.load(actualType)
+        actualTypeptr.ptrdepth+=1
+        if(destructor!=None): actualType.destructor.parameters[0].t.load(actualTypeptr)
+        if(constructor!=None): actualType.constructor.parameters[0].t.load( actualTypeptr)
         self.types.append(actualType)
 
     def compile(self, ftup):            # main function to perform Compiler tasks

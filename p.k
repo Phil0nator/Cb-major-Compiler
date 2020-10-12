@@ -3,17 +3,8 @@
 
 function int main(int argc, char** argv){
 
-    String str;
-    createString(&str, "This is a string. ");
-    appendString(&str, "This has been appended. ");
-    appendString(&str, "This too.");
-
-    print(str.value);
-
+    char* strtest = getString("Give me a string: ");
+    print(strtest);
     
-
-
-    print((argc*64)/64);
-
     return 0;
 }

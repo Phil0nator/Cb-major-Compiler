@@ -33,7 +33,7 @@ class DType:
         return None
 
     def load(self, other): # accept properties of another DType object
-        self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed)
+        self.__init__(other.name,other.s,other.members,other.ptrdepth,other.signed,other.destructor,other.constructor)
 
     def copy(self): # duplicate
         return DType(self.name,self.s,members=self.members,ptrdepth=self.ptrdepth, signed=self.signed, constructor=self.constructor, destructor=self.destructor)

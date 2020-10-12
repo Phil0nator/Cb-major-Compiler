@@ -133,6 +133,69 @@ small_version = {
 
 }
 
+normal_size = {
+
+
+    "al":rax,
+    "ax":rax,
+    "eax":rax,
+    "rax":rax,
+    "bl":rbx,
+    "bx":rbx,
+    "ebx":rbx,
+    "rbx":rbx,
+    "cl":rcx,
+    "cx":rcx,
+    "ecx":rcx,
+    rcx:rcx,
+    "dl":rdx,
+    "dx":rdx,
+    "edx":rdx,
+    "rdx":rdx,
+    r8b:r8,
+    r9b:r9,
+    r10b:r10,
+    r11b:r11,
+    r12b:r12,
+    r13b:r13,
+    r14b:r14,
+    r15b:r15,
+    "r8w":r8,
+    "r9w":r9,
+    "r10w":r10,
+    "r11w":r11,
+    "r12w":r12,
+    "r13w":r13,
+    "r14w":r14,
+    "r15w":r15,
+    "r8d":r8,
+    "r9d":r9,
+    "r10d":r10,
+    "r11d":r11,
+    "r12d":r12,
+    "r13d":r13,
+    "r14d":r14,
+    "r15d":r15,
+    r8:"r8",
+    r9:"r9",
+    r10:"r10",
+    r11:"r11",
+    r12:"r12",
+    r13:"r13",
+    r14:"r14",
+    r15:"r15",
+    "sil":rsi,
+    "dil":rdi,
+    "si":rsi,
+    "di":rdi,
+    "esi":rsi,
+    "edi":rdi,
+    rsi:rsi,
+    rdi:rdi
+
+}
+
+
 # parameters:
 
 norm_parameter_registers = [
@@ -477,7 +540,6 @@ def getHeapReserver(t):
     return "RESB %s"%t.t.size(0)
 
 def getSizeSpecifier(t):
-
     return "QWORD"
 
 def createIntrinsicConstant(variable):
@@ -527,6 +589,7 @@ def setSize(reg, size):
     if(size == 1): return boolchar_version[reg]
     elif(size == 2): return small_version[reg]
     elif(size == 4): return dword_version[reg]
+    elif(size == 8): return normal_size[reg]
     return reg
 
 
@@ -620,6 +683,11 @@ def dwordize(value):
         return valueOf(value)
     return dword_version[value]
 
+
+
+
+
+
 def loadToReg(reg, value):
     
     if(reg == value):return ""
@@ -637,13 +705,19 @@ def loadToReg(reg, value):
             #TODO:
             # SEE IF THIS IS FINE
             return f"movq {reg}, {valueOf(value)} ;<-\n" 
+
+
+        if(isinstance(value, Variable)):
+            return f"mov {normal_size[reg]}, {valueOf(value)}\n"
+
         return f"mov {reg}, {valueOf(value)}\n"
+    
+    
     elif(isinstance(reg, Variable)):
         
         if(reg.t.isflt()):
             
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
-
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
 # determine if unkown type x refers to float value
