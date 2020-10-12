@@ -17,6 +17,8 @@ class ExpressionComponent:
         self.constint = constint # if the object represents a constant integer value: bool
         self.token = token # the token from which the compenent was originated
 
+        self.memory_location = None
+
     def isRegister(self): #bool
         return isinstance(self.accessor, str) and self.accessor in config.REGISTERS  
 

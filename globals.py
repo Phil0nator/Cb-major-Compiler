@@ -451,13 +451,13 @@ def functionlabel(fn):
     return out
 
 
-def function_closer(name):
+def function_closer(name, destructions):
     return """__%s__return:
-
+%s
 leave
 ret
 
-"""%(name)
+"""%(name, destructions)
 # get size specifier for address
 def psizeof(v):
     if v.isptr: return "qword"
@@ -534,7 +534,7 @@ def setSize(reg, size):
 #compiletime:
 def isIntrinsic(q):
     for t in INTRINSICS:
-        if q == t.name:
+        if config.GlobalCompiler.Tequals(t.name, q):
             return True
     return False
 

@@ -78,6 +78,8 @@ KEYWORDS = [
     "else",
     
     "function",
+    "constructor",
+    "destructor",
     "struct",
     "const",
     "unsigned",

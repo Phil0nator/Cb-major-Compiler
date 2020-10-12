@@ -3,6 +3,10 @@ struct String{
     char* value;
     int len;
 
+    destructor{
+        free(this->value);
+    }
+
 };
 
 function void createString(String* dest, char* starter){

@@ -42,7 +42,7 @@ class Compiler:
 
 
         self.functions = []             # all Function objects
-         
+        
         self.types = []                 # all datatypes: DType
         self.tdefs = []                 # typedefs listed as (old, new):(DType,DType)
         
@@ -352,6 +352,10 @@ class Compiler:
         size = 0
         members = []
 
+        postadders = []
+
+        destructor = None
+        constructor = None
 
         while(self.current_token.tok != T_CLSSCOPE):
             self.advance()
@@ -376,9 +380,28 @@ class Compiler:
                     #f.name = f"{id}_{gv.name}"
                     #self.globals.append(gv)
                     #self.functions.append(f)
+            
+                elif(self.current_token.value == "destructor"):
+                    self.advance()
+                    if(self.current_token.tok != "{"): throw(ExpectedToken(self.current_token, "{"))
+                    self.advance()
+                    name = f"x{id}"
+                    parameters = [Variable(prototypeType,"this",isptr=True)]
+                    fntks = []
+                    while(self.current_token.tok != "}"):
+                        fntks.append(self.current_token)
+                        self.advance()
+                    fntks.append(self.current_token)
+                    fn = Function(name,parameters,VOID.copy(), self, fntks)
+                    destructor = fn
+                    self.advance()
+                    self.functions.append(fn)
+
 
         self.types.remove(prototypeType)
-        actualType = DType(id,size,members,0,True)
+        actualType = DType(id,size,members,0,True, destructor=destructor,constructor=constructor)
+        if(destructor!=None): actualType.destructor.parameters[0].t = actualType
+        if(constructor!=None): actualType.constructor.parameters[0].t = actualType
         self.types.append(actualType)
 
     def compile(self, ftup):            # main function to perform Compiler tasks

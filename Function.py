@@ -44,6 +44,8 @@ class Function:
         self.current_token = self.tokens[0]     # current token
         self.ctidx = 0                          # corrent token index
 
+        self.destructor_text = ""
+
     def advance(self):                              # advance token
         self.ctidx+=1
         self.current_token = self.tokens[self.ctidx]
@@ -56,7 +58,7 @@ class Function:
         self.advance()
 
     def getClosingLabel(self):                      # get raw asm label used to denote the end of this function
-        return function_closer(self.getCallingLabel()).split("\n")[0]
+        return function_closer(self.getCallingLabel(),None).split("\n")[0]
 
     def getVariable(self, q):                       # get a variable of name q from first local then global scope if necessary
 
@@ -176,7 +178,7 @@ class Function:
 
     def createClosing(self):                    # create end of the function
 
-        self.addline(function_closer(self.getCallingLabel()))
+        self.addline(function_closer(self.getCallingLabel(), self.destructor_text))
 
     def buildReturnStatement(self):             # build a return statement
         self.advance()
@@ -698,7 +700,14 @@ class Function:
                         stack.append(calculateConstant(a,b,op))
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt() and op == "*"): # optimize for semi constexpr
                         if(canShiftmul(b.accessor)):
-                            instr+=f"shl {b.accessor}, {shiftmul(b.accessor)}\n"
+                            instr+=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                            stack.append(a)
+
+                        else:
+                            newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
+                            stack.append(apendee)
+                            instr+=newinstr
+                            o = newt.copy()
                     else:
                         if(op == T_PTRACCESS):
 
@@ -1106,7 +1115,14 @@ class Function:
         
         return instructions
 
-
+    def createDestructor(self, var):
+        call_label = functionlabel( var.t.destructor )
+        if(var.t.ptrdepth > 0):
+            params = f"mov {rdi}, {valueOf(var)}\n"
+        else:
+            params = f"lea {rdi}, [rbp-{var.offset+var.stackarrsize}]\n"
+        instructions = f"{params}call {call_label.replace(':','')}\n"
+        return instructions
 
 
     def buildDeclaration(self):                     # declare new var
@@ -1131,7 +1147,9 @@ class Function:
 
         sizes = [1]
         isarr = False
-
+        if(not isIntrinsic(var.t.name) and var.t.destructor != None):
+            
+            self.destructor_text+= self.createDestructor(var)
 
         while self.current_token.tok == "[":
             isarr=True
@@ -1461,6 +1479,7 @@ class Function:
 
 
         self.asm = self.asm.replace("/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
+        #self.addline(self.destructor_text)
         self.createClosing()
 
 

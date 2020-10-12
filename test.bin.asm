@@ -1307,6 +1307,26 @@ ___void_createString_pString.char.__return:
 leave
 ret
 
+;[ function uvoid xString( [[ Variable: String this @ 8]] ) ]
+
+_uvoid_xString_pString:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: String this @ 8]
+mov [rbp-8], rdi
+;[[ id : this], [ -> : ->], [ T?T : value]]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+0]
+mov rbx, [rbx]
+;------------
+mov rdi, rbx
+mov rax, 0
+call _void_free_pvoid.
+___uvoid_xString_pString__return:
+leave
+ret
+
 ;[ function int shutdown( [[ Variable: fd_t sockfd @ 8], [ Variable: int how @ 16]] ) ]
 
 _int_shutdown_pfd_tint:
@@ -1556,10 +1576,9 @@ jmp _LIFELSE_0x14
 _LIFPOST_0x13:
 _LIFELSE_0x14:
 ;[[ id : v], [ * : *], [ int : 256]]
-mov rbx, 256
-mov rcx, QWORD[rbp-16]
-imul rbx, rcx
+shl QWORD[rbp-16], 8
 ;------------
+mov rbx, QWORD[rbp-16]
 mov QWORD[rbp-16], rbx
 ;[[ id : v], [ * : *], [ id : n]]
 mov rbx, QWORD[rbp-56]
@@ -2595,7 +2614,7 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
@@ -2605,6 +2624,8 @@ mov [rbp-16], rsi
 mov rax, 0
 jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
+lea rdi, [rbp-40]
+call _uvoid_xString_pString
 leave
 ret
 
