@@ -54,7 +54,7 @@ function char* getString(char* msg){
     c = getchar();
 
     while (c != 10) {
-        str[len] = c;
+        //str[len] = c;
         if(len == size) {
             size = size * 2;
             str = realloc(str, size);

@@ -715,15 +715,6 @@ class Function:
                                 apendee = a
                             newt = a.type.copy()
 
-                        elif(op == "+" or op == "-"):
-
-                            if(b.accessor == 1):
-                                cmd = "dec"
-                                if(op == "+"): cmd = "inc"
-                                newinstr = f"{cmd} {valueOf(a.accessor)}\n"
-                                apendee = (a)
-                            newt = a.type.copy()
-                            
 
 
                         if(newinstr == None): newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)

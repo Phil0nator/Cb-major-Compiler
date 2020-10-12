@@ -31,6 +31,22 @@ function void appendString(String* this, char* other){
     this->len = this->len + ol;
 }
 
-function void freeString(String* this){
-    free(this->value);
+function void strequ(char* a, char* b){
+
+}
+
+function void substring(String* this, String* new, int start, int end){
+
+    int l = end-start;
+    free(new->value);
+    new->value = malloc(l);
+    memcpy(new->value,this->value+start,l);
+    new->len=l;
+}
+
+function int find(String* this, char* sequence){
+
+    int sql = strlen(sequence);
+
+
 }

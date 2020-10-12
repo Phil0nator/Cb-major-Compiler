@@ -589,7 +589,7 @@ def setSize(reg, size):
     if(size == 1): return boolchar_version[reg]
     elif(size == 2): return small_version[reg]
     elif(size == 4): return dword_version[reg]
-    elif(size == 8): return normal_size[reg]
+
     return reg
 
 
@@ -707,8 +707,6 @@ def loadToReg(reg, value):
             return f"movq {reg}, {valueOf(value)} ;<-\n" 
 
 
-        if(isinstance(value, Variable)):
-            return f"mov {normal_size[reg]}, {valueOf(value)}\n"
 
         return f"mov {reg}, {valueOf(value)}\n"
     
@@ -816,7 +814,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
         return f"mov {areg}, {breg}\n"
 
     elif(op in ["==","!=",">","<","<=",">="]):
-        return cmpI(boolchar_version[areg],boolchar_version[breg],signed,op)
+        return cmpI(areg,breg,signed,op)
     elif(op in ["!","&&","||","^","~","|","&"]):
         return boolmath(areg,breg,op)
 
@@ -824,11 +822,8 @@ def doIntOperation(areg, breg, op, signed, size=8):
 def cmpI(areg, breg,signed, op):
 
     comparator = getComparater(signed, op)
-    if(areg in boolchar_version):
-        bcv = boolchar_version[areg]
-    else:
-        bcv = areg
-    return f"\ncmp {areg}, {breg}\nset{comparator} {bcv}\n"
+
+    return f"\ncmp {areg}, {breg}\nset{comparator} {boolchar_version[areg]}\n"
 
 
 def cmpF(areg, breg, op):
@@ -1073,6 +1068,7 @@ def avx_dropToAddress(loadop, avxreg, arr, idx):
         out+=(f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out+=(f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     else:
+        out+=(f"shl {idx}, {shiftmul(arr.t.csize())}\n")
         out+=(f"add {idx}, [rbp-{arr.offset}]\n")
         out+=(f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     return out
