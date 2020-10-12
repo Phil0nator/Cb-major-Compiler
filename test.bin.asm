@@ -1224,9 +1224,10 @@ and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x22
 ;[[ id : size], [ * : *], [ int : 2]]
-shl QWORD[rbp-16], 1
-;------------
+mov rcx, 2
 mov rbx, QWORD[rbp-16]
+imul rbx, rcx
+;------------
 mov QWORD[rbp-16], rbx
 ;[[ id : str]]
 ;------------
@@ -1967,9 +1968,10 @@ jmp _LIFELSE_0x1c
 _LIFPOST_0x1b:
 _LIFELSE_0x1c:
 ;[[ id : v], [ * : *], [ int : 256]]
-shl QWORD[rbp-16], 8
+mov rbx, 256
+mov rcx, QWORD[rbp-16]
+imul rbx, rcx
 ;------------
-mov rbx, QWORD[rbp-16]
 mov QWORD[rbp-16], rbx
 ;[[ id : v], [ * : *], [ id : n]]
 mov rbx, QWORD[rbp-56]
@@ -3029,21 +3031,17 @@ sub rsp, 72
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ int : 40000000]]
+;------------
+mov QWORD[rbp-24], 40000000
 mov rax, 0
 call _void_srand_p
-;[[ int : 100], [ * : *], [ id : int]]
+;[[ id : count], [ * : *], [ id : int]]
+mov rcx, 8
+mov rbx, QWORD[rbp-24]
+imul rbx, rcx
 ;------------
-mov rdi, 800
-mov rax, 0
-call _void._malloc_psize_t
-push rax
-;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-24], rax
-;[[ int : 100], [ * : *], [ id : int]]
-;------------
-mov rdi, 800
+mov rdi, rbx
 mov rax, 0
 call _void._malloc_psize_t
 push rax
@@ -3051,9 +3049,12 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-32], rax
-;[[ int : 100], [ * : *], [ id : int]]
+;[[ id : count], [ * : *], [ id : int]]
+mov rcx, 8
+mov rbx, QWORD[rbp-24]
+imul rbx, rcx
 ;------------
-mov rdi, 800
+mov rdi, rbx
 mov rax, 0
 call _void._malloc_psize_t
 push rax
@@ -3061,9 +3062,12 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-40], rax
-;[[ int : 100], [ * : *], [ id : int]]
+;[[ id : count], [ * : *], [ id : int]]
+mov rcx, 8
+mov rbx, QWORD[rbp-24]
+imul rbx, rcx
 ;------------
-mov rdi, 800
+mov rdi, rbx
 mov rax, 0
 call _void._malloc_psize_t
 push rax
@@ -3076,19 +3080,6 @@ mov QWORD[rbp-48], rax
 mov QWORD[rbp-56], 0
 jmp _LFORCMP_0x1
 _LFORTOP_0x0:
-mov rbx, [rbp-24]
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-56]
-mov rcx, r10
-lea rbx, [rbx+rcx*8]
-push rbx
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-56]
-mov rcx, r10
-pop rbx
-mov [rbx], rcx
 mov rbx, [rbp-32]
 ;[[ id : i]]
 ;------------
@@ -3109,14 +3100,9 @@ mov r10, QWORD[rbp-56]
 mov rcx, r10
 lea rbx, [rbx+rcx*8]
 push rbx
-;[[ id : i], [ % : %], [ int : 10]]
-mov r11, 10
-mov r10, QWORD[rbp-56]
-xor rdx, rdx
-mov rax, r10
-idiv r11
- mov r10, rdx
+;[[ id : i]]
 ;------------
+mov r10, QWORD[rbp-56]
 mov rcx, r10
 pop rbx
 mov [rbx], rcx
@@ -3127,8 +3113,8 @@ add rbx, rcx
 ;------------
 mov QWORD[rbp-56], rbx
 _LFORCMP_0x1:
-;[[ id : i], [ < : <], [ int : 100]]
-mov rcx, 100
+;[[ id : i], [ < : <], [ id : count]]
+mov rcx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-56]
 cmp rbx, rcx
 setl bl
@@ -3143,46 +3129,46 @@ _LFOREND_0x3:
 mov QWORD[rbp-64], 0
 jmp _LFORCMP_0x5
 _LFORTOP_0x4:
-;[[ id : i]]
-;------------
-mov rcx, QWORD[rbp-64]
-mov rbx, rcx
-shl rbx, 3
-add rbx, [rbp-24]
-VMOVDQU ymm0, [rbx]
+mov rbx, [rbp-48]
 ;[[ id : i]]
 ;------------
 mov r10, QWORD[rbp-64]
 mov rcx, r10
-shl rcx, 3
-add rcx, [rbp-32]
-VMOVDQU ymm1, [rcx]
-VPADDQ ymm0, ymm1, ymm0
+lea rbx, [rbx+rcx*8]
+push rbx
+mov r10, QWORD[rbp-32]
 ;[[ id : i]]
 ;------------
-mov r10, QWORD[rbp-64]
+mov r12, QWORD[rbp-64]
+mov r11, r12
+lea r10, [r10+r11*8]
+mov r10, [r10]
+push r10
+mov r10, QWORD[rbp-40]
+;[[ id : i]]
+;------------
+mov r12, QWORD[rbp-64]
+mov r11, r12
+lea r10, [r10+r11*8]
+mov r10, [r10]
+push r10
+;[[ [x] : int], [ + : +], [ [x] : int]]
+pop r11
+pop r10
+add r10, r11
+;------------
 mov rcx, r10
-shl rcx, 3
-add rcx, [rbp-40]
-VMOVDQU ymm1, [rcx]
-VPADDQ ymm0, ymm1, ymm0
-;[[ id : i]]
-;------------
-mov rcx, QWORD[rbp-64]
-mov rbx, rcx
-shl rbx, 3
-add rbx, [rbp-48]
-VMOVDQU [rbx], ymm0
+pop rbx
+mov [rbx], rcx
 _LFORUPDATE_0x6:
-;[[ id : i], [ + : +], [ int : 4]]
-mov rcx, 4
+mov rcx, 1
 mov rbx, QWORD[rbp-64]
 add rbx, rcx
 ;------------
 mov QWORD[rbp-64], rbx
 _LFORCMP_0x5:
-;[[ id : i], [ < : <], [ int : 100]]
-mov rcx, 100
+;[[ id : i], [ < : <], [ id : count]]
+mov rcx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-64]
 cmp rbx, rcx
 setl bl
@@ -3192,35 +3178,6 @@ and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x4
 _LFOREND_0x7:
-;[[ id : final]]
-;------------
-mov rbx, QWORD[rbp-48]
-mov rdi, rbx
-;[[ int : 100]]
-;------------
-mov rsi, 100
-mov rax, 0
-call _void_print_pint.int
-;[[ id : data]]
-;------------
-mov rdi, QWORD[rbp-24]
-mov rax, 0
-call _void_free_pvoid.
-;[[ id : data2]]
-;------------
-mov rdi, QWORD[rbp-32]
-mov rax, 0
-call _void_free_pvoid.
-;[[ id : data3]]
-;------------
-mov rdi, QWORD[rbp-40]
-mov rax, 0
-call _void_free_pvoid.
-;[[ id : final]]
-;------------
-mov rdi, QWORD[rbp-48]
-mov rax, 0
-call _void_free_pvoid.
 ;[[ int : 0]]
 ;------------
 mov rax, 0

@@ -701,19 +701,19 @@ class Function:
                         stack.append(calculateConstant(a,b,op))
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr
                         newinstr = None
-                        if(b.accessor == 0 and op not in  ["/"] and op not in signed_comparisons):
-                            apendee = a
-                            newinstr = ""
-                            newt = a.type.copy()
-                        if(op == "*" or op == "/"):
+                        # if(b.accessor == 0 and op not in  ["/"] and op not in signed_comparisons):
+                        #     apendee = a
+                        #     newinstr = ""
+                        #     newt = a.type.copy()
+                        # if(op == "*" or op == "/"):
                             
-                            if(canShiftmul(b.accessor)):
-                                if(op == "*"):
-                                    newinstr=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
-                                else:
-                                    newinstr=f"shr {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
-                                apendee = a
-                            newt = a.type.copy()
+                        #     if(canShiftmul(b.accessor)):
+                        #         if(op == "*"):
+                        #             newinstr=f"shl {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                        #         else:
+                        #             newinstr=f"shr {valueOf(a.accessor)}, {shiftmul(b.accessor)}\n"
+                        #         apendee = a
+                        #     newt = a.type.copy()
 
 
 
