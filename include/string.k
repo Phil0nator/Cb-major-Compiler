@@ -31,6 +31,15 @@ function void appendString(String* this, char* other){
     this->len = this->len + ol;
 }
 
+function bool substrequ(char* a, char* b, size_t len){
+    for(int i = 0 ; i < len;i++){
+        if(a[i] != b[i]){
+            return false;
+        }
+    }
+    return true;
+}
+
 function bool strequ(char* a, char* b){
     int i = 0;
 
@@ -40,7 +49,7 @@ function bool strequ(char* a, char* b){
             
             return false;
         }
-        if(a[i] == 0 || b[i] == 0){
+        if(a[i] == 0){
             break;
         }
 
@@ -62,9 +71,19 @@ function void substring(String* this, String* new, int start, int end){
     new->len=l;
 }
 
-function int find(String* this, char* sequence){
+function int strfind(String* this, char* sequence){
 
     int sql = strlen(sequence);
+    if(sql > this->len){
+        return 0 - 1;
+    }
 
+    int end = this->len-sql;
+    for(int i = 0 ; i < end;i++){
+        if(substrequ(this->value+i, sequence, sql)){
+            return i;
+        }
+    }
+    return 0-1;
 
 }

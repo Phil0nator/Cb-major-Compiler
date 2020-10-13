@@ -920,12 +920,7 @@ def castABD(a, b, areg, breg, newbreg):
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
             out = maskset(newbreg,a.type.csize())
-            if(a.type.csize() == 1 and b.type.csize() == 8):
-                out+= f"mov {boolchar_version[newbreg]}, {boolchar_version[breg]}\n"
-            elif(a.type.csize() == 4 and b.type.csize() == 8):
-                out+= f"mov {dwordize(newbreg)}, {dwordize(breg)}\n"
-            elif(a.type.csize() == 2 and b.type.csize() == 8):
-                out+= f"mov {small_version[newbreg]}, {small_version[breg]}\n"
+            out+=f"mov {newbreg}, {breg}\n"
             return out
         return False
     if(a.type.isflt() and not b.type.isflt()):

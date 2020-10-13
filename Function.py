@@ -611,7 +611,6 @@ class Function:
             if(needLoadB): instr+=loadToReg(breg, b.accessor)
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
             instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
-
             if(op in ["==","!=",">","<","<=",">="]):
                 if(a.type.isflt() or b.type.isflt()):
                     rfree(areg)
@@ -661,7 +660,7 @@ class Function:
             else:
                 rfree(newcoreg)
                 newcoreg = coreg
-            
+
 
             instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
             # handle float comparison
@@ -671,6 +670,7 @@ class Function:
                     rfree(creg)
                     creg = f"{rax}"
                 caster.type = BOOL.copy()
+                o = BOOL.copy()
 
 
             apendee = (EC.ExpressionComponent(creg,caster.type,token=caster.token))
@@ -678,8 +678,6 @@ class Function:
             rfree(coreg)
 
 
-        if(op in ["==","!=",">","<","<=",">="]):
-            o = BOOL.copy()
         
         return instr, o, apendee
 
@@ -702,6 +700,7 @@ class Function:
                         stack.append(calculateConstant(a,b,op))
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr
                         newinstr = None
+                        
                         if(b.accessor == 0 and op not in  ["/"] and op not in signed_comparisons):
                             apendee = a
                             newinstr = ""
@@ -1071,6 +1070,7 @@ class Function:
                     self.advance()
                     member = self.current_token.value
                     memvar = var.t.getMember(member)
+                    if(memvar == None): throw(UnkownIdentifier(self.current_token))
                     offset = memvar.offset
                     exprtokens.append(Token(T_ID, f"{var.name}.{memvar.name}",start,self.current_token.end))
                 

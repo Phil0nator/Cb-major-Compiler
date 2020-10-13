@@ -1021,8 +1021,8 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `123hd`, 0
-STRING_CONSTANT_1: db `123hd`, 0
+    STRING_CONSTANT_0: db `This is a mf string`, 0
+STRING_CONSTANT_1: db ` is`, 0
 nullterm: DB 0
 true: DB 1
 false: DB 0
@@ -1213,8 +1213,8 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-32], rax
-jmp _LWHILECMP_0x25
-_LWHILESTART_0x24:
+jmp _LWHILECMP_0x33
+_LWHILESTART_0x32:
 ;[[ id : len], [ == : ==], [ id : size]]
 mov rcx, QWORD[rbp-16]
 mov rbx, QWORD[rbp-40]
@@ -1224,7 +1224,7 @@ sete bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x27
+jne _LIFPOST_0x35
 ;[[ id : size], [ * : *], [ int : 2]]
 mov rbx, QWORD[rbp-16]
 shl rbx, 1
@@ -1244,9 +1244,9 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-24], rax
-jmp _LIFELSE_0x28
-_LIFPOST_0x27:
-_LIFELSE_0x28:
+jmp _LIFELSE_0x36
+_LIFPOST_0x35:
+_LIFELSE_0x36:
 mov rax, 0
 call _char_getchar_p
 push rax
@@ -1260,7 +1260,7 @@ mov rbx, QWORD[rbp-40]
 add rbx, rcx
 ;------------
 mov QWORD[rbp-40], rbx
-_LWHILECMP_0x25:
+_LWHILECMP_0x33:
 ;[[ id : c], [ != : !=], [ int : 10]]
 mov rcx, 10
 mov rbx, QWORD[rbp-32]
@@ -1270,8 +1270,8 @@ setne bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LWHILESTART_0x24
-_LWHILEEND_0x26:
+je _LWHILESTART_0x32
+_LWHILEEND_0x34:
 mov rbx, [rbp-24]
 ;[[ id : len], [ + : +], [ int : 1]]
 mov r11, 1
@@ -1422,7 +1422,7 @@ ret
 _int_find_pString.char.:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 48
 ;Load Parameter: [ Variable: String. this @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char. sequence @ 16]
@@ -1438,6 +1438,93 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-24], rax
+;[[ id : sql], [ > : >], [ id : this], [ -> : ->], [ T?T : len]]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov rbx, [rbx]
+mov rcx, QWORD[rbp-24]
+cmp rcx, rbx
+setg cl
+;------------
+mov rax, rcx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x2a
+;[[ int : 0], [ - : -], [ int : 1]]
+;------------
+mov rax, -1
+jmp ___int_find_pString.char.__return
+jmp _LIFELSE_0x2b
+_LIFPOST_0x2a:
+_LIFELSE_0x2b:
+;[[ id : this], [ -> : ->], [ T?T : len], [ - : -], [ id : sql]]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov rbx, [rbx]
+mov rcx, QWORD[rbp-24]
+sub rbx, rcx
+;------------
+mov QWORD[rbp-32], rbx
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-40], 0
+jmp _LFORCMP_0x2d
+_LFORTOP_0x2c:
+;[[ id : this], [ -> : ->], [ T?T : value], [ + : +], [ id : i]]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+0]
+mov rbx, [rbx]
+mov rcx, QWORD[rbp-40]
+add rbx, rcx
+;------------
+mov rdi, rbx
+;[[ id : sequence]]
+;------------
+mov rbx, QWORD[rbp-16]
+mov rsi, rbx
+;[[ id : sql]]
+;------------
+mov rbx, QWORD[rbp-24]
+mov rdx, rbx
+mov rax, 0
+call _bool_substrequ_pchar.char.size_t
+push rax
+;[[ fn(x) : [ function bool substrequ( [[ Variable: char. a @ 8], [ Variable: char. b @ 16], [ Variable: size_t len @ 24]] ) ] ]]
+;------------
+pop rax
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x30
+;[[ id : i]]
+;------------
+mov rbx, QWORD[rbp-40]
+mov rax, rbx
+jmp ___int_find_pString.char.__return
+jmp _LIFELSE_0x31
+_LIFPOST_0x30:
+_LIFELSE_0x31:
+_LFORUPDATE_0x2e:
+mov rcx, 1
+mov rbx, QWORD[rbp-40]
+add rbx, rcx
+;------------
+mov QWORD[rbp-40], rbx
+_LFORCMP_0x2d:
+;[[ id : i], [ < : <], [ id : end]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-40]
+cmp rbx, rcx
+setl bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+je _LFORTOP_0x2c
+_LFOREND_0x2f:
+;[[ int : 0], [ - : -], [ int : 1]]
+;------------
+mov rax, -1
+jmp ___int_find_pString.char.__return
 ___int_find_pString.char.__return:
 leave
 ret
@@ -1530,8 +1617,8 @@ mov [rbp-16], rsi
 ;[[ int : 0]]
 ;------------
 mov QWORD[rbp-24], 0
-jmp _LWHILECMP_0x1e
-_LWHILESTART_0x1d:
+jmp _LWHILECMP_0x24
+_LWHILESTART_0x23:
 mov rbx, QWORD[rbp-8]
 ;[[ id : i]]
 ;------------
@@ -1559,14 +1646,14 @@ setne bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x20
+jne _LIFPOST_0x26
 ;[[ id : false]]
 ;------------
 mov rax, [false]
 jmp ___bool_strequ_pchar.char.__return
-jmp _LIFELSE_0x21
-_LIFPOST_0x20:
-_LIFELSE_0x21:
+jmp _LIFELSE_0x27
+_LIFPOST_0x26:
+_LIFELSE_0x27:
 mov rbx, QWORD[rbp-8]
 ;[[ id : i]]
 ;------------
@@ -1576,53 +1663,118 @@ lea rbx, [rbx+rcx*1]
 mov bl, [rbx]
 and rbx, 0xff
 push rbx
-mov rbx, QWORD[rbp-16]
-;[[ id : i]]
-;------------
-mov r10, QWORD[rbp-24]
-mov rcx, r10
-lea rbx, [rbx+rcx*1]
-mov bl, [rbx]
-and rbx, 0xff
-push rbx
-;[[ [x] : char], [ == : ==], [ int : 0], [ || : ||], [ [x] : char], [ == : ==], [ int : 0]]
+;[[ [x] : char], [ == : ==], [ int : 0]]
 mov rbx, 0
 pop rcx
+mov r10, rcx
 cmp rbx, r10
 sete bl
-mov rcx, 0
-pop r10
-cmp rcx, r11
-sete cl
-or rbx, rcx
 ;------------
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x22
-jmp _LWHILEEND_0x1f
-jmp _LIFELSE_0x23
-_LIFPOST_0x22:
-_LIFELSE_0x23:
+jne _LIFPOST_0x28
+jmp _LWHILEEND_0x25
+jmp _LIFELSE_0x29
+_LIFPOST_0x28:
+_LIFELSE_0x29:
 mov rcx, 1
 mov rbx, QWORD[rbp-24]
 add rbx, rcx
 ;------------
 mov QWORD[rbp-24], rbx
-_LWHILECMP_0x1e:
+_LWHILECMP_0x24:
 ;[[ id : true]]
 ;------------
 mov rbx, [true]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LWHILESTART_0x1d
-_LWHILEEND_0x1f:
+je _LWHILESTART_0x23
+_LWHILEEND_0x25:
 ;[[ id : true]]
 ;------------
 mov rax, [true]
 jmp ___bool_strequ_pchar.char.__return
 ___bool_strequ_pchar.char.__return:
+leave
+ret
+
+;[ function bool substrequ( [[ Variable: char. a @ 8], [ Variable: char. b @ 16], [ Variable: size_t len @ 24]] ) ]
+
+_bool_substrequ_pchar.char.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 40
+;Load Parameter: [ Variable: char. a @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. b @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t len @ 24]
+mov [rbp-24], rdx
+;[[ int : 0]]
+;------------
+mov QWORD[rbp-32], 0
+jmp _LFORCMP_0x1e
+_LFORTOP_0x1d:
+mov rbx, QWORD[rbp-8]
+;[[ id : i]]
+;------------
+mov r10, QWORD[rbp-32]
+mov rcx, r10
+lea rbx, [rbx+rcx*1]
+mov bl, [rbx]
+and rbx, 0xff
+push rbx
+mov rbx, QWORD[rbp-16]
+;[[ id : i]]
+;------------
+mov r10, QWORD[rbp-32]
+mov rcx, r10
+lea rbx, [rbx+rcx*1]
+mov bl, [rbx]
+and rbx, 0xff
+push rbx
+;[[ [x] : char], [ != : !=], [ [x] : char]]
+pop rcx
+pop rbx
+cmp rbx, rcx
+setne bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x21
+;[[ id : false]]
+;------------
+mov rax, [false]
+jmp ___bool_substrequ_pchar.char.size_t__return
+jmp _LIFELSE_0x22
+_LIFPOST_0x21:
+_LIFELSE_0x22:
+_LFORUPDATE_0x1f:
+mov rcx, 1
+mov rbx, QWORD[rbp-32]
+add rbx, rcx
+;------------
+mov QWORD[rbp-32], rbx
+_LFORCMP_0x1e:
+;[[ id : i], [ < : <], [ id : len]]
+mov rcx, QWORD[rbp-24]
+mov rbx, QWORD[rbp-32]
+cmp rbx, rcx
+setl bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+je _LFORTOP_0x1d
+_LFOREND_0x20:
+;[[ id : true]]
+;------------
+mov rax, [true]
+jmp ___bool_substrequ_pchar.char.size_t__return
+___bool_substrequ_pchar.char.size_t__return:
 leave
 ret
 
@@ -1985,8 +2137,10 @@ mov QWORD[rbp-56], rbx
 ;[[ id : n], [ + : +], [ id : c], [ - : -], [ char : 48]]
 mov rbx, QWORD[rbp-56]
 mov rcx, QWORD[rbp-48]
+mov r10, rcx
 add rbx, r10
 mov rcx, 48
+mov r10, rcx
 sub rbx, r10
 ;------------
 mov QWORD[rbp-56], rbx
@@ -2072,6 +2226,7 @@ mov QWORD[rbp-16], rbx
 ;[[ id : v], [ * : *], [ id : n]]
 mov rbx, QWORD[rbp-56]
 mov rcx, QWORD[rbp-16]
+mov r10, rcx
 imul rbx, r10
 ;------------
 mov QWORD[rbp-16], rbx
@@ -3223,44 +3378,44 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 48
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
 mov rax, 0
 call _void_srand_p
+mov QWORD[rbp-40], 0
+mov QWORD[rbp-32], 0
+lea rdi, [rbp-40]
 ;[[ id : STRING_CONSTANT_0]]
 ;------------
 mov rbx, STRING_CONSTANT_0
-mov QWORD[rbp-24], rbx
+mov rsi, rbx
+call _uvoid_iString_pString.char.
+;[[ & : &], [ id : sa]]
+lea rbx, [rbp-40]
+;------------
+mov rdi, rbx
 ;[[ id : STRING_CONSTANT_1]]
 ;------------
 mov rbx, STRING_CONSTANT_1
-mov QWORD[rbp-32], rbx
-;[[ id : a]]
-;------------
-mov rcx, QWORD[rbp-24]
-mov rdi, rcx
-;[[ id : b]]
-;------------
-mov rcx, QWORD[rbp-32]
-mov rsi, rcx
+mov rsi, rbx
 mov rax, 0
-call _bool_strequ_pchar.char.
+call _int_find_pString.char.
 push rax
-;[[ fn(x) : [ function bool strequ( [[ Variable: char. a @ 0], [ Variable: char. b @ 0]] ) ] ]]
+;[[ fn(x) : [ function int find( [[ Variable: String. this @ 0], [ Variable: char. sequence @ 0]] ) ] ]]
 ;------------
-pop rbx
-mov DIL, bl
-and rdi, 0xff
+pop rdi
 mov rax, 0
-call _void_print_pbool
+call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
+lea rdi, [rbp-40]
+call _uvoid_xString_pString.
 leave
 ret
 
