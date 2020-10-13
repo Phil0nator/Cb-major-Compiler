@@ -703,7 +703,7 @@ def loadToReg(reg, value):
             if("xmm" in reg):
                 pop = f"pop {rax}\n"
                 return f"{pop}movq {reg}, {rax}\n"
-            return f"pop {reg}\n"
+            return f"pop {normal_size[ reg]}\n"
         elif(isinstance(reg, Variable)):
             return f"pop {rax}\nmov {valueOf(reg)}, {rax}\n"
 

@@ -239,9 +239,7 @@ class Function:
             self.addline(jmpafter+":\n")
 
 
-                #clean up var
-        if(len(self.continues)>0):
-            if(self.continues[len(self.continues)-1] == postlabel): self.continues.pop()
+        self.continues.pop()
 
 
 
@@ -294,13 +292,10 @@ class Function:
 
 
 
-        #clean up var
-        if(len(self.continues)>0):
-            if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
-        if(len(self.breaks)>0):
-            if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
+        self.continues.pop()
+        self.breaks.pop()
 
-        self.variables.remove(var)
+        #self.variables.remove(var)
 
         
         
@@ -333,10 +328,8 @@ class Function:
 
 
         #clean up var
-        if(len(self.continues)>0):
-            if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
-        if(len(self.breaks)>0):
-            if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
+        self.continues.pop()
+        self.breaks.pop()
 
 
     def buildSIMD(self):
@@ -473,14 +466,14 @@ class Function:
             self.buildForloop()
 
         elif(word == "break"):
-            l = self.breaks.pop()
+            l = self.breaks[-1]
             self.addline(f"jmp {l}\n")
             self.advance()
             self.checkSemi()
 
 
         elif(word == "continue"):
-            l = self.continues.pop()
+            l = self.continues[-1]
             self.addline(f"jmp {l}\n")
             self.advance()
             self.checkSemi()

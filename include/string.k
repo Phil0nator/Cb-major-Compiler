@@ -87,3 +87,7 @@ function int strfind(String* this, char* sequence){
     return 0-1;
 
 }
+
+function void print(String* str){
+    print(str->value);
+}

@@ -2,9 +2,8 @@
 
 function int main(int argc, char** argv){
     srand();
-    
-    String sa("This is a mf string");
-    print(find(&sa, " is"));
+
+    print(get_inaddr("127.0.0.1"));
 
     return 0;
 }
