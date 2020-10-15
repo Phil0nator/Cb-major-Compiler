@@ -466,6 +466,7 @@ class Function:
             self.buildForloop()
 
         elif(word == "break"):
+            if(len(self.breaks)==0): throw(UnmatchedBreak(self.current_token))
             l = self.breaks[-1]
             self.addline(f"jmp {l}\n")
             self.advance()
