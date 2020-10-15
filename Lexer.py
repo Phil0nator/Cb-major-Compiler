@@ -178,12 +178,11 @@ class Lexer:
 
             elif (self.ch == "-"):
                 self.advance()
-                prev = tokens[len(tokens)-1]
-                if(prev.tok in OPERATORS or prev.tok == T.T_EQUALS) and prev.tok != T.T_MINUS:
+                prev = tokens[-1]
+                if(prev.tok in OPERATORS or prev.tok == T.T_EQUALS) and prev.tok != T.T_MINUS and prev.tok not in ["(",")","[","]"] and self.ch in T.T_DIGITS:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
-
                     t = Token("-","-",self.loc.copy(),self.loc.copy())
                 
                 tokens.append(t)

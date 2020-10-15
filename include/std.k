@@ -9,3 +9,4 @@
 #include "include/sys/sock.k"
 
 #include "include/string.k"
+#include "include/input.k"

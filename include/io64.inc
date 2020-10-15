@@ -41,6 +41,8 @@ CEXTERN puts
 CEXTERN fputs
 CEXTERN fflush
 
+CEXTERN getchar
+
 CEXTERN get_stdin
 CEXTERN get_stdout
 

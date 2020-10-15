@@ -36,6 +36,5 @@ REGISTERS = ["rax","rbx","rcx","rdx","rsi","rdi","r8","r9","r10","r11","r12","r1
 ]
 for i in range(15):
     REGISTERS.append(f"xmm{i}")
-
-
+    REGISTERS.append(f"ymm{i}")
 raw_filedata = []

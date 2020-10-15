@@ -192,3 +192,8 @@ class HangingOperator(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Invalid expression due to hanging operator: "
+
+class UnmatchedBreak(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unmatched break: "

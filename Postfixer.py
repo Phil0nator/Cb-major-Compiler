@@ -45,7 +45,7 @@ class Postfixer:
                     if(v == None):  throw(UnkownIdentifier(t))
                     
                     ec = EC.ExpressionComponent(v.size(0),INT.copy(),constint=True,token=t)
-
+                    ec.memory_location = valueOf(v)
                 else:
                 
                     ec = EC.ExpressionComponent(v,v.t)

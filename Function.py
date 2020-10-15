@@ -44,6 +44,8 @@ class Function:
         self.current_token = self.tokens[0]     # current token
         self.ctidx = 0                          # corrent token index
 
+        self.destructor_text = ""
+
     def advance(self):                              # advance token
         self.ctidx+=1
         self.current_token = self.tokens[self.ctidx]
@@ -56,7 +58,7 @@ class Function:
         self.advance()
 
     def getClosingLabel(self):                      # get raw asm label used to denote the end of this function
-        return function_closer(self.getCallingLabel()).split("\n")[0]
+        return function_closer(self.getCallingLabel(),None).split("\n")[0]
 
     def getVariable(self, q):                       # get a variable of name q from first local then global scope if necessary
 
@@ -73,7 +75,8 @@ class Function:
         v.offset = self.stackCounter
         #self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8: self.stackCounter += 8
-        else: self.stackCounter += v.t.size(0)
+        else: 
+            self.stackCounter += v.t.csize()+8
         self.variables.append(v)
 
 
@@ -176,7 +179,7 @@ class Function:
 
     def createClosing(self):                    # create end of the function
 
-        self.addline(function_closer(self.getCallingLabel()))
+        self.addline(function_closer(self.getCallingLabel(), self.destructor_text))
 
     def buildReturnStatement(self):             # build a return statement
         self.advance()
@@ -236,9 +239,7 @@ class Function:
             self.addline(jmpafter+":\n")
 
 
-                #clean up var
-        if(len(self.continues)>0):
-            if(self.continues[len(self.continues)-1] == postlabel): self.continues.pop()
+        self.continues.pop()
 
 
 
@@ -291,13 +292,10 @@ class Function:
 
 
 
-        #clean up var
-        if(len(self.continues)>0):
-            if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
-        if(len(self.breaks)>0):
-            if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
+        self.continues.pop()
+        self.breaks.pop()
 
-        self.variables.remove(var)
+        #self.variables.remove(var)
 
         
         
@@ -328,11 +326,10 @@ class Function:
         self.addline(f"{endlabel}:")
         self.advance()
 
+
         #clean up var
-        if(len(self.continues)>0):
-            if(self.continues[len(self.continues)-1] == comparisonlabel): self.continues.pop()
-        if(len(self.breaks)>0):
-            if(self.breaks[len(self.breaks)-1] == endlabel): self.breaks.pop()
+        self.continues.pop()
+        self.breaks.pop()
 
 
     def buildSIMD(self):
@@ -469,14 +466,15 @@ class Function:
             self.buildForloop()
 
         elif(word == "break"):
-            l = self.breaks.pop()
+            if(len(self.breaks)==0): throw(UnmatchedBreak(self.current_token))
+            l = self.breaks[-1]
             self.addline(f"jmp {l}\n")
             self.advance()
             self.checkSemi()
 
 
         elif(word == "continue"):
-            l = self.continues.pop()
+            l = self.continues[-1]
             self.addline(f"jmp {l}\n")
             self.advance()
             self.checkSemi()
@@ -549,7 +547,6 @@ class Function:
                     result =  norm_parameter_registers[normused]
                 ec = EC.ExpressionComponent(result, fn.parameters[i].t.copy(),token=self.current_token)
                 instructions+=self.evaluateRightsideExpression(ec)
-                normused+=1
                 
                 if(fn.parameters[i].t.csize() != 8):
                     if(fn.parameters[i].t.csize() == 1):
@@ -558,7 +555,9 @@ class Function:
                         instructions += f"mov {dwordize(norm_parameter_registers[normused])}, {dwordize(result)}\n"
                     elif(fn.parameters[i].t.csize() == 2):
                         instructions += f"mov {small_version[norm_parameter_registers[normused]]}, {small_version[result]}\n"
+                    instructions+=maskset(norm_parameter_registers[normused],fn.parameters[i].t.csize())
                     rfree(result)
+                normused+=1
 
             if(self.current_token.tok == ","):
                     self.advance()
@@ -606,7 +605,6 @@ class Function:
             if(needLoadB): instr+=loadToReg(breg, b.accessor)
             if(needLoadA): instr+=loadToReg(areg, a.accessor)
             instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
-
             if(op in ["==","!=",">","<","<=",">="]):
                 if(a.type.isflt() or b.type.isflt()):
                     rfree(areg)
@@ -649,7 +647,6 @@ class Function:
             
             if(needLoadC): instr+=loadToReg(creg, caster.accessor)
             if(needLoadCO): instr+=loadToReg(coreg, castee.accessor)
-
             cst=castABD(caster,castee,creg,coreg,newcoreg)
             #cst represents if actual extra instructions are needed to cast
             if(cst!=False):
@@ -657,7 +654,7 @@ class Function:
             else:
                 rfree(newcoreg)
                 newcoreg = coreg
-            
+
 
             instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
             # handle float comparison
@@ -667,6 +664,7 @@ class Function:
                     rfree(creg)
                     creg = f"{rax}"
                 caster.type = BOOL.copy()
+                o = BOOL.copy()
 
 
             apendee = (EC.ExpressionComponent(creg,caster.type,token=caster.token))
@@ -674,8 +672,6 @@ class Function:
             rfree(coreg)
 
 
-        if(op in ["==","!=",">","<","<=",">="]):
-            o = BOOL.copy()
         
         return instr, o, apendee
 
@@ -696,6 +692,42 @@ class Function:
 
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
+                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr
+                        newinstr = None
+                        
+                        if(b.accessor == 0 and op not in  ["/"] and op not in signed_comparisons):
+                            apendee = a
+                            newinstr = ""
+                            newt = a.type.copy()
+                        if(op == "*" or op == "/"):
+                            
+                            if(canShiftmul(b.accessor)):
+                                newinstr = ""
+                                if(a.isRegister()):
+                                    areg = a.accessor
+                                else:
+                                    areg = ralloc(False)
+                                    newinstr+=loadToReg(areg,a.accessor)
+                                    
+                                
+                                if(op == "*"):
+                                    newinstr+=f"shl {valueOf(areg)}, {shiftmul(b.accessor)}\n"
+                                else:
+                                    newinstr+=f"shr {valueOf(areg)}, {shiftmul(b.accessor)}\n"
+                                a.accessor = areg
+                                apendee = a
+                            newt = a.type.copy()
+
+
+
+                        if(newinstr == None): newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
+                        stack.append(apendee)
+                        instr+=newinstr
+                        o = newt.copy()
+
+
+
+
                     else:
                         if(op == T_PTRACCESS):
 
@@ -768,11 +800,12 @@ class Function:
                         elif( isinstance(a.accessor, Variable) ):
                             
                             result = ralloc(False)
-                            instr+=f"lea {result}, [rbp-{a.accessor.offset}]\n"
+                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
                         
+
                         else:
                             throw(AddressOfConstant(a.token))
                         
@@ -979,6 +1012,7 @@ class Function:
                         else:
                             rfree(addr)
                             idxinstr+=f"mov {setSize(addr, ot.csize())}, [{addr}]\n"
+                            if(ot.csize() != 8): idxinstr += maskset(addr, ot.csize())
                             idxinstr+=f"push {addr}\n"
                         instructions+=idxinstr
                         exprtokens.append(Token(T_IDXER,ot,start,self.current_token.start.copy()))
@@ -1012,6 +1046,7 @@ class Function:
                         else:
                             rfree(addr)
                             idxinstr+=f"mov {setSize(addr, ot.csize())}, [{addr}]\n"
+                            if(ot.csize() != 8): idxinstr += maskset(addr, ot.csize())
                             idxinstr+=f"push {addr}\n"
                         instructions+=idxinstr
                         exprtokens.append(Token(T_IDXER,ot,start,self.current_token.start.copy()))
@@ -1029,6 +1064,7 @@ class Function:
                     self.advance()
                     member = self.current_token.value
                     memvar = var.t.getMember(member)
+                    if(memvar == None): throw(UnkownIdentifier(self.current_token))
                     offset = memvar.offset
                     exprtokens.append(Token(T_ID, f"{var.name}.{memvar.name}",start,self.current_token.end))
                 
@@ -1102,7 +1138,14 @@ class Function:
         
         return instructions
 
-
+    def createDestructor(self, var):
+        call_label = functionlabel( var.t.destructor )
+        if(var.t.ptrdepth > 0):
+            params = f"mov {rdi}, {valueOf(var)}\n"
+        else:
+            params = f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n"
+        instructions = f"{params}call {call_label.replace(':','')}\n"
+        return instructions
 
 
     def buildDeclaration(self):                     # declare new var
@@ -1118,16 +1161,42 @@ class Function:
 
         self.addVariable(Variable(t,name))
         var = self.variables[len(self.variables)-1]
-        
         var.isptr = t.ptrdepth>0
         if(not var.isptr and var.t.members!=None):
             for v in var.t.members:
                 if(isinstance(v, Variable)):
                     
-                    self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+v.offset,isptr=v.isptr,signed=v.signed))
+                    self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+var.t.csize()-v.offset,isptr=v.isptr,signed=v.signed))
+                    self.addline(f"mov {valueOf(self.variables[-1])}, 0") # initialize to null
+            
+            if(self.current_token.tok == T_OPENP):
+                # constructor
+                self.advance()
+                fnt = var.t.constructor
+                if(fnt == None): throw(UnkownFunction(self.current_token,f"{var.t.name}.constructor",[None]))
+                call_label = fncall(fnt)
+                self.addline(f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n")
+                normsused = 1
+                sseused = 0
+                for p in fnt.parameters[1:]:
+                    if(p.t.isflt()):
+                        self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[sseused], p.t.copy() )))
+                        sseused+=1
+                    else:
+                        self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normsused], p.t.copy() )))
+                        normsused+=1
+                if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
+                self.advance()
+                self.addline(call_label)
+                self.checkSemi()
+                self.destructor_text+= self.createDestructor(var)
+                return
 
         sizes = [1]
         isarr = False
+        if(not isIntrinsic(var.t.name) and var.t.destructor != None):
+            
+            self.destructor_text+= self.createDestructor(var)
 
 
         while self.current_token.tok == "[":
@@ -1263,8 +1332,9 @@ class Function:
                 if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
                 member = self.current_token.value
                 if(not v.t.hasMember(member)): throw(UnkownIdentifier(self.current_token))
-                v = self.getVariable(f"{v.name}.{member}")
-                offset = v.offset
+                memv = self.getVariable(f"{v.name}.{member}")
+                offset = memv.offset
+                v = memv
                 self.advance()
                 isMember = True
 
@@ -1399,7 +1469,7 @@ class Function:
         
         id = self.current_token.value
 
-        if (self.compiler.isType(id)):
+        if (self.compiler.isType(id) and self.tokens[self.ctidx+1].tok != T_OPENP):
             self.buildDeclaration() # declaration
         elif (self.getVariable(id)!=None):
             # assignment or blank call
@@ -1458,6 +1528,7 @@ class Function:
 
 
         self.asm = self.asm.replace("/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
+        #self.addline(self.destructor_text)
         self.createClosing()
 
 

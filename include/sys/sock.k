@@ -62,38 +62,49 @@ const char AF_X25=9;
 const char AF_INET6=10; 
 const char AF_MAX = 12; 
 
+function bool isdigit(char c){
+    return c > '0' && c < '9';
+}
 
 function in_addr get_inaddr(char* address){
-    in_addr v;
-    int idx = 0;
-    char* start = address;
-    for(int i = 0 ; i < 4; i ++){
-        char c;
-        int n = 0;
-        while(1){
-            c = start[0];
-            start++;
-            if(c>='0' && c <='9'){
-                n=n*10;
-                n=n+c-'0';
+
+    char c;
+    c = address[0];
+    in_addr integer;
+    int val;
+
+    for(int j = 0; j < 4; j++){
+        if(!isdigit(c)){
+            val = (val*10)+(c-'0');
+            c = @(address+1);
+        }
+        val=0;
+        for(int i = 0;i<3;i++){
+            if(isdigit(c)){
+                val = (val*10)+(c-'0');
+                c = @(address+1);
             }else{
-            
-                if((i < 3 && c == '.') || i == 3){
-                    break;
-                }
-                return 0;
+                break;
             }
         }
-        if(n>=256){
+        if(val<0||val>255){
             return 0;
         }
-        v=v*256;
-        v=v*n;
-
+        if(c == '.'){
+            integer=(integer<<8)|val;
+            c = @(address+1);
+        }else{
+            if(j==3 && c == 0){
+                integer = (integer<<8)||val;
+                break;
+            }
+        }
+        
     }
-    return v;
-
-
+    if(c != 0){
+        return 0;
+    }
+    return integer;
 }
 
 

@@ -83,7 +83,7 @@ def main():
         os.remove(config.__fileoutput__+".asm")
     
 
-    print("Compiled and Linked symbols in %s ms"%(time.time()-beginTime))
+    print("Compiled and Linked symbols in %s s"%(time.time()-beginTime))
     if(config.__autorun__):
         os.system(f"./{config.__fileoutput__}")
 

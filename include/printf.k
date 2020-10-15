@@ -25,6 +25,14 @@ UNALIGN_STACK
     "}
 
 }
+function void printf(char* template, void a, void b, void c){
+        __asm{"
+ALIGN_STACK
+call printf
+FFLUSH_STDOUT
+UNALIGN_STACK
+    "}
+}
 function void printf(char* template){
 
     __asm{"

@@ -5,7 +5,7 @@ import Classes.Token as T
 import time
 import Classes.ExpressionComponent as EC
 import config
-
+import math
 ###################################
 #
 #   globals contains the majority of the raw assembly functions
@@ -133,6 +133,69 @@ small_version = {
 
 }
 
+normal_size = {
+
+
+    "al":rax,
+    "ax":rax,
+    "eax":rax,
+    "rax":rax,
+    "bl":rbx,
+    "bx":rbx,
+    "ebx":rbx,
+    "rbx":rbx,
+    "cl":rcx,
+    "cx":rcx,
+    "ecx":rcx,
+    rcx:rcx,
+    "dl":rdx,
+    "dx":rdx,
+    "edx":rdx,
+    "rdx":rdx,
+    r8b:r8,
+    r9b:r9,
+    r10b:r10,
+    r11b:r11,
+    r12b:r12,
+    r13b:r13,
+    r14b:r14,
+    r15b:r15,
+    "r8w":r8,
+    "r9w":r9,
+    "r10w":r10,
+    "r11w":r11,
+    "r12w":r12,
+    "r13w":r13,
+    "r14w":r14,
+    "r15w":r15,
+    "r8d":r8,
+    "r9d":r9,
+    "r10d":r10,
+    "r11d":r11,
+    "r12d":r12,
+    "r13d":r13,
+    "r14d":r14,
+    "r15d":r15,
+    r8:"r8",
+    r9:"r9",
+    r10:"r10",
+    r11:"r11",
+    r12:"r12",
+    r13:"r13",
+    r14:"r14",
+    r15:"r15",
+    "sil":rsi,
+    "dil":rdi,
+    "si":rsi,
+    "di":rdi,
+    "esi":rsi,
+    "edi":rdi,
+    rsi:rsi,
+    rdi:rdi
+
+}
+
+
 # parameters:
 
 norm_parameter_registers = [
@@ -241,8 +304,14 @@ def rfreeAll():
         norm_scratch_registers_inuse[i]=False
 
 # bitmasks for boolean values
-
+# 4 = 4 bytes = 32 bits = 4 nibs
 ensure_boolean = "and al, 00000001b\n"
+def maskset(reg, size):
+    if(size == 8): return ""
+    if(size == 4): return f"and {reg}, 0xffffffff\n"
+    if(size == 2): return f"and {reg}, 0xffff\n"
+    if(size == 1): return f"and {reg}, 0xff\n"
+
 check_fortrue = f"{ensure_boolean}cmp al, 1\n"
 
 
@@ -451,13 +520,13 @@ def functionlabel(fn):
     return out
 
 
-def function_closer(name):
+def function_closer(name, destructions):
     return """__%s__return:
-
+%s
 leave
 ret
 
-"""%(name)
+"""%(name, destructions)
 # get size specifier for address
 def psizeof(v):
     if v.isptr: return "qword"
@@ -474,10 +543,10 @@ def getConstantReserver(t):
 
 def getHeapReserver(t):
     if t.isptr: return "RESQ 1"
-    return "RESB %s"%t.t.size(0)
+    if(t.t.csize()<=8): return "RESQ 1"
+    return "RESB %s"%t.t.csize()
 
 def getSizeSpecifier(t):
-
     return "QWORD"
 
 def createIntrinsicConstant(variable):
@@ -527,6 +596,7 @@ def setSize(reg, size):
     if(size == 1): return boolchar_version[reg]
     elif(size == 2): return small_version[reg]
     elif(size == 4): return dword_version[reg]
+
     return reg
 
 
@@ -534,7 +604,7 @@ def setSize(reg, size):
 #compiletime:
 def isIntrinsic(q):
     for t in INTRINSICS:
-        if q == t.name:
+        if config.GlobalCompiler.Tequals(t.name, q):
             return True
     return False
 
@@ -620,6 +690,11 @@ def dwordize(value):
         return valueOf(value)
     return dword_version[value]
 
+
+
+
+
+
 def loadToReg(reg, value):
     
     if(reg == value):return ""
@@ -628,7 +703,7 @@ def loadToReg(reg, value):
             if("xmm" in reg):
                 pop = f"pop {rax}\n"
                 return f"{pop}movq {reg}, {rax}\n"
-            return f"pop {reg}\n"
+            return f"pop {normal_size[ reg]}\n"
         elif(isinstance(reg, Variable)):
             return f"pop {rax}\nmov {valueOf(reg)}, {rax}\n"
 
@@ -638,12 +713,13 @@ def loadToReg(reg, value):
             # SEE IF THIS IS FINE
             return f"movq {reg}, {valueOf(value)} ;<-\n" 
         return f"mov {reg}, {valueOf(value)}\n"
+    
+    
     elif(isinstance(reg, Variable)):
         
         if(reg.t.isflt()):
             
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
-
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
 # determine if unkown type x refers to float value
@@ -710,6 +786,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op == "-"):
         return f"sub {areg}, {breg}\n"
     elif(op == "*" and signed):
+        
         return f"imul {areg}, {breg}\n"
     elif(op == "*"):
         return f"mov {rax},{areg}\nmul {breg}\nmov {areg}, {rax}\n"
@@ -741,7 +818,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
         return f"mov {areg}, {breg}\n"
 
     elif(op in ["==","!=",">","<","<=",">="]):
-        return cmpI(boolchar_version[areg],boolchar_version[breg],signed,op)
+        return cmpI(areg,breg,signed,op)
     elif(op in ["!","&&","||","^","~","|","&"]):
         return boolmath(areg,breg,op)
 
@@ -749,11 +826,8 @@ def doIntOperation(areg, breg, op, signed, size=8):
 def cmpI(areg, breg,signed, op):
 
     comparator = getComparater(signed, op)
-    if(areg in boolchar_version):
-        bcv = boolchar_version[areg]
-    else:
-        bcv = areg
-    return f"\ncmp {areg}, {breg}\nset{comparator} {bcv}\n"
+
+    return f"\ncmp {areg}, {breg}\nset{comparator} {boolchar_version[areg]}\n"
 
 
 def cmpF(areg, breg, op):
@@ -845,18 +919,35 @@ def doOperation(t, areg, breg, op, signed = False):
 def castABD(a, b, areg, breg, newbreg):
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
-            if(a.type.csize() == 1 and b.type.csize() == 8):
-                return f"mov {boolchar_version[newbreg]}, {boolchar_version[breg]}\n"
-            elif(a.type.csize() == 4 and b.type.csize() == 8):
-                return f"mov {dwordize(newbreg)}, {dwordize(breg)}\n"
-            elif(a.type.csize() == 2 and b.type.csize() == 8):
-                return f"mov {small_version[newbreg]}, {small_version[breg]}\n"
+            out = maskset(newbreg,a.type.csize())
+            out+=f"mov {newbreg}, {breg}\n"
+            return out
         return False
     if(a.type.isflt() and not b.type.isflt()):
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
     if(b.type.isflt() and not a.type.isflt()):
         return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False
+
+
+
+# optimizations
+def canShiftmul(val):
+    
+    x = math.log2(val)
+    if(not x.is_integer()):
+        return False
+    return True
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -946,15 +1037,17 @@ def avx_getLoader(opspec):
     if(2 == opspec):
         return avx_load2
     return avx_load4
-
+def shiftmul(i):
+    return int(math.log2(i))
 
 def avx_loadToReg(loadop, avxreg, arr, idx):
     out = ""
     if(arr.isStackarr):
-        out+=(f"lea {idx}, [rbp+{idx}]\n")
+        out+=(f"lea {idx}, [rbp+{idx}*{arr.t.csize()}]\n")
         out+=(f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out+=(f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     else:
+        out+=(f"shl {idx}, {shiftmul(arr.t.csize())}\n")
         out+=(f"add {idx}, [rbp-{arr.offset}]\n")
         out+=(f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     return out
@@ -972,10 +1065,11 @@ def avx_doToReg(op, opcount, size, dest, source):
 def avx_dropToAddress(loadop, avxreg, arr, idx):
     out = ""
     if(arr.isStackarr):
-        out+=(f"lea {idx}, [rbp+{idx}]\n")
+        out+=(f"lea {idx}, [rbp+{idx}*{arr.t.csize()}]\n")
         out+=(f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out+=(f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     else:
+        out+=(f"shl {idx}, {shiftmul(arr.t.csize())}\n")
         out+=(f"add {idx}, [rbp-{arr.offset}]\n")
         out+=(f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     return out
