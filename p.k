@@ -3,7 +3,7 @@
 function int main(int argc, char** argv){
     srand();
 
-    print(get_inaddr("127.0.0.1"));
+
 
     return 0;
 }
