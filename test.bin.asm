@@ -1041,11 +1041,16 @@ null: RESB 8
     __heap_padding__: resz 1
 section .text
 global CMAIN
+
+;[ function void freeString( [[ Variable: String. this @ 8]] ) ]
+
 _void_freeString_pString.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: String. this @ 8]
 mov [rbp-8], rdi
+;[[ id : this], [ -> : ->], [ T?T : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, [rbx]
@@ -1056,26 +1061,35 @@ call _void_free_pvoid.
 ___void_freeString_pString.__return:
 leave
 ret
+
+;[ function void appendString( [[ Variable: String. this @ 8], [ Variable: char. other @ 16]] ) ]
+
 _void_appendString_pString.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 48
+;Load Parameter: [ Variable: String. this @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. other @ 16]
 mov [rbp-16], rsi
+;[[ id : other]]
 ;------------
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 mov rax, 0
 call _size_t_strlen_pchar.
 push rax
+;[[ fn(x) : [ function size_t strlen( [[ Variable: char. str @ 8]] ) ] ]]
 ;------------
 pop rax
 mov QWORD[rbp-24], rax
+;[[ id : this], [ -> : ->], [ T?T : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, [rbx]
 ;------------
 mov rdi, rbx
+;[[ id : this], [ -> : ->], [ T?T : len], [ + : +], [ id : ol]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
 mov rbx, [rbx]
@@ -1086,9 +1100,11 @@ mov rsi, rbx
 mov rax, 0
 call _void._realloc_pvoid.size_t
 push rax
+;[[ fn(x) : [ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ] ]]
 ;------------
 pop rax
 mov QWORD[rbp-32], rax
+;[[ id : newvalue], [ == : ==], [ id : nullptr]]
 mov rbx, nullptr
 mov rcx, QWORD[rbp-32]
 cmp bl, cl
@@ -1098,6 +1114,7 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x8
+;[[ id : STRING_CONSTANT_9]]
 ;------------
 mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
@@ -1106,6 +1123,7 @@ call _void_print_pchar.
 jmp _LIFELSE_0x9
 _LIFPOST_0x8:
 _LIFELSE_0x9:
+;[[ id : newvalue], [ + : +], [ id : ol], [ - : -], [ int : 3]]
 mov rbx, QWORD[rbp-32]
 mov rcx, QWORD[rbp-24]
 add rbx, rcx
@@ -1113,10 +1131,13 @@ mov rcx, 3
 sub rbx, rcx
 ;------------
 mov QWORD[rbp-40], rbx
+;[[ id : ostart]]
 ;------------
 mov rdi, QWORD[rbp-40]
+;[[ id : other]]
 ;------------
 mov rsi, QWORD[rbp-16]
+;[[ id : ol]]
 ;------------
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
@@ -1125,6 +1146,7 @@ call _void_memcpy_pvoid.void.int
 mov rbx, [rbp-8]
 lea rbx, [rbx+0]
 push rbx
+;[[ id : newvalue]]
 ;------------
 mov rcx, QWORD[rbp-32]
 pop rbx
@@ -1132,24 +1154,32 @@ mov [rbx], rcx
 ___void_appendString_pString.char.__return:
 leave
 ret
+
+;[ function void createString( [[ Variable: String. dest @ 8], [ Variable: char. starter @ 16]] ) ]
+
 _void_createString_pString.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: String. dest @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. starter @ 16]
 mov [rbp-16], rsi
+;[[ id : starter]]
 ;------------
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 mov rax, 0
 call _size_t_strlen_pchar.
 push rax
+;[[ fn(x) : [ function size_t strlen( [[ Variable: char. str @ 8]] ) ] ]]
 ;------------
 pop rax
 mov QWORD[rbp-24], rax
 mov rbx, [rbp-8]
 lea rbx, [rbx+8]
 push rbx
+;[[ id : l]]
 ;------------
 mov rcx, QWORD[rbp-24]
 pop rbx
@@ -1157,23 +1187,28 @@ mov [rbx], rcx
 mov rbx, [rbp-8]
 lea rbx, [rbx+0]
 push rbx
+;[[ id : l]]
 ;------------
 mov r10, QWORD[rbp-24]
 mov rdi, r10
 mov rax, 0
 call _void._malloc_psize_t
 push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 8]] ) ] ]]
 ;------------
 pop rcx
 pop rbx
 mov [rbx], rcx
+;[[ id : dest], [ -> : ->], [ T?T : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, [rbx]
 ;------------
 mov rdi, rbx
+;[[ id : starter]]
 ;------------
 mov rsi, QWORD[rbp-16]
+;[[ id : l]]
 ;------------
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
@@ -1182,12 +1217,18 @@ call _void_memcpy_pvoid.void.int
 ___void_createString_pString.char.__return:
 leave
 ret
+
+;[ function void print( [[ Variable: int. a @ 8], [ Variable: int len @ 16]] ) ]
+
 _void_print_pint.int:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: int. a @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int len @ 16]
 mov [rbp-16], rsi
+;[[ id : len], [ == : ==], [ int : 0]]
 mov rcx, 0
 mov rbx, QWORD[rbp-16]
 cmp bl, cl
@@ -1197,38 +1238,46 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x2
+;[[ id : STRING_CONSTANT_5]]
 ;------------
 mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
+;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___void_print_pint.int__return
 jmp _LIFELSE_0x3
 _LIFPOST_0x2:
 _LIFELSE_0x3:
+;[[ id : STRING_CONSTANT_6]]
 ;------------
 mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
+;[[ int : 0]]
 ;------------
 mov rsi, 0
 mov rax, 0
 call _void_printf_pchar.int
+;[[ int : 0]]
 ;------------
 mov QWORD[rbp-24], 0
 jmp _LFORCMP_0x5
 _LFORTOP_0x4:
+;[[ id : STRING_CONSTANT_7]]
 ;------------
 mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
+;[[ id : i]]
 ;------------
 mov r10, QWORD[rbp-24]
 mov rcx, r10
 lea rbx, [rbx+rcx*8]
 mov rbx, [rbx]
 push rbx
+;[[ [x] : int]]
 ;------------
 pop rsi
 mov rax, 0
@@ -1240,6 +1289,7 @@ add rbx, rcx
 ;------------
 mov QWORD[rbp-24], rbx
 _LFORCMP_0x5:
+;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
 mov rcx, 1
 mov rbx, QWORD[rbp-16]
 sub rbx, rcx
@@ -1252,10 +1302,12 @@ and al, 00000001b
 cmp al, 1
 je _LFORTOP_0x4
 _LFOREND_0x7:
+;[[ id : STRING_CONSTANT_8]]
 ;------------
 mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
+;[[ id : len], [ - : -], [ int : 1]]
 mov r11, 1
 mov r10, QWORD[rbp-16]
 sub r10, r11
@@ -1264,6 +1316,7 @@ mov rcx, r10
 lea rbx, [rbx+rcx*8]
 mov rbx, [rbx]
 push rbx
+;[[ [x] : int]]
 ;------------
 pop rsi
 mov rax, 0
@@ -1271,14 +1324,20 @@ call _void_printf_pchar.int
 ___void_print_pint.int__return:
 leave
 ret
+
+;[ function void print( [[ Variable: void. a @ 8]] ) ]
+
 _void_print_pvoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: void. a @ 8]
 mov [rbp-8], rdi
+;[[ id : a]]
 ;------------
 mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-16], rbx
+;[[ id : ptr]]
 ;------------
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
@@ -1287,67 +1346,90 @@ call _void_print_pint
 ___void_print_pvoid.__return:
 leave
 ret
+
+;[ function void print( [[ Variable: bool a @ 8]] ) ]
+
 _void_print_pbool:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: bool a @ 8]
 mov [rbp-8], rdi
+;[[ id : a]]
 ;------------
 mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x0
+;[[ id : STRING_CONSTANT_3]]
 ;------------
 mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
+;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
 jmp _LIFELSE_0x1
 _LIFPOST_0x0:
 _LIFELSE_0x1:
+;[[ id : STRING_CONSTANT_4]]
 ;------------
 mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
+;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
 ___void_print_pbool__return:
 leave
 ret
+
+;[ function void print( [[ Variable: char a @ 8]] ) ]
+
 _void_print_pchar:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char a @ 8]
 mov [rbp-8], rdi
 PRINT_CHAR rdi
 NEWLINE
 ___void_print_pchar__return:
 leave
 ret
+
+;[ function void print( [[ Variable: char. a @ 8]] ) ]
+
 _void_print_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. a @ 8]
 mov [rbp-8], rdi
 PRINT_STRING [rdi]
 NEWLINE
 ___void_print_pchar.__return:
 leave
 ret
+
+;[ function void print( [[ Variable: double a @ 8]] ) ]
+
 _void_print_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
+;[[ id : STRING_CONSTANT_2]]
 ;------------
 mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
+;[[ id : a]]
 ;------------
 movq xmm7, QWORD[rbp-8] ;<-
 movq xmm0, xmm7 ;<-
@@ -1356,14 +1438,20 @@ call _void_printf_pchar.double
 ___void_print_pdouble__return:
 leave
 ret
+
+;[ function void print( [[ Variable: uint a @ 8]] ) ]
+
 _void_print_puint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
+;[[ id : STRING_CONSTANT_1]]
 ;------------
 mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
+;[[ id : a]]
 ;------------
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
@@ -1372,24 +1460,34 @@ call _void_printf_pchar.uint
 ___void_print_puint__return:
 leave
 ret
+
+;[ function void print( [[ Variable: short a @ 8]] ) ]
+
 _void_print_pshort:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: short a @ 8]
 mov [rbp-8], rdi
 PRINT_DEC 4, rdi
         NEWLINE
 ___void_print_pshort__return:
 leave
 ret
+
+;[ function void print( [[ Variable: int a @ 8]] ) ]
+
 _void_print_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
+;[[ id : STRING_CONSTANT_0]]
 ;------------
 mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
+;[[ id : a]]
 ;------------
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
@@ -1398,12 +1496,18 @@ call _void_printf_pchar.int
 ___void_print_pint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: double a @ 16], [ Variable: double b @ 24]] ) ]
+
 _void_printf_pchar.doubledouble:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double a @ 16]
 movsd [rbp-16], xmm0
+;Load Parameter: [ Variable: double b @ 24]
 movsd [rbp-24], xmm1
 ALIGN_STACK
 call printf
@@ -1412,12 +1516,18 @@ UNALIGN_STACK
 ___void_printf_pchar.doubledouble__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: int a @ 16], [ Variable: int b @ 24]] ) ]
+
 _void_printf_pchar.intint:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int a @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: int b @ 24]
 mov [rbp-24], rdx
 ALIGN_STACK
 call printf
@@ -1426,11 +1536,16 @@ UNALIGN_STACK
 ___void_printf_pchar.intint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: char. other @ 16]] ) ]
+
 _void_printf_pchar.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. other @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1439,11 +1554,16 @@ UNALIGN_STACK
 ___void_printf_pchar.char.__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: double f @ 16]] ) ]
+
 _void_printf_pchar.double:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double f @ 16]
 movsd [rbp-16], xmm0
 ALIGN_STACK
 mov rax, 1
@@ -1453,11 +1573,16 @@ UNALIGN_STACK
 ___void_printf_pchar.double__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: uint format @ 16]] ) ]
+
 _void_printf_pchar.uint:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: uint format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1466,10 +1591,14 @@ UNALIGN_STACK
 ___void_printf_pchar.uint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8]] ) ]
+
 _void_printf_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
 call printf
@@ -1478,11 +1607,16 @@ UNALIGN_STACK
 ___void_printf_pchar.__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: int format @ 16]] ) ]
+
 _void_printf_pchar.int:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1491,10 +1625,14 @@ UNALIGN_STACK
 ___void_printf_pchar.int__return:
 leave
 ret
+
+;[ function size_t strlen( [[ Variable: char. str @ 8]] ) ]
+
 _size_t_strlen_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. str @ 8]
 mov [rbp-8], rdi
 mov rax, -1
     _size_t_strlen_pchar._flp:
@@ -1506,12 +1644,18 @@ mov rax, -1
 ___size_t_strlen_pchar.__return:
 leave
 ret
+
+;[ function void memcpy( [[ Variable: void. dest @ 8], [ Variable: void. source @ 16], [ Variable: int bytes @ 24]] ) ]
+
 _void_memcpy_pvoid.void.int:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: void. dest @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: void. source @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: int bytes @ 24]
 mov [rbp-24], rdx
 ; rax = final dest:
     
@@ -1525,10 +1669,14 @@ mov [rbp-24], rdx
 ___void_memcpy_pvoid.void.int__return:
 leave
 ret
+
+;[ function void free( [[ Variable: void. ptr @ 8]] ) ]
+
 _void_free_pvoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: void. ptr @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call free
@@ -1536,11 +1684,16 @@ ALIGN_STACK
 ___void_free_pvoid.__return:
 leave
 ret
+
+;[ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ]
+
 _void._realloc_pvoid.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: void. og @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: size_t newsize @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
     call realloc
@@ -1548,10 +1701,14 @@ ALIGN_STACK
 ___void._realloc_pvoid.size_t__return:
 leave
 ret
+
+;[ function void. calloc( [[ Variable: size_t size @ 8]] ) ]
+
 _void._calloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: size_t size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call calloc
@@ -1559,10 +1716,14 @@ ALIGN_STACK
 ___void._calloc_psize_t__return:
 leave
 ret
+
+;[ function void. malloc( [[ Variable: size_t size @ 8]] ) ]
+
 _void._malloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: size_t size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call malloc
@@ -1570,140 +1731,176 @@ ALIGN_STACK
 ___void._malloc_psize_t__return:
 leave
 ret
+
+;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
+
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
 sub rsp, 48
+;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ int : 4], [ * : *], [ id : int]]
 ;------------
 mov rdi, 32
 mov rax, 0
 call _void._malloc_psize_t
 push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
 ;------------
 pop rax
 mov QWORD[rbp-24], rax
+;[[ int : 4], [ * : *], [ id : int]]
 ;------------
 mov rdi, 32
 mov rax, 0
 call _void._malloc_psize_t
 push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
 ;------------
 pop rax
 mov QWORD[rbp-32], rax
+;[[ int : 4], [ * : *], [ id : int]]
 ;------------
 mov rdi, 32
 mov rax, 0
 call _void._malloc_psize_t
 push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
 ;------------
 pop rax
 mov QWORD[rbp-40], rax
 mov rbx, [rbp-24]
+;[[ int : 0]]
 ;------------
 mov rcx, 0
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 1]]
 ;------------
 mov rcx, 1
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-24]
+;[[ int : 1]]
 ;------------
 mov rcx, 1
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 2]]
 ;------------
 mov rcx, 2
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-24]
+;[[ int : 2]]
 ;------------
 mov rcx, 2
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 3]]
 ;------------
 mov rcx, 3
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-24]
+;[[ int : 3]]
 ;------------
 mov rcx, 3
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 4]]
 ;------------
 mov rcx, 4
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-32]
+;[[ int : 0]]
 ;------------
 mov rcx, 0
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 1]]
 ;------------
 mov rcx, 1
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-32]
+;[[ int : 1]]
 ;------------
 mov rcx, 1
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 2]]
 ;------------
 mov rcx, 2
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-32]
+;[[ int : 2]]
 ;------------
 mov rcx, 2
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 3]]
 ;------------
 mov rcx, 3
 pop rbx
 mov [rbx], rcx
 mov rbx, [rbp-32]
+;[[ int : 3]]
 ;------------
 mov rcx, 3
 lea rbx, [rbx+rcx*8]
 push rbx
+;[[ int : 4]]
 ;------------
 mov rcx, 4
 pop rbx
 mov [rbx], rcx
+;[[ int : 0]]
 ;------------
 mov rbx, 0
 add rbx, [rbp-24]
 VMOVDQU ymm0, [rbx]
+;[[ int : 0]]
 ;------------
 mov rcx, 0
 add rcx, [rbp-32]
 VMOVDQU ymm1, [rcx]
 VPADDQ ymm0, ymm1, ymm0
+;[[ int : 0]]
 ;------------
 mov rbx, 0
 add rbx, [rbp-40]
 VMOVDQU [rbx], ymm0
+;[[ id : arr3]]
 ;------------
 mov rbx, QWORD[rbp-40]
 mov rdi, rbx
+;[[ int : 4]]
 ;------------
 mov rsi, 4
 mov rax, 0
 call _void_print_pint.int
+;[[ id : arr1]]
 ;------------
 mov rdi, QWORD[rbp-24]
 mov rax, 0
 call _void_free_pvoid.
+;[[ id : arr2]]
 ;------------
 mov rdi, QWORD[rbp-32]
 mov rax, 0
 call _void_free_pvoid.
+;[[ id : arr3]]
 ;------------
 mov rdi, QWORD[rbp-40]
 mov rax, 0
 call _void_free_pvoid.
+;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
