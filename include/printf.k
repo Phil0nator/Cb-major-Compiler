@@ -174,7 +174,7 @@ function void print(void* a){
 
 // Array printing functions: 
 function void print(int* a, int len){
-
+/*
     if(len == 0){
         print("[]");
         return 0;
@@ -187,5 +187,5 @@ function void print(int* a, int len){
 
     }
     printf(" %i ]\n", a[len-1]);
-
+*/
 }
