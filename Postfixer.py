@@ -60,7 +60,7 @@ class Postfixer:
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
 
-        if(ec == None): print(t)        
+        if(ec == None): print(t.start)        
         ec.token = t
         self.pfix.append(ec)
 

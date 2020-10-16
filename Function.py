@@ -586,7 +586,7 @@ class Function:
         opens = 1
         instructions = ""
         wasfunc = False
-        while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok != T_EQUALS:
+        while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
 
             if(self.current_token.tok == T_CLSP):opens-=1
             elif(self.current_token.tok == T_OPENP):opens+=1
@@ -810,21 +810,26 @@ class Function:
             
         insters, dest = self.evaluateLeftsideExpression()
         self.addline(insters)
+        self.advance()
+        value = ralloc(dest.type.isflt())
+        ev = self.evaluateRightsideExpression(EC.ExpressionComponent(value, dest.type,token=dest.token))
+        
+        
+        
+        self.addline(inst)
+        self.addline(ev)
         if(self.current_token.tok == T_EQUALS): #normal
-            self.advance()
-            value = ralloc(dest.type.isflt())
-            ev = self.evaluateRightsideExpression(EC.ExpressionComponent(value, dest.type,token=dest.token))
-            
-            
-            
-            rfree(value)
-            rfree(dest.accessor)
-            self.addline(inst)
-            self.addline(ev)
             self.addline(loadToPtr(dest.accessor,value))
-            
-            if(self.current_token.tok == T_ENDL):
-                self.advance()
+        elif(self.current_token.tok == "+="):
+            self.addline(doOperation(dest.type,dest.accessor,value,"+",dest.type.signed))
+
+
+
+        rfree(value)
+        rfree(dest.accessor)
+        if(self.current_token.tok == T_ENDL):
+            self.advance()
+        
         
 
 

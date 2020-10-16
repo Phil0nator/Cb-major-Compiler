@@ -51,8 +51,18 @@ class RightSideEvaluator:
     def performCastAndOperation(self,a, b, op, o):                      # Do an operation with a op b -> o:DType
         instr = ""
         apendee = None
-        if(op in ["<<", ">>"] and (a.type.isflt() or b.type.isflt())):
-            throw(InvalidOperationOperands(a.token,op,a.type,b.type))
+        if(op in ["<<", ">>"]):
+            if( (a.type.isflt() or b.type.isflt())):
+                throw(InvalidOperationOperands(a.token,op,a.type,b.type))
+            # else:
+            #     instr+=self.bringdown_memloc(a)
+            #     if(a.isRegister()):
+            #         areg = a.accessor
+            #     else:
+            #         areg = ralloc(False)
+            #         instr+=loadToReg(areg,a.accessor)
+            #     instr+=doIntOperation(areg, b.accessor, op, a.type.signed)
+
 
         instr+=self.bringdown_memlocs(a,b)
 

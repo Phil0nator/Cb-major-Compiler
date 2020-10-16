@@ -32,7 +32,7 @@ function void appendString(String* this, char* other){
 }
 
 function bool substrequ(char* a, char* b, size_t len){
-    for(int i = 0 ; i < len;i++){
+    for(int i = 0 ; i < len;i+=1){
         if(a[i] != b[i]){
             return false;
         }
@@ -53,7 +53,7 @@ function bool strequ(char* a, char* b){
             break;
         }
 
-        i++;
+        i+=1;
     }
 
 
@@ -79,7 +79,7 @@ function int strfind(String* this, char* sequence){
     }
 
     int end = this->len-sql;
-    for(int i = 0 ; i < end;i++){
+    for(int i = 0 ; i < end;i+=1){
         if(substrequ(this->value+i, sequence, sql)){
             return i;
         }

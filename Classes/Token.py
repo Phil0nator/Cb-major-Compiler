@@ -50,7 +50,9 @@ T_ANOT = "~"
 T_AOR = "|"
 T_AAND = "&"
 
-T_MULTIOP = "-><=!|&"
+T_MULTIOP = "-><=!|&+/*"
+MULTIOPERS = ["->", "!=", "<=", ">=", "==", "+=", "*=", "-=", "/=", "++", "--", ">>", "<<", "||","&&"]
+
 
 T_DIGITS = "0123456789"
 T_IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
@@ -103,6 +105,8 @@ KEYWORDS = [
 
 
 ]
+SETTERS = ["=", "+=", "-=", "*=", "/="]
+
 
 
 T_FUNCTIONCALL = "fn(x)"

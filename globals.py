@@ -785,6 +785,33 @@ def calculateConstant(a, b, op):
     elif(op == "<<"):
         return EC.ExpressionComponent(int(a.accessor<<b.accessor), INT.copy(), constint=True) 
 
+def shiftInt(a, b, op, signed):
+    cmd = ""
+    if(op == ">>"):
+            if(signed):
+                cmd = "sar"
+            else:
+                cmd = "shr"
+    elif(op == "<<"):
+        if(signed):
+            cmd = "sal"
+        else:
+            cmd = "shl"
+    
+    if(isinstance(b, int)):
+        return f"{cmd} {a}, {b}\n"
+    else:
+        if(a == rcx):
+            tmp = ralloc(False)
+            rfree(tmp)
+            return f"mov {tmp}, {a}\nmov cl, {boolchar_version[b]}\n{cmd} {tmp}, cl\nmov {a}, {tmp}\n"
+        elif(b == rcx):
+            return f"{cmd} {a}, cl\n"
+        else:
+            tmp = ralloc(False)
+            rfree(tmp)
+            return f"mov {tmp}, rcx\nmov cl, {boolchar_version[b]}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
+
 def doIntOperation(areg, breg, op, signed, size=8):
 
     if(op == "+"):
@@ -810,19 +837,12 @@ def doIntOperation(areg, breg, op, signed, size=8):
             asmop = "div"
 
         return f"xor rdx, rdx\nmov {rax}, {areg}\n{asmop} {breg}\n mov {areg}, {rdx}\n"
-    elif(op == ">>"):
-        if(signed):
-            return f"sar {areg}, {boolchar_version[breg]}\n"
-        else:
-            return f"shr {areg}, {boolchar_version[breg]}\n"
-    elif(op == "<<"):
-        if(signed):
-            return f"sal {areg}, {boolchar_version[breg]}\n"
-        else:
-            return f"shl {areg}, {boolchar_version[breg]}\n"
+    elif( op in [">>","<<"]):
+        return shiftInt(areg,breg,op,signed)
+
     elif(op == "mov"):
         return f"mov {areg}, {breg}\n"
-
+    
     elif(op in ["==","!=",">","<","<=",">="]):
         return cmpI(areg,breg,signed,op)
     elif(op in ["!","&&","||","^","~","|","&"]):
