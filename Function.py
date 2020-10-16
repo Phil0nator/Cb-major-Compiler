@@ -902,6 +902,10 @@ class Function:
                 # ID initiated statement
                 self.buildIDStatement()
 
+            elif(self.current_token.tok in [T_DEREF,T_OPENP]):
+                self.buildAssignment()
+
+
             else:
                 pass # ambiguous statement
                 throw(UnexpectedToken(self.current_token))

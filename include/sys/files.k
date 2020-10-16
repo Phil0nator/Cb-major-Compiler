@@ -18,13 +18,22 @@ const int O_EXLOCK      = 0x0020;
 const int O_ASYNC       = 0x0040;
 const int O_FSYNC       = 0x0080;
 
-const int O_CREAT       = 0x0200;
-const int O_TRUNC       = 0x0400;
+const int O_CREAT       = 0x0040;
+const int O_TRUNC       = 0x0200;
 const int O_EXCL        = 0x0800;
 
 
+const int O_USRPERM     = 0x00700;
+
+const int WMODE_WRITE   = 0;
+const int WMODE_APPEND  = 1024;
+const int WMODE_WPLUS   = 65;
+const int WMODE_WPLUSA  = 1089;
 
 
+const int SEEK_END      = 2;
+const int SEEK_CUR      = 1;
+const int SEEK_SET      = 0;
 
 
 
@@ -75,4 +84,11 @@ function int chdir(char* pathname){
     mov rax, 80
     syscall
     "}
+}
+function int lseek(fd_t fd, int offset, int whence){
+    __asm{"
+    mov rax, 8
+    syscall
+    "
+    }
 }

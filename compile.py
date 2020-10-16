@@ -34,7 +34,7 @@ def main():
 
     pp = PreProcessor(raw,pretokens,config.__fileinput__)
     totals = pp.process()
-    print("+-+-+ Compile +-+-+")
+    #print("+-+-+ Compile +-+-+")
     
     # global compilation
     c = Compiler()
@@ -68,7 +68,7 @@ def main():
     
     
     
-    print("+-+-+ FINAL +-+-+")
+    #print("+-+-+ FINAL +-+-+")
 
     #linking, and running
 
@@ -84,9 +84,11 @@ def main():
     
 
     print("Compiled and Linked symbols in %s s"%(time.time()-beginTime))
+    
     if(config.__autorun__):
+        runtime = time.time()
         os.system(f"./{config.__fileoutput__}")
-
+        print("\nRuntime: %s s"%(time.time()-runtime))
 
 
 

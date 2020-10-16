@@ -143,7 +143,7 @@ class PreProcessor:
                     if(self.current_token.tok == T_STRING):
 
                         path = self.current_token.value
-                        print(f"[including: {path} ]")
+                        #print(f"[including: {path} ]")
 
                         exists = False
                         for text in self.texts:
