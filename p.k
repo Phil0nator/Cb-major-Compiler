@@ -1,9 +1,11 @@
 #include "include/std.k"
 
+
+
+
 function int main(int argc, char** argv){
-    srand();
 
-
+    FILE something = fopen("test.bin.asm", "a+");
 
     return 0;
 }

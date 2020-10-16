@@ -44,11 +44,11 @@ class Lexer:
         op = self.ch
         begin = self.loc.copy()
         self.advance()
-        if(self.ch not in T.T_MULTIOP):
+        if(self.ch not in T.T_MULTIOP or op+self.ch not in T.MULTIOPERS):
             return Token(op,op,begin,self.loc.copy())
         op += self.ch
         self.advance()
-        if(self.ch not in T.T_MULTIOP):
+        if(self.ch not in T.T_MULTIOP or op+self.ch not in T.MULTIOPERS):
             return Token(op,op,begin,self.loc.copy())
         op+=self.ch
         self.advance()
@@ -155,8 +155,7 @@ class Lexer:
                 tokens.append(Token(T.T_ENDL,T.T_ENDL,self.loc.copy(),self.loc.copy()))
                 self.advance()
             elif(self.ch == "+"):
-                tokens.append(Token(T.T_PLUS,T.T_PLUS,self.loc.copy(),self.loc.copy()))
-                self.advance()
+                tokens.append(self.buildMultichar())
             elif(self.ch == "/"):
                 self.advance()
                 if(self.ch == "/"):
@@ -169,10 +168,11 @@ class Lexer:
                         comment+=self.ch
                     self.advance()                    
                 else:
-                    tokens.append(Token(T.T_DIVIDE,T.T_DIVIDE,self.loc.copy(),self.loc.copy()))
-                    
+                    self.chidx-=2
+                    self.advance()
+                    tokens.append(self.buildMultichar())                    
             
-            elif (self.ch in "()}{[],^*@%~."):
+            elif (self.ch in "()}{[],^@%~."):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
                 self.advance()
 
@@ -183,8 +183,10 @@ class Lexer:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
-                    t = Token("-","-",self.loc.copy(),self.loc.copy())
-                
+                    #t = Token("-","-",self.loc.copy(),self.loc.copy())
+                    self.chidx-=2
+                    self.advance()
+                    t = self.buildMultichar()
                 tokens.append(t)
             elif (self.ch in T.T_MULTIOP):
                 token = self.buildMultichar()

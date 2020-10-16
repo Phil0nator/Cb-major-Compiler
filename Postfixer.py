@@ -29,7 +29,7 @@ class Postfixer:
         return t.tok in OPERATORS
     
     def addtok(self, t):                # add a given token to the final output as an ExpressionComponent object
-        
+        ec = None
         if self.isOperator(t):
             ec = EC.ExpressionComponent(t.tok,t.value,isoperation=True)
         else:
@@ -42,10 +42,12 @@ class Postfixer:
                     
 
                     v = self.fn.compiler.getType(t.value)
-                    if(v == None):  throw(UnkownIdentifier(t))
-                    
-                    ec = EC.ExpressionComponent(v.size(0),INT.copy(),constint=True,token=t)
-                    ec.memory_location = valueOf(v)
+                    if(v == None):  
+                        ec = EC.ExpressionComponent(t.value,VOID.copy(),token = t)
+                    else:
+
+                        ec = EC.ExpressionComponent(v.size(0),INT.copy(),constint=True,token=t)
+                        ec.memory_location = valueOf(v)
                 else:
                 
                     ec = EC.ExpressionComponent(v,v.t)
@@ -57,7 +59,8 @@ class Postfixer:
                 ec = EC.ExpressionComponent(t.value,CHAR.copy(),constint=True)
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
-        
+
+        if(ec == None): print(t.start)        
         ec.token = t
         self.pfix.append(ec)
 
@@ -66,9 +69,9 @@ class Postfixer:
 
         for t in self.tokens:
 
-            if t.tok == "(":
+            if t.tok == "(" or t.tok == "[":
                 self.stack.append(t)
-            elif t.tok == ")":
+            elif t.tok == ")" or t.tok == "]":
                 while True:
                     if(len(self.stack)<=0):break
                     v = self.stack.pop()
@@ -93,4 +96,6 @@ class Postfixer:
                 self.addtok(t)
         while len(self.stack)>0:
             self.addtok(self.stack.pop())
+        
+
         return self.pfix

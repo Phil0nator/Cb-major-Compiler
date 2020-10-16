@@ -4,6 +4,8 @@ from Classes.DType import *
 from Classes.Token import *
 from Classes.Error import *
 from Postfixer import *
+from ExpressionEvaluator import RightSideEvaluator
+from ExpressionEvaluator import LeftSideEvaluator
 import Classes.Optimizer
 import config
 import time
@@ -228,7 +230,8 @@ class Function:
                     self.beginRecursiveCompile()
                 else:
                     throw(ExpectedToken(self.current_token,"{"))
-
+                if(self.current_token.tok == T_CLSSCOPE):
+                    self.advance()
                 self.addline(jmpafter+":\n")
 
             else:
@@ -240,8 +243,6 @@ class Function:
 
 
         self.continues.pop()
-
-
 
 
     def buildForloop(self):
@@ -342,6 +343,7 @@ class Function:
         if(self.current_token.tok != T_ID): throw(ExpectedType(self.current_token))
         t = self.compiler.getType(self.current_token.value)
         vsize = t.csize()
+        flt = t.isflt()
         if(t == None): throw(UnkownIdentifier(self.current_token))
         self.advance()
         
@@ -378,6 +380,7 @@ class Function:
             opn = self.current_token.tok
             if(not Postfixer.isOperator(None,self.current_token)):
                 throw(ExpectedToken(self.current_token, "operator"))
+            if( op not in ["+", "-", "*"] and not flt): throw(InvalidSimdOperation(self.current_token,op))
             self.advance()
             if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
             self.advance()
@@ -391,10 +394,13 @@ class Function:
             determine_idxn = self.evaluateRightsideExpression(EC.ExpressionComponent(idxn, INT.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
+
+
+
             avxn = avx_correctSize(avxn, op)
             self.addline(determine_idxn)
             self.addline(avx_loadToReg(op, avxn, arrn, idxn))
-            self.addline(avx_doToReg(opn, op, vsize, avx1, avxn))
+            self.addline(avx_doToReg(opn, op, vsize, avx1, avxn, flt))
 
             avx_rfree(avxn)
             rfree(idxn)
@@ -574,379 +580,8 @@ class Function:
         instructions+=fncall(fn)
         return instructions, fn
 
-    # (used for rightside evaluation)
-    def performCastAndOperation(self,a, b, op, o):                      # Do an operation with a op b -> o:DType
-        instr = ""
-        apendee = None
-
-        if(op in ["<<", ">>"] and (a.type.isflt() or b.type.isflt())):
-            throw(InvalidOperationOperands(a.token,op,a.type,b.type))
-
-
-        if(a.type.__eq__(b.type)):
-            #same type
-
-            o = a.type.copy()
-            needLoadA = True
-            needLoadB = True
-            if(a.isRegister()):
-                areg = a.accessor
-                needLoadA=False
-            else:
-                areg = ralloc(a.type.isflt())
-            
-            if(b.isRegister()):
-                breg = b.accessor
-                needLoadB = False
-            else:
-                breg = ralloc(a.type.isflt())
-
-
-            if(needLoadB): instr+=loadToReg(breg, b.accessor)
-            if(needLoadA): instr+=loadToReg(areg, a.accessor)
-            instr+=doOperation(a.type,areg, breg, op, a.type.signed or b.type.signed)
-            if(op in ["==","!=",">","<","<=",">="]):
-                if(a.type.isflt() or b.type.isflt()):
-                    rfree(areg)
-                    areg = f"{rax}"
-                a.type = BOOL.copy()
-
-            apendee = (EC.ExpressionComponent(areg,a.type,token=a.token))
-
-            rfree(breg)
-        else: #situation is different when casting is directional
-            if(not typematch(a.type,b.type) and not typematch(b.type, a.type) and not (a.isconstint() or b.isconstint())):
-                throw(TypeMismatch(a.token, a.type, b.type))
-            newtype, toConvert = determinePrecedence(a.type, b.type,self)
-            o = newtype.copy()
-            if(newtype.__eq__(a.type)):
-                # cast to a
-                castee = b
-                caster = a
-            else:
-                #cast to b
-                castee = a
-                caster = b
-            
-            needLoadC = True
-            needLoadCO = True
-
-            if(caster.isRegister()):
-                creg = caster.accessor
-                needLoadC=False
-            else:
-                creg = ralloc(caster.type.isflt())
-            
-            if(castee.isRegister()):
-                coreg = castee.accessor
-                needLoadCO = False
-            else:
-                coreg = ralloc(castee.type.isflt())
-
-            newcoreg = ralloc(caster.type.isflt())
-            
-            if(needLoadC): instr+=loadToReg(creg, caster.accessor)
-            if(needLoadCO): instr+=loadToReg(coreg, castee.accessor)
-            cst=castABD(caster,castee,creg,coreg,newcoreg)
-            #cst represents if actual extra instructions are needed to cast
-            if(cst!=False):
-                instr+=cst
-            else:
-                rfree(newcoreg)
-                newcoreg = coreg
-
-
-            instr+=doOperation(caster.type,creg,newcoreg,op, caster.type.signed)
-            # handle float comparison
-            if(op in ["==","!=",">","<","<=",">="]):
-
-                if( caster.type.isflt() or castee.type.isflt()):                    
-                    rfree(creg)
-                    creg = f"{rax}"
-                caster.type = BOOL.copy()
-                o = BOOL.copy()
-
-
-            apendee = (EC.ExpressionComponent(creg,caster.type,token=caster.token))
-            rfree(newcoreg)
-            rfree(coreg)
-
-
-        
-        return instr, o, apendee
-
-
-
-    def evaluatePostfix(self, dest, pfix):                  # evaluate a rightside generated postfix list of EC's
-        instr = ""
-        stack = []
-        o = VOID.copy()
-        for e in pfix:
-            if(e.isoperation):
-                if(not operatorISO(e.accessor)):
-                    b = stack.pop()
-                    if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
-
-                    a = stack.pop()
-                    op = e.accessor
-
-                    if(a.isconstint() and b.isconstint()): # optimize for constant expressions
-                        stack.append(calculateConstant(a,b,op))
-                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr
-                        newinstr = None
-                        
-                        if(b.accessor == 0 and op not in  ["/"] and op not in signed_comparisons):
-                            apendee = a
-                            newinstr = ""
-                            newt = a.type.copy()
-                        if(op == "*" or op == "/"):
-                            
-                            if(canShiftmul(b.accessor)):
-                                newinstr = ""
-                                if(a.isRegister()):
-                                    areg = a.accessor
-                                else:
-                                    areg = ralloc(False)
-                                    newinstr+=loadToReg(areg,a.accessor)
-                                    
-                                
-                                if(op == "*"):
-                                    newinstr+=f"shl {valueOf(areg)}, {shiftmul(b.accessor)}\n"
-                                else:
-                                    newinstr+=f"shr {valueOf(areg)}, {shiftmul(b.accessor)}\n"
-                                a.accessor = areg
-                                apendee = a
-                            newt = a.type.copy()
-
-
-
-                        if(newinstr == None): newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
-                        stack.append(apendee)
-                        instr+=newinstr
-                        o = newt.copy()
-
-
-
-
-                    else:
-                        if(op == T_PTRACCESS):
-
-                            member = b.accessor
-                            memv = a.type.getMember(member)
-                            if(memv == None): throw(UnkownIdentifier(b.token))
-                            o = memv.t.copy()
-
-
-                            tmpaddr = ralloc(False)
-                            #instr+=f"mov {tmpaddr}, {valueOf(a.accessor)}\n"
-                            instr+=loadToReg(tmpaddr, a.accessor)
-
-
-                            instr+=f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
-                            if(memv.t.isflt()):
-                                rfree(tmpaddr)
-                                result = ralloc(True)
-                                instr+=f"movsd {result}, [{tmpaddr}]\n"
-                                stack.append(EC.ExpressionComponent(result, memv.t.copy(),token=b.token))
-                            else:
-                                instr+=f"mov {tmpaddr}, [{tmpaddr}]\n"
-                                stack.append(EC.ExpressionComponent(tmpaddr,memv.t.copy(),token=b.token))
-
-
-                        else:
-                            newinstr, newt, apendee = self.performCastAndOperation(a,b,op,o)
-                            stack.append(apendee)
-                            instr+=newinstr
-                            o = newt.copy()
-                else:
-                    if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
-                    a = stack.pop()
-
-                    if(e.accessor == T_NOT):
-
-                        if(not typematch(BOOL, a.type) and not a.isconstint()):
-                            throw(TypeMismatch(a.token,BOOL, a.type))
-                        
-                        needload = True
-                        if(a.isRegister()):
-                            areg = a.accessor
-                            needload=False
-                        else:
-                            areg = ralloc(False)
-                        if(needload): instr+=loadToReg(areg,a.accessor)
-
-                        instr+=boolmath(areg,None,e.accessor)
-                        o = BOOL.copy()
-                        stack.append(EC.ExpressionComponent(areg,BOOL.copy(),token=a.token))
-
-                    elif(e.accessor == T_ANOT):
-                        needload=True
-                        if(a.isRegister()):
-                            areg = a.accessor
-                            needload=False
-                        else:
-                            areg = ralloc(False)
-                        if(needload): instr+=loadToReg(areg,a.accessor)
-                        instr+=doOperation(a.type,areg,areg,T_ANOT,a.type.signed)
-                        o = a.type.copy()
-                        stack.append(EC.ExpressionComponent(areg,o.copy(),token=a.token))
-                    
-                    elif(e.accessor == T_REFRIZE):
-                        
-                        if( a.isconstint() ):
-
-                            throw(AddressOfConstant(a.token))
-
-                        elif( isinstance(a.accessor, Variable) ):
-                            
-                            result = ralloc(False)
-                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
-                            o = a.type.copy()
-                            o.ptrdepth+=1
-                            stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
-                        
-
-                        else:
-                            throw(AddressOfConstant(a.token))
-                        
-                    elif(e.accessor == T_DEREF):
-
-                        if( a.isconstint() ):
-
-                            throw(AddressOfConstant(a.token))
-
-                        elif(isinstance(a.accessor, Variable)):
-
-                            tmp = ralloc(False)
-                            instr+=f"mov {tmp}, {valueOf(a.accessor)}\n" 
-                            if(a.accessor.t.isflt()):
-                                oreg = ralloc(True)
-                                instr+=f"movsd {oreg}, [{tmp}]\n"
-                            else:
-                                oreg = ralloc(False)
-                                instr+=f"mov {oreg}, [{tmp}]\n"
-                            o = a.accessor.t.copy()
-                            o.ptrdepth-=1
-                            rfree(tmp)
-                            stack.append(EC.ExpressionComponent(oreg, o.copy(),token=a.token))
-                        elif(a.isRegister()):
-                            result = ralloc(a.type.isflt())
-                            if(a.type.isflt()):
-                                instr+=f"movsd {result}, [{a.accessor}]\n"
-                            else:
-                                instr+=f"mov {result}, [{a.accessor}]\n"
-                            rfree(a.accessor)
-                            o = a.type.copy()
-                            o.ptrdepth-=1
-                            stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
-
-                    elif(e.accessor == T_TYPECAST):
-
-                        
-                        tid = e.type
-                        t = self.compiler.getType(tid)
-                        if(t == None):
-                            throw(UnkownType(e.token))
-                        aval = ralloc(a.type.isflt())
-                        result = ralloc(t.isflt())
-                        cst=castABD(EC.ExpressionComponent("",t),EC.ExpressionComponent("",a.type),"",aval,result)
-                        if(cst != False):
-                            instr+=loadToReg(aval, a.accessor)
-                            instr+=cst
-                            rfree(aval)
-                            stack.append(EC.ExpressionComponent(result,t.copy(),token=a.token))
-                        else:
-                            rfree(aval)
-                            rfree(result)
-                            stack.append(EC.ExpressionComponent(a.accessor,t.copy(),token=a.token))
-                    else:
-                        print(e)
-                        exit(1)
-
-
-            else:
-                stack.append(e)
-        
-        if(len(stack) != 1): throw(HangingOperator(pfix[len(pfix)-1].token))
-        final = stack.pop()
-        
-        
-        o = final.type.copy()
-        #TODO: Make own function:
-        #       make able to handle different data sizes
-        instr+=";------------\n"
-        if(dest == "AMB"):
-            if(final.isRegister()):
-                rfree(final.accessor)
-            return instr, o
-
-        if(final.type.__eq__(dest.type)):
-
-            if(isinstance(final.accessor, Variable)):
-                tmp = ralloc(final.type.isflt())
-                instr+=loadToReg(tmp, final.accessor)
-
-                final.accessor = tmp
-                rfree(tmp)
-            else:
-                rfree(final.accessor)
-            instr+=loadToReg(dest.accessor,final.accessor)
-
-        
-        
-        else:
-
-            #not needed error
-            #if(not typematch(dest.type, final.type)):
-            #throw(TypeMismatch(dest.token, dest.type, final.type))
-
-
-
-            twoStep = False
-            if(isinstance(dest.accessor, Variable)):
-                castdest = ralloc(dest.type.isflt())
-                twoStep = True
-            else:
-                castdest = dest.accessor
-
-            if(dest.type.isflt() and not final.type.isflt()):
-                if(isinstance(final.accessor, int)):
-                    instr+=f"mov {rax}, {final.accessor}\n"
-                    final.accessor = "rax"
-                elif(final.accessor == "pop"):
-                    instr+=f"pop {rax}\n"
-                    final.accessor = "rax"
-
-                cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-            elif(not dest.type.isflt() and final.type.isflt()):
-                if(final.accessor == "pop"):
-                    instr+=f"pop {rax}\nmovq {xmm7}, {rax}\n"
-                    final.accessor = "xmm7"
-
-                cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-            else:
-                cst = False
-            
-            
-            if(cst!=False):
-                instr+=cst
-                if(twoStep):
-                    instr+=loadToReg(dest.accessor, castdest)
-
-            else:
-                source = final.accessor
-                if(isinstance(final.accessor, Variable)):
-                    instr+=loadToReg(castdest, final.accessor)
-                    source = castdest
-                instr+=loadToReg(dest.accessor,source)
-
-            if(final.isRegister()):
-                rfree(final.accessor)
-
-            rfree(castdest)
-
-
-        return instr, o
+    
+    
 
 
 
@@ -955,7 +590,7 @@ class Function:
         opens = 1
         instructions = ""
         wasfunc = False
-        while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok != T_CLSIDX:
+        while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
 
             if(self.current_token.tok == T_CLSP):opens-=1
             elif(self.current_token.tok == T_OPENP):opens+=1
@@ -978,83 +613,7 @@ class Function:
                     instructions+=f"push {norm_return_register}\n"
                
                
-                elif(self.tokens[self.ctidx+1].tok == "["):
-                    wasfunc = True
-                    start = self.current_token.start.copy()
-                    var = self.getVariable(self.current_token.value)
-                    if(not var.isStackarr and var.t.ptrdepth == 0): throw(TakingIndexOfScalar(self.current_token))
-                    self.advance()
-                    depth = 0
-                    if(var.isStackarr):
-                        idxinstr = ""
-                        addr = ralloc(False)
-                        idxinstr+=f"lea {addr}, [rbp-{var.offset+var.stackarrsize}]\n"
-                        depth = 0
-                        while(self.current_token.tok == "["):
-                            self.advance()
-                            result = ralloc(False)
-                            idxinstr+= self.evaluateRightsideExpression(EC.ExpressionComponent(result, INT.copy(),token=self.current_token))
-                            if(var.stacksizes[depth] in [1,2,4,8]):
-                                idxinstr+=f"lea {addr}, [{addr}+{result}*{var.stacksizes[depth]}]\n"
-                            else:
-                                idxinstr+=f"imul {result}, {var.stacksizes[depth]}\n"
-                                idxinstr+=f"lea {addr}, [{addr}+{result}]\n"
-                            rfree(result)
-                            depth+=1
-                            self.advance()
-
-                        ot = var.t.copy()
-                        
-                        if(ot.isflt()):
-                            rfree(addr)
-                            idxinstr+=f"movq {addr}, [{addr}]\n"
-                            idxinstr+=f"push {addr}\n"
-                        else:
-                            rfree(addr)
-                            idxinstr+=f"mov {setSize(addr, ot.csize())}, [{addr}]\n"
-                            if(ot.csize() != 8): idxinstr += maskset(addr, ot.csize())
-                            idxinstr+=f"push {addr}\n"
-                        instructions+=idxinstr
-                        exprtokens.append(Token(T_IDXER,ot,start,self.current_token.start.copy()))
-
-                    else:
-                        sizes = []
-                        for i in range(var.t.ptrdepth+1):
-                            sizes.insert(0,var.t.size(i))
-                        idxinstr = ""
-                        addr = ralloc(False)
-                        idxinstr+=f"mov {addr}, {valueOf(var)}\n"
-                        while(self.current_token.tok == "["):
-                            self.advance()
-                            result = ralloc(False)
-                            idxinstr+= self.evaluateRightsideExpression(EC.ExpressionComponent(result,INT.copy(),token=self.current_token))
-                            if(sizes[depth] in [1,2,4,8]):
-                                idxinstr+=f"lea {addr}, [{addr}+{result}*{sizes[depth]}]\n"
-                            else:
-                                idxinstr+=f"imul {result}, {sizes[depth]}\n"
-                                idxinstr+=f"lea {addr}, [{addr}+{result}]\n"
-                            rfree(result)
-                            depth+=1
-                            self.advance()
-                        
-                        ot = var.t.copy()
-                        ot.ptrdepth -= depth
-                        if(ot.isflt()):
-                            rfree(addr)
-                            idxinstr+=f"movq {addr}, [{addr}]\n"
-                            idxinstr+=f"push {addr}\n"
-                        else:
-                            rfree(addr)
-                            idxinstr+=f"mov {setSize(addr, ot.csize())}, [{addr}]\n"
-                            if(ot.csize() != 8): idxinstr += maskset(addr, ot.csize())
-                            idxinstr+=f"push {addr}\n"
-                        instructions+=idxinstr
-                        exprtokens.append(Token(T_IDXER,ot,start,self.current_token.start.copy()))
-
-                    self.ctidx-=2
-                    self.advance()
-
-
+                
                 elif(self.tokens[self.ctidx+1].tok == T_DOT):
                     wasfunc = True
                     start = self.current_token.start.copy()
@@ -1068,36 +627,7 @@ class Function:
                     offset = memvar.offset
                     exprtokens.append(Token(T_ID, f"{var.name}.{memvar.name}",start,self.current_token.end))
                 
-                """ elif(self.tokens[self.ctidx+1].tok == T_MINUS and self.tokens[self.ctidx+2].tok == ">"):
-                    wasfunc = True
-                    start = self.current_token.start.copy()
-                    var = self.getVariable(self.current_token.value)
-                    if(var == None): throw(UnkownIdentifier(self.current_token))
-                    self.advance()
-                    self.advance()
-                    self.advance()
-                    member = self.current_token.value
-                    memvar = var.t.getMember(member)
-                    if(memvar == None): throw(UnkownIdentifier(self.current_token))
-                    offset = memvar.offset
-                    # exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
-                    # exprtokens.append(Token(T_DEREF,T_DEREF,start,start))
-                    # exprtokens.append(Token(T_OPENP,T_OPENP,start,start))
-                    # exprtokens.append(Token(T_ID, var.name,start,start))
-                    # exprtokens.append(Token(T_PLUS,T_PLUS,start,start))
-                    # exprtokens.append(Token(T_INT, offset,start,start))
-                    # exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
-                    # exprtokens.append(Token(T_CLSP,T_CLSP,self.current_token.start,self.current_token.end))
-                    exprtokens.append(Token(T_ID, var.name,start,start))
-                    exprtokens.append(Token(T_PTRACCESS, T_PTRACCESS, start,start))
-                    exprtokens.append(Token(T_AMBIGUOUS, member, start,start)) """
-            if(self.tokens[self.ctidx].tok == T_MINUS and self.tokens[self.ctidx+1].tok == ">"):
-                wasfunc = True
-                self.advance()
-                self.advance()
-                exprtokens.append(Token(T_PTRACCESS,T_PTRACCESS,self.current_token.start,self.current_token.start))
-                exprtokens.append(Token(T_AMBIGUOUS, self.current_token.value,self.current_token.start,self.current_token.start))
-
+                
 
 
             if(not wasfunc):
@@ -1112,10 +642,8 @@ class Function:
     def evaluateRightsideExpression(self, destination, otyperef=None):                  # evaluate the next tokens and return the asm instructions
         instructions = ""
         start = self.ctidx
-        opens = 1
         comment = ""
         exprtokens = []
-        instructions=""
 
         
         exprtokens, instructions = self.buildExpressionComponents()
@@ -1130,7 +658,10 @@ class Function:
 
         if(config.DO_DEBUG):
             instructions+=f";{comment}\n\n"
-        ins, ot = self.evaluatePostfix(destination, pf.createPostfix())
+        
+        
+        ev = RightSideEvaluator(self)
+        ins, ot = ev.evaluatePostfix(destination, pf.createPostfix())
         instructions += ins
 
         if(otyperef != None):
@@ -1138,7 +669,30 @@ class Function:
         
         return instructions
 
+
+    def evaluateLeftsideExpression(self):
+        instructions = ""
+        start = self.ctidx
+        comment = ""
+        exprtokens = []
+        exprtokens, instructions = self.buildExpressionComponents()
+        comment = exprtokens
+        pf = Postfixer(exprtokens,self)
+
+        if(config.DO_DEBUG):
+            instructions+=f";{comment}\n"
+        
+        ev = LeftSideEvaluator(self)
+        ins, output = ev.evaluatePostfix(pf.createPostfix())
+        instructions+=ins
+
+        return instructions, output
+
+
+
     def createDestructor(self, var):
+        if(var.t.destructor == None):
+            return ""
         call_label = functionlabel( var.t.destructor )
         if(var.t.ptrdepth > 0):
             params = f"mov {rdi}, {valueOf(var)}\n"
@@ -1181,10 +735,14 @@ class Function:
                 for p in fnt.parameters[1:]:
                     if(p.t.isflt()):
                         self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[sseused], p.t.copy() )))
+
                         sseused+=1
                     else:
                         self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normsused], p.t.copy() )))
                         normsused+=1
+                    self.advance()
+                self.ctidx-=2
+                self.advance()
                 if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
                 self.advance()
                 self.addline(call_label)
@@ -1255,213 +813,48 @@ class Function:
 
 
     def buildAssignment(self):                  # assign a variable
-        vt = self.current_token
-        v = self.getVariable(self.current_token.value)
-        self.advance()
-        offset = v.offset
+
         inst = ""
-        isptridx = False
-        depthreached = 0
-        isMember = False
-        ispMember = False
-
-        if(v.isStackarr):
-
-
-            startaddr = ralloc(False)
-            inst += f"lea {startaddr}, [rbp-{v.offset+v.stackarrsize}]\n"
-
-            idxr = 0
-            while(self.current_token.tok == T_OPENIDX):
-                self.advance()
-                dsize = v.stacksizes[idxr]*v.t.size(0)
-                result = ralloc(False)
-                otref = VOID.copy()
-                inst+=self.evaluateRightsideExpression( EC.ExpressionComponent(result,INT.copy(),token=vt),otref)  
-                
-                if(otref.isflt()): throw(UsingFloatAsIndex(vt))
-                
-                if(dsize in [1,2,4,8]):
-                    inst+=f"lea {startaddr}, [{startaddr}+{result}*{dsize}]\n"
-                else:
-                    inst+=f"imul {result}, {dsize}\n" 
-                    inst+=f"add {startaddr}, {result}\n"         
-
-                
-
-
-                rfree(result)
-                self.advance()
-                idxr+=1
-            depthreached = idxr
-        elif(v.t.ptrdepth > 0 and self.tokens[self.ctidx].tok == T_OPENIDX):
-
-            startaddr = ralloc(False)
-            inst += f"mov {startaddr}, [rbp-{v.offset}]\n"
-            idxr=0
-            sizes = []
-            for i in range((v.t.ptrdepth)):
-                sizes.append(8)
-            sizes.append(v.t.s)
-            while(self.current_token.tok == T_OPENIDX):
-                isptridx = True
-
-                self.advance()
-                dsize = sizes[idxr]
-                result = ralloc(False)
-                otref = VOID.copy()
-                inst += self.evaluateRightsideExpression( EC.ExpressionComponent(result, INT.copy(),token=vt) ,otref)
-                
-                if(otref.isflt()): throw(UsingFloatAsIndex(vt))
-                
-                if(dsize in [1,2,4,8]): 
-                    inst+=f"lea {startaddr}, [{startaddr}+{result}*{dsize}]\n"
-                else:
-                    inst+=f"imul {result}, {dsize}\n"
-                    inst+=f"add {startaddr}, {result}\n"
-                rfree(result)
-                self.advance()
-                idxr+=1
-            depthreached = idxr
-
-        elif(v.t.members != None):
-            if(self.current_token.tok == T_DOT):
-
-
-                self.advance()
-                if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
-                member = self.current_token.value
-                if(not v.t.hasMember(member)): throw(UnkownIdentifier(self.current_token))
-                memv = self.getVariable(f"{v.name}.{member}")
-                offset = memv.offset
-                v = memv
-                self.advance()
-                isMember = True
-
-            elif(self.current_token.tok == T_MINUS):
-                self.advance()
-
-                if(self.current_token.tok == ">"):
-                    self.advance()
-                    if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
-                    member = self.current_token.value
-                    if(not v.t.hasMember(member)): throw(UnkownIdentifier(self.current_token))
-                    memv = v.t.getMember(member)
-                    startaddr = ralloc(False)
-                    inst += f"mov {startaddr}, [rbp-{v.offset}]\n"
-                    inst += f"lea {startaddr}, [{startaddr}+{memv.offset}]\n"
-                    isptridx = True
-                    
-                    self.advance()
-
-        
-        
-        
-        
-        
-        
-        if(isMember and self.current_token.tok == T_EQUALS and not v.t.isflt() and v.t.csize() != 8):
-            self.advance()
-
-            result = ralloc(False)
-            ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,v.t,token=vt))
-            self.addline(inst)
-            self.addline(ev)
-            if(isMember): 
-                if(v.t.csize() == 1):
-                    self.addline(f"mov BYTE[rbp-{v.offset}], {boolchar_version[result]}")
-                elif(v.t.csize() == 4):
-                    self.addline(f"mov DWORD[rbp-{v.offset}], {dword_version[result]}")
-                elif(v.t.csize() == 2):
-                    self.addline(f"mov WORD[rbp-{v.offset}], {small_version[result]}")
-            elif(ispMember):
-                if(v.t.csize() == 1):
-                    self.addline(f"mov BYTE[{startaddr}], {boolchar_version[result]}")
-                elif(v.t.csize() == 4):
-                    self.addline(f"mov DWORD[{startaddr}], {dword_version[result]}")
-                elif(v.t.csize() == 2):
-                    self.addline(f"mov WORD[{startaddr}], {small_version[result]}")
-                rfree(startaddr)
-
-            rfree(result)
-
-        elif(ispMember and self.current_token.tok == T_EQUALS):
-            self.advance()
-            result = ralloc(v.t.isflt())
-            ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,v.t,token=vt))
-            self.addline(inst)
-            self.addline(ev)
-            if(v.t.isflt()):
-                self.addline(f"movsd [{startaddr}], {result}\n")
-            else:
-                self.addline(f"mov [{startaddr}], {result}\n")
-            rfree(result)
-            rfree(startaddr)
-
-
 
 
             
-        elif(self.current_token.tok == T_EQUALS and not v.isStackarr and not isptridx): #normal
-            self.advance()
-            ev = self.evaluateRightsideExpression(    EC.ExpressionComponent(Variable(v.t,v.name,offset=offset,glob=v.glob),v.t,token=vt)                )
-            self.addline(inst)
-            self.addline(ev)
-        elif(self.current_token.tok == T_EQUALS and v.isStackarr and not isptridx):
-            self.advance()
-            result = ralloc(v.t.isfltdepth(depthreached))
-            inst+=f"push {startaddr}\n"
-            ev = self.evaluateRightsideExpression(  EC.ExpressionComponent(result, v.t,token=vt)  )
-            if(v.t.size(depthreached) == 1 and not v.t.isfltdepth(depthreached)): result = boolchar_version[result]
-            self.addline(inst)
-            self.addline(ev)
-            self.addline(f"pop {startaddr}")
-            if(v.t.isfltdepth(depthreached)):
-                self.addline(f"movsd [{startaddr}], {result}\n")
+        insters, dest = self.evaluateLeftsideExpression()
+        self.addline(insters)
+        setter = self.current_token
+        self.advance()
+
+        value = ralloc(dest.type.isflt())
+
+
+        ev = self.evaluateRightsideExpression(EC.ExpressionComponent(value, dest.type,token=dest.token))
+        
+        
+        
+        self.addline(inst)
+        self.addline(ev)
+        if(setter.tok == T_EQUALS): #normal
+            self.addline(loadToPtr(dest.accessor,value))
+        else:
+            op = setter.tok[0]
+            cmd = ""
+            if(op == "+"):
+                cmd = "add"
+            elif(op == "-"):
+                cmd = "sub"
+
+            if(dest.type.isflt()):
+                self.addline(f"{cmd+'sd'} {valueOf(dest.accessor)}, {value}\n")
             else:
-                self.addline(f"mov [{startaddr}], {result}\n")
-            rfree(result)
-            rfree(startaddr)
+                self.addline(f"{cmd} {valueOf(dest.accessor, exactSize=True)}, {setSize(value, dest.type.csize())}\n")
+        
+
+
+        rfree(value)
+        rfree(dest.accessor)
+        if(self.current_token.tok == T_ENDL):
+            self.advance()
         
         
-        
-        elif(self.current_token.tok == T_EQUALS and isptridx):
-            self.advance()
-            result = ralloc(v.t.isfltdepth(depthreached))
-            if(v.t.size(depthreached) == 1): result = boolchar_version[result]
-            newt = v.t.copy()
-            newt.ptrdepth-=1
-            inst+=f"push {startaddr}\n"
-
-            ev = self.evaluateRightsideExpression( EC.ExpressionComponent(result,newt,token=vt) )
-            self.addline(inst)
-            self.addline(ev)
-            self.addline(f"pop {startaddr}")
-
-            if(newt.isflt()):
-                self.addline(f"movsd [{startaddr}], {result}\n")
-            else:
-                self.addline(f"mov [{startaddr}], {result}\n")
-            rfree(result)
-            rfree(startaddr)
-
-
-        else: # ++ or -- shortcuts
-            o1 = self.current_token.value
-            self.advance()
-            if(self.current_token.tok != "+" and self.current_token.tok != "-"):
-                throw(UnkownExpressionShortcut(self.current_token))
-            o1 += self.current_token.value
-            if(o1 != "--" and o1 != "++"):
-                throw(UnkownExpressionShortcut(self.current_token))
-            
-            expr = [EC.ExpressionComponent(v,v.t),EC.ExpressionComponent(1,INT.copy(),constint=True),EC.ExpressionComponent(o1[0],o1,isoperation=True)]
-            instr,o = self.evaluatePostfix(EC.ExpressionComponent( v, v.t.copy() , token=vt),expr)
-            inst+=instr
-            self.addline(inst)
-            self.advance()
-
-        if(self.current_token.tok!=T_CLSP): self.checkSemi()
 
 
 

@@ -293,7 +293,8 @@ def ralloc(flt, size=8):
 
                 
 def rfree(r):
-    
+    if(isinstance(r, Variable)):
+        return 
     if r in sse_scratch_registers:
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = False
     elif r in norm_scratch_registers: norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = False
@@ -384,7 +385,7 @@ def getComparater(signed, op):
 PRIORITY = {
 
     "(":0,
-
+    "[":0,
 
 
 
@@ -442,6 +443,8 @@ PRIORITY = {
 OPERATORS = [
 
     "(",
+    "]",
+    "[",
     "+",
     "-",
     "!",
@@ -534,7 +537,24 @@ def psizeof(v):
         return "byte"
     if v.t.size(0) == 8:
         return "qword"
+    elif v.t.size(0) == 4:
+        return "dword"
+    elif v.t.size(0) == 2:
+        return "word"
     return "qword"
+
+def psizeoft(t):
+    if t.size(0) == 1:
+        return "byte"
+    if t.size(0) == 8:
+        return "qword"
+    elif t.size(0) == 4:
+        return "dword"
+    elif t.size(0) == 2:
+        return "word"
+    return "qword"
+
+
 # section reserver sizes
 constantReservers = ["DB", "DW", "DD", "DQ"]
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
@@ -632,7 +652,10 @@ def typematch(a, b):
 
 
 
-
+def loadToPtr(dest, source):
+    if(isinstance(dest, Variable)):
+        return loadToReg(dest,source)
+    return loadToReg(f"[{dest}]",source)
 
 def movRegToVar(od,reg):
     if("xmm" not in reg):
@@ -669,7 +692,7 @@ def fncall(fn):
     return "call %s\n"%fn.getCallingLabel()
 
 # get the value of x (if x is register, return x;  if x is variable, return address; etc...)
-def valueOf(x, dflt = False):
+def valueOf(x, dflt = False, exactSize=False):
     if (isinstance(x,str)):
         return x
     elif (isinstance(x, Variable)):
@@ -678,8 +701,12 @@ def valueOf(x, dflt = False):
                 return f"{x.name}"
             return f"[{x.name}]"
         else:
-            
-            return f"{getSizeSpecifier(x.t)}[rbp-{x.offset}]"
+            offset = x.offset
+            if(x.isStackarr):
+                offset += x.stackarrsize
+            if(not exactSize):
+                return f"QWORD[rbp-{offset}]"
+            return f"{psizeoft(x.t)}[rbp-{offset}]"
     elif (isinstance(x, int)):
         return (x)
 
@@ -705,6 +732,7 @@ def loadToReg(reg, value):
                 return f"{pop}movq {reg}, {rax}\n"
             return f"pop {normal_size[ reg]}\n"
         elif(isinstance(reg, Variable)):
+            
             return f"pop {rax}\nmov {valueOf(reg)}, {rax}\n"
 
     if(isinstance(reg, str)):
@@ -712,6 +740,10 @@ def loadToReg(reg, value):
             #TODO:
             # SEE IF THIS IS FINE
             return f"movq {reg}, {valueOf(value)} ;<-\n" 
+        if(isinstance(value, Variable) and value.isStackarr):
+            return f"lea {reg}, [rbp-{value.offset+value.stackarrsize}]\n"
+        if(isfloat(value)):
+            return f"movq {reg}, {valueOf(value)}\n"
         return f"mov {reg}, {valueOf(value)}\n"
     
     
@@ -779,6 +811,33 @@ def calculateConstant(a, b, op):
     elif(op == "<<"):
         return EC.ExpressionComponent(int(a.accessor<<b.accessor), INT.copy(), constint=True) 
 
+def shiftInt(a, b, op, signed):
+    cmd = ""
+    if(op == ">>"):
+            if(signed):
+                cmd = "sar"
+            else:
+                cmd = "shr"
+    elif(op == "<<"):
+        if(signed):
+            cmd = "sal"
+        else:
+            cmd = "shl"
+    
+    if(isinstance(b, int)):
+        return f"{cmd} {a}, {b}\n"
+    else:
+        if(a == rcx):
+            tmp = ralloc(False)
+            rfree(tmp)
+            return f"mov {tmp}, {a}\nmov cl, {boolchar_version[b]}\n{cmd} {tmp}, cl\nmov {a}, {tmp}\n"
+        elif(b == rcx):
+            return f"{cmd} {a}, cl\n"
+        else:
+            tmp = ralloc(False)
+            rfree(tmp)
+            return f"mov {tmp}, rcx\nmov cl, {boolchar_version[b]}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
+
 def doIntOperation(areg, breg, op, signed, size=8):
 
     if(op == "+"):
@@ -804,19 +863,12 @@ def doIntOperation(areg, breg, op, signed, size=8):
             asmop = "div"
 
         return f"xor rdx, rdx\nmov {rax}, {areg}\n{asmop} {breg}\n mov {areg}, {rdx}\n"
-    elif(op == ">>"):
-        if(signed):
-            return f"sar {areg}, {boolchar_version[breg]}\n"
-        else:
-            return f"shr {areg}, {boolchar_version[breg]}\n"
-    elif(op == "<<"):
-        if(signed):
-            return f"sal {areg}, {boolchar_version[breg]}\n"
-        else:
-            return f"shl {areg}, {boolchar_version[breg]}\n"
+    elif( op in [">>","<<"]):
+        return shiftInt(areg,breg,op,signed)
+
     elif(op == "mov"):
         return f"mov {areg}, {breg}\n"
-
+    
     elif(op in ["==","!=",">","<","<=",">="]):
         return cmpI(areg,breg,signed,op)
     elif(op in ["!","&&","||","^","~","|","&"]):
@@ -884,6 +936,9 @@ def bitmathf(areg, breg, op):
 
 def doFloatOperation(areg, breg, op):
     asmop = ""
+    if(op == "["): 
+        print("FLOAT INDEX!")
+        exit()
     if(op == "+"):
         asmop = "addsd"
     elif(op == "-"):
@@ -982,17 +1037,17 @@ def avx_rfree(reg):
     if("x" in reg): reg = ymmVersion(reg)
     avx_inuse[avx_registers.index(reg)] = False
 
-avx_load2 = "MOVDQU"
-avx_load4 = "VMOVDQU"
+avx_load2 = "movdqu"
+avx_load4 = "vmovdqu"
 
-avx_add2 = "PADD#"
-avx_add4 = "VPADD#"
+avx_add2 = "padd#"
+avx_add4 = "vpadd#"
 
-avx_sub2 = "PSUB#"
-avx_sub4 = "VPSUB#"
+avx_sub2 = "psub#"
+avx_sub4 = "vpsub#"
 
-avx_mul2 = "PMULUD#"
-avx_mul4 = "VPMULUD#"
+avx_mul2 = "pmulud#"
+avx_mul4 = "vpmulud#"
 
 
 #
@@ -1052,15 +1107,32 @@ def avx_loadToReg(loadop, avxreg, arr, idx):
         out+=(f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     return out
 
-avx_sizeSpecifier = ["B", "W", None, "D", None, None, None, "Q"]
+avx_sizeSpecifier = ["b", "w", None, "d", None, None, None, "q"]
 
-def avx_doToReg(op, opcount, size, dest, source):
-    cmd = avx_getOp(f"{op}{opcount}")
+flt_avx_cmd = {
+    "-":"subpd",
+    "+":"addpd",
+    "*":"mulpd",
+    "/":"divpd"
+}
+
+
+def avx_doToReg(op, opcount, size, dest, source, flt):
     
-    cmd = cmd.replace("#",avx_sizeSpecifier[size-1])
-    if(opcount == 4):
-        return f"{cmd} {dest}, {source}, {dest}\n"
-    return f"{cmd} {dest}, {source}\n"
+    if(not flt):
+        cmd = avx_getOp(f"{op}{opcount}")
+        
+        cmd = cmd.replace("#",avx_sizeSpecifier[size-1])
+        if(opcount == 4):
+            return f"{cmd} {dest}, {source}, {dest}\n"
+        return f"{cmd} {dest}, {source}\n"
+    else:
+        cmd = flt_avx_cmd[op]
+        if(opcount == 4): 
+            cmd = f"v{cmd}"
+            return f"{cmd} {dest}, {source}, {dest}\n"
+        return f"{cmd} {dest}, {source}\n"
+
 
 def avx_dropToAddress(loadop, avxreg, arr, idx):
     out = ""

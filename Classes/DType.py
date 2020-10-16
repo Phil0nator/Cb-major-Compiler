@@ -28,6 +28,8 @@ class DType:
         return False
     
     def getMember(self, name):
+        if(self.members == None):
+            return None
         for m in self.members:
             if m.name == name: return m
         return None
@@ -43,6 +45,12 @@ class DType:
 
     def isfltdepth(self, depth): # determine if the type is a double/float at a given depth
         return depth >= self.ptrdepth and config.GlobalCompiler.Tequals(self.name, "double")
+
+
+    def down(self):
+        out = self.copy()
+        out.ptrdepth-=1
+        return out
 
     def __eq__(self, other): # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):

@@ -181,7 +181,7 @@ function void print(int* a, int len){
     }
 
     printf("[",0);
-    for(int i = 0; i < len-1;i++){
+    for(int i = 0; i < len-1;i+=1){
 
         printf(" %i ,", a[i]);
 
