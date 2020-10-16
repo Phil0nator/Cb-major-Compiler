@@ -104,7 +104,7 @@ class RightSideEvaluator:
         else: #situation is different when casting is directional
             if(not typematch(a.type,b.type) and not typematch(b.type, a.type) and not (a.isconstint() or b.isconstint())):
                 throw(TypeMismatch(a.token, a.type, b.type))
-            newtype, toConvert = determinePrecedence(a.type, b.type,self)
+            newtype, toConvert = determinePrecedence(a.type, b.type,self.fn)
             o = newtype.copy()
             if(newtype.__eq__(a.type)):
                 # cast to a
@@ -219,7 +219,7 @@ class RightSideEvaluator:
 
 
                     else:
-                        if(op == T_PTRACCESS):
+                        if(op == T_PTRACCESS or op == T_DOT):
 
                             member = b.accessor
                             memv = a.type.getMember(member)
@@ -503,6 +503,7 @@ class LeftSideEvaluator:
         stack = []
         instr = ""
         o = VOID.copy()
+        print(pfix)
         for e in pfix:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):
@@ -552,8 +553,7 @@ class LeftSideEvaluator:
 
 
                     else:
-                        if(op == T_PTRACCESS):
-
+                        if(op == T_PTRACCESS or op == T_DOT):
                             member = b.accessor
                             memv = a.type.getMember(member)
                             if(memv == None): throw(UnkownIdentifier(b.token))
@@ -569,6 +569,8 @@ class LeftSideEvaluator:
 
                             stack.append(EC.ExpressionComponent(tmpaddr,memv.t.copy(),token=b.token))
                             rfree(a.accessor)
+                        
+
 
 
                         else:

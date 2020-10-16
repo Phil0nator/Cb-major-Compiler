@@ -3309,28 +3309,38 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 832
+sub rsp, 3264
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : twod], [ [ : [], [ int : 0], [ ] : ]], [ [ : [], [ int : 0], [ ] : ]]]
-;[[ int : 26]]
+mov QWORD[rbp-56], 0
+mov QWORD[rbp-48], 0
+mov QWORD[rbp-40], 0
+mov QWORD[rbp-32], 0
+;[[ id : vectors], [ [ : [], [ int : 1], [ ] : ]], [ . : .], [ id : y]]
+mov rcx, 1
+lea rbx, [rbp-3224]
+shl rcx, 5
+lea rbx, [rbx+rcx]
+mov rcx, rbx
+lea rcx, [rcx+8]
+;[[ int : 200]]
 ;------------
-mov rbx, 26
-mov QWORD[rbp-824], rbx
-;[[ id : twod], [ [ : [], [ int : 0], [ ] : ]], [ [ : [], [ int : 0], [ ] : ]]]
-mov rcx, 0
-lea rbx, [rbp-824]
-lea rbx, [rbx+rcx*8]
-mov rbx, [rbx]
-mov rcx, 0
-lea rbx, [rbx+rcx*8]
+mov rbx, 200
+mov [rcx], rbx
+;[[ id : vectors], [ [ : [], [ int : 1], [ ] : ]], [ . : .], [ id : y]]
+mov r10, 1
+lea rcx, [rbp-3224]
+shl r10, 5
+lea rcx, [rcx+r10]
+mov r10, rcx
+lea r10, [r10+8]
+mov r10, [r10]
 ;------------
-mov rbx, [rbx]
-mov rdi, rbx
+mov rdi, r10
 mov rax, 0
-call _void_print_pvoid.
+call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0
