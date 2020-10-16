@@ -742,6 +742,8 @@ def loadToReg(reg, value):
             return f"movq {reg}, {valueOf(value)} ;<-\n" 
         if(isinstance(value, Variable) and value.isStackarr):
             return f"lea {reg}, [rbp-{value.offset+value.stackarrsize}]\n"
+        if(isfloat(value)):
+            return f"movq {reg}, {valueOf(value)}\n"
         return f"mov {reg}, {valueOf(value)}\n"
     
     
@@ -1035,17 +1037,17 @@ def avx_rfree(reg):
     if("x" in reg): reg = ymmVersion(reg)
     avx_inuse[avx_registers.index(reg)] = False
 
-avx_load2 = "MOVDQU"
-avx_load4 = "VMOVDQU"
+avx_load2 = "movdqu"
+avx_load4 = "vmovdqu"
 
-avx_add2 = "PADD#"
-avx_add4 = "VPADD#"
+avx_add2 = "padd#"
+avx_add4 = "vpadd#"
 
-avx_sub2 = "PSUB#"
-avx_sub4 = "VPSUB#"
+avx_sub2 = "psub#"
+avx_sub4 = "vpsub#"
 
-avx_mul2 = "PMULUD#"
-avx_mul4 = "VPMULUD#"
+avx_mul2 = "pmulud#"
+avx_mul4 = "vpmulud#"
 
 
 #
@@ -1105,15 +1107,32 @@ def avx_loadToReg(loadop, avxreg, arr, idx):
         out+=(f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     return out
 
-avx_sizeSpecifier = ["B", "W", None, "D", None, None, None, "Q"]
+avx_sizeSpecifier = ["b", "w", None, "d", None, None, None, "q"]
 
-def avx_doToReg(op, opcount, size, dest, source):
-    cmd = avx_getOp(f"{op}{opcount}")
+flt_avx_cmd = {
+    "-":"subpd",
+    "+":"addpd",
+    "*":"mulpd",
+    "/":"divpd"
+}
+
+
+def avx_doToReg(op, opcount, size, dest, source, flt):
     
-    cmd = cmd.replace("#",avx_sizeSpecifier[size-1])
-    if(opcount == 4):
-        return f"{cmd} {dest}, {source}, {dest}\n"
-    return f"{cmd} {dest}, {source}\n"
+    if(not flt):
+        cmd = avx_getOp(f"{op}{opcount}")
+        
+        cmd = cmd.replace("#",avx_sizeSpecifier[size-1])
+        if(opcount == 4):
+            return f"{cmd} {dest}, {source}, {dest}\n"
+        return f"{cmd} {dest}, {source}\n"
+    else:
+        cmd = flt_avx_cmd[op]
+        if(opcount == 4): 
+            cmd = f"v{cmd}"
+            return f"{cmd} {dest}, {source}, {dest}\n"
+        return f"{cmd} {dest}, {source}\n"
+
 
 def avx_dropToAddress(loadop, avxreg, arr, idx):
     out = ""

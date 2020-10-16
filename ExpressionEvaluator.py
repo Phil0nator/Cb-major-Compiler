@@ -503,7 +503,6 @@ class LeftSideEvaluator:
         stack = []
         instr = ""
         o = VOID.copy()
-        print(pfix)
         for e in pfix:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):

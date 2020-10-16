@@ -344,6 +344,7 @@ class Function:
         if(self.current_token.tok != T_ID): throw(ExpectedType(self.current_token))
         t = self.compiler.getType(self.current_token.value)
         vsize = t.csize()
+        flt = t.isflt()
         if(t == None): throw(UnkownIdentifier(self.current_token))
         self.advance()
         
@@ -380,6 +381,7 @@ class Function:
             opn = self.current_token.tok
             if(not Postfixer.isOperator(None,self.current_token)):
                 throw(ExpectedToken(self.current_token, "operator"))
+            if( op not in ["+", "-", "*"] and not flt): throw(InvalidSimdOperation(self.current_token,op))
             self.advance()
             if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
             self.advance()
@@ -393,10 +395,13 @@ class Function:
             determine_idxn = self.evaluateRightsideExpression(EC.ExpressionComponent(idxn, INT.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
+
+
+
             avxn = avx_correctSize(avxn, op)
             self.addline(determine_idxn)
             self.addline(avx_loadToReg(op, avxn, arrn, idxn))
-            self.addline(avx_doToReg(opn, op, vsize, avx1, avxn))
+            self.addline(avx_doToReg(opn, op, vsize, avx1, avxn, flt))
 
             avx_rfree(avxn)
             rfree(idxn)

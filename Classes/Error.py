@@ -197,3 +197,9 @@ class UnmatchedBreak(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unmatched break: "
+
+
+class InvalidSimdOperation(Error):
+    def __init__(self, tok, operation):
+        self.tok = tok
+        self.message = f"Cannot perform SIMD operation ( '{operation} ') on integers: "
