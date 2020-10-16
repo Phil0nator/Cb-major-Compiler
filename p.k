@@ -5,14 +5,7 @@
 
 function int main(int argc, char** argv){
 
-    Vec3d test(1,2,3);
-    Vec3d other(2,4,6);
-
-    v3dadd(&test, &other);
-    v3dcross(&test, &test);
-
-    print(test.y);
-
+    FILE something = fopen("test.bin.asm", "a+");
 
     return 0;
 }

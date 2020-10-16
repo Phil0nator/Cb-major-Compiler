@@ -230,7 +230,8 @@ class Function:
                     self.beginRecursiveCompile()
                 else:
                     throw(ExpectedToken(self.current_token,"{"))
-
+                if(self.current_token.tok == T_CLSSCOPE):
+                    self.advance()
                 self.addline(jmpafter+":\n")
 
             else:
@@ -242,8 +243,6 @@ class Function:
 
 
         self.continues.pop()
-
-
 
 
     def buildForloop(self):

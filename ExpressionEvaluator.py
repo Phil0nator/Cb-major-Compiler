@@ -33,7 +33,8 @@ def optloadRegs(a, b, op, o):
 def bringdown_memloc( a):
     instr=""
     if(a.memory_location):
-        instr+=f"mov {a.accessor}, [{a.accessor}]\n"
+        instr+=f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{a.accessor}]\n"
+        instr+=maskset(a.accessor,a.type.csize())
         a.memory_location=False
     return instr
 
