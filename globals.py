@@ -293,7 +293,8 @@ def ralloc(flt, size=8):
 
                 
 def rfree(r):
-    
+    if(isinstance(r, Variable)):
+        return 
     if r in sse_scratch_registers:
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = False
     elif r in norm_scratch_registers: norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = False

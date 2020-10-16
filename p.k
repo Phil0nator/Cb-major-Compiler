@@ -1,14 +1,33 @@
 #include "include/printf.k"
 #include "include/stddef.k"
 #include "include/memory.k"
+
+
+
+
+
+struct Test{
+
+    int a;
+    int b;
+    int c;
+    char *str;
+
+};
+
+
+
+
 function int main(int argc, char** argv){
 
-    char *stuff = malloc(100*int);
+    int *stuff = malloc(100*int);
 
-    int a = 26;    
+    Test *st = malloc(Test*2);
+    st[1]->a = 32;
+    st[1]->b = 26;
+    st[0]->b = 5235;
 
-    int b = 26*32;
-    int c = a*b*32;
+    print(st[0]->b);
 
     return 0;
 }

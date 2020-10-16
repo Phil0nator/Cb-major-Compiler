@@ -42,10 +42,12 @@ class Postfixer:
                     
 
                     v = self.fn.compiler.getType(t.value)
-                    if(v == None):  throw(UnkownIdentifier(t))
-                    
-                    ec = EC.ExpressionComponent(v.size(0),INT.copy(),constint=True,token=t)
-                    ec.memory_location = valueOf(v)
+                    if(v == None):  
+                        ec = EC.ExpressionComponent(t.value,VOID.copy(),token = t)
+                    else:
+
+                        ec = EC.ExpressionComponent(v.size(0),INT.copy(),constint=True,token=t)
+                        ec.memory_location = valueOf(v)
                 else:
                 
                     ec = EC.ExpressionComponent(v,v.t)

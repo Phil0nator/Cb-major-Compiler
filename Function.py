@@ -818,6 +818,7 @@ class Function:
             
             
             rfree(value)
+            rfree(dest.accessor)
             self.addline(inst)
             self.addline(ev)
             self.addline(loadToPtr(dest.accessor,value))

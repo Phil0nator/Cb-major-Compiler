@@ -1608,7 +1608,7 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 56
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
@@ -1623,19 +1623,56 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-24], rax
+;[[ id : Test], [ * : *], [ int : 2]]
+;------------
+mov rdi, 64
+mov rax, 0
+call _void._malloc_psize_t
+push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
+;------------
+pop rax
+mov QWORD[rbp-32], rax
+;[[ id : st], [ [ : [], [ int : 1], [ ] : ]], [ -> : ->], [ id : a]]
+mov rcx, 1
+mov rbx, QWORD[rbp-32]
+shl rcx, 5
+lea rbx, [rbx+rcx]
+mov rcx, rbx
+;[[ int : 32]]
+;------------
+mov rbx, 32
+mov [rcx], rbx
+;[[ id : st], [ [ : [], [ int : 1], [ ] : ]], [ -> : ->], [ id : b]]
+mov rcx, 1
+mov rbx, QWORD[rbp-32]
+shl rcx, 5
+lea rbx, [rbx+rcx]
+mov rcx, rbx
+lea rcx, [rcx+8]
 ;[[ int : 26]]
 ;------------
-mov QWORD[rbp-32], 26
-;[[ int : 26], [ * : *], [ int : 32]]
-;------------
-mov QWORD[rbp-40], 832
-;[[ id : a], [ * : *], [ id : b], [ * : *], [ int : 32]]
-mov rcx, QWORD[rbp-40]
+mov rbx, 26
+mov [rcx], rbx
+;[[ id : st], [ [ : [], [ int : 0], [ ] : ]], [ -> : ->], [ id : b]]
 mov rbx, QWORD[rbp-32]
-imul rbx, rcx
-shl rbx, 5
+lea rbx, [rbx+8]
+;[[ int : 5235]]
 ;------------
-mov QWORD[rbp-48], rbx
+mov rcx, 5235
+mov [rbx], rcx
+;[[ id : st], [ [ : [], [ int : 0], [ ] : ]], [ -> : ->], [ id : b]]
+mov r10, 0
+mov rcx, QWORD[rbp-32]
+shl r10, 5
+lea rcx, [rcx+r10]
+mov r10, rcx
+lea r10, [r10+8]
+mov r10, [r10]
+;------------
+mov rdi, r10
+mov rax, 0
+call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0
