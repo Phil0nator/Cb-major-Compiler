@@ -10,3 +10,4 @@
 
 #include "include/string.k"
 #include "include/input.k"
+#include "include/Vec3i.k"

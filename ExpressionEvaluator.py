@@ -292,7 +292,11 @@ class RightSideEvaluator:
                         elif( isinstance(a.accessor, Variable) ):
                             
                             result = ralloc(False)
-                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
+                            if(a.accessor.isStackarr):
+                                instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
+                            else:
+
+                                instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
@@ -365,7 +369,8 @@ class RightSideEvaluator:
             else:
                 stack.append(e)
         
-        if(len(stack) != 1): throw(HangingOperator(pfix[len(pfix)-1].token))
+        if(len(stack) != 1): 
+            throw(HangingOperator(self.fn.current_token))
         final = stack.pop()
         
         
@@ -613,7 +618,11 @@ class LeftSideEvaluator:
                         elif( isinstance(a.accessor, Variable) ):
                             
                             result = ralloc(False)
-                            instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
+                            if(a.accessor.isStackarr):
+                                instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
+                            else:
+
+                                instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))

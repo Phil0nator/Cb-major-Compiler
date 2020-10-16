@@ -687,6 +687,8 @@ class Function:
 
 
     def createDestructor(self, var):
+        if(var.t.destructor == None):
+            return ""
         call_label = functionlabel( var.t.destructor )
         if(var.t.ptrdepth > 0):
             params = f"mov {rdi}, {valueOf(var)}\n"
@@ -729,10 +731,14 @@ class Function:
                 for p in fnt.parameters[1:]:
                     if(p.t.isflt()):
                         self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[sseused], p.t.copy() )))
+
                         sseused+=1
                     else:
                         self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent( norm_parameter_registers[normsused], p.t.copy() )))
                         normsused+=1
+                    self.advance()
+                self.ctidx-=2
+                self.advance()
                 if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
                 self.advance()
                 self.addline(call_label)
