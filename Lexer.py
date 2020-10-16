@@ -183,8 +183,10 @@ class Lexer:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
-                    t = Token("-","-",self.loc.copy(),self.loc.copy())
-                
+                    #t = Token("-","-",self.loc.copy(),self.loc.copy())
+                    self.chidx-=2
+                    self.advance()
+                    t = self.buildMultichar()
                 tokens.append(t)
             elif (self.ch in T.T_MULTIOP):
                 token = self.buildMultichar()

@@ -29,7 +29,7 @@ class Postfixer:
         return t.tok in OPERATORS
     
     def addtok(self, t):                # add a given token to the final output as an ExpressionComponent object
-        
+        ec = None
         if self.isOperator(t):
             ec = EC.ExpressionComponent(t.tok,t.value,isoperation=True)
         else:
@@ -57,7 +57,8 @@ class Postfixer:
                 ec = EC.ExpressionComponent(t.value,CHAR.copy(),constint=True)
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
-        
+
+        if(ec == None): print(t)        
         ec.token = t
         self.pfix.append(ec)
 
@@ -66,9 +67,9 @@ class Postfixer:
 
         for t in self.tokens:
 
-            if t.tok == "(":
+            if t.tok == "(" or t.tok == "[":
                 self.stack.append(t)
-            elif t.tok == ")":
+            elif t.tok == ")" or t.tok == "]":
                 while True:
                     if(len(self.stack)<=0):break
                     v = self.stack.pop()

@@ -384,7 +384,7 @@ def getComparater(signed, op):
 PRIORITY = {
 
     "(":0,
-
+    "[":0,
 
 
 
@@ -442,6 +442,8 @@ PRIORITY = {
 OPERATORS = [
 
     "(",
+    "]",
+    "[",
     "+",
     "-",
     "!",
@@ -632,7 +634,10 @@ def typematch(a, b):
 
 
 
-
+def loadToPtr(dest, source):
+    if(isinstance(dest, Variable)):
+        return loadToReg(dest,source)
+    return loadToReg(f"[{dest}]",source)
 
 def movRegToVar(od,reg):
     if("xmm" not in reg):
@@ -884,6 +889,9 @@ def bitmathf(areg, breg, op):
 
 def doFloatOperation(areg, breg, op):
     asmop = ""
+    if(op == "["): 
+        print("FLOAT INDEX!")
+        exit()
     if(op == "+"):
         asmop = "addsd"
     elif(op == "-"):
