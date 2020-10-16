@@ -525,6 +525,8 @@ class Compiler:
     def finalize(self):                                 # compile all functions and fill in raw assembly info
         for f in self.functions:
             f.compile()
+            if(True in norm_scratch_registers_inuse or True in sse_scratch_registers_inuse):
+                print(f"Warning:\n\tRegister leak of degree {norm_scratch_registers_inuse.count(True)+sse_scratch_registers_inuse.count(True)} found in function:\n\t {f}")
             rfreeAll() # make sure there are no register leaks between functions 
 
             

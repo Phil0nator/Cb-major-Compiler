@@ -96,4 +96,6 @@ class Postfixer:
                 self.addtok(t)
         while len(self.stack)>0:
             self.addtok(self.stack.pop())
+        
+
         return self.pfix

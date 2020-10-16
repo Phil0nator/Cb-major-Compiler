@@ -810,19 +810,33 @@ class Function:
             
         insters, dest = self.evaluateLeftsideExpression()
         self.addline(insters)
+        setter = self.current_token
         self.advance()
+
         value = ralloc(dest.type.isflt())
+
+
         ev = self.evaluateRightsideExpression(EC.ExpressionComponent(value, dest.type,token=dest.token))
         
         
         
         self.addline(inst)
         self.addline(ev)
-        if(self.current_token.tok == T_EQUALS): #normal
+        if(setter.tok == T_EQUALS): #normal
             self.addline(loadToPtr(dest.accessor,value))
-        elif(self.current_token.tok == "+="):
-            self.addline(doOperation(dest.type,dest.accessor,value,"+",dest.type.signed))
+        else:
+            op = setter.tok[0]
+            cmd = ""
+            if(op == "+"):
+                cmd = "add"
+            elif(op == "-"):
+                cmd = "sub"
 
+            if(dest.type.isflt()):
+                self.addline(f"{cmd+'sd'} {valueOf(dest.accessor)}, {value}\n")
+            else:
+                self.addline(f"{cmd} {valueOf(dest.accessor, exactSize=True)}, {setSize(value, dest.type.csize())}\n")
+        
 
 
         rfree(value)

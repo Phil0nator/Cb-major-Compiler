@@ -537,7 +537,24 @@ def psizeof(v):
         return "byte"
     if v.t.size(0) == 8:
         return "qword"
+    elif v.t.size(0) == 4:
+        return "dword"
+    elif v.t.size(0) == 2:
+        return "word"
     return "qword"
+
+def psizeoft(t):
+    if t.size(0) == 1:
+        return "byte"
+    if t.size(0) == 8:
+        return "qword"
+    elif t.size(0) == 4:
+        return "dword"
+    elif t.size(0) == 2:
+        return "word"
+    return "qword"
+
+
 # section reserver sizes
 constantReservers = ["DB", "DW", "DD", "DQ"]
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
@@ -675,7 +692,7 @@ def fncall(fn):
     return "call %s\n"%fn.getCallingLabel()
 
 # get the value of x (if x is register, return x;  if x is variable, return address; etc...)
-def valueOf(x, dflt = False):
+def valueOf(x, dflt = False, exactSize=False):
     if (isinstance(x,str)):
         return x
     elif (isinstance(x, Variable)):
@@ -684,8 +701,9 @@ def valueOf(x, dflt = False):
                 return f"{x.name}"
             return f"[{x.name}]"
         else:
-            
-            return f"{getSizeSpecifier(x.t)}[rbp-{x.offset}]"
+            if(not exactSize):
+                return f"QWORD[rbp-{x.offset}]"
+            return f"{psizeoft(x.t)}[rbp-{x.offset}]"
     elif (isinstance(x, int)):
         return (x)
 

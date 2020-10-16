@@ -29,22 +29,22 @@ def optloadRegs(a, b, op, o):
 
 
 
+    
+def bringdown_memloc( a):
+    instr=""
+    if(a.memory_location):
+        instr+=f"mov {a.accessor}, [{a.accessor}]\n"
+        a.memory_location=False
+    return instr
 
+def bringdown_memlocs( a, b):
+    return bringdown_memloc(a) + bringdown_memloc(b)
 
 
 class RightSideEvaluator:
     def __init__(self, fn):
         self.fn = fn
-    
-    def bringdown_memloc(self, a):
-        instr=""
-        if(a.memory_location):
-            instr+=f"mov {a.accessor}, [{a.accessor}]\n"
-            a.memory_location=False
-        return instr
 
-    def bringdown_memlocs(self, a, b):
-        return self.bringdown_memloc(a) + self.bringdown_memloc(b)
 
 
     # (used for rightside evaluation)
@@ -64,7 +64,7 @@ class RightSideEvaluator:
             #     instr+=doIntOperation(areg, b.accessor, op, a.type.signed)
 
 
-        instr+=self.bringdown_memlocs(a,b)
+        instr+=bringdown_memlocs(a,b)
 
         if(op == "["):
             if(b.type.isflt()): throw(UsingFloatAsIndex(b.token))
@@ -257,7 +257,7 @@ class RightSideEvaluator:
 
                         if(not typematch(BOOL, a.type) and not a.isconstint()):
                             throw(TypeMismatch(a.token,BOOL, a.type))
-                        instr+=self.bringdown_memloc(a)
+                        instr+=bringdown_memloc(a)
                         needload = True
                         if(a.isRegister()):
                             areg = a.accessor
@@ -272,7 +272,7 @@ class RightSideEvaluator:
 
                     elif(e.accessor == T_ANOT):
                         needload=True
-                        instr+=self.bringdown_memloc(a)
+                        instr+=bringdown_memloc(a)
                         if(a.isRegister()):
                             areg = a.accessor
                             needload=False
@@ -346,7 +346,7 @@ class RightSideEvaluator:
                             throw(UnkownType(e.token))
                         aval = ralloc(a.type.isflt())
                         result = ralloc(t.isflt())
-                        instr+=self.bringdown_memloc(a)
+                        instr+=bringdown_memloc(a)
                         cst=castABD(EC.ExpressionComponent("",t),EC.ExpressionComponent("",a.type),"",aval,result)
                         if(cst != False):
                             instr+=loadToReg(aval, a.accessor)
@@ -373,7 +373,7 @@ class RightSideEvaluator:
         #TODO: Make own function:
         #       make able to handle different data sizes
         instr+=";------------\n"
-        instr+=self.bringdown_memloc(final)
+        instr+=bringdown_memloc(final)
         if(dest == "AMB"):
             if(final.isRegister()):
                 rfree(final.accessor)
@@ -463,7 +463,7 @@ class LeftSideEvaluator:
         if(op == "["):
             if(b.type.isflt()): throw(UsingFloatAsIndex(b.token))
             
-
+            instr+=bringdown_memlocs(a,b)
             
             if(b.isconstint() and b.accessor == 0): # index 0 means nothing
                 return "", a.type.copy(), a
@@ -483,6 +483,7 @@ class LeftSideEvaluator:
                     instr+=f"imul {breg}, {a.type.size(1)}\n"
                 instr+=f"lea {areg}, [{areg}+{breg}]\n"
             apendee = (EC.ExpressionComponent(areg, a.type.down(),token=a.token))
+            apendee.memory_location = True
             rfree(breg)
             
             return instr, o, apendee
