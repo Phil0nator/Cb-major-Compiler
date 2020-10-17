@@ -83,6 +83,17 @@ function void avx_memcpy(void* dest, void* source, size_t bytes){
     }
 }
 
+function void memset(void* dest, unsigned char value, size_t bytes){
+    __asm{"
+    
+    _void_memset_pvoid.ucharsize_t_flp:
+    dec rdx
+    mov [rdi+rdx], sil
+    jnz _void_memset_pvoid.ucharsize_t_flp
+    
+    "}
+}
+
 function void strcpy(char* dest, char* source){
     __asm{"
     

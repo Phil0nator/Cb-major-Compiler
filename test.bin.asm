@@ -1021,20 +1021,18 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    STRING_CONSTANT_0: db `testingfile.txt`, 0
-STRING_CONSTANT_1: db `r`, 0
-nullterm: DB 0
+    nullterm: DB 0
 true: DB 1
 false: DB 0
-STRING_CONSTANT_2: db `%li\n`, 0
-STRING_CONSTANT_3: db `%lu\n`, 0
-STRING_CONSTANT_4: db `%lf\n`, 0
-STRING_CONSTANT_5: db `True`, 0
-STRING_CONSTANT_6: db `False`, 0
-STRING_CONSTANT_7: db `[]`, 0
-STRING_CONSTANT_8: db `[`, 0
-STRING_CONSTANT_9: db ` %i ,`, 0
-STRING_CONSTANT_10: db ` %i ]\n`, 0
+STRING_CONSTANT_0: db `%li\n`, 0
+STRING_CONSTANT_1: db `%lu\n`, 0
+STRING_CONSTANT_2: db `%lf\n`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `False`, 0
+STRING_CONSTANT_5: db `[]`, 0
+STRING_CONSTANT_6: db `[`, 0
+STRING_CONSTANT_7: db ` %i ,`, 0
+STRING_CONSTANT_8: db ` %i ]\n`, 0
 FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
 FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
 FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
@@ -1130,8 +1128,8 @@ AF_AAL5: DB 8
 AF_X25: DB 9
 AF_INET6: DB 10
 AF_MAX: DB 12
-STRING_CONSTANT_11: db `Bad realloc`, 0
-STRING_CONSTANT_12: db `%s`, 0
+STRING_CONSTANT_9: db `Bad realloc`, 0
+STRING_CONSTANT_10: db `%s`, 0
 _fopen_readonly: DQ 114
 _fopen_writeonly: DQ 119
 _fopen_append: DQ 97
@@ -1775,9 +1773,9 @@ mov QWORD[rbp-24], rax
 ;[[ int : 0]]
 ;------------
 mov QWORD[rbp-40], 0
-;[[ id : STRING_CONSTANT_12]]
+;[[ id : STRING_CONSTANT_10]]
 ;------------
-mov rbx, STRING_CONSTANT_12
+mov rbx, STRING_CONSTANT_10
 mov rdi, rbx
 ;[[ id : msg]]
 ;------------
@@ -2405,9 +2403,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0xe
-;[[ id : STRING_CONSTANT_11]]
+;[[ id : STRING_CONSTANT_9]]
 ;------------
-mov rbx, STRING_CONSTANT_11
+mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -3204,9 +3202,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x8
-;[[ id : STRING_CONSTANT_7]]
+;[[ id : STRING_CONSTANT_5]]
 ;------------
-mov rbx, STRING_CONSTANT_7
+mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -3217,9 +3215,9 @@ jmp ___void_print_pint.int__return
 jmp _LIFELSE_0x9
 _LIFPOST_0x8:
 _LIFELSE_0x9:
-;[[ id : STRING_CONSTANT_8]]
+;[[ id : STRING_CONSTANT_6]]
 ;------------
-mov rbx, STRING_CONSTANT_8
+mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
 ;[[ int : 0]]
 ;------------
@@ -3231,9 +3229,9 @@ call _void_printf_pchar.int
 mov QWORD[rbp-24], 0
 jmp _LFORCMP_0xb
 _LFORTOP_0xa:
-;[[ id : STRING_CONSTANT_9]]
+;[[ id : STRING_CONSTANT_7]]
 ;------------
-mov rbx, STRING_CONSTANT_9
+mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
 ;[[ id : a], [ [ : [], [ id : i], [ ] : ]]]
 mov rcx, QWORD[rbp-24]
@@ -3264,9 +3262,9 @@ and al, 00000001b
 cmp al, 1
 je _LFORTOP_0xa
 _LFOREND_0xd:
-;[[ id : STRING_CONSTANT_10]]
+;[[ id : STRING_CONSTANT_8]]
 ;------------
-mov rbx, STRING_CONSTANT_10
+mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
 ;[[ id : a], [ [ : [], [ id : len], [ - : -], [ int : 1], [ ] : ]]]
 mov rcx, 1
@@ -3320,9 +3318,9 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x6
-;[[ id : STRING_CONSTANT_5]]
+;[[ id : STRING_CONSTANT_3]]
 ;------------
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -3333,9 +3331,9 @@ jmp ___void_print_pbool__return
 jmp _LIFELSE_0x7
 _LIFPOST_0x6:
 _LIFELSE_0x7:
-;[[ id : STRING_CONSTANT_6]]
+;[[ id : STRING_CONSTANT_4]]
 ;------------
-mov rbx, STRING_CONSTANT_6
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -3383,9 +3381,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-;[[ id : STRING_CONSTANT_4]]
+;[[ id : STRING_CONSTANT_2]]
 ;------------
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -3405,9 +3403,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_3]]
+;[[ id : STRING_CONSTANT_1]]
 ;------------
-mov rbx, STRING_CONSTANT_3
+mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -3441,9 +3439,9 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_2]]
+;[[ id : STRING_CONSTANT_0]]
 ;------------
-mov rbx, STRING_CONSTANT_2
+mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
 ;[[ id : a]]
 ;------------
@@ -3644,6 +3642,26 @@ ___void_strcpy_pchar.char.__return:
 leave
 ret
 
+;[ function void memset( [[ Variable: void. dest @ 8], [ Variable: uchar value @ 16], [ Variable: size_t bytes @ 24]] ) ]
+
+_void_memset_pvoid.ucharsize_t:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: void. dest @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: uchar value @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t bytes @ 24]
+mov [rbp-24], rdx
+_void_memset_pvoid.ucharsize_t_flp:
+    dec rdx
+    mov [rdi+rdx], sil
+    jnz _void_memset_pvoid.ucharsize_t_flp
+___void_memset_pvoid.ucharsize_t__return:
+leave
+ret
+
 ;[ function void avx_memcpy( [[ Variable: void. dest @ 8], [ Variable: void. source @ 16], [ Variable: size_t bytes @ 24]] ) ]
 
 _void_avx_memcpy_pvoid.void.size_t:
@@ -3839,54 +3857,50 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 32
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : STRING_CONSTANT_0]]
+;[[ int : 35]]
 ;------------
-mov rbx, STRING_CONSTANT_0
+mov QWORD[rbp-24], 35
+;[[ & : &], [ id : something]]
+lea rbx, [rbp-24]
+;------------
 mov rdi, rbx
-;[[ id : STRING_CONSTANT_1]]
-;------------
-mov rbx, STRING_CONSTANT_1
-mov rsi, rbx
 mov rax, 0
-call _FILE_fopen_pchar.char.
-push rax
-;[[ fn(x) : [ function FILE fopen( [[ Variable: char. fname @ 0], [ Variable: char. mode @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-24], rax
+call _void_test_pint.
 ;[[ id : something]]
 ;------------
 mov rbx, QWORD[rbp-24]
 mov rdi, rbx
 mov rax, 0
-call _void._floads_pfd_t
-push rax
-;[[ fn(x) : [ function void. floads( [[ Variable: fd_t fd @ 0]] ) ] ]]
-;------------
-pop rax
-mov QWORD[rbp-32], rax
-;[[ id : contents]]
-;------------
-mov rbx, QWORD[rbp-32]
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-;[[ id : something]]
-;------------
-mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-mov rax, 0
-call _int_close_pfd_t
+call _void_print_pint
 ;[[ int : 0]]
 ;------------
 mov rax, 0
 jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
+leave
+ret
+
+;[ function void test( [[ Variable: int. value @ 8]] ) ]
+
+_void_test_pint.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int. value @ 8]
+mov [rbp-8], rdi
+;[[ @ : @], [ id : value]]
+mov rbx, QWORD[rbp-8]
+mov rcx, rbx
+;[[ int : 26]]
+;------------
+mov rbx, 26
+mov [rcx], rbx
+___void_test_pint.__return:
 leave
 ret
 

@@ -297,7 +297,7 @@ class RightSideEvaluator:
                                 instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
                             else:
 
-                                instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
+                                instr+=f"lea {result}, [rbp-{a.accessor.offset}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
@@ -624,7 +624,7 @@ class LeftSideEvaluator:
                                 instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
                             else:
 
-                                instr+=f"lea {result}, [rbp-{a.accessor.offset+a.accessor.t.csize()}]\n"
+                                instr+=f"lea {result}, [rbp-{a.accessor.offset}]\n"
                             o = a.type.copy()
                             o.ptrdepth+=1
                             stack.append(EC.ExpressionComponent(result, o.copy(),token=a.token))
@@ -645,10 +645,10 @@ class LeftSideEvaluator:
                             instr+=f"mov {tmp}, {valueOf(a.accessor)}\n" 
                             if(a.accessor.t.isflt()):
                                 oreg = ralloc(True)
-                                instr+=f"movsd {oreg}, [{tmp}]\n"
+                                instr+=f"movsd {oreg}, {tmp}\n"
                             else:
                                 oreg = ralloc(False)
-                                instr+=f"mov {oreg}, [{tmp}]\n"
+                                instr+=f"mov {oreg}, {tmp}\n"
                             o = a.accessor.t.copy()
                             o.ptrdepth-=1
                             rfree(tmp)
@@ -656,9 +656,9 @@ class LeftSideEvaluator:
                         elif(a.isRegister()):
                             result = ralloc(a.type.isflt())
                             if(a.type.isflt()):
-                                instr+=f"movsd {result}, [{a.accessor}]\n"
+                                instr+=f"movsd {result}, {a.accessor}\n"
                             else:
-                                instr+=f"mov {result}, [{a.accessor}]\n"
+                                instr+=f"mov {result}, {a.accessor}\n"
                             rfree(a.accessor)
                             o = a.type.copy()
                             o.ptrdepth-=1
