@@ -185,11 +185,12 @@ class Function:
 
     def buildReturnStatement(self):             # build a return statement
         self.advance()
-        if(self.returntype.isflt()):
-            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy(), token=self.current_token))
-        else:
-            instr = self.evaluateRightsideExpression(EC.ExpressionComponent(norm_return_register,INT.copy(),token=self.current_token))
-        self.addline(instr)
+        if(self.current_token.tok != T_ENDL):
+            if(self.returntype.isflt()):
+                instr = self.evaluateRightsideExpression(EC.ExpressionComponent(sse_return_register, DOUBLE.copy(), token=self.current_token))
+            else:
+                instr = self.evaluateRightsideExpression(EC.ExpressionComponent(norm_return_register,INT.copy(),token=self.current_token))
+            self.addline(instr)
         self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
         self.checkSemi()
 
@@ -257,7 +258,7 @@ class Function:
         self.continues.append(comparisonlabel)
         self.breaks.append(endlabel)
         self.buildDeclaration()
-        var = self.variables[len(self.variables)-1]
+        var = self.variables[-1]
 
         getCondition = self.evaluateRightsideExpression(EC.ExpressionComponent(rax,BOOL.copy(),token=self.current_token))
 
@@ -271,7 +272,6 @@ class Function:
         
         
         self.buildAssignment()
-        
         updatev = self.asm[self.asm.find("##FLPCONTENT##"):len(self.asm)-1]
         self.asm = self.asm.replace(updatev,"")
         updatev = updatev.replace("##FLPCONTENT##","")
@@ -842,12 +842,23 @@ class Function:
             elif(op == "-"):
                 cmd = "sub"
 
-            if(dest.type.isflt()):
+            if(dest.type.isflt() and dest.isRegister()):
+                x = ralloc(True)
                 tmp = ralloc(True)
                 self.addline(f"movsd {tmp}, [{valueOf(dest.accessor)}]")
                 self.addline(f"{cmd+'sd'} {tmp}, {value}\n")
                 self.addline(f"movsd [{valueOf(dest.accessor)}], {tmp}\n")
                 rfree(tmp)
+                rfree(x)
+            elif(dest.type.isflt()):
+                x = ralloc(True)
+                tmp = ralloc(True)
+
+                self.addline(f"movsd {tmp}, {valueOf(dest.accessor)}")
+                self.addline(f"{cmd+'sd'} {tmp}, {value}\n")
+                self.addline(f"movsd {valueOf(dest.accessor)}, {tmp}\n")
+                rfree(tmp)
+                rfree(x)
             else:
                 self.addline(f"{cmd} {valueOf(dest.accessor, exactSize=True)}, {setSize(value, dest.type.csize())}\n")
         

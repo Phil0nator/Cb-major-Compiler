@@ -739,7 +739,12 @@ def loadToReg(reg, value):
         if("xmm" in reg):
             #TODO:
             # SEE IF THIS IS FINE
-            return f"movq {reg}, {valueOf(value)} ;<-\n" 
+            if(isinstance(value, Variable) and value.t.isflt()):
+                return f"movsd {reg}, {valueOf(value)}\n"
+            elif(isinstance(value, str) and "xmm" in value):
+                return f"movsd {reg}, {value}\n"
+            else:
+                return f"mov {reg}, {valueOf(value)} ;<-\n" 
         if(isinstance(value, Variable) and value.isStackarr):
             return f"lea {reg}, [rbp-{value.offset+value.stackarrsize}]\n"
         if(isfloat(value)):
@@ -884,7 +889,7 @@ def cmpI(areg, breg,signed, op):
 
 def cmpF(areg, breg, op):
     
-    comparator = getComparater(True, op)
+    comparator = getComparater(False, op)
     return f"ucomisd {areg}, {breg}\nset{comparator} {al}\n"
 
 

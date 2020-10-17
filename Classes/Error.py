@@ -11,21 +11,21 @@ class Error:
         line = self.tok.start.line
         file = self.tok.start.file
         char = self.tok.start.ch 
+        diff = self.tok.end.ch-char
 
         for f in config.raw_filedata:
             if(f[1] == file):
                 file = f[0]
                 break
 
-        file = file[0:char] + error_indicator + str(self.tok.value) + Style.RESET_ALL + file[char+len(str(self.tok.value)):len(file)-1]
+        file = file[0:char] + error_indicator + file[char:self.tok.end.ch] + Style.RESET_ALL + file[char+diff:len(file)-1]
         lines = file.split("\n")
         
         
-        
-
-        if(line!=0):                    lp = f"|{line-1}\t"+lines[line-2]+"\n"
-        if(True):                       lp += f"|{line}\t"+lines[line-1]+"\n"
-        if(line!=len(lines)-1):         lp += f"|{line+1}\t"+lines[line]+"\n"
+        lp = ""
+        if(len(lines)>2):                               lp = f"|{line-1}\t"+lines[line-2]+"\n"
+        if(len(lines)>1):                               lp += f"|{line}\t"+lines[line-1]+"\n"
+        if(line!=len(lines)-1 and len(lines)>1):         lp += f"|{line+1}\t"+lines[line]+"\n"
         
         
         problem = lp
@@ -203,3 +203,9 @@ class InvalidSimdOperation(Error):
     def __init__(self, tok, operation):
         self.tok = tok
         self.message = f"Cannot perform SIMD operation ( '{operation} ') on integers: "
+
+
+class TokenMismatch(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unmatched token: "

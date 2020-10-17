@@ -3,6 +3,7 @@ from Classes.Token import Token
 import Classes.Token as T
 from Classes.Error import throw
 from Classes.Error import UnkownCharSequence
+from Classes.Error import UnexepectedEOFError, TokenMismatch
 from globals import *
 
 ##########################
@@ -35,10 +36,7 @@ class Lexer:
                 self.loc.line+=1
             return
         else:
-            print(self.ch)
-            print(self.loc)
-            print("Untimely Advance")
-            exit()
+            throw(UnexepectedEOFError(Token(self.ch,self.ch,self.loc.copy(),self.loc)))
 
     def buildMultichar(self): # build math operators that use more than one character (max = 3)
         op = self.ch
@@ -59,7 +57,7 @@ class Lexer:
         begin = self.loc.copy()
         self.advance()
         pchars = T.T_DIGITS+T.T_DOT+"e"
-        if(self.ch == "x"):
+        if(self.ch == "x" or self.ch == "X"):
             num+=self.ch
             self.advance()
             pchars+="abcdefABCDEF"
@@ -94,6 +92,7 @@ class Lexer:
         while(self.ch != "\""):
             content+=self.ch
             self.advance()
+            if(self.chidx == len(self.raw)-1): throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         self.advance()
         return Token(T.T_STRING, content,begin,self.loc.copy())
 
@@ -126,6 +125,10 @@ class Lexer:
         while self.ch != chr(1):
 
             if(self.ch == "\n" or self.ch == " "):
+                self.advance()
+
+            elif(self.ch == "\\"):
+                self.advance()
                 self.advance()
 
             elif (self.ch == "#"):
@@ -209,10 +212,7 @@ class Lexer:
                 tokens.append(token)
             
             else:
-                print("Unkown char sequence")
-                print(Token(self.ch, self.ch,self.loc.copy(),self.loc.copy()))
-                print(self.loc)
-                exit()
+                throw(UnkownCharSequence(Token(self.ch, self.ch,self.loc.copy(),self.loc.copy())))
 
         tokens.append(Token(T.T_EOF,T.T_EOF,self.loc.copy(),self.loc.copy()))
         

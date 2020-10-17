@@ -232,7 +232,13 @@ class RightSideEvaluator:
                             #instr+=f"mov {tmpaddr}, {valueOf(a.accessor)}\n"
                             instr+=loadToReg(tmpaddr, a.accessor)
 
-
+                            
+                            
+                            rfree(a.accessor)
+                            
+                            
+                            
+                            
                             instr+=f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
                             stack.append(EC.ExpressionComponent(tmpaddr, memv.t.copy(),token=b.token))
                             stack[-1].memory_location=True
