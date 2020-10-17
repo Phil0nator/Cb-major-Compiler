@@ -17,6 +17,7 @@ parser.add_argument("-r","--run", action="store_true", default=False, help="Auto
 parser.add_argument("-g", "--debug",action="store_true",default=False, help="Add helpful comments in the outputted nasm code if [-nasm] option used")
 parser.add_argument("-O2","--optimize2",action="store_true", default=False, help="Use level 2 optimization (longer compiletime, but somewhat faster output)")
 parser.add_argument("-O3","--optimize3",action="store_true", default=False, help="Use level 3 optimization (much longer compiletime, but faster output)")
+parser.add_argument("-p", "--profile", action="store_true", default=False, help="Print profiling statistics about the compiler for debugging/optimization")
 args = parser.parse_args()
 __fileinput__=args.input
 __fileoutput__=args.output
@@ -24,6 +25,7 @@ __tonasm__=args.assembly
 __autorun__=args.run
 __dbg__ = args.debug
 DO_DEBUG = args.debug
+__profile__ = args.profile
 __oplevel__ = 1
 if(args.optimize2):
     __oplevel__ = 2

@@ -13,7 +13,7 @@ import os
 import argparse as arg
 from Classes.Error import *
 from globals import *
-
+import cProfile, pstats, io
 
 
 from PreParser import PreParser
@@ -92,5 +92,16 @@ def main():
 
 
 
-
-main()
+if(__name__ == "__main__"):
+    if(config.__profile__):
+        pr = cProfile.Profile()
+        pr.enable()
+        main()
+        pr.disable()
+        s = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
+    else:
+        main()
