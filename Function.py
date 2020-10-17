@@ -843,7 +843,11 @@ class Function:
                 cmd = "sub"
 
             if(dest.type.isflt()):
-                self.addline(f"{cmd+'sd'} {valueOf(dest.accessor)}, {value}\n")
+                tmp = ralloc(True)
+                self.addline(f"movsd {tmp}, [{valueOf(dest.accessor)}]")
+                self.addline(f"{cmd+'sd'} {tmp}, {value}\n")
+                self.addline(f"movsd [{valueOf(dest.accessor)}], {tmp}\n")
+                rfree(tmp)
             else:
                 self.addline(f"{cmd} {valueOf(dest.accessor, exactSize=True)}, {setSize(value, dest.type.csize())}\n")
         

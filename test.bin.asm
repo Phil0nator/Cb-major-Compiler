@@ -1021,7 +1021,8 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullterm: DB 0
+    FLT_CONSTANT_0: dq 0x1.4cccccccccccdp+1
+nullterm: DB 0
 true: DB 1
 false: DB 0
 STRING_CONSTANT_0: db `%li\n`, 0
@@ -1033,20 +1034,20 @@ STRING_CONSTANT_5: db `[]`, 0
 STRING_CONSTANT_6: db `[`, 0
 STRING_CONSTANT_7: db ` %i ,`, 0
 STRING_CONSTANT_8: db ` %i ]\n`, 0
-FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
+FLT_CONSTANT_1: dq 0x1.ef2d0f6115f51p-107
+FLT_CONSTANT_2: dq 0x1.921fb54442d18p+1
+FLT_CONSTANT_3: dq 0x1.5bf0a8b145769p+1
+FLT_CONSTANT_4: dq 0x1.71547652b82fep+0
+FLT_CONSTANT_5: dq 0x1.bcb7b1526e50ep-2
+FLT_CONSTANT_6: dq 0x1.62e42fefa39efp-1
+FLT_CONSTANT_7: dq 0x1.921fb54442d18p+0
+FLT_CONSTANT_8: dq 0x1.921fb54442d18p-1
+FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-2
+FLT_CONSTANT_10: dq 0x1.45f306dc9c883p-1
+FLT_CONSTANT_11: dq 0x1.20dd750429b6dp+0
+FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp+0
+FLT_CONSTANT_13: dq 0x1.6a09e667f3bcdp-1
+FLT_CONSTANT_14: dq -0x0.0p+0
 EPSILON: dq 0x1.ef2d0f6115f51p-107
 M_PI: dq 0x1.921fb54442d18p+1
 M_E: dq 0x1.5bf0a8b145769p+1
@@ -2008,8 +2009,8 @@ mov [rbp-8], rdi
 ;[[ id : str], [ -> : ->], [ id : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
 ;------------
+mov rbx, qword[rbx]
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
@@ -2041,7 +2042,7 @@ mov QWORD[rbp-24], rax
 ;[[ id : sql], [ > : >], [ id : this], [ -> : ->], [ id : len]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
-mov rbx, [rbx]
+mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-24]
 cmp rcx, rbx
 setg cl
@@ -2060,7 +2061,7 @@ _LIFELSE_0x1e:
 ;[[ id : this], [ -> : ->], [ id : len], [ - : -], [ id : sql]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
-mov rbx, [rbx]
+mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-24]
 sub rbx, rcx
 ;------------
@@ -2073,7 +2074,7 @@ _LFORTOP_0x1f:
 ;[[ id : this], [ -> : ->], [ id : value], [ + : +], [ id : i]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
+mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-40]
 add rbx, rcx
 ;------------
@@ -2152,8 +2153,8 @@ mov QWORD[rbp-40], rbx
 ;[[ id : new], [ -> : ->], [ id : value]]
 mov rbx, QWORD[rbp-16]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
 ;------------
+mov rbx, qword[rbx]
 mov rdi, rbx
 mov rax, 0
 call _void_free_pvoid.
@@ -2173,13 +2174,13 @@ mov [rbx], rcx
 ;[[ id : new], [ -> : ->], [ id : value]]
 mov rbx, QWORD[rbp-16]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
 ;------------
+mov rbx, qword[rbx]
 mov rdi, rbx
 ;[[ id : this], [ -> : ->], [ id : value], [ + : +], [ id : start]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
+mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-24]
 add rbx, rcx
 ;------------
@@ -2375,13 +2376,13 @@ mov QWORD[rbp-24], rax
 ;[[ id : this], [ -> : ->], [ id : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
 ;------------
+mov rbx, qword[rbx]
 mov rdi, rbx
 ;[[ id : this], [ -> : ->], [ id : len], [ + : +], [ id : ol]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
-mov rbx, [rbx]
+mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-24]
 add rbx, rcx
 ;------------
@@ -2415,7 +2416,7 @@ _LIFELSE_0xf:
 ;[[ id : newvalue], [ + : +], [ id : this], [ -> : ->], [ id : len]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
-mov rbx, [rbx]
+mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-32]
 add rcx, rbx
 ;------------
@@ -2445,7 +2446,7 @@ lea rbx, [rbx+8]
 ;[[ id : this], [ -> : ->], [ id : len], [ + : +], [ id : ol]]
 mov r10, QWORD[rbp-8]
 lea r10, [r10+8]
-mov r10, [r10]
+mov r10, qword[r10]
 mov r11, QWORD[rbp-24]
 add r10, r11
 ;------------
@@ -2500,8 +2501,8 @@ mov [rbx], rcx
 ;[[ id : this], [ -> : ->], [ id : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
 ;------------
+mov rbx, qword[rbx]
 mov rdi, rbx
 ;[[ id : starter]]
 ;------------
@@ -2527,8 +2528,8 @@ mov [rbp-8], rdi
 ;[[ id : this], [ -> : ->], [ id : value]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
-mov rbx, [rbx]
 ;------------
+mov rbx, qword[rbx]
 mov rdi, rbx
 mov rax, 0
 call _void_free_pvoid.
@@ -3857,26 +3858,62 @@ ret
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 35]]
+;[[ id : Test]]
 ;------------
-mov QWORD[rbp-24], 35
-;[[ & : &], [ id : something]]
-lea rbx, [rbp-24]
-;------------
-mov rdi, rbx
+mov rdi, 16
 mov rax, 0
-call _void_test_pint.
-;[[ id : something]]
+call _void._malloc_psize_t
+push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 0]] ) ] ]]
 ;------------
+pop rax
+mov QWORD[rbp-24], rax
+;[[ & : &], [ ( : (], [ id : t], [ -> : ->], [ id : b], [ ) : )]]
 mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+8]
+;------------
 mov rdi, rbx
 mov rax, 0
-call _void_print_pint
+call _void_test_pdouble.
+;[[ id : t], [ -> : ->], [ id : b]]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+8]
+;------------
+mov rbx, qword[rbx]
+movq xmm0, rbx ;<-
+mov rax, 1
+call _void_print_pdouble
+;[[ int : 6]]
+;------------
+mov QWORD[rbp-32], 6
+;[[ id : a]]
+;[[ int : 2]]
+;------------
+mov rbx, 2
+add qword[rbp-32], rbx
+;[[ id : t], [ -> : ->], [ id : b]]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+8]
+;[[ int : 26]]
+;------------
+mov rax, 26
+cvtsi2sd xmm7, rax
+movsd xmm7, [rbx]
+addsd xmm7, xmm7
+movsd [rbx], xmm7
+;[[ id : t], [ -> : ->], [ id : b]]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+8]
+;------------
+mov rbx, qword[rbx]
+movq xmm0, rbx ;<-
+mov rax, 1
+call _void_print_pdouble
 ;[[ int : 0]]
 ;------------
 mov rax, 0
@@ -3885,22 +3922,23 @@ ___int_main_pintchar..__return:
 leave
 ret
 
-;[ function void test( [[ Variable: int. value @ 8]] ) ]
+;[ function void test( [[ Variable: double. a @ 8]] ) ]
 
-_void_test_pint.:
+_void_test_pdouble.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [ Variable: int. value @ 8]
+;Load Parameter: [ Variable: double. a @ 8]
 mov [rbp-8], rdi
-;[[ @ : @], [ id : value]]
+;[[ @ : @], [ id : a]]
 mov rbx, QWORD[rbp-8]
 mov rcx, rbx
-;[[ int : 26]]
+;[[ id : FLT_CONSTANT_0]]
 ;------------
-mov rbx, 26
-mov [rcx], rbx
-___void_test_pint.__return:
+movq xmm8, [FLT_CONSTANT_0] ;<-
+movq xmm7, xmm8 ;<-
+movq [rcx], xmm7
+___void_test_pdouble.__return:
 leave
 ret
 

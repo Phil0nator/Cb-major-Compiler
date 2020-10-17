@@ -234,14 +234,18 @@ class RightSideEvaluator:
 
 
                             instr+=f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
-                            if(memv.t.isflt()):
-                                rfree(tmpaddr)
-                                result = ralloc(True)
-                                instr+=f"movsd {result}, [{tmpaddr}]\n"
-                                stack.append(EC.ExpressionComponent(result, memv.t.copy(),token=b.token))
-                            else:
-                                instr+=f"mov {tmpaddr}, [{tmpaddr}]\n"
-                                stack.append(EC.ExpressionComponent(tmpaddr,memv.t.copy(),token=b.token))
+                            stack.append(EC.ExpressionComponent(tmpaddr, memv.t.copy(),token=b.token))
+                            stack[-1].memory_location=True
+                            continue
+                            
+                            # if(memv.t.isflt()):
+                            #     rfree(tmpaddr)
+                            #     result = ralloc(True)
+                            #     instr+=f"movsd {result}, [{tmpaddr}]\n"
+                            #     stack.append(EC.ExpressionComponent(result, memv.t.copy(),token=b.token))
+                            # else:
+                            #     instr+=f"mov {tmpaddr}, [{tmpaddr}]\n"
+                            #     stack.append(EC.ExpressionComponent(tmpaddr,memv.t.copy(),token=b.token))
 
 
 
@@ -287,7 +291,7 @@ class RightSideEvaluator:
                     elif(e.accessor == T_REFRIZE):
                         
                         if( a.isconstint() ):
-
+                            
                             throw(AddressOfConstant(a.token))
 
                         elif( isinstance(a.accessor, Variable) ):
@@ -306,7 +310,7 @@ class RightSideEvaluator:
                             a.memory_location = False
                             o = a.type.copy()
                             o.ptrdepth+=1
-                            stack.append(EC.ExpressionComponent(a.accessir, o.copy(),token=a.token))
+                            stack.append(EC.ExpressionComponent(a.accessor, o.copy(),token=a.token))
 
                         else:
                             throw(AddressOfConstant(a.token))
