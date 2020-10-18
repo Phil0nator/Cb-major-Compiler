@@ -44,7 +44,13 @@ def throw(error):
 
 def warn(warning):
     print(warning)
-    
+
+
+class FileNotFound(Error):
+    def __init__(self, tok, path):
+        self.tok = tok
+        self.message = f"File '{path}' not found: "
+
 
 class UnexepectedEOFError(Error):
     def __init__(self, tok):

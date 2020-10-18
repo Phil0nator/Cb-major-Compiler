@@ -1,7 +1,7 @@
 #ifndef __SYSTIME
 #define __SYSTIME 1
 
-#include "include/stddef.k"
+#include "stddef.k"
 
 
 struct timeval_t{

@@ -61,10 +61,15 @@ class PreProcessor:
             try:
                 with open(f"{p}/{path}", "rb") as f:
                     rawdata = f.read().decode()
-                    include_directories.append(os.path.realpath(f"{p}/{path}"))
-            except:
+                    dir = os.path.dirname(f"{p}/{path}")
+                    if(dir not in include_directories):
+                        include_directories.append(dir)
+                    break
+            except FileNotFoundError:
                 pass
-        #config.raw_filedata.append([rawdata,path])
+
+        if(rawdata == None):
+            throw(FileNotFound(self.current_token,path))
         return rawdata
 
     def buildIncludeStatement(self):            # #include directive

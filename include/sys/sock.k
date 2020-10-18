@@ -1,7 +1,7 @@
 #ifndef __SYSSOCK
 #define __SYSSOCK 1
 
-#include "include/sys/files.k" // fd_t, read, write, etc...
+#include "files.k" // fd_t, read, write, etc...
 
 typedef unsigned int32 in_addr;
 
