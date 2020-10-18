@@ -1,5 +1,5 @@
 
-#include "include/std.k"
+#include "std.k"
 int test = 265;
 
 

@@ -1,7 +1,9 @@
 from Classes.Token import *
-from Classes.Location import *
+from Classes.Location import Location
 from Classes.Error import *
 from Lexer import Lexer
+from config import include_directories
+import os
 def join(arr, d):
     out = ""
     for s in arr:
@@ -52,9 +54,16 @@ class PreProcessor:
         if(self.current_token.tok not in tok):
             throw(ExpectedToken(self.current_token, tok))
     
-    def loadRaw(self, path):                    # load a raw file based on a given path
-        with open(path, "rb") as f:
-            rawdata = f.read().decode()
+    def loadRaw(self, path):
+                            # load a raw file based on a given path
+        rawdata = None
+        for p in include_directories:
+            try:
+                with open(f"{p}/{path}", "rb") as f:
+                    rawdata = f.read().decode()
+                    include_directories.append(os.path.realpath(f"{p}/{path}"))
+            except:
+                pass
         #config.raw_filedata.append([rawdata,path])
         return rawdata
 

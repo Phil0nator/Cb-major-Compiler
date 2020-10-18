@@ -9,6 +9,7 @@
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
 import sys
+import os
 import subprocess
 import pkg_resources
 
@@ -49,6 +50,26 @@ if(args.optimize2):
 elif(args.optimize3):
     __oplevel__ = 3
 GlobalCompiler = None
+
+compilepath = (sys.path[0])
+callpath = os.getcwd()
+includepath = f"{compilepath}/include/"
+
+
+include_directories = [compilepath, callpath, includepath]
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 REGISTERS = ["rax","rbx","rcx","rdx","rsi","rdi","r8","r9","r10","r11","r12","r13","r14","r15"
             "al","bl","cl","dl","r8b","r9b","r10b","r11b","r12b","r13b","r14b","r15b",
