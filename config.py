@@ -5,8 +5,21 @@
 #####################
 
 
+########
+#   (The below snippet is used to ensure all dependencies are satisfied)
+########
+import sys
+import subprocess
+import pkg_resources
 
+required = {'argparse', 'colorama', "termcolor"}
+installed = {pkg.key for pkg in pkg_resources.working_set}
+missing = required - installed
 
+if missing:
+    python = sys.executable
+    subprocess.check_call([python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
+###################################
 
 import argparse as arg
 parser = arg.ArgumentParser(description='Compile, link, and debug .k programs.')

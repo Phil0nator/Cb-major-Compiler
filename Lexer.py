@@ -110,9 +110,7 @@ class Lexer:
         begin = self.loc.copy()
         self.advance()
         pchars = T.T_IDCHARS+T.T_DIGITS
-        #while self.ch in T.T_IDCHARS+T.T_DIGITS:
-        #    value += self.ch
-        #    self.advance()
+
         for ch in self.raw[self.chidx:]:
             if(ch in pchars):
                 value+=ch
