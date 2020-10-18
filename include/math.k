@@ -24,7 +24,7 @@
 #define M_SQRT2         1.41421356237309504880   /* sqrt( 2 )                                            */
 #define M_SQRT1_2       0.707106781186547524401  /* 1 / sqrt(2)                                          */
 #define M_MINZERO       -0.0                     /* double precision -0.0                                */
-
+double M_MINZERO_MEM = M_MINZERO;
 
 
 function double sqrt(double a){
@@ -130,11 +130,12 @@ function int abs(int x){
   "}
 
 }
+
 function double abs(double x){
 
   __asm{"
   movsd xmm1, xmm0
-  movsd xmm2, [M_MINZERO]
+  movsd xmm2, [M_MINZERO_MEM]
   xorpd xmm1, xmm2
   andpd xmm0, xmm1
   "}

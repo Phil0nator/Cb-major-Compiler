@@ -74,8 +74,11 @@ class PreProcessor:
         self.delmov()
         self.checkToks([T_ID])
         name = self.current_token.value
+        sline = self.current_token.start.line
         self.delmov()
-
+        if(self.current_token.start.line != sline):
+            self.definitions.append([name, [Token(T_INT, 0, self.current_token.start,self.current_token.end)]])
+            return
 
         definitionTokens = [self.current_token]
         line = self.current_token.start.line
@@ -93,6 +96,7 @@ class PreProcessor:
             return
         self.delmov()
         self.tokens[self.tkidx:self.tkidx] = dq[1]
+    
     
     def buildifdef(self):
         self.delmov()
@@ -117,6 +121,7 @@ class PreProcessor:
 
 
     def process(self):
+
         while self.current_token.tok != T_EOF:
             if(self.current_token.tok == T_DIRECTIVE):
                 # token is directive
@@ -137,6 +142,9 @@ class PreProcessor:
 
             elif(self.current_token.tok == T_ID):
                 self.checkDefn()
+
+
+
             else:
                 self.advance()
         

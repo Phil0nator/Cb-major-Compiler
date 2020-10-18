@@ -1,39 +1,45 @@
+
+#ifndef __SYSFILE
+#define __SYSFILE 1
+
+
+
 #include "include/stddef.k"
 typedef unsigned int fd_t;  /* file descriptor datatype */
 typedef int mode_t;
 
 /* open flags */
-const int O_RDONLY      = 0x0000;    /* open for read only  */
-const int O_WRONLY      = 0x0001;    /* open for write only */
-const int O_RDWR        = 0x0002;    /* open for reading and writing */
-const int O_ACCMODE     = 0x0003;    /* mask for above codes */
+#define O_RDONLY       0x0000    /* open for read only  */
+#define O_WRONLY       0x0001    /* open for write only */
+#define O_RDWR         0x0002    /* open for reading and writing */
+#define O_ACCMODE      0x0003    /* mask for above codes */
 
 /* Kernel encoding of open mode */
-const int FREAD         = 0x0001;
-const int FWRITE        = 0x0002;
-const int O_NONBLOCK    = 0x0004;
-const int O_APPEND      = 0x0008;
-const int O_SHLOCK      = 0x0010;
-const int O_EXLOCK      = 0x0020;
-const int O_ASYNC       = 0x0040;
-const int O_FSYNC       = 0x0080;
+#define FREAD          0x0001
+#define FWRITE         0x0002
+#define O_NONBLOCK     0x0004
+#define O_APPEND       0x0008
+#define O_SHLOCK       0x0010
+#define O_EXLOCK       0x0020
+#define O_ASYNC        0x0040
+#define O_FSYNC        0x0080
 
-const int O_CREAT       = 0x0040;
-const int O_TRUNC       = 0x0200;
-const int O_EXCL        = 0x0800;
-
-
-const int O_USRPERM     = 0x00700;
-
-const int WMODE_WRITE   = 0;
-const int WMODE_APPEND  = 1024;
-const int WMODE_WPLUS   = 65;
-const int WMODE_WPLUSA  = 1089;
+#define O_CREAT        0x0040
+#define O_TRUNC        0x0200
+#define O_EXCL         0x0800
 
 
-const int SEEK_END      = 2;
-const int SEEK_CUR      = 1;
-const int SEEK_SET      = 0;
+#define O_USRPERM      0x00700
+
+#define WMODE_WRITE    0
+#define WMODE_APPEND   1024
+#define WMODE_WPLUS    65
+#define WMODE_WPLUSA   1089
+
+
+#define SEEK_END       2
+#define SEEK_CUR       1
+#define SEEK_SET       0
 
 
 
@@ -92,3 +98,6 @@ function int lseek(fd_t fd, int offset, int whence){
     "
     }
 }
+
+
+#endif

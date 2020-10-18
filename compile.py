@@ -9,6 +9,7 @@
 #   
 #
 import time
+import traceback
 import os
 import argparse as arg
 from Classes.Error import *
@@ -46,7 +47,14 @@ def main():
     c.compile(totals)
 
     # function compilation
-    c.finalize()
+    
+    try:
+        c.finalize()
+    except AttributeError as e:
+        traceback.print_tb(e.__traceback__)
+        print(e)
+        print(c.currentfunction.current_token.start)
+        exit(1)
 
     if(c.panicmode):
         print("Could not finish compilation due to errors.")

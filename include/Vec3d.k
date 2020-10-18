@@ -1,5 +1,5 @@
 #ifndef __VEC3D
-#define __VEC3D
+#define __VEC3D 1
 
 struct Vec3d{
 

@@ -6,6 +6,7 @@ import Classes.DType as Type
 from Classes.Token import Token
 from Classes.Token import *
 from Classes.Location import Location
+from Classes.Constexpr import determineConstexpr
 from Lexer import Lexer
 from Classes.Error import *
 from globals import *
@@ -36,10 +37,12 @@ class Compiler:
         self.currentfname = ""          # current filename
         self.currentTokens = []         # current tokens: Token
 
+
+        self.currentfunction = None     # for fn compiletime
         
         self.current_token = None       # current token
         self.ctidx = 0                  # index of current_token in self.currentTokens
-
+        self.prevtok = Token(T_AMBIGUOUS, T_AMBIGUOUS,None, None)
 
         self.functions = []             # all Function objects
         
@@ -84,6 +87,7 @@ class Compiler:
 
     def advance(self):                  # move to next token
         self.ctidx+=1
+        self.prevtok = self.current_token
         try:
             self.current_token = self.currentTokens[self.ctidx]
         except:
@@ -132,7 +136,7 @@ class Compiler:
         return t
 
 
-
+    #@depricated
     def buildIDInitiatedStatement(self):    # build a statement that starts with an id token
         
         value = self.current_token.value
@@ -231,49 +235,32 @@ class Compiler:
 
 
     def createConstant(self):                   # create an arbitrary constant in self.constants
-        self.advance()
-        value = self.current_token.value
-        if(self.isType(value)):
-            intr = self.isIntrinsic(value)
-
-            if ( intr == None):
-                throw(IntrinsicRequired(self.current_token))
-
-            self.advance()
-            isptr = False
-            if(self.current_token.tok == "*"):
-                isptr=True
-                self.advance()
-                throw(InvalidConstant(self.current_token))
-
-            if (self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
-            name = self.current_token.value
-
-            self.advance()
-
-            if (self.current_token.tok != T_EQUALS): throw(ExpectedValue(self.current_token))
-
-            self.advance()
-
-            if(self.current_token.tok == T_ID):
-
-                v = Variable(intr,name,mutable=False,glob=True,isptr=isptr,initializer=self.getGlob(self.current_token.value).initializer)
-                self.constants += createIntrinsicConstant(v)
-
-            else:
-                v = Variable(intr,name,mutable=False,glob=True,isptr=isptr,initializer=self.current_token.value)
-                self.constants += createIntrinsicConstant(v)
-
-            self.globals.append(v)
-
-
-
-        else:
-            throw(UnexpectedToken(self.current_token))
+        intr = self.checkType()
+        if (self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
+        name = self.current_token.value
 
         self.advance()
 
+        if (self.current_token.tok != T_EQUALS): throw(ExpectedValue(self.current_token))
 
+        self.advance()
+
+        exprtokens = []
+
+        while(self.current_token.tok != T_ENDL):
+            exprtokens.append(self.current_token)
+            self.advance()
+        
+        value = determineConstexpr(intr.isflt(),exprtokens,Function("CMAININIT",[],VOID.copy(),self,exprtokens))
+
+        self.globals.append(Variable(value.type.copy(),name,glob=True,initializer = value.accessor))
+
+        self.constants += createIntrinsicConstant(self.globals[-1])
+
+
+        if(self.current_token.tok != T_ENDL): 
+            throw(ExpectedSemicolon(self.current_token))    
+        self.advance()
 
 
     def createFunction(self):                   # isolate a function and build a Function object
@@ -340,6 +327,11 @@ class Compiler:
         self.functions.append(f)        
         self.globals.append(Variable( f.returntype.copy(), f.name, glob=True))
 
+
+
+
+
+
     def buildStruct(self):                  # isolate and build a structure
         self.advance()
         if(self.current_token.tok != T_ID): throw(ExpectedIdentifier(self.current_token))
@@ -398,6 +390,8 @@ class Compiler:
                     self.advance()
                     self.functions.append(fn)
                     self.globals.append(Variable(VOID.copy(),name, glob=True))
+                    if(self.current_token.tok != T_ENDL):
+                        throw(ExpectedToken(self.current_token, T_ENDL))
                 
                 elif(self.current_token.value == "constructor"):
                     self.advance()
@@ -426,6 +420,9 @@ class Compiler:
                     constructor = fn
                     self.functions.append(fn)
                     self.globals.append(Variable(VOID.copy(),name, glob=True))
+                    self.advance()
+                    if(self.current_token.tok != T_ENDL):
+                        throw(ExpectedToken(self.current_token, T_ENDL))
 
 
         self.types.remove(prototypeType)
@@ -436,6 +433,16 @@ class Compiler:
         if(destructor!=None): actualType.destructor.parameters[0].t.load(actualTypeptr)
         if(constructor!=None): actualType.constructor.parameters[0].t.load( actualTypeptr)
         self.types.append(actualType)
+
+        self.advance()
+        if(self.current_token.tok != T_ENDL):
+            throw(ExpectedToken(self.current_token, T_ENDL))
+        self.advance()
+
+
+
+
+
 
     def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentTokens = ftup
@@ -475,15 +482,11 @@ class Compiler:
         self.ctidx = 0
         
         while self.current_token.tok != T_EOF:
-
             if (self.current_token.tok == T_ID):
-                self.buildIDInitiatedStatement()
+                self.createConstant()
             elif (self.current_token.tok == T_KEYWORD):
-                if(self.current_token.value == "const"):
-                    self.createConstant()
-                    self.advance()
 
-                elif(self.current_token.value == "unsigned"):
+                if(self.current_token.value == "unsigned"):
                     s = self.current_token
                     self.advance()
                     self.buildIDInitiatedStatement()
@@ -515,8 +518,7 @@ class Compiler:
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()
-
-
+                    
 
                 elif (self.current_token.value == "function"):
                     self.createFunction()
@@ -528,6 +530,7 @@ class Compiler:
 
     def finalize(self):                                 # compile all functions and fill in raw assembly info
         for f in self.functions:
+            self.currentfunction=f
             f.compile()
             if(True in norm_scratch_registers_inuse or True in sse_scratch_registers_inuse):
                 print(f"Warning:\n\tRegister leak of degree {norm_scratch_registers_inuse.count(True)+sse_scratch_registers_inuse.count(True)} found in function:\n\t {f}")

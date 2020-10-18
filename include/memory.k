@@ -2,7 +2,7 @@
   * <memory.k> contains rappers of malloc and its friends for convenience.
 */
 #ifndef __MEMORY
-#define __MEMORY
+#define __MEMORY 1
 
 
 function void* malloc(size_t size){

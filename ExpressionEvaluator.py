@@ -383,8 +383,10 @@ class RightSideEvaluator:
         if(len(stack) != 1): 
             throw(HangingOperator(self.fn.current_token))
         final = stack.pop()
-        
-        
+
+
+
+
         o = final.type.copy()
         #TODO: Make own function:
         #       make able to handle different data sizes

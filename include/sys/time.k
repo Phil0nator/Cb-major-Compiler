@@ -1,3 +1,6 @@
+#ifndef __SYSTIME
+#define __SYSTIME 1
+
 #include "include/stddef.k"
 
 
@@ -20,17 +23,17 @@ struct timezone_t{
 
 };
 
-const int32 DST_NONE = 0;   /* not on dst */
-const int32 DST_USA  = 1;   /* USA style dst */
-const int32 DST_AUST = 2;   /* Australian style dst */
-const int32 DST_WET  = 3;   /* Western European dst */
-const int32 DST_MET  = 4;   /* Middle European dst */
-const int32 DST_EET  = 5;   /* Eastern European dst */
-const int32 DST_CAN  = 6;   /* Canada */
+#define DST_NONE  0   /* not on dst */
+#define DST_USA   1   /* USA style dst */
+#define DST_AUST  2   /* Australian style dst */
+#define DST_WET   3   /* Western European dst */
+#define DST_MET   4   /* Middle European dst */
+#define DST_EET   5   /* Eastern European dst */
+#define DST_CAN   6   /* Canada */
 
-const int32 ITIMER_REAL = 0;
-const int32 ITIMER_VIRTUAL = 1;
-const int32 ITIMER_PROF = 2;
+#define ITIMER_REAL     0
+#define ITIMER_VIRTUAL  1
+#define ITIMER_PROF     2
 
 
 function int adjtime(timeval_t *t1, timeval_t t2){
@@ -74,3 +77,6 @@ function time_t time(time_t *tloc){
     syscall
     "}
 }
+
+
+#endif

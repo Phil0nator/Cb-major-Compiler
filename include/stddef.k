@@ -11,7 +11,7 @@ void* nullptr = 0;
 
 void null = 0;
 
-const char nullterm = 0;
+char nullterm = 0;
 
 /* The type size_t holds all results of the sizeof operator. */
 
