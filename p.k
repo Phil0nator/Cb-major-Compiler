@@ -1,4 +1,5 @@
-#include "include/std.k"
+#include "include/printf.k"
+#include "test.k";
 
 
 

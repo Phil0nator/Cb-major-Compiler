@@ -437,10 +437,9 @@ class Compiler:
         self.types.append(actualType)
 
     def compile(self, ftup):            # main function to perform Compiler tasks
-        self.currentfname = ftup[1]
-        raw = ftup[0]
-        lex = Lexer(self.currentfname,raw)
-        self.currentTokens = lex.getTokens()
+        self.currentTokens = ftup
+        #lex = Lexer(self.currentfname,raw)
+        # = lex.getTokens()
         c = 0
         for t in self.currentTokens:
             if t.tok == T_STRING:

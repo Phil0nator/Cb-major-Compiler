@@ -15,8 +15,7 @@ from Classes.Error import *
 from globals import *
 import cProfile, pstats, io
 
-
-from PreParser import PreParser
+from Lexer import Lexer
 from PreParser import PreProcessor
 from Compiler import Compiler
 from Linker import *
@@ -29,22 +28,23 @@ def main():
         raw = inpf.read().decode()
 
     # preprocess
-    pre = PreParser(raw,config.__fileinput__)
-    pretokens = pre.getTokens() 
+    lex = Lexer(config.__fileinput__, raw)
+    firstTokens = lex.getTokens()
 
-    pp = PreProcessor(raw,pretokens,config.__fileinput__)
+
+    pp = PreProcessor(firstTokens)
     totals = pp.process()
+    #print(totals)
+    #
+    # totals = pp.process()
     #print("+-+-+ Compile +-+-+")
     
     # global compilation
     c = Compiler()
     config.GlobalCompiler = c
     
-    
-    for file in totals:
-        
-        config.raw_filedata.append(file)
-        c.compile(file)
+
+    c.compile(totals)
 
     # function compilation
     c.finalize()

@@ -132,15 +132,20 @@ class Lexer:
                 self.advance()
 
             elif (self.ch == "#"):
-                if(not getDirectives):
-                    while self.ch != "\n":
-                        self.advance()
-                else:
-                    out = ""
-                    while self.ch != "\n":
-                        out+=self.ch
-                        self.advance()
-                    directives.append(out)
+                self.advance()
+                t = self.buildAmbiguous()
+                t.tok = T.T_DIRECTIVE
+                tokens.append(t)
+
+                # if(not getDirectives):
+                #     while self.ch != "\n":
+                #         self.advance()
+                # else:
+                #     out = ""
+                #     while self.ch != "\n":
+                #         out+=self.ch
+                #         self.advance()
+                #     directives.append(out)
 
             elif(self.ch == "$"):
                 self.advance()
