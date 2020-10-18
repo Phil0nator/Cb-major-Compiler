@@ -1,8 +1,19 @@
+####################################################
+#   The Constexpr file is used by the compiler to evaluate
+#       specifically constant expressions ( expressions containing
+#       only constant / macro values. )
+#
+#   Constexpr evaluation is done through a slight modification
+#       to the ExpressionEvaluators, in that it will only call the 
+#       "calculateConstant" function of globals.py for the evaluation.
+#####################################################
 from globals import *
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
 
+
+# get result of a op b while taking initializer value for a and b if they are vars.
 def evaluate(a, b, op):
     if(isinstance(a.accessor, Variable)):
         a.accessor = a.accessor.initializer
@@ -11,7 +22,8 @@ def evaluate(a, b, op):
     return calculateConstant(a,b,op)
     
 
-
+# standard postfix evaluation, using 'evaluate(a,b,op)'
+# \see ExpressionEvaluator
 def determineConstexpr(flt, tokens, fn):
     pf = Postfixer(tokens,fn)
     expr = pf.createPostfix()
@@ -34,5 +46,5 @@ def determineConstexpr(flt, tokens, fn):
         else:
             stack.append(e)
     
-
+    # return value in the form of ExpressionComponent
     return stack.pop()

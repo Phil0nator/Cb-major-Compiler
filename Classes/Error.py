@@ -8,6 +8,8 @@ class Error:
         self.message = message
     
     def __repr__(self):
+
+        # build pretty print error message
         line = self.tok.start.line
         file = self.tok.start.file
         char = self.tok.start.ch 

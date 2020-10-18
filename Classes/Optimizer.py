@@ -1,4 +1,4 @@
-# unimplimented
+@DeprecationWarning
 class Optimizer:
     def __init__(self, raw):
         self.raw = raw

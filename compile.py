@@ -1,13 +1,19 @@
+##############################################
+#   compile.py is the entrypoint of the compiler.
 #
-#   Load
-#   PreTokenize
-#   PreProcess
-#   Tokenize
-#   Compile
-#   Optimize
-#   Link
-#   
-#
+#   The large outline steps:
+#       - parse cmd arguments
+#       - load entrypoint file
+#       - pre-process / lex first file (including subsequent include statements)
+#       - use Compiler.py to seperate structures, functions, globals, etc...
+#       - use Function.py to compile function bodies
+#       - parse together all the raw assembly
+#       - depending on commandline args:
+#           - assemble
+#           - link
+#           - run
+#           etc...
+#######################################################
 import time
 import traceback
 import os
@@ -35,8 +41,6 @@ def main():
 
     pp = PreProcessor(firstTokens)
     totals = pp.process()
-    #print(totals)
-    #
 
     
     # global compilation
@@ -75,7 +79,6 @@ def main():
     
     
     
-    #print("+-+-+ FINAL +-+-+")
 
     #linking, and running
 
@@ -98,6 +101,8 @@ def main():
 
 
 if(__name__ == "__main__"):
+
+    # to run with profiling
     if(config.__profile__):
         pr = cProfile.Profile()
         pr.enable()
@@ -108,6 +113,7 @@ if(__name__ == "__main__"):
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())
+    # normal usage
     else:
         main()
 
