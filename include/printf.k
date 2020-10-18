@@ -4,7 +4,8 @@
 
 
 
-
+#ifndef __PRINTF
+#define __PRINTF 1
 
 
 
@@ -189,3 +190,5 @@ function void print(int* a, int len){
     printf(" %i ]\n", a[len-1]);
 
 }
+
+#endif

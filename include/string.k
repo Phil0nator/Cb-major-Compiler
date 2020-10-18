@@ -1,3 +1,7 @@
+#ifndef __STRING
+#define __STRING 1
+
+
 struct String{
 
     char* value;
@@ -91,3 +95,7 @@ function int strfind(String* this, char* sequence){
 function void print(String* str){
     print(str->value);
 }
+
+
+
+#endif

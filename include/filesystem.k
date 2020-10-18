@@ -1,15 +1,20 @@
+
+#ifndef __FSYSTEM
+#define __FSYSTEM 1
+
+
 #include "include/stddef.k"
 #include "include/memory.k"
 
 
 typedef fd_t FILE;
 
-const int _fopen_readonly = 114;
-const int _fopen_writeonly = 119;
-const int _fopen_append = 97;
-const int _fopen_rw = 157;
-const int _fopen_wc = 162;
-const int _fopen_ac = 140;
+#define _fopen_readonly 114;
+#define _fopen_writeonly 119;
+#define _fopen_append 97;
+#define _fopen_rw 157;
+#define _fopen_wc 162;
+#define _fopen_ac 140;
 
 /*
 *   fopen will open a file of name fname with the given mode and return a file descriptor.
@@ -101,3 +106,7 @@ function void* floads(fd_t fd){
     }
     return buffer;
 }
+
+
+
+#endif

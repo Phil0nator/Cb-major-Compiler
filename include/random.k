@@ -1,3 +1,8 @@
+#ifndef __RAND
+#define __RAND 1
+
+
+
 int rand_next = 1;
 
 /**
@@ -30,3 +35,5 @@ function int rand(){
 function void srand(){
     rand_next=rdrand();
 }
+
+#endif

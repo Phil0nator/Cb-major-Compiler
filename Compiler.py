@@ -213,6 +213,7 @@ class Compiler:
 
         else:
             throw(UnexpectedIdentifier(self.current_token))
+        self.advance()
 
 
 
@@ -472,6 +473,7 @@ class Compiler:
 
         self.current_token = self.currentTokens[0]
         self.ctidx = 0
+        
         while self.current_token.tok != T_EOF:
 
             if (self.current_token.tok == T_ID):
@@ -479,6 +481,8 @@ class Compiler:
             elif (self.current_token.tok == T_KEYWORD):
                 if(self.current_token.value == "const"):
                     self.createConstant()
+                    self.advance()
+
                 elif(self.current_token.value == "unsigned"):
                     s = self.current_token
                     self.advance()
@@ -507,6 +511,7 @@ class Compiler:
                     self.advance()
                     if(self.current_token.tok != T_ENDL):
                         throw(ExpectedSemicolon(self.current_token))
+                    self.advance()
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()
@@ -518,7 +523,7 @@ class Compiler:
 
 
             else:
-                self.advance()
+                throw(UnexpectedToken(self.current_token))
             
 
     def finalize(self):                                 # compile all functions and fill in raw assembly info

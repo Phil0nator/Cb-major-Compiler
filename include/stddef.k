@@ -3,6 +3,9 @@
  * instead of the underlying base type.  By convention, all type names end 
  * with _t.
  */
+#ifndef __STDDEF
+#define __STDDEF 1
+
 
 void* nullptr = 0;
 
@@ -30,8 +33,8 @@ typedef char i8_t; /* 8 bit signed type */
 /*
   * Default boolean values;
 */
-const bool true  = 1;
-const bool false = 0;
+#define true    1
+#define false   0
 
 /*
   * float == double
@@ -39,3 +42,5 @@ const bool false = 0;
 typedef double float;
 
 typedef short int32;
+
+#endif

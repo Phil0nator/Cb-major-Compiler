@@ -36,8 +36,7 @@ def main():
     totals = pp.process()
     #print(totals)
     #
-    # totals = pp.process()
-    #print("+-+-+ Compile +-+-+")
+
     
     # global compilation
     c = Compiler()
