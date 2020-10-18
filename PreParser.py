@@ -29,7 +29,7 @@ class PreProcessor:
         self.current_token = tokens[0]
         self.tkidx = 0
         self.definitions = []                   # definition: [str:name, tokens[]]
-
+        self.dels = 0
     def advance(self):
         self.tkidx+=1
         self.current_token = self.tokens[self.tkidx]
@@ -38,8 +38,10 @@ class PreProcessor:
         self.current_token = self.tokens[self.tkidx]
 
     def delmov(self):
-        self.tokens.remove(self.current_token)
-        self.update()
+        #self.tokens.remove(self.current_token)
+        self.tokens[self.tkidx] = None
+        self.advance()
+        self.dels+=1
 
 
     def getDefn(self, name):
@@ -66,12 +68,14 @@ class PreProcessor:
         
         lex = Lexer(path,rawdata)
         tokens = lex.getTokens()
-        self.tokens[self.tkidx:self.tkidx] = tokens[:-1]
         self.delmov()
+        self.tokens[self.tkidx:self.tkidx] = tokens[:-1]
+        self.update()
 
 
     def buildDefine(self):
         self.delmov()
+
         self.checkToks([T_ID])
         name = self.current_token.value
         sline = self.current_token.start.line
@@ -86,7 +90,6 @@ class PreProcessor:
         while(self.current_token.start.line == line):
             definitionTokens.append(self.current_token)
             self.delmov()
-        
         self.definitions.append([name, definitionTokens])
 
     def checkDefn(self):
@@ -119,12 +122,13 @@ class PreProcessor:
             while not (self.current_token.tok == T_DIRECTIVE and self.current_token.value == "endif"):
                 self.delmov()
 
-
     def process(self):
 
         while self.current_token.tok != T_EOF:
+            self.update()
             if(self.current_token.tok == T_DIRECTIVE):
                 # token is directive
+
                 if(self.current_token.value == "include"):
                     # build include statement
                     self.buildIncludeStatement()
@@ -148,7 +152,9 @@ class PreProcessor:
             else:
                 self.advance()
         
-        return self.tokens
+        
+        
+        return list(filter(None, self.tokens)) 
         
 
         
