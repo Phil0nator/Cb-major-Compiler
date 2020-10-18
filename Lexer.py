@@ -119,6 +119,7 @@ class Lexer:
             else:
                 break
         self.chidx+=len(value)-2
+        self.loc.ch+=len(value)-2
         self.advance()
         if( value in T.KEYWORDS ):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())

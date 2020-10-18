@@ -55,6 +55,7 @@ class PreProcessor:
     def loadRaw(self, path):                    # load a raw file based on a given path
         with open(path, "rb") as f:
             rawdata = f.read().decode()
+        #config.raw_filedata.append([rawdata,path])
         return rawdata
 
     def buildIncludeStatement(self):            # #include directive

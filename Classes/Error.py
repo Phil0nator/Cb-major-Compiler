@@ -14,20 +14,16 @@ class Error:
         file = self.tok.start.file
         char = self.tok.start.ch 
         diff = self.tok.end.ch-char
-
-        for f in config.raw_filedata:
-            if(f[1] == file):
-                file = f[0]
-                break
-
-        file = file[0:char] + error_indicator + file[char:self.tok.end.ch] + Style.RESET_ALL + file[char+diff:len(file)-1]
+        
+        with open(file, "rb") as f:
+            file = f.read().decode()
+        file = file[0:char] + error_indicator + file[char:self.tok.end.ch] + Style.RESET_ALL + file[char+diff:-1]
         lines = file.split("\n")
         
-        
         lp = ""
-        if(len(lines)>2):                               lp = f"|{line-1}\t"+lines[line-2]+"\n"
-        if(len(lines)>1):                               lp += f"|{line}\t"+lines[line-1]+"\n"
-        if(line!=len(lines)-1 and len(lines)>1):         lp += f"|{line+1}\t"+lines[line]+"\n"
+        if(len(lines)>2):                                   lp =  f"|{line-1}\t"+lines[line-2]+"\n"
+        if(len(lines)>1):                                   lp += f"|{line}\t"+lines[line-1]+"\n"
+        if(line!=len(lines)-1 and len(lines)>1):            lp += f"|{line+1}\t"+lines[line]+"\n"
         
         
         problem = lp
