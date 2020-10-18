@@ -180,7 +180,6 @@ class RightSideEvaluator:
                     a = stack.pop()
                     op = e.accessor
                     
-
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr

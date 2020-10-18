@@ -818,6 +818,8 @@ def calculateConstant(a, b, op):
         return EC.ExpressionComponent(int(a.accessor or b.accessor), INT.copy(), constint=True) 
     elif(op == "&&" or op == "&"):
         return EC.ExpressionComponent(int(a.accessor and b.accessor), INT.copy(), constint=True) 
+    elif(op == "^"):
+        return EC.ExpressionComponent(int(a.accessor ^ b.accessor), INT.copy(), constint=True) 
 
 def shiftInt(a, b, op, signed):
     cmd = ""
