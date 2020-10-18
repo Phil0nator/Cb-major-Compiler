@@ -52,15 +52,28 @@ class Function:
         self.ctidx+=1
         self.current_token = self.tokens[self.ctidx]
 
+
+
     def getCallingLabel(self):                      # get the raw asm label used to call this function
         return functionlabel(self).replace(":","").replace("\n","")
+
+
 
     def checkSemi(self):                            # check current token for semicolon
         if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
         self.advance()
 
+
+
+    def checkTok(self, tok):                        # check current token for given token
+        if(self.current_token.tok != tok): throw(ExpectedToken(self.current_token, tok))
+        self.advance()
+
+
     def getClosingLabel(self):                      # get raw asm label used to denote the end of this function
         return function_closer(self.getCallingLabel(),None).split("\n")[0]
+
+
 
     def getVariable(self, q):                       # get a variable of name q from first local then global scope if necessary
 
@@ -71,6 +84,7 @@ class Function:
         globq = self.compiler.getGlob(q)
         if(globq!=None): return globq
         return None
+
 
     def addVariable(self, v):                       # add a given variable, and set its stack offset
 
@@ -85,14 +99,16 @@ class Function:
     def addline(self, l):                           # add a line of assembly to raw
         self.asm+=l+"\n"
     
-    def addcomment(self, c):
+    def addcomment(self, c):                        # add a comment to the assembly
         self.asm+=";"+c+"\n"
 
+    @DeprecationWarning
     def isbeforeTracker(self, value):
         for t in self.tokens[self.ctidx:]:
             if t.tracker == value:
                 return True
         return False
+
 
     def getFunction(self, fn, types):               # get function with name fn and datatypes types, or a suitable replacement (casting)
 
@@ -136,7 +152,7 @@ class Function:
 
 
 
-    def checkForType(self):             # check next tokens for Type
+    def checkForType(self):             # check next tokens for Type, and return it as a DType 
         signed=True
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
@@ -180,8 +196,9 @@ class Function:
     
 
     def createClosing(self):                    # create end of the function
-
+        if(self.destructor_text == ""): self.destructor_text = f"push rax\n{self.destructor_text}\npop rax\n"
         self.addline(function_closer(self.getCallingLabel(), self.destructor_text))
+
 
     def buildReturnStatement(self):             # build a return statement
         self.advance()
@@ -194,17 +211,21 @@ class Function:
         self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
         self.checkSemi()
 
+
+
     def buildIfStatement(self):
         self.advance()
-        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token,"("))
-        self.advance()
-
+        self.checkTok(T_OPENP)
+        
+        # Build instructions neccessary to evaluate the expression a for example: if ( a ) { ... }
         preInstructions = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy(),token=self.current_token))
         if(self.current_token.tok == T_CLSP): 
             self.advance()
-            
+        
+        # pre-determine jump labels:
         postlabel = getLogicLabel("IFPOST")
         jmpafter = getLogicLabel("IFELSE")
+
 
         self.continues.append(postlabel)
 
@@ -212,11 +233,14 @@ class Function:
         preInstructions+= f"{check_fortrue}jne {postlabel}\n"
 
         self.addline(preInstructions)
-        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
-        self.advance()
+        self.checkTok(T_OPENSCOPE)
+        
+        # compile the body 
         self.beginRecursiveCompile()
         self.addline(f"jmp {jmpafter}")
         self.advance()
+
+        # check for else 
         if(self.current_token.tok == T_KEYWORD):
 
             if(self.current_token.value == "else"):
@@ -248,40 +272,49 @@ class Function:
 
     def buildForloop(self):
         self.advance()
-        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
-        self.advance()
-
+        self.checkTok(T_OPENP)
+        
+        # pre determine jumping labels:
         toplabel = getLogicLabel("FORTOP")
         comparisonlabel = getLogicLabel("FORCMP")
         updatelabel = getLogicLabel("FORUPDATE")
         endlabel = getLogicLabel("FOREND")
+
+
         self.continues.append(comparisonlabel)
         self.breaks.append(endlabel)
+
+        # build the declaration a for example : for ( a; ... ;...) { ... }
         self.buildDeclaration()
+        # var is the variable declared above
         var = self.variables[-1]
 
+        # build the instructions neccessary to evaluate the expression b for example: for (a; b; ...){ ... }
         getCondition = self.evaluateRightsideExpression(EC.ExpressionComponent(rax,BOOL.copy(),token=self.current_token))
 
-        if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
-        self.advance()
+        self.checkSemi()
         
         self.addline(f"jmp {comparisonlabel}\n")
         self.addline(f"{toplabel}:")
         
         self.addline(f"##FLPCONTENT##")
         
-        
+        # build the instructions for the assignment c for example: for (a;b; c){ ... }
         self.buildAssignment()
+        
+        # use ##FLPCONTENT## marker to re-order the instructions
         updatev = self.asm[self.asm.find("##FLPCONTENT##"):len(self.asm)-1]
         self.asm = self.asm.replace(updatev,"")
         updatev = updatev.replace("##FLPCONTENT##","")
 
 
-        if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
-        self.advance()
-        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
-        self.advance()
+        self.checkTok(T_CLSP)
+        self.checkTok(T_OPENSCOPE)
+        
+        # compile the body of the flp
         self.beginRecursiveCompile()
+
+        # add in the instruction blocks in the correct order
         self.addline(f"{updatelabel}:")
         self.addline(updatev)
         self.addline(f"{comparisonlabel}:\n")
@@ -296,7 +329,6 @@ class Function:
         self.continues.pop()
         self.breaks.pop()
 
-        #self.variables.remove(var)
 
         
         
@@ -305,9 +337,9 @@ class Function:
     
     def buildWhileloop(self):
         self.advance()
-        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
-        self.advance()
+        self.checkTok(T_OPENP)
         
+        # pre-determined jump labels
         startlabel = getLogicLabel("WHILESTART")
         comparisonlabel = getLogicLabel("WHILECMP")
         endlabel = getLogicLabel("WHILEEND")
@@ -316,11 +348,14 @@ class Function:
         
         self.addline(f"jmp {comparisonlabel}")
         self.addline(f"{startlabel}:")
+
+        # build instructions to evaluate expression a for example: while( a ){ ... }
         cmpinst = self.evaluateRightsideExpression(EC.ExpressionComponent(rax, BOOL.copy(),token=self.current_token))
         cmpinst += f"{check_fortrue}je {startlabel}\n"
         self.advance()
-        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
-        self.advance()
+        self.checkTok(T_OPENSCOPE)
+        
+        # build instructions for the body
         self.beginRecursiveCompile()
         self.addline(f"{comparisonlabel}:")
         self.addline(cmpinst)
@@ -335,11 +370,14 @@ class Function:
 
     def buildSIMD(self):
         self.advance()
+        
+        # check for opsize
         if(self.current_token.tok != T_INT): throw(ExpectedToken(self.current_token, "SIMD opsize"))
         
         op = self.current_token.value
         self.advance()
         
+        # check for dtype
         if(self.current_token.tok != T_ID): throw(ExpectedType(self.current_token))
         t = self.compiler.getType(self.current_token.value)
         vsize = t.csize()
@@ -347,23 +385,22 @@ class Function:
         if(t == None): throw(UnkownIdentifier(self.current_token))
         self.advance()
         
-        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
-        self.advance()
+        self.checkTok(T_OPENP)
         
+        # check for the first array
         arr1 = self.getVariable(self.current_token.value)
         if(arr1 == None): throw(UnkownIdentifier(self.current_token))
         self.advance()
-        
-        if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
         idx1 = ralloc(False)
-        self.advance()
         
+        self.checkTok(T_COMMA)
+        
+        # build instructions to evaluate for the first given index
         determine_index1 = self.evaluateRightsideExpression(EC.ExpressionComponent(idx1, INT.copy(),token=self.current_token))
-        if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
         
-        self.advance()
-        if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
-        self.advance()
+        self.checkTok(T_CLSP)
+        self.checkTok(T_OPENSCOPE)
+        
         
 
         avx1 = avx_ralloc()
@@ -372,31 +409,34 @@ class Function:
         self.addline(avx_loadToReg(op, avx1, arr1, idx1))
         
 
-
+        # evaluate the inner operations
         while self.current_token.tok != T_CLSSCOPE:
             
-            if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
-            self.advance()
+            self.checkTok(T_OPENP)
+            
+            # check for operator
             opn = self.current_token.tok
             if(not Postfixer.isOperator(None,self.current_token)):
                 throw(ExpectedToken(self.current_token, "operator"))
             if( op not in ["+", "-", "*"] and not flt): throw(InvalidSimdOperation(self.current_token,op))
             self.advance()
-            if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
-            self.advance()
+            self.checkTok(T_COMMA)
+            
+            # check for array
             arrn = self.getVariable(self.current_token.value)
             if(arrn == None):
                 throw(UnkownIdentifier(self.current_token))
             self.advance()
-            if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
-            self.advance()
+            self.checkTok(T_COMMA)
+            
+            # build evaluation for the index
             idxn = ralloc(False)
             determine_idxn = self.evaluateRightsideExpression(EC.ExpressionComponent(idxn, INT.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
 
 
-
+            # fill in instruction blocks
             avxn = avx_correctSize(avxn, op)
             self.addline(determine_idxn)
             self.addline(avx_loadToReg(op, avxn, arrn, idxn))
@@ -409,47 +449,51 @@ class Function:
 
 
         self.advance()
-        if(self.current_token.tok != T_OPENP): throw(ExpectedToken(self.current_token, "("))
-        self.advance()
+        self.checkTok(T_OPENP)
+        # check destination array
         destarr = self.getVariable(self.current_token.value)
         if(destarr == None): throw(UnkownIdentifier(self.current_token))
         self.advance()
-        if(self.current_token.tok != T_COMMA): throw(ExpectedToken(self.current_token,","))
-        self.advance()
-
+        self.checkTok(T_COMMA)
+        
+        # evaluate destination index
         determineidxf = self.evaluateRightsideExpression(EC.ExpressionComponent(idx1, INT.copy(),token=self.current_token)) 
-        if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
-        self.advance()
+        self.checkTok(T_CLSP)
+        
         self.checkSemi()
 
-
+        # fill in instruction blocks
         self.addline(determineidxf)
         self.addline(avx_dropToAddress(op,avx1,destarr,idx1))
 
         rfree(idx1)
         avx_rfree(avx1)
         
+    
+    def buildASMBlock(self): # build inline assembly block
+        self.advance()
+        self.checkTok(T_OPENSCOPE)
         
+        # assembly instructions are stored as a string token
+        if(self.current_token.tok != T_STRING): throw(ExpectedToken(self.current_token, "Assembly String"))
+
+        content = self.current_token.value
+        content = content.replace("\t", "").strip()
+
+        self.addline(content)
+
+        self.advance()
+
+        self.checkTok(T_CLSSCOPE)
+        
+
 
     def buildKeywordStatement(self):                    # build a statement that starts with a keyword
         word = self.current_token.value
         
+        # inline assembly:
         if(word == "__asm"):
-            
-            self.advance()
-            if(self.current_token.tok != T_OPENSCOPE): throw(ExpectedToken(self.current_token, "{"))
-            self.advance()
-            if(self.current_token.tok != T_STRING): throw(ExpectedToken(self.current_token, "Assembly String"))
-
-            content = self.current_token.value
-            content = content.replace("\t", "").strip()
-
-            self.addline(content)
-
-            self.advance()
-
-            if(self.current_token.tok != T_CLSSCOPE): throw(ExpectedToken(self.current_token, "}"))
-
+            self.buildASMBlock()
         elif(word == "return"):
             self.buildReturnStatement()
         elif(word == "unsigned"):
@@ -492,19 +536,23 @@ class Function:
             self.advance()
 
 
-    def buildFunctionCall(self):                    
+    def buildFunctionCall(self):       
+        # function name             
         fid = self.current_token.value
+        # token of function name
         fnstartt = self.current_token
+        # placeholder
         fn = None
         instructions = ""
 
         self.advance()
-        if(self.current_token.tok != "("): throw(ExpectedToken(self.current_token,"("))
-        self.advance()
+        self.checkTok(T_OPENP)
+        
 
         types = []
 
         start = self.ctidx
+        # build parameters, without storing instructions in order to determine the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = VOID.copy()
             tmp = self.evaluateRightsideExpression("AMB", o)
@@ -512,10 +560,8 @@ class Function:
             if(self.current_token.tok == ","):
                 self.advance()
             types.append(o)
-        if(self.current_token.tok != T_ENDL):
-            #self.advance()
-            pass
-
+        
+        # using the fn name, and the parameter types find the actual function object best suited for this call
         fn = self.getFunction(fid,types)
         self.ctidx = start-1
         self.advance()
@@ -523,13 +569,14 @@ class Function:
             throw(UnkownFunction(fnstartt,fid,types))
         pcount = len(fn.parameters)
 
-
+        # build actual parameter-loading instructions using exact datatypes
         sseused = 0
         
         for p in types:
             if p.isflt():
                 sseused+=1
 
+        # track the number of normal, and sse registers used in parameter loading
         ssevarsforrax = sseused
         sseused = 0
         normused = 0
@@ -539,21 +586,25 @@ class Function:
 
 
 
-
+        # for each parameter
         for i in range(pcount):
+
+            # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
                 
                 instructions+=self.evaluateRightsideExpression(EC.ExpressionComponent( sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
                 sseused+=1
-
+            # else, load to normal register of the correct size
             else:
+                # determine size:
                 if(fn.parameters[i].t.csize() != 8):
                     result = ralloc(False)
                 else:
                     result =  norm_parameter_registers[normused]
                 ec = EC.ExpressionComponent(result, fn.parameters[i].t.copy(),token=self.current_token)
+                # build main instructions
                 instructions+=self.evaluateRightsideExpression(ec)
-                
+                # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
                     if(fn.parameters[i].t.csize() == 1):
                         instructions+=f"mov {boolchar_version[norm_parameter_registers[normused]]}, {boolchar_version[result]}\n"
@@ -573,10 +624,11 @@ class Function:
             pass
 
 
-
+        # follow c varargs standard:
+        # (number of sse registers used is stored in RAX before a function call)
         instructions += f"mov {rax}, {ssevarsforrax}\n"
 
-
+        # actual 'call' instruction
         instructions+=fncall(fn)
         return instructions, fn
 
@@ -590,13 +642,20 @@ class Function:
         opens = 1
         instructions = ""
         wasfunc = False
+
+        # The tokens: ; , = += -= *= /= etc... will mark the end of an expression
         while opens>0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
 
+            # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):opens-=1
             elif(self.current_token.tok == T_OPENP):opens+=1
 
             if(opens <=0): break
 
+            # since function calls have the highest precedence in an expression, they can be called 
+            #   before the rest of the expression is evaluated.
+            #   Their return values will be pushed tot he stack, and the ExpressionEvaluator will be able to pop
+            #   these off later into the ralloc'd scratch registers.
             elif(self.current_token.tok == T_ID):
                 if(self.tokens[self.ctidx+1].tok == "("):
                     wasfunc=True
@@ -613,7 +672,8 @@ class Function:
                     instructions+=f"push {norm_return_register}\n"
                
                
-                
+                # Member variables accessed from stack based structures can be abstracted as Variable objects
+                #   because they are effectively stored the same.
                 elif(self.tokens[self.ctidx+1].tok == T_DOT):
                     wasfunc = True
                     start = self.current_token.start.copy()
@@ -629,7 +689,8 @@ class Function:
                 
                 
 
-
+            # if one of the above special conditions was true, there is no need to add the actual
+            #   current token.
             if(not wasfunc):
                 exprtokens.append(self.current_token)
             wasfunc=False
@@ -641,15 +702,16 @@ class Function:
 
     def evaluateRightsideExpression(self, destination, otyperef=None):                  # evaluate the next tokens and return the asm instructions
         instructions = ""
-        start = self.ctidx
         comment = ""
         exprtokens = []
 
-        
+        # get tokens, and instructions 
         exprtokens, instructions = self.buildExpressionComponents()
 
-
+        # using __repr__()
         comment = exprtokens
+
+        # \see Postfixer
         pf = Postfixer(exprtokens,self)
 
         
@@ -659,23 +721,30 @@ class Function:
         if(config.DO_DEBUG):
             instructions+=f";{comment}\n\n"
         
-        
+        # \see RightSideEvaluator
         ev = RightSideEvaluator(self)
+
+        # get instructions, and returntype of the now postifixed equation
         ins, ot = ev.evaluatePostfix(destination, pf.createPostfix())
         instructions += ins
 
+        # load returntype properties to the given reference
         if(otyperef != None):
             otyperef.load(ot)
         
         return instructions
 
 
-    def evaluateLeftsideExpression(self):
+    def evaluateLeftsideExpression(self):       # evaluate the destination for a rightside expression.
         instructions = ""
-        start = self.ctidx
         comment = ""
         exprtokens = []
+        # basically the same as rightside evaluator, but uses LeftSideEvaluator class for the actual
+        #   instruction building
+
         exprtokens, instructions = self.buildExpressionComponents()
+
+
         comment = exprtokens
         pf = Postfixer(exprtokens,self)
 
@@ -691,6 +760,7 @@ class Function:
 
 
     def createDestructor(self, var):
+        # create automatic destructors before the return statement
         if(var.t.destructor == None):
             return ""
         call_label = functionlabel( var.t.destructor )
@@ -703,19 +773,30 @@ class Function:
 
 
     def buildDeclaration(self):                     # declare new var
+        
+        
         t = self.checkForType()
         
 
         name = self.checkForId()
 
+        # check if variable exists already
         if(self.getVariable(name) != None and not self.getVariable(name).glob):
             throw(VariableRedeclaration(self.tokens[self.ctidx-1], name))
 
+        # check if varname is a datatype
         if(self.compiler.getType(name) != None): throw(UsingTypenameAsVariable(self.tokens[self.ctidx-1]))
 
+        # add variable
         self.addVariable(Variable(t,name))
-        var = self.variables[len(self.variables)-1]
+        # pull variable back out from the array in order to determine its offset 
+        # which is set by self.addVariable
+        var = self.variables[-1]
         var.isptr = t.ptrdepth>0
+
+
+        # if the variable is a stack-based structure,
+        #   add its member variables too.
         if(not var.isptr and var.t.members!=None):
             for v in var.t.members:
                 if(isinstance(v, Variable)):
@@ -723,6 +804,8 @@ class Function:
                     self.variables.append(Variable(v.t.copy(),f"{var.name}.{v.name}",offset=var.offset+var.t.csize()-v.offset,isptr=v.isptr,signed=v.signed))
                     self.addline(f"mov {valueOf(self.variables[-1])}, 0") # initialize to null
             
+
+            # if the declaration includes a constructor, call it with the correct parameters
             if(self.current_token.tok == T_OPENP):
                 # constructor
                 self.advance()
@@ -743,8 +826,8 @@ class Function:
                     self.advance()
                 self.ctidx-=2
                 self.advance()
-                if(self.current_token.tok != T_CLSP): throw(ExpectedToken(self.current_token, ")"))
-                self.advance()
+                self.checkTok(T_CLSP)
+                
                 self.addline(call_label)
                 self.checkSemi()
                 self.destructor_text+= self.createDestructor(var)
@@ -752,11 +835,15 @@ class Function:
 
         sizes = [1]
         isarr = False
+
+
+        # if it is a stack-based structure, and it has a destructor
+        #      add it's destructor to the end of the function
         if(not isIntrinsic(var.t.name) and var.t.destructor != None):
             
             self.destructor_text+= self.createDestructor(var)
 
-
+        # check for stack based array declaration
         while self.current_token.tok == "[":
             isarr=True
             self.advance()
@@ -764,8 +851,8 @@ class Function:
             size = self.current_token.value
             sizes.append(size)
             self.advance()
-            if(self.current_token.tok != T_CLSIDX): throw(ExpectedToken(self.current_token, "]"))
-            self.advance()
+            self.checkTok(T_CLSIDX)
+            
 
         if(isarr):
             totalsize = product(sizes)*t.size(0)
@@ -779,6 +866,7 @@ class Function:
 
         
 
+        # check for same-line assignment, or not
         if(self.current_token.tok == T_ENDL): 
             self.advance()
             return
@@ -786,6 +874,7 @@ class Function:
         if(self.current_token.tok != T_EQUALS): throw(ExpectedToken(self.current_token, " = or ; "))
 
         self.advance()
+
 
         self.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(var, var.t, token=self.current_token)))
         
@@ -796,11 +885,13 @@ class Function:
 
 
     def buildBlankfnCall(self):                 # build function call not in an expression
+        #\see self.buildFunctionCall()
         instructions, fn = self.buildFunctionCall()
         if(self.current_token.tok == ")"): self.advance()
-        if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))
+        self.checkSemi()
+        
+        
         self.addline(instructions)
-        self.advance()
 
 
 
@@ -817,23 +908,28 @@ class Function:
         inst = ""
 
 
-            
+        # evaluate the destination    
         insters, dest = self.evaluateLeftsideExpression()
         self.addline(insters)
         setter = self.current_token
         self.advance()
 
+        # register to hold assignment value
         value = ralloc(dest.type.isflt())
 
-
+        # evaluate assignment value into 'value' register
         ev = self.evaluateRightsideExpression(EC.ExpressionComponent(value, dest.type,token=dest.token))
         
         
         
         self.addline(inst)
         self.addline(ev)
+
+        
         if(setter.tok == T_EQUALS): #normal
             self.addline(loadToPtr(dest.accessor,value))
+        
+        # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
             op = setter.tok[0]
             cmd = ""
@@ -841,7 +937,7 @@ class Function:
                 cmd = "add"
             elif(op == "-"):
                 cmd = "sub"
-
+            # add extra instructions for the shortcut
             if(dest.type.isflt() and dest.isRegister()):
                 x = ralloc(True)
                 tmp = ralloc(True)
@@ -873,7 +969,7 @@ class Function:
 
 
 
-    def buildIDStatement(self):             # build statement starting with an ID token
+    def buildIDStatement(self):             # build statement starting with an ambiguous ID token
         
         id = self.current_token.value
 
@@ -900,7 +996,7 @@ class Function:
 
 
     def beginRecursiveCompile(self):            # recursive main
-        opens = 1
+        opens = 1 # maintain track of open and close scopes ("{, }")
         while opens > 0 and self.current_token.tok != T_EOF:
 
             if(self.current_token.tok == T_CLSSCOPE): opens-=1
@@ -930,18 +1026,18 @@ class Function:
 
     def compile(self):      # main
         
-        self.addline(functionlabel(self))
-        self.addline("/*%%ALLOCATOR%%*/")
-        self.loadParameters()
+        self.addline(functionlabel(self)) # label
+        self.addline("/*%%ALLOCATOR%%*/") # stack allocator (size undetermined at this point)
+        self.loadParameters()             # parameters
 
 
-        self.beginRecursiveCompile()
+        self.beginRecursiveCompile()      # body
 
 
 
-        self.asm = self.asm.replace("/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
+        self.asm = self.asm.replace("/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter)) # fill in allocator with real value
         #self.addline(self.destructor_text)
-        self.createClosing()
+        self.createClosing()              # return, destructors, stack frame closing
 
 
     def __repr__(self):     # pretty print
