@@ -1021,10 +1021,7 @@ section .text
 %define MAP_GROWSDOWN 0x00100
 %define MAP_STACK 0x20000
 section .data
-    nullterm: DB 0
-true: DB 1
-false: DB 0
-STRING_CONSTANT_0: db `%li\n`, 0
+    STRING_CONSTANT_0: db `%li\n`, 0
 STRING_CONSTANT_1: db `%lu\n`, 0
 STRING_CONSTANT_2: db `%lf\n`, 0
 STRING_CONSTANT_3: db `True`, 0
@@ -1033,119 +1030,37 @@ STRING_CONSTANT_5: db `[]`, 0
 STRING_CONSTANT_6: db `[`, 0
 STRING_CONSTANT_7: db ` %i ,`, 0
 STRING_CONSTANT_8: db ` %i ]\n`, 0
-FLT_CONSTANT_0: dq 0x1.ef2d0f6115f51p-107
-FLT_CONSTANT_1: dq 0x1.921fb54442d18p+1
-FLT_CONSTANT_2: dq 0x1.5bf0a8b145769p+1
-FLT_CONSTANT_3: dq 0x1.71547652b82fep+0
-FLT_CONSTANT_4: dq 0x1.bcb7b1526e50ep-2
-FLT_CONSTANT_5: dq 0x1.62e42fefa39efp-1
-FLT_CONSTANT_6: dq 0x1.921fb54442d18p+0
-FLT_CONSTANT_7: dq 0x1.921fb54442d18p-1
-FLT_CONSTANT_8: dq 0x1.45f306dc9c883p-2
-FLT_CONSTANT_9: dq 0x1.45f306dc9c883p-1
-FLT_CONSTANT_10: dq 0x1.20dd750429b6dp+0
-FLT_CONSTANT_11: dq 0x1.6a09e667f3bcdp+0
-FLT_CONSTANT_12: dq 0x1.6a09e667f3bcdp-1
-FLT_CONSTANT_13: dq -0x0.0p+0
-EPSILON: dq 0x1.ef2d0f6115f51p-107
-M_PI: dq 0x1.921fb54442d18p+1
-M_E: dq 0x1.5bf0a8b145769p+1
-M_LOG2E: dq 0x1.71547652b82fep+0
-M_LOG10E: dq 0x1.bcb7b1526e50ep-2
-M_LN2: dq 0x1.62e42fefa39efp-1
-M_PI_2: dq 0x1.921fb54442d18p+0
-M_PI_4: dq 0x1.921fb54442d18p-1
-M_1_PI: dq 0x1.45f306dc9c883p-2
-M_2_PI: dq 0x1.45f306dc9c883p-1
-M_2_SQRTPI: dq 0x1.20dd750429b6dp+0
-M_SQRT2: dq 0x1.6a09e667f3bcdp+0
-M_SQRT1_2: dq 0x1.6a09e667f3bcdp-1
-M_MINZERO: dq -0x0.0p+0
-DST_NONE: DQ 0
-DST_USA: DQ 1
-DST_AUST: DQ 2
-DST_WET: DQ 3
-DST_MET: DQ 4
-DST_EET: DQ 5
-DST_CAN: DQ 6
-ITIMER_REAL: DQ 0
-ITIMER_VIRTUAL: DQ 1
-ITIMER_PROF: DQ 2
-O_RDONLY: DQ 0
-O_WRONLY: DQ 1
-O_RDWR: DQ 2
-O_ACCMODE: DQ 3
-FREAD: DQ 1
-FWRITE: DQ 2
-O_NONBLOCK: DQ 4
-O_APPEND: DQ 8
-O_SHLOCK: DQ 16
-O_EXLOCK: DQ 32
-O_ASYNC: DQ 64
-O_FSYNC: DQ 128
-O_CREAT: DQ 64
-O_TRUNC: DQ 512
-O_EXCL: DQ 2048
-O_USRPERM: DQ 1792
-WMODE_WRITE: DQ 0
-WMODE_APPEND: DQ 1024
-WMODE_WPLUS: DQ 65
-WMODE_WPLUSA: DQ 1089
-SEEK_END: DQ 2
-SEEK_CUR: DQ 1
-SEEK_SET: DQ 0
-SOCK_STREAM: DQ 1
-SOCK_DGRAM: DQ 2
-SOCK_RAW: DQ 3
-SOCK_SEQPACKET: DQ 5
-SO_DEBUG: DQ 1
-SO_ACCEPTCONN: DQ 2
-SO_REUSEADDR: DQ 4
-SO_KEEPALIVE: DQ 8
-SO_DONTROUTE: DQ 16
-SO_BROADCAST: DQ 32
-SO_USELOOPBACK: DQ 64
-SO_LINGER: DQ 128
-SO_OOBINLINE: DQ 256
-SO_SNDBUF: DQ 4097
-SO_RCVBUF: DQ 4098
-SO_SNDLOWAT: DQ 4099
-SO_RCVLOWAT: DQ 4100
-SO_SNDTIMEO: DQ 4101
-SO_RECVTIMEO: DQ 4102
-SO_ERROR: DQ 4103
-SO_TYPE: DQ 4104
-SOL_SOCKET: DQ 65535
-AF_UNSPEC: DB 0
-AF_UNIX: DB 1
-AF_INET: DB 2
-AF_AX25: DB 3
-AF_IPX: DB 4
-AF_APPLETALK: DB 5
-AF_NETROM: DB 6
-AF_BRIDGE: DB 7
-AF_AAL5: DB 8
-AF_X25: DB 9
-AF_INET6: DB 10
-AF_MAX: DB 12
+FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_9: db `Bad realloc`, 0
 STRING_CONSTANT_10: db `%s`, 0
-_fopen_readonly: DQ 114
-_fopen_writeonly: DQ 119
-_fopen_append: DQ 97
-_fopen_rw: DQ 157
-_fopen_wc: DQ 162
-_fopen_ac: DQ 140
+STRING_CONSTANT_11: db `Hello World!`, 0
+nullptr: DQ 0
+null: DQ 0
+nullterm: DQ 0
+M_MINZERO_MEM: DQ 0
+rand_next: DQ 1
+test: DQ 265
 section .bss
 align 16
-    HvptrDest_0: RESQ 1
-nullptr: RESQ 1
-null: RESQ 1
-MAXUINT: RESQ 1
-rand_next: RESQ 1
+    
     __heap_padding__: resz 1
 section .text
 global CMAIN
+_int_main_pintchar..:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+;------------
+mov rbx, STRING_CONSTANT_11
+mov rdi, rbx
+mov rax, 0
+call _void_print_pchar.
+jmp ___int_main_pintchar..__return
+___int_main_pintchar..__return:
+leave
+ret
 _void._floads_pfd_t:
 push rbp
 mov rbp, rsp
@@ -1157,8 +1072,7 @@ mov rdi, rbx
 ;------------
 mov rsi, 0
 ;------------
-mov rbx, [SEEK_END]
-mov rdx, rbx
+mov rdx, 2
 mov rax, 0
 call _int_lseek_pfd_tintint
 push rax
@@ -1174,8 +1088,7 @@ sub rbx, rcx
 ;------------
 mov rsi, rbx
 ;------------
-mov rbx, [SEEK_END]
-mov rdx, rbx
+mov rdx, 2
 mov rax, 0
 call _int_lseek_pfd_tintint
 ;------------
@@ -1210,13 +1123,13 @@ mov rbx, QWORD[rbp-32]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x3a
+jne _LIFPOST_0x36
 ;------------
 mov rax, 0
 jmp ___void._floads_pfd_t__return
-jmp _LIFELSE_0x3b
-_LIFPOST_0x3a:
-_LIFELSE_0x3b:
+jmp _LIFELSE_0x37
+_LIFPOST_0x36:
+_LIFELSE_0x37:
 ;------------
 mov rax, QWORD[rbp-24]
 jmp ___void._floads_pfd_t__return
@@ -1255,8 +1168,7 @@ mov rdi, rbx
 mov rbx, QWORD[rbp-24]
 mov rsi, rbx
 ;------------
-mov rbx, [SEEK_CUR]
-mov rdx, rbx
+mov rdx, 1
 mov rax, 0
 call _int_lseek_pfd_tintint
 ;------------
@@ -1302,8 +1214,7 @@ mov rdi, rbx
 mov rbx, QWORD[rbp-24]
 mov rsi, rbx
 ;------------
-mov rbx, [SEEK_CUR]
-mov rdx, rbx
+mov rdx, 1
 mov rax, 0
 call _int_lseek_pfd_tintint
 ;------------
@@ -1336,7 +1247,35 @@ mov QWORD[rbp-24], rbx
 mov QWORD[rbp-32], 0
 ;------------
 mov QWORD[rbp-40], 0
-mov rcx, [_fopen_readonly]
+mov rcx, 114
+mov rbx, QWORD[rbp-24]
+cmp rbx, rcx
+sete bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x2a
+;------------
+mov rbx, 0
+mov QWORD[rbp-40], rbx
+jmp _LIFELSE_0x2b
+_LIFPOST_0x2a:
+mov rcx, 119
+mov rbx, QWORD[rbp-24]
+cmp rbx, rcx
+sete bl
+;------------
+mov rax, rbx
+and al, 00000001b
+cmp al, 1
+jne _LIFPOST_0x2c
+;------------
+mov rbx, 1
+mov QWORD[rbp-40], rbx
+jmp _LIFELSE_0x2d
+_LIFPOST_0x2c:
+mov rcx, 97
 mov rbx, QWORD[rbp-24]
 cmp rbx, rcx
 sete bl
@@ -1346,12 +1285,11 @@ and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x2e
 ;------------
-mov rcx, [O_RDONLY]
-mov rbx, rcx
+mov rbx, 1
 mov QWORD[rbp-40], rbx
 jmp _LIFELSE_0x2f
 _LIFPOST_0x2e:
-mov rcx, [_fopen_writeonly]
+mov rcx, 157
 mov rbx, QWORD[rbp-24]
 cmp rbx, rcx
 sete bl
@@ -1361,12 +1299,11 @@ and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x30
 ;------------
-mov rcx, [O_WRONLY]
-mov rbx, rcx
+mov rbx, 2
 mov QWORD[rbp-40], rbx
 jmp _LIFELSE_0x31
 _LIFPOST_0x30:
-mov rcx, [_fopen_append]
+mov rcx, 162
 mov rbx, QWORD[rbp-24]
 cmp rbx, rcx
 sete bl
@@ -1375,67 +1312,25 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x32
-mov r10, [O_APPEND]
-mov rcx, [O_WRONLY]
-or rcx, r10
 ;------------
-mov rbx, rcx
+mov rbx, 1792
+mov QWORD[rbp-32], rbx
+;------------
+mov rbx, 2
 mov QWORD[rbp-40], rbx
 jmp _LIFELSE_0x33
 _LIFPOST_0x32:
-mov rcx, [_fopen_rw]
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
 ;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-jne _LIFPOST_0x34
-;------------
-mov rcx, [O_RDWR]
-mov rbx, rcx
-mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x35
-_LIFPOST_0x34:
-mov rcx, [_fopen_wc]
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-;------------
-mov rax, rbx
-and al, 00000001b
-cmp al, 1
-jne _LIFPOST_0x36
-;------------
-mov rcx, [O_USRPERM]
-mov rbx, rcx
+mov rbx, 1792
 mov QWORD[rbp-32], rbx
-mov r10, [O_CREAT]
-mov rcx, [O_RDWR]
-or rcx, r10
 ;------------
-mov rbx, rcx
+mov rbx, 2
 mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x37
-_LIFPOST_0x36:
-;------------
-mov rcx, [O_USRPERM]
-mov rbx, rcx
-mov QWORD[rbp-32], rbx
-mov r10, [O_APPEND]
-mov rcx, [O_RDWR]
-or rcx, r10
-mov r10, [O_CREAT]
-or rcx, r10
-;------------
-mov rbx, rcx
-mov QWORD[rbp-40], rbx
-_LIFELSE_0x37:
-_LIFELSE_0x35:
 _LIFELSE_0x33:
 _LIFELSE_0x31:
 _LIFELSE_0x2f:
+_LIFELSE_0x2d:
+_LIFELSE_0x2b:
 ;------------
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
@@ -1464,20 +1359,19 @@ or rbx, rcx
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x38
+jne _LIFPOST_0x34
 ;------------
 mov rbx, QWORD[rbp-48]
 mov rdi, rbx
 ;------------
 mov rsi, 0
 ;------------
-mov rbx, [SEEK_END]
-mov rdx, rbx
+mov rdx, 2
 mov rax, 0
 call _int_lseek_pfd_tintint
-jmp _LIFELSE_0x39
-_LIFPOST_0x38:
-_LIFELSE_0x39:
+jmp _LIFELSE_0x35
+_LIFPOST_0x34:
+_LIFELSE_0x35:
 ;------------
 mov rax, QWORD[rbp-48]
 jmp ___FILE_fopen_pchar.char.__return
@@ -1559,7 +1453,7 @@ vmovdqu [rbx], ymm0
 ___void_v3dadd_pVec3d.Vec3d.__return:
 leave
 ret
-_uvoid_iVec3d_pVec3d.doubledoubledouble:
+_void_iVec3d_pVec3d.doubledoubledouble:
 push rbp
 mov rbp, rsp
 sub rsp, 40
@@ -1584,7 +1478,7 @@ lea rbx, [rbx+16]
 movsd xmm8, QWORD[rbp-32]
 movsd xmm7, xmm8
 movq [rbx], xmm7
-___uvoid_iVec3d_pVec3d.doubledoubledouble__return:
+___void_iVec3d_pVec3d.doubledoubledouble__return:
 leave
 ret
 _int_toInteger_pchar.:
@@ -1651,8 +1545,8 @@ push rax
 ;------------
 pop rbx
 mov QWORD[rbp-32], rbx
-jmp _LWHILECMP_0x2a
-_LWHILESTART_0x29:
+jmp _LWHILECMP_0x26
+_LWHILESTART_0x25:
 mov rcx, QWORD[rbp-16]
 mov rbx, QWORD[rbp-40]
 cmp rbx, rcx
@@ -1661,7 +1555,7 @@ sete bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x2c
+jne _LIFPOST_0x28
 mov rcx, QWORD[rbp-16]
 shl rcx, 1
 ;------------
@@ -1678,9 +1572,9 @@ push rax
 ;------------
 pop rbx
 mov QWORD[rbp-24], rbx
-jmp _LIFELSE_0x2d
-_LIFPOST_0x2c:
-_LIFELSE_0x2d:
+jmp _LIFELSE_0x29
+_LIFPOST_0x28:
+_LIFELSE_0x29:
 mov rax, 0
 call _char_getchar_p
 push rax
@@ -1693,7 +1587,7 @@ add rcx, r10
 ;------------
 mov rbx, rcx
 mov QWORD[rbp-40], rbx
-_LWHILECMP_0x2a:
+_LWHILECMP_0x26:
 mov rcx, 10
 mov rbx, QWORD[rbp-32]
 cmp rbx, rcx
@@ -1702,8 +1596,8 @@ setne bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LWHILESTART_0x29
-_LWHILEEND_0x2b:
+je _LWHILESTART_0x25
+_LWHILEEND_0x27:
 mov rcx, 1
 mov rbx, QWORD[rbp-40]
 add rbx, rcx
@@ -1845,13 +1739,13 @@ setg cl
 mov rax, rcx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x21
+jne _LIFPOST_0x1d
 ;------------
 mov rax, -1
 jmp ___int_strfind_pString.char.__return
-jmp _LIFELSE_0x22
-_LIFPOST_0x21:
-_LIFELSE_0x22:
+jmp _LIFELSE_0x1e
+_LIFPOST_0x1d:
+_LIFELSE_0x1e:
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
 mov rbx, qword[rbx]
@@ -1861,8 +1755,8 @@ sub rbx, rcx
 mov QWORD[rbp-32], rbx
 ;------------
 mov QWORD[rbp-40], 0
-jmp _LFORCMP_0x24
-_LFORTOP_0x23:
+jmp _LFORCMP_0x20
+_LFORTOP_0x1f:
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
@@ -1883,19 +1777,19 @@ push rax
 pop rax
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x27
+jne _LIFPOST_0x23
 ;------------
 mov rbx, QWORD[rbp-40]
 mov rax, rbx
 jmp ___int_strfind_pString.char.__return
-jmp _LIFELSE_0x28
-_LIFPOST_0x27:
-_LIFELSE_0x28:
-_LFORUPDATE_0x25:
+jmp _LIFELSE_0x24
+_LIFPOST_0x23:
+_LIFELSE_0x24:
+_LFORUPDATE_0x21:
 ;------------
 mov rbx, 1
 add qword[rbp-40], rbx
-_LFORCMP_0x24:
+_LFORCMP_0x20:
 mov rcx, QWORD[rbp-32]
 mov rbx, QWORD[rbp-40]
 cmp rbx, rcx
@@ -1904,8 +1798,8 @@ setl bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LFORTOP_0x23
-_LFOREND_0x26:
+je _LFORTOP_0x1f
+_LFOREND_0x22:
 ;------------
 mov rax, -1
 jmp ___int_strfind_pString.char.__return
@@ -1976,8 +1870,8 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 ;------------
 mov QWORD[rbp-24], 0
-jmp _LWHILECMP_0x1b
-_LWHILESTART_0x1a:
+jmp _LWHILECMP_0x17
+_LWHILESTART_0x16:
 mov rcx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*1]
@@ -1994,13 +1888,13 @@ setne bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x1d
+jne _LIFPOST_0x19
 ;------------
-mov rax, [false]
+mov rax, 0
 jmp ___bool_strequ_pchar.char.__return
-jmp _LIFELSE_0x1e
-_LIFPOST_0x1d:
-_LIFELSE_0x1e:
+jmp _LIFELSE_0x1a
+_LIFPOST_0x19:
+_LIFELSE_0x1a:
 mov rcx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*1]
@@ -2014,24 +1908,23 @@ sete cl
 mov rax, rcx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x1f
-jmp _LWHILEEND_0x1c
-jmp _LIFELSE_0x20
-_LIFPOST_0x1f:
-_LIFELSE_0x20:
+jne _LIFPOST_0x1b
+jmp _LWHILEEND_0x18
+jmp _LIFELSE_0x1c
+_LIFPOST_0x1b:
+_LIFELSE_0x1c:
 ;------------
 mov rbx, 1
 add qword[rbp-24], rbx
-_LWHILECMP_0x1b:
+_LWHILECMP_0x17:
 ;------------
-mov rbx, [true]
-mov rax, rbx
+mov rax, 1
 and al, 00000001b
 cmp al, 1
-je _LWHILESTART_0x1a
-_LWHILEEND_0x1c:
+je _LWHILESTART_0x16
+_LWHILEEND_0x18:
 ;------------
-mov rax, [true]
+mov rax, 1
 jmp ___bool_strequ_pchar.char.__return
 ___bool_strequ_pchar.char.__return:
 leave
@@ -2045,8 +1938,8 @@ mov [rbp-16], rsi
 mov [rbp-24], rdx
 ;------------
 mov QWORD[rbp-32], 0
-jmp _LFORCMP_0x15
-_LFORTOP_0x14:
+jmp _LFORCMP_0x11
+_LFORTOP_0x10:
 mov rcx, QWORD[rbp-32]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*1]
@@ -2063,18 +1956,18 @@ setne bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x18
+jne _LIFPOST_0x14
 ;------------
-mov rax, [false]
+mov rax, 0
 jmp ___bool_substrequ_pchar.char.size_t__return
-jmp _LIFELSE_0x19
-_LIFPOST_0x18:
-_LIFELSE_0x19:
-_LFORUPDATE_0x16:
+jmp _LIFELSE_0x15
+_LIFPOST_0x14:
+_LIFELSE_0x15:
+_LFORUPDATE_0x12:
 ;------------
 mov rbx, 1
 add qword[rbp-32], rbx
-_LFORCMP_0x15:
+_LFORCMP_0x11:
 mov rcx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-32]
 cmp rbx, rcx
@@ -2083,10 +1976,10 @@ setl bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LFORTOP_0x14
-_LFOREND_0x17:
+je _LFORTOP_0x10
+_LFOREND_0x13:
 ;------------
-mov rax, [true]
+mov rax, 1
 jmp ___bool_substrequ_pchar.char.size_t__return
 ___bool_substrequ_pchar.char.size_t__return:
 leave
@@ -2124,23 +2017,23 @@ push rax
 ;------------
 pop rax
 mov QWORD[rbp-32], rax
-mov rbx, nullptr
-mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-32]
+mov rcx, [nullptr]
 cmp rbx, rcx
 sete bl
 ;------------
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x12
+jne _LIFPOST_0xe
 ;------------
 mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
 mov rax, 0
 call _void_print_pchar.
-jmp _LIFELSE_0x13
-_LIFPOST_0x12:
-_LIFELSE_0x13:
+jmp _LIFELSE_0xf
+_LIFPOST_0xe:
+_LIFELSE_0xf:
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
 mov rbx, qword[rbx]
@@ -2175,7 +2068,7 @@ mov [rbx], rcx
 ___void_appendString_pString.char.__return:
 leave
 ret
-_uvoid_iString_pString.char.:
+_void_iString_pString.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 32
@@ -2218,10 +2111,10 @@ mov rbx, QWORD[rbp-24]
 mov rdx, rbx
 mov rax, 0
 call _void_memcpy_pvoid.void.size_t
-___uvoid_iString_pString.char.__return:
+___void_iString_pString.char.__return:
 leave
 ret
-_uvoid_xString_pString.:
+_void_xString_pString.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
@@ -2233,7 +2126,7 @@ mov rbx, qword[rbx]
 mov rdi, rbx
 mov rax, 0
 call _void_free_pvoid.
-___uvoid_xString_pString.__return:
+___void_xString_pString.__return:
 leave
 ret
 _int_shutdown_pfd_tint:
@@ -2574,7 +2467,7 @@ mov rbp, rsp
 sub rsp, 16
 movsd [rbp-8], xmm0
 movsd xmm1, xmm0
-  movsd xmm2, [M_MINZERO]
+  movsd xmm2, [M_MINZERO_MEM]
   xorpd xmm1, xmm2
   andpd xmm0, xmm1
 ___double_abs_pdouble__return:
@@ -2711,7 +2604,7 @@ sete bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0xc
+jne _LIFPOST_0x8
 ;------------
 mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
@@ -2720,9 +2613,9 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pint.int__return
-jmp _LIFELSE_0xd
-_LIFPOST_0xc:
-_LIFELSE_0xd:
+jmp _LIFELSE_0x9
+_LIFPOST_0x8:
+_LIFELSE_0x9:
 ;------------
 mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
@@ -2732,8 +2625,8 @@ mov rax, 0
 call _void_printf_pchar.int
 ;------------
 mov QWORD[rbp-24], 0
-jmp _LFORCMP_0xf
-_LFORTOP_0xe:
+jmp _LFORCMP_0xb
+_LFORTOP_0xa:
 ;------------
 mov rbx, STRING_CONSTANT_7
 mov rdi, rbx
@@ -2745,11 +2638,11 @@ mov rbx, qword[rbx]
 mov rsi, rbx
 mov rax, 0
 call _void_printf_pchar.int
-_LFORUPDATE_0x10:
+_LFORUPDATE_0xc:
 ;------------
 mov rbx, 1
 add qword[rbp-24], rbx
-_LFORCMP_0xf:
+_LFORCMP_0xb:
 mov rcx, 1
 mov rbx, QWORD[rbp-16]
 sub rbx, rcx
@@ -2760,8 +2653,8 @@ setl cl
 mov rax, rcx
 and al, 00000001b
 cmp al, 1
-je _LFORTOP_0xe
-_LFOREND_0x11:
+je _LFORTOP_0xa
+_LFOREND_0xd:
 ;------------
 mov rbx, STRING_CONSTANT_8
 mov rdi, rbx
@@ -2804,7 +2697,7 @@ mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0xa
+jne _LIFPOST_0x6
 ;------------
 mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
@@ -2813,9 +2706,9 @@ call _void_print_pchar.
 ;------------
 mov rax, 0
 jmp ___void_print_pbool__return
-jmp _LIFELSE_0xb
-_LIFPOST_0xa:
-_LIFELSE_0xb:
+jmp _LIFELSE_0x7
+_LIFPOST_0x6:
+_LIFELSE_0x7:
 ;------------
 mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
@@ -3079,8 +2972,8 @@ shr rbx, 2
 mov QWORD[rbp-40], rbx
 ;------------
 mov QWORD[rbp-48], 0
-jmp _LFORCMP_0x5
-_LFORTOP_0x4:
+jmp _LFORCMP_0x1
+_LFORTOP_0x0:
 ;------------
 mov rcx, QWORD[rbp-48]
 mov rbx, rcx
@@ -3093,14 +2986,14 @@ mov rbx, rcx
 shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
-_LFORUPDATE_0x6:
+_LFORUPDATE_0x2:
 mov r10, 4
 mov rcx, QWORD[rbp-48]
 add rcx, r10
 ;------------
 mov rbx, rcx
 mov QWORD[rbp-48], rbx
-_LFORCMP_0x5:
+_LFORCMP_0x1:
 mov rcx, QWORD[rbp-40]
 mov rbx, QWORD[rbp-48]
 cmp rbx, rcx
@@ -3109,8 +3002,8 @@ setl bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-je _LFORTOP_0x4
-_LFOREND_0x7:
+je _LFORTOP_0x0
+_LFOREND_0x3:
 mov rcx, 0
 mov rbx, QWORD[rbp-32]
 cmp rbx, rcx
@@ -3119,7 +3012,7 @@ setne bl
 mov rax, rbx
 and al, 00000001b
 cmp al, 1
-jne _LIFPOST_0x8
+jne _LIFPOST_0x4
 mov rbx, QWORD[rbp-8]
 mov rcx, QWORD[rbp-40]
 add rbx, rcx
@@ -3135,9 +3028,9 @@ mov rbx, QWORD[rbp-32]
 mov rdx, rbx
 mov rax, 0
 call _void_memcpy_pvoid.void.size_t
-jmp _LIFELSE_0x9
-_LIFPOST_0x8:
-_LIFELSE_0x9:
+jmp _LIFELSE_0x5
+_LIFPOST_0x4:
+_LIFELSE_0x5:
 ___void_avx_memcpy_pvoid.void.size_t__return:
 leave
 ret
@@ -3205,55 +3098,12 @@ ALIGN_STACK
 ___void._malloc_psize_t__return:
 leave
 ret
-_int_main_pintchar..:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-;------------
-mov rax, 0
-cvtsi2sd xmm7, rax
-movsd QWORD[rbp-24], xmm7
-jmp _LFORCMP_0x1
-_LFORTOP_0x0:
-;------------
-movsd xmm7, QWORD[rbp-24]
-movsd xmm0, xmm7
-mov rax, 1
-call _void_print_pdouble
-_LFORUPDATE_0x2:
-;------------
-mov rax, 1
-cvtsi2sd xmm7, rax
-movsd xmm8, QWORD[rbp-24]
-addsd xmm8, xmm7
-movsd QWORD[rbp-24], xmm8
-_LFORCMP_0x1:
-movsd xmm7, QWORD[rbp-24]
-mov rbx, 10
-cvtsi2sd xmm8, rbx
-ucomisd xmm7, xmm8
-setb al
-;------------
-and al, 00000001b
-cmp al, 1
-je _LFORTOP_0x0
-_LFOREND_0x3:
-jmp ___int_main_pintchar..__return
-___int_main_pintchar..__return:
-leave
-ret
 
 CMAIN:
     mov rbp, rsp
     xor rax, rax
     ;rsi     ;commandline args
     ;rdi
-    mov QWORD[HvptrDest_0], 0
-mov QWORD[nullptr], HvptrDest_0
-mov QWORD[null], 0
-mov QWORD[MAXUINT], -1
-mov QWORD[rand_next], 1
+    
     call _int_main_pintchar..
     ret

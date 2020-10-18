@@ -180,7 +180,6 @@ class RightSideEvaluator:
                     a = stack.pop()
                     op = e.accessor
                     
-
                     if(a.isconstint() and b.isconstint()): # optimize for constant expressions
                         stack.append(calculateConstant(a,b,op))
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt()): # optimize for semi constexpr
@@ -383,8 +382,10 @@ class RightSideEvaluator:
         if(len(stack) != 1): 
             throw(HangingOperator(self.fn.current_token))
         final = stack.pop()
-        
-        
+
+
+
+
         o = final.type.copy()
         #TODO: Make own function:
         #       make able to handle different data sizes

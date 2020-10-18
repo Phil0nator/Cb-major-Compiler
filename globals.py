@@ -341,7 +341,7 @@ SHORT = DType("short", 4, signed=True)
 SMALL = DType("small", 2, signed=True)
 CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
-VOID = DType("void", 8, signed=False)
+VOID = DType("void", 8, signed=True)
 BOOL = DType("bool", 1, signed=True)
 
 
@@ -572,7 +572,6 @@ def getSizeSpecifier(t):
 def createIntrinsicConstant(variable):
     
     if((variable.t.isflt())):
-
         #return "%s: dq __float32__(%s)\n"%(variable.name, (variable.initializer))
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
 
@@ -815,6 +814,12 @@ def calculateConstant(a, b, op):
         return EC.ExpressionComponent(int(a.accessor>>b.accessor), INT.copy(), constint=True)
     elif(op == "<<"):
         return EC.ExpressionComponent(int(a.accessor<<b.accessor), INT.copy(), constint=True) 
+    elif(op == "||" or op == "|"):
+        return EC.ExpressionComponent(int(a.accessor or b.accessor), INT.copy(), constint=True) 
+    elif(op == "&&" or op == "&"):
+        return EC.ExpressionComponent(int(a.accessor and b.accessor), INT.copy(), constint=True) 
+    elif(op == "^"):
+        return EC.ExpressionComponent(int(a.accessor ^ b.accessor), INT.copy(), constint=True) 
 
 def shiftInt(a, b, op, signed):
     cmd = ""

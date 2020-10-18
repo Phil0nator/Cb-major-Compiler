@@ -72,7 +72,8 @@ T_COMMA = ","
 T_TYPECAST = "$"
 
 T_AMBIGUOUS = "T?T"
-
+T_DIRECTIVE = "#doit"
+T_INCLUDER = "<...>"
 
 KEYWORDS = [
 

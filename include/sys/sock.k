@@ -1,3 +1,6 @@
+#ifndef __SYSSOCK
+#define __SYSSOCK 1
+
 #include "include/sys/files.k" // fd_t, read, write, etc...
 
 typedef unsigned int32 in_addr;
@@ -23,44 +26,44 @@ struct linger_t {
 
 };
 
-const int32 SOCK_STREAM      = 1;
-const int32 SOCK_DGRAM       = 2;
-const int32 SOCK_RAW         = 3;
-const int32 SOCK_SEQPACKET   = 5;
+#define SOCK_STREAM       1
+#define SOCK_DGRAM        2
+#define SOCK_RAW          3
+#define SOCK_SEQPACKET    5
 
-const int32 SO_DEBUG         = 0x0001;
-const int32 SO_ACCEPTCONN    = 0x0002;
-const int32 SO_REUSEADDR     = 0x0004;
-const int32 SO_KEEPALIVE     = 0x0008;
-const int32 SO_DONTROUTE     = 0x0010;
-const int32 SO_BROADCAST     = 0x0020;
-const int32 SO_USELOOPBACK   = 0x0040;
-const int32 SO_LINGER        = 0x0080;
-const int32 SO_OOBINLINE     = 0x0100;
+#define SO_DEBUG          0x0001
+#define SO_ACCEPTCONN     0x0002
+#define SO_REUSEADDR      0x0004
+#define SO_KEEPALIVE      0x0008
+#define SO_DONTROUTE      0x0010
+#define SO_BROADCAST      0x0020
+#define SO_USELOOPBACK    0x0040
+#define SO_LINGER         0x0080
+#define SO_OOBINLINE      0x0100
 
-const int32 SO_SNDBUF        = 0x1001;
-const int32 SO_RCVBUF        = 0x1002;
-const int32 SO_SNDLOWAT      = 0x1003;
-const int32 SO_RCVLOWAT      = 0x1004;
-const int32 SO_SNDTIMEO      = 0x1005;
-const int32 SO_RECVTIMEO     = 0x1006;
-const int32 SO_ERROR         = 0x1007;
-const int32 SO_TYPE          = 0x1008;
+#define SO_SNDBUF         0x1001
+#define SO_RCVBUF         0x1002
+#define SO_SNDLOWAT       0x1003
+#define SO_RCVLOWAT       0x1004
+#define SO_SNDTIMEO       0x1005
+#define SO_RECVTIMEO      0x1006
+#define SO_ERROR          0x1007
+#define SO_TYPE           0x1008
 
-const int32 SOL_SOCKET       = 0xffff;
+#define SOL_SOCKET        0xffff
 
-const char AF_UNSPEC = 0;
-const char AF_UNIX = 1;
-const char AF_INET=2;
-const char AF_AX25=3;
-const char AF_IPX=4;
-const char AF_APPLETALK=5;
-const char AF_NETROM=6; 
-const char AF_BRIDGE=7; 
-const char AF_AAL5=8; 
-const char AF_X25=9; 
-const char AF_INET6=10; 
-const char AF_MAX = 12; 
+#define AF_UNSPEC  0
+#define AF_UNIX  1
+#define AF_INET 2
+#define AF_AX25 3
+#define AF_IPX 4
+#define AF_APPLETALK 5
+#define AF_NETROM 6 
+#define AF_BRIDGE 7 
+#define AF_AAL5 8 
+#define AF_X25 9 
+#define AF_INET6 10 
+#define AF_MAX   12 
 
 function bool isdigit(char c){
     return c > '0' && c < '9';
@@ -106,3 +109,6 @@ function int shutdown(fd_t sockfd, int how){
     syscall
     "}
 }
+
+
+#endif

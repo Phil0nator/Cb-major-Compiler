@@ -132,15 +132,20 @@ class Lexer:
                 self.advance()
 
             elif (self.ch == "#"):
-                if(not getDirectives):
-                    while self.ch != "\n":
-                        self.advance()
-                else:
-                    out = ""
-                    while self.ch != "\n":
-                        out+=self.ch
-                        self.advance()
-                    directives.append(out)
+                self.advance()
+                t = self.buildAmbiguous()
+                t.tok = T.T_DIRECTIVE
+                tokens.append(t)
+
+                # if(not getDirectives):
+                #     while self.ch != "\n":
+                #         self.advance()
+                # else:
+                #     out = ""
+                #     while self.ch != "\n":
+                #         out+=self.ch
+                #         self.advance()
+                #     directives.append(out)
 
             elif(self.ch == "$"):
                 self.advance()
@@ -182,7 +187,7 @@ class Lexer:
             elif (self.ch == "-"):
                 self.advance()
                 prev = tokens[-1]
-                if(prev.tok in OPERATORS or prev.tok == T.T_EQUALS) and prev.tok != T.T_MINUS and prev.tok not in ["(",")","[","]"] and self.ch in T.T_DIGITS:
+                if prev.tok not in [T.T_INT, T.T_CHAR, T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
@@ -190,6 +195,7 @@ class Lexer:
                     self.chidx-=2
                     self.advance()
                     t = self.buildMultichar()
+
                 tokens.append(t)
             elif (self.ch in T.T_MULTIOP):
                 token = self.buildMultichar()

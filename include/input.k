@@ -1,3 +1,8 @@
+#ifndef __INPUT
+#define __INPUT 1
+
+
+
 typedef void* FILE_T;
 
 function int getInt(char* msg){
@@ -106,3 +111,5 @@ __int_toint_end:
 
 
 }
+
+#endif

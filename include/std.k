@@ -1,3 +1,6 @@
+#ifndef __STD
+#define __STD 1
+
 #include "include/stddef.k"
 #include "include/memory.k"
 #include "include/printf.k"
@@ -12,3 +15,6 @@
 #include "include/input.k"
 #include "include/Vec3d.k"
 #include "include/filesystem.k"
+
+
+#endif
