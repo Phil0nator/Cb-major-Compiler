@@ -85,10 +85,7 @@ def main():
 
     print("Compiled and Linked symbols in %s s"%(time.time()-beginTime))
     
-    if(config.__autorun__):
-        runtime = time.time()
-        os.system(f"./{config.__fileoutput__}")
-        print("\nRuntime: %s s"%(time.time()-runtime))
+
 
 
 
@@ -105,3 +102,10 @@ if(__name__ == "__main__"):
         print(s.getvalue())
     else:
         main()
+
+
+
+    if(config.__autorun__):
+        runtime = time.time()
+        os.system(f"./{config.__fileoutput__}")
+        print("\nRuntime: %s s"%(time.time()-runtime))
