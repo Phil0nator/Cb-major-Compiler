@@ -100,8 +100,9 @@ class Function:
 
 
     def addline(self, l):                           # add a line of assembly to raw
-        self.asm+=l+"\n"
-    
+        #self.asm+=l+"\n"
+        self.asm =f"{self.asm}{l}\n"
+
     def addcomment(self, c):                        # add a comment to the assembly
         self.asm+=";"+c+"\n"
 

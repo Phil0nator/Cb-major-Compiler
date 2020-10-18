@@ -24,12 +24,13 @@ class Lexer:
         self.raw += chr(1)
         self.ch = self.raw[0]
         self.chidx = 0
+        self.size = len(self.raw)
 
 
     def advance(self):  # increment the current character
 
         self.chidx+=1
-        if(self.chidx < len(self.raw)):
+        if(self.chidx < self.size):
             self.ch = self.raw[self.chidx]
             self.loc.ch+=1
             if self.ch == "\n":
@@ -108,10 +109,17 @@ class Lexer:
         value = self.ch
         begin = self.loc.copy()
         self.advance()
-
-        while self.ch in T.T_IDCHARS+T.T_DIGITS:
-            value += self.ch
-            self.advance()
+        pchars = T.T_IDCHARS+T.T_DIGITS
+        #while self.ch in T.T_IDCHARS+T.T_DIGITS:
+        #    value += self.ch
+        #    self.advance()
+        for ch in self.raw[self.chidx:]:
+            if(ch in pchars):
+                value+=ch
+            else:
+                break
+        self.chidx+=len(value)-2
+        self.advance()
         if( value in T.KEYWORDS ):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
@@ -122,17 +130,18 @@ class Lexer:
     def getTokens(self, getDirectives = False): 
         tokens = []
         directives = []
+        advance = self.advance
         while self.ch != chr(1):
-
+            
             if(self.ch == "\n" or self.ch == " "):
-                self.advance()
+                advance()
 
             elif(self.ch == "\\"):
-                self.advance()
-                self.advance()
+                advance()
+                advance()
 
             elif (self.ch == "#"):
-                self.advance()
+                advance()
                 t = self.buildAmbiguous()
                 t.tok = T.T_DIRECTIVE
                 tokens.append(t)
@@ -148,12 +157,12 @@ class Lexer:
                 #     directives.append(out)
 
             elif(self.ch == "$"):
-                self.advance()
+                advance()
                 t = self.buildAmbiguous()
                 t.tok = T.T_TYPECAST
 
                 while self.ch == "*":
-                    self.advance()
+                    advance()
                     t.value+="."
 
                 tokens.append(t)
@@ -161,31 +170,31 @@ class Lexer:
 
             elif(self.ch == ";"):
                 tokens.append(Token(T.T_ENDL,T.T_ENDL,self.loc.copy(),self.loc.copy()))
-                self.advance()
+                advance()
             elif(self.ch == "+"):
                 tokens.append(self.buildMultichar())
             elif(self.ch == "/"):
-                self.advance()
+                advance()
                 if(self.ch == "/"):
                     while self.ch != "\n":
-                        self.advance()
+                        advance()
                 elif(self.ch == "*"):
                     comment = "  "
                     while comment[-2:] != "*/":
                         self.advance()
                         comment+=self.ch
-                    self.advance()                    
+                    advance()                    
                 else:
                     self.chidx-=2
-                    self.advance()
+                    advance()
                     tokens.append(self.buildMultichar())                    
             
             elif (self.ch in "()}{[],^@%~."):
                 tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
-                self.advance()
+                advance()
 
             elif (self.ch == "-"):
-                self.advance()
+                advance()
                 prev = tokens[-1]
                 if prev.tok not in [T.T_INT, T.T_CHAR, T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
                     t = self.buildNumber()
@@ -193,7 +202,7 @@ class Lexer:
                 else:
                     #t = Token("-","-",self.loc.copy(),self.loc.copy())
                     self.chidx-=2
-                    self.advance()
+                    advance()
                     t = self.buildMultichar()
 
                 tokens.append(t)
