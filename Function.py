@@ -80,6 +80,9 @@ class Function:
         for v in self.variables:
             if (v.name == q):
                 return v
+
+        local = [v for v in self.variables if v.name == q]
+        if(len(local) != 0): return local[0]
         
         globq = self.compiler.getGlob(q)
         if(globq!=None): return globq
@@ -102,12 +105,7 @@ class Function:
     def addcomment(self, c):                        # add a comment to the assembly
         self.asm+=";"+c+"\n"
 
-    @DeprecationWarning
-    def isbeforeTracker(self, value):
-        for t in self.tokens[self.ctidx:]:
-            if t.tracker == value:
-                return True
-        return False
+
 
 
     def getFunction(self, fn, types):               # get function with name fn and datatypes types, or a suitable replacement (casting)
@@ -500,7 +498,7 @@ class Function:
             s = self.current_token
             self.advance()
             self.buildDeclaration()
-            v = self.variables[len(self.variables)-1]
+            v = self.variables[-1]
             if(v.isflt()):
                 throw(InvalidSignSpecifier(s))
             v.signed = False
@@ -811,6 +809,12 @@ class Function:
                 self.advance()
                 fnt = var.t.constructor
                 if(fnt == None): throw(UnkownFunction(self.current_token,f"{var.t.name}.constructor",[None]))
+                
+                
+                
+                # similar steps as for function calls, just taking first parameter as (DType* this)
+                # \see self.buildFunctionCall
+                
                 call_label = fncall(fnt)
                 self.addline(f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n")
                 normsused = 1

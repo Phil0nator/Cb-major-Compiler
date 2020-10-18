@@ -24,42 +24,40 @@ def join(arr, d):
 class PreProcessor:
     def __init__(self, tokens):
 
-        self.tokens = tokens
-        self.stack = 0
-        self.current_token = tokens[0]
-        self.tkidx = 0
+        self.tokens = tokens                    # all tokens
+        self.current_token = tokens[0]          # current token
+        self.tkidx = 0                          # current position
         self.definitions = []                   # definition: [str:name, tokens[]]
-        self.dels = 0
+        self.dels = 0                           # number of tokens deleted
     def advance(self):
         self.tkidx+=1
         self.current_token = self.tokens[self.tkidx]
 
-    def update(self):
+    def update(self):                           # correct current_token to potentially changed index
         self.current_token = self.tokens[self.tkidx]
 
-    def delmov(self):
-        #self.tokens.remove(self.current_token)
+    def delmov(self):                           # delete current token, and move to the next
         self.tokens[self.tkidx] = None
         self.advance()
         self.dels+=1
 
 
-    def getDefn(self, name):
+    def getDefn(self, name):                    # get a definition by name
         for d in self.definitions:
             if d[0] == name:
                 return d
         return None
 
-    def checkToks(self, tok):
+    def checkToks(self, tok):                   # check for specific tokens
         if(self.current_token.tok not in tok):
             throw(ExpectedToken(self.current_token, tok))
     
-    def loadRaw(self, path):
+    def loadRaw(self, path):                    # load a raw file based on a given path
         with open(path, "rb") as f:
             rawdata = f.read().decode()
         return rawdata
 
-    def buildIncludeStatement(self):
+    def buildIncludeStatement(self):            # #include directive
         self.delmov()
 
         self.checkToks([T_STRING, T_INCLUDER])
@@ -73,7 +71,7 @@ class PreProcessor:
         self.update()
 
 
-    def buildDefine(self):
+    def buildDefine(self):                      # #define directive
         self.delmov()
 
         self.checkToks([T_ID])
@@ -91,8 +89,10 @@ class PreProcessor:
             definitionTokens.append(self.current_token)
             self.delmov()
         self.definitions.append([name, definitionTokens])
-
-    def checkDefn(self):
+    # check if current token (id) is a macro
+    # if so, replace it with the actual values for that macro
+    def checkDefn(self):                        
+        assert self.current_token.tok == T_ID
         dq = self.getDefn(self.current_token.value)
         if(dq == None): 
             self.advance()
@@ -100,7 +100,7 @@ class PreProcessor:
         self.delmov()
         self.tokens[self.tkidx:self.tkidx] = dq[1]
     
-    
+    # #ifdef directive
     def buildifdef(self):
         self.delmov()
         self.checkToks([T_ID])
@@ -111,7 +111,7 @@ class PreProcessor:
         else:
             self.delmov()
 
-
+    # #ifndef directive
     def buildifndef(self):
         self.delmov()
         self.checkToks([T_ID])
@@ -122,6 +122,7 @@ class PreProcessor:
             while not (self.current_token.tok == T_DIRECTIVE and self.current_token.value == "endif"):
                 self.delmov()
 
+    # main function
     def process(self):
 
         while self.current_token.tok != T_EOF:
@@ -153,7 +154,7 @@ class PreProcessor:
                 self.advance()
         
         
-        
+        # filter out deleted tokens that were replaced with None
         return list(filter(None, self.tokens)) 
         
 

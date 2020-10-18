@@ -175,7 +175,7 @@ class RightSideEvaluator:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):
                     b = stack.pop()
-                    if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
+                    if(len(stack) < 1): throw(HangingOperator(pfix[-1].token))
 
                     a = stack.pop()
                     op = e.accessor
@@ -260,7 +260,7 @@ class RightSideEvaluator:
                             instr+=newinstr
                             o = newt.copy()
                 else:
-                    if(len(stack) < 1): throw(HangingOperator(pfix[len(pfix)-1].token))
+                    if(len(stack) < 1): throw(HangingOperator(pfix[-1].token))
                     a = stack.pop()
                     
                     if(e.accessor == T_NOT):
