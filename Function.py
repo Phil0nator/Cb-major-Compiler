@@ -724,7 +724,7 @@ class Function:
         ev = RightSideEvaluator(self)
 
         # get instructions, and returntype of the now postifixed equation
-        ins, ot = ev.evaluatePostfix(destination, pf.createPostfix())
+        ins, ot = ev.evaluate(destination, pf.createPostfix())
         instructions += ins
 
         # load returntype properties to the given reference
@@ -751,7 +751,7 @@ class Function:
             instructions+=f";{comment}\n"
         
         ev = LeftSideEvaluator(self)
-        ins, output = ev.evaluatePostfix(pf.createPostfix())
+        ins, output = ev.evaluate(pf.createPostfix())
         instructions+=ins
 
         return instructions, output
