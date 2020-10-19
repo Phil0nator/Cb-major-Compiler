@@ -1,6 +1,6 @@
 #ifndef __STD
 #define __STD 1
-
+#include "bits.k"
 #include "stddef.k"
 #include "memory.k"
 #include "printf.k"

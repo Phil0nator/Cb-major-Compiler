@@ -543,14 +543,14 @@ def psizeof(v):
         return "word"
     return "qword"
 
-def psizeoft(t):
-    if t.size(0) == 1:
+def psizeoft(t, lvl = 0):
+    if t.size(lvl) == 1:
         return "byte"
-    if t.size(0) == 8:
+    if t.size(lvl) == 8:
         return "qword"
-    elif t.size(0) == 4:
+    elif t.size(lvl) == 4:
         return "dword"
-    elif t.size(0) == 2:
+    elif t.size(lvl) == 2:
         return "word"
     return "qword"
 
@@ -638,6 +638,7 @@ def typematch(a, b):
         if(config.GlobalCompiler.Tequals(a.name,"void") or config.GlobalCompiler.Tequals(b.name,"void")): return True
         if(a.__eq__(INT.copy()) and b.ptrdepth > 0): return True
         if(a.__eq__(b)):return True
+        if(not a.isflt() and not b.isflt()): return True
         elif(DType(a.name,a.size,None,a.ptrdepth,False).__eq__(DType(b.name,b.size,None,b.ptrdepth,False))): return True
         if(a.ptrdepth != b.ptrdepth): return False
         if(a.isflt() and b.isflt()): return True
@@ -834,7 +835,7 @@ def shiftInt(a, b, op, signed):
             cmd = "sal"
         else:
             cmd = "shl"
-    
+
     if(isinstance(b, int)):
         return f"{cmd} {a}, {b}\n"
     else:
@@ -908,11 +909,10 @@ def boolmath(areg, breg,op):
     elif(op == "^"):
         cmd = "xor"
     elif(op == "!"):
-
         return cmpI(areg,0,False,"==")
     elif(op == "~"):
         return f"not {areg}\n"
-
+    
 
     instr = f"{cmd} {areg}, {breg}\n"
     return instr

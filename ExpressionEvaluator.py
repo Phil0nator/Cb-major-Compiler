@@ -88,9 +88,10 @@ class ExpressionEvaluator:
 
                         # if can be optimized through bitshift multiplication/division
                         if(op == "*" or op == "/"):
-                            
+
                             if(canShiftmul(b.accessor)):
                                 newinstr = ""
+                                newinstr+=bringdown_memloc(a)
                                 if(a.isRegister()):
                                     areg = a.accessor
                                 else:
@@ -104,6 +105,21 @@ class ExpressionEvaluator:
                                     newinstr+=f"shr {valueOf(areg)}, {shiftmul(b.accessor)}\n"
                                 a.accessor = areg
                                 apendee = a
+                            newt = a.type.copy()
+                        
+                        if(op in [">>", "<<"]):
+
+                            newinstr = ""
+                            newinstr+=bringdown_memloc(a)
+                            if(a.isRegister()):
+                                areg = a.accessor
+                            else:
+                                areg = ralloc(False)
+                                newinstr+=loadToReg(areg,a.accessor)
+                                
+                            newinstr+=shiftInt(areg,b.accessor,op,a.type.signed)
+                            a.accessor = areg
+                            apendee = a
                             newt = a.type.copy()
 
 
@@ -326,7 +342,8 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr+=f"movsd {oreg}, [{tmp}]\n"
             else:
                 oreg = ralloc(False)
-                instr+=f"mov {oreg}, [{tmp}]\n"
+                instr+=maskset(oreg,a.type.size(1))
+                instr+=f"mov {setSize( oreg, a.type.size(1))}, {psizeoft(a.type, 1)}[{tmp}]\n"
             o = a.accessor.t.copy()
             o.ptrdepth-=1
             rfree(tmp)
@@ -373,14 +390,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         if(op in ["<<", ">>"]):
             if( (a.type.isflt() or b.type.isflt())):
                 throw(InvalidOperationOperands(a.token,op,a.type,b.type))
-            # else:
-            #     instr+=self.bringdown_memloc(a)
-            #     if(a.isRegister()):
-            #         areg = a.accessor
-            #     else:
-            #         areg = ralloc(False)
-            #         instr+=loadToReg(areg,a.accessor)
-            #     instr+=doIntOperation(areg, b.accessor, op, a.type.signed)
+            
 
 
         instr+=bringdown_memlocs(a,b)
