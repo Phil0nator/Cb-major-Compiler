@@ -652,6 +652,7 @@ def typematch(a, b):
 
 
 def loadToPtr(dest, source):
+
     if(isinstance(dest, Variable)):
         return loadToReg(dest,source)
     return loadToReg(f"[{dest}]",source)
@@ -907,9 +908,7 @@ def boolmath(areg, breg,op):
     elif(op == "^"):
         cmd = "xor"
     elif(op == "!"):
-        #instr = f"not {areg}\n"
-        #instr += f"and {areg}, 00000001b\n"
-        #return instr
+
         return cmpI(areg,0,False,"==")
     elif(op == "~"):
         return f"not {areg}\n"

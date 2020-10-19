@@ -77,6 +77,7 @@ class Function:
 
     def getVariable(self, q):                       # get a variable of name q from first local then global scope if necessary
 
+
         for v in self.variables:
             if (v.name == q):
                 return v
@@ -943,6 +944,7 @@ class Function:
             elif(op == "-"):
                 cmd = "sub"
             # add extra instructions for the shortcut
+            
             if(dest.type.isflt() and dest.isRegister()):
                 x = ralloc(True)
                 tmp = ralloc(True)

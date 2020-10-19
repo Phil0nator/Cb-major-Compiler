@@ -52,7 +52,8 @@ class Compiler:
         
         for i in INTRINSICS:            # fill types with primitives
             self.types.append(i.copy())
-    
+
+        self.possible_members = []
 
         self.heap_unnamed = 0           # int counter for unnamed heap variables
 
@@ -66,10 +67,11 @@ class Compiler:
         out = [t for t in INTRINSICS if self.Tequals(t.name, q)]
         return out[0] if len(out)!=0 else None
 
+    def ismember(self, q):
+        return q in self.possible_members
     
 
     def getGlob(self, q):               # get global variable of name q
-
         out = [g for g in self.globals if g.name == q]
         return out[0] if len(out)!=0 else None
 
@@ -389,6 +391,7 @@ class Compiler:
                 name = self.current_token.value
                 var = Variable(t,name,glob=False,offset=size,isptr=t.ptrdepth>0,signed=t.signed)
                 members.append(var)
+                self.possible_members.append(name)
                 size+=t.csize()
                 self.advance()
                 if(self.current_token.tok != T_ENDL): throw(ExpectedSemicolon(self.current_token))

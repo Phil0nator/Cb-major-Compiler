@@ -14,7 +14,7 @@ import os
 import subprocess
 import pkg_resources
 
-required = {'argparse', 'colorama', "termcolor"}
+required = {'argparse', 'colorama', "termcolor", "cpuid"}
 installed = {pkg.key for pkg in pkg_resources.working_set}
 missing = required - installed
 

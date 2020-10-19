@@ -43,7 +43,10 @@ class Postfixer:
 
                     v = self.fn.compiler.getType(t.value)
                     if(v == None):  
-                        ec = EC.ExpressionComponent(t.value,VOID.copy(),token = t)
+                        if(self.fn.compiler.ismember(t.value)):
+                            ec = EC.ExpressionComponent(t.value,VOID.copy(),token = t)
+                        else:
+                            throw(UnkownIdentifier(t))
                     else:
 
                         ec = EC.ExpressionComponent(v.size(0),INT.copy(),constint=True,token=t)
@@ -59,8 +62,8 @@ class Postfixer:
                 ec = EC.ExpressionComponent(t.value,CHAR.copy(),constint=True)
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
-
-        if(ec == None): print(t.start)        
+        if(ec == None):
+            pass      
         ec.token = t
         self.pfix.append(ec)
 
