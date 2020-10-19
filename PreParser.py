@@ -54,23 +54,10 @@ class PreProcessor:
         if(self.current_token.tok not in tok):
             throw(ExpectedToken(self.current_token, tok))
     
-    def loadRaw(self, path):
-                            # load a raw file based on a given path
-        rawdata = None
-        for p in include_directories:
-            try:
-                with open(f"{p}/{path}", "rb") as f:
-                    rawdata = f.read().decode()
-                    dir = os.path.dirname(f"{p}/{path}")
-                    if(dir not in include_directories):
-                        include_directories.append(dir)
-                    break
-            except FileNotFoundError:
-                pass
-
-        if(rawdata == None):
-            throw(FileNotFound(self.current_token,path))
-        return rawdata
+    def loadRaw(self, path):# load a raw file based on a given path
+        return config.loadRawFile(path,self.current_token)
+                            
+        
 
     def buildIncludeStatement(self):            # #include directive
         self.delmov()

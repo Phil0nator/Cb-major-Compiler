@@ -241,7 +241,10 @@ class RightSideEvaluator(ExpressionEvaluator):
         if(not typematch(BOOL, a.type) and not a.isconstint()):
             throw(TypeMismatch(a.token,BOOL, a.type))
         
+        # bring down memory location
         instr+=bringdown_memloc(a)
+        
+        # load to register if necessary
         needload = True
         if(a.isRegister()):
             areg = a.accessor
@@ -250,6 +253,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             areg = ralloc(False)
         if(needload): instr+=loadToReg(areg,a.accessor)
 
+        # do not
         instr+=boolmath(areg,None,T_NOT)
         o = BOOL.copy()
         return instr, o, EC.ExpressionComponent(areg,BOOL.copy(),token=a.token)

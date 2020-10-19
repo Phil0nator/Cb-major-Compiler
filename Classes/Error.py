@@ -10,13 +10,14 @@ class Error:
     def __repr__(self):
 
         # build pretty print error message
-        line = self.tok.start.line
+        line = self.tok.start.line +1
         file = self.tok.start.file
         char = self.tok.start.ch 
         diff = self.tok.end.ch-char
         
-        with open(file, "rb") as f:
-            file = f.read().decode()
+        file = config.loadRawFile(file, None)
+
+        
         file = file[0:char] + error_indicator + file[char:self.tok.end.ch] + Style.RESET_ALL + file[char+diff:-1]
         lines = file.split("\n")
         

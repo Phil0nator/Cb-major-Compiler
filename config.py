@@ -9,6 +9,7 @@
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
 import sys
+import Classes.Error as E
 import os
 import subprocess
 import pkg_resources
@@ -62,7 +63,22 @@ include_directories = [compilepath, callpath, includepath]
 
 
 
+def loadRawFile(path, token):
+    rawdata = None
+    for p in include_directories:
+        try:
+            with open(f"{p}/{path}", "rb") as f:
+                rawdata = f.read().decode()
+                dir = os.path.dirname(f"{p}/{path}")
+                if(dir not in include_directories):
+                    include_directories.append(dir)
+                break
+        except FileNotFoundError:
+            pass
 
+    if(rawdata == None):
+        E.throw(E.FileNotFound(token,path))
+    return rawdata
 
 
 
