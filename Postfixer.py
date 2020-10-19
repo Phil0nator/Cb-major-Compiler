@@ -1,10 +1,9 @@
 from Classes.Variable import *
-from globals import *
 from Classes.Token import *
 from Classes.Error import *
-
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE, operatorISO, OPERATORS, PRIORITY, isIntrinsic
 import Classes.ExpressionComponent as EC
-
+from Assembly.CodeBlocks import valueOf
 
 ########################################
 #
@@ -18,6 +17,8 @@ import Classes.ExpressionComponent as EC
 #   \see ExpressionComponent
 #
 ########################################
+
+
 class Postfixer:
     def __init__(self, tokens, fn):
         self.tokens = tokens            # a list of Token objects
@@ -38,10 +39,10 @@ class Postfixer:
                 ec = EC.ExpressionComponent(t.value, INT.copy(), constint=True)
             elif(t.tok == T_ID):
                 v: Variable = self.fn.getVariable(t.value)
-                if(v == None):
+                if(v is None):
 
                     v = self.fn.compiler.getType(t.value)
-                    if(v == None):
+                    if(v is None):
                         if(self.fn.compiler.ismember(t.value)):
                             ec = EC.ExpressionComponent(
                                 t.value, VOID.copy(), token=t)
@@ -64,7 +65,7 @@ class Postfixer:
                     t.value, CHAR.copy(), constint=True)
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
-        if(ec == None):
+        if(ec is None):
             throw(InvalidExpressionComponent(t))
         ec.token = t
         self.pfix.append(ec)

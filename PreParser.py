@@ -13,7 +13,7 @@ import time
 def join(arr, d):
     out = ""
     for s in arr:
-        out += s+d
+        out += s + d
     return out
 
 
@@ -157,11 +157,11 @@ class PreProcessor:
     def checkDefn(self):
         assert self.current_token.tok == T_ID
         dq = self.getDefn(self.current_token.value)
-        if(dq == None):
+        if(dq is None):
             if(self.current_token.value == "__LINE__"):
                 self.delmov()
                 self.tokens[self.tkidx] = Token(
-                    T_INT, self.tokens[self.tkidx].start.line+1, self.tokens[self.tkidx].start, self.tokens[self.tkidx].end)
+                    T_INT, self.tokens[self.tkidx].start.line + 1, self.tokens[self.tkidx].start, self.tokens[self.tkidx].end)
                 return
             elif(self.current_token.value == "__FILE__"):
                 self.delmov()
@@ -179,8 +179,9 @@ class PreProcessor:
         self.delmov()
         self.checkToks([T_ID])
         q = self.getDefn(self.current_token.value)
-        if(q == None):
-            while not (self.current_token.tok == T_DIRECTIVE and self.current_token.value == "endif"):
+        if(q is None):
+            while not (self.current_token.tok ==
+                       T_DIRECTIVE and self.current_token.value == "endif"):
                 self.delmov()
         else:
             self.delmov()
@@ -190,10 +191,11 @@ class PreProcessor:
         self.delmov()
         self.checkToks([T_ID])
         q = self.getDefn(self.current_token.value)
-        if(q == None):
+        if(q is None):
             self.delmov()
         else:
-            while not (self.current_token.tok == T_DIRECTIVE and self.current_token.value == "endif"):
+            while not (self.current_token.tok ==
+                       T_DIRECTIVE and self.current_token.value == "endif"):
                 self.delmov()
 
     # main function

@@ -1,15 +1,32 @@
-from globals import *
 from Classes.Variable import *
-from Classes.DType import *
+from Classes.DType import DType
 from Classes.Token import *
 from Classes.Error import *
-from Postfixer import *
+from Postfixer import Postfixer
 from ExpressionEvaluator import RightSideEvaluator
 from ExpressionEvaluator import LeftSideEvaluator
 import Classes.Optimizer
 import config
 import time
 import Classes.ExpressionComponent as EC
+
+from Assembly.Registers import *
+from Assembly.Instructions import Instruction
+
+from Assembly.CodeBlocks import function_allocator
+from Assembly.CodeBlocks import function_closer, fncall, check_fortrue
+from Assembly.CodeBlocks import loadToPtr, loadToReg, movVarToReg, movRegToVar
+from Assembly.CodeBlocks import valueOf, getLogicLabel, maskset, functionlabel
+import Assembly.CodeBlocks as CodeBlocks
+
+from Assembly.TypeSizes import isfloat
+import Assembly.TypeSizes as TypeSizes
+
+from Assembly.AVX import avx_ralloc, avx_rfree, avx_correctSize
+from Assembly.AVX import avx_loadToReg, avx_dropToAddress, avx_doToReg
+import Assembly.AVX as AVX
+
+from globals import TsCompatible, INT, BOOL, CHAR, SHORT, SMALL, VOID, DOUBLE, isIntrinsic
 
 # multiply all items in an array
 
@@ -87,7 +104,7 @@ class Function:
             return local[0]
 
         globq = self.compiler.getGlob(q)
-        if(globq != None):
+        if(globq is not None):
             return globq
         return None
 
@@ -95,11 +112,11 @@ class Function:
     def addVariable(self, v):
 
         v.offset = self.stackCounter
-        #self.stackCounter += v.t.size(0)
+        # self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8:
             self.stackCounter += 8
         else:
-            self.stackCounter += v.t.csize()+8
+            self.stackCounter += v.t.csize() + 8
         self.variables.append(v)
 
     def addline(self, l):                           # add a line of assembly to raw
@@ -107,9 +124,10 @@ class Function:
         self.asm = f"{self.asm}{l}\n"
 
     def addcomment(self, c):                        # add a comment to the assembly
-        self.asm += ";"+c+"\n"
+        self.asm += ";" + c + "\n"
 
-    # get function with name fn and datatypes types, or a suitable replacement (casting)
+    # get function with name fn and datatypes types, or a suitable replacement
+    # (casting)
 
     def getFunction(self, fn, types):
 
@@ -194,8 +212,8 @@ class Function:
                 countn += 1
 
     def createClosing(self):                    # create end of the function
-        if(self.destructor_text == ""):
-            self.destructor_text = f"push rax\n{self.destructor_text}\npop rax\n"
+        if(self.destructor_text != ""):
+            self.destructor_text = f'{Instruction("push", [rax])}{self.destructor_text}{Instruction("pop", [rax])}'
         self.addline(function_closer(
             self.getCallingLabel(), self.destructor_text))
 
@@ -209,14 +227,15 @@ class Function:
                 instr = self.evaluateRightsideExpression(EC.ExpressionComponent(
                     norm_return_register, INT.copy(), token=self.current_token))
             self.addline(instr)
-        self.addline(f"jmp {self.getClosingLabel().replace(':','')}")
+        self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]]))
         self.checkSemi()
 
     def buildIfStatement(self):
         self.advance()
         self.checkTok(T_OPENP)
 
-        # Build instructions neccessary to evaluate the expression a for example: if ( a ) { ... }
+        # Build instructions neccessary to evaluate the expression a for
+        # example: if ( a ) { ... }
         preInstructions = self.evaluateRightsideExpression(
             EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
         if(self.current_token.tok == T_CLSP):
@@ -243,7 +262,7 @@ class Function:
 
             if(self.current_token.value == "else"):
 
-                self.addline(postlabel+":\n")
+                self.addline(postlabel + ":\n")
 
                 self.advance()
                 if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
@@ -255,14 +274,14 @@ class Function:
                     throw(ExpectedToken(self.current_token, "{"))
                 if(self.current_token.tok == T_CLSSCOPE):
                     self.advance()
-                self.addline(jmpafter+":\n")
+                self.addline(jmpafter + ":\n")
 
             else:
-                self.addline(postlabel+":\n")
-                self.addline(jmpafter+":\n")
+                self.addline(postlabel + ":\n")
+                self.addline(jmpafter + ":\n")
         else:
-            self.addline(postlabel+":\n")
-            self.addline(jmpafter+":\n")
+            self.addline(postlabel + ":\n")
+            self.addline(jmpafter + ":\n")
 
         self.continues.pop()
 
@@ -284,7 +303,8 @@ class Function:
         # var is the variable declared above
         var = self.variables[-1]
 
-        # build the instructions neccessary to evaluate the expression b for example: for (a; b; ...){ ... }
+        # build the instructions neccessary to evaluate the expression b for
+        # example: for (a; b; ...){ ... }
         getCondition = self.evaluateRightsideExpression(
             EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
 
@@ -295,11 +315,12 @@ class Function:
 
         self.addline(f"##FLPCONTENT##")
 
-        # build the instructions for the assignment c for example: for (a;b; c){ ... }
+        # build the instructions for the assignment c for example: for (a;b;
+        # c){ ... }
         self.buildAssignment()
 
         # use ##FLPCONTENT## marker to re-order the instructions
-        updatev = self.asm[self.asm.find("##FLPCONTENT##"):len(self.asm)-1]
+        updatev = self.asm[self.asm.find("##FLPCONTENT##"):len(self.asm) - 1]
         self.asm = self.asm.replace(updatev, "")
         updatev = updatev.replace("##FLPCONTENT##", "")
 
@@ -335,7 +356,8 @@ class Function:
         self.addline(f"jmp {comparisonlabel}")
         self.addline(f"{startlabel}:")
 
-        # build instructions to evaluate expression a for example: while( a ){ ... }
+        # build instructions to evaluate expression a for example: while( a ){
+        # ... }
         cmpinst = self.evaluateRightsideExpression(
             EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
         cmpinst += f"{check_fortrue}je {startlabel}\n"
@@ -369,7 +391,7 @@ class Function:
         t = self.compiler.getType(self.current_token.value)
         vsize = t.csize()
         flt = t.isflt()
-        if(t == None):
+        if(t is None):
             throw(UnkownIdentifier(self.current_token))
         self.advance()
 
@@ -377,7 +399,7 @@ class Function:
 
         # check for the first array
         arr1 = self.getVariable(self.current_token.value)
-        if(arr1 == None):
+        if(arr1 is None):
             throw(UnkownIdentifier(self.current_token))
         self.advance()
         idx1 = ralloc(False)
@@ -412,7 +434,7 @@ class Function:
 
             # check for array
             arrn = self.getVariable(self.current_token.value)
-            if(arrn == None):
+            if(arrn is None):
                 throw(UnkownIdentifier(self.current_token))
             self.advance()
             self.checkTok(T_COMMA)
@@ -437,7 +459,7 @@ class Function:
         self.checkTok(T_OPENP)
         # check destination array
         destarr = self.getVariable(self.current_token.value)
-        if(destarr == None):
+        if(destarr is None):
             throw(UnkownIdentifier(self.current_token))
         self.advance()
         self.checkTok(T_COMMA)
@@ -537,7 +559,8 @@ class Function:
         types = []
 
         start = self.ctidx
-        # build parameters, without storing instructions in order to determine the datatypes, and place them in types[]
+        # build parameters, without storing instructions in order to determine
+        # the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = VOID.copy()
             tmp = self.evaluateRightsideExpression("AMB", o)
@@ -546,11 +569,12 @@ class Function:
                 self.advance()
             types.append(o)
 
-        # using the fn name, and the parameter types find the actual function object best suited for this call
+        # using the fn name, and the parameter types find the actual function
+        # object best suited for this call
         fn = self.getFunction(fid, types)
-        self.ctidx = start-1
+        self.ctidx = start - 1
         self.advance()
-        if(fn == None):
+        if(fn is None):
             throw(UnkownFunction(fnstartt, fid, types))
         pcount = len(fn.parameters)
 
@@ -561,7 +585,8 @@ class Function:
             if p.isflt():
                 sseused += 1
 
-        # track the number of normal, and sse registers used in parameter loading
+        # track the number of normal, and sse registers used in parameter
+        # loading
         ssevarsforrax = sseused
         sseused = 0
         normused = 0
@@ -588,12 +613,9 @@ class Function:
                 instructions += self.evaluateRightsideExpression(ec)
                 # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
-                    if(fn.parameters[i].t.csize() == 1):
-                        instructions += f"mov {boolchar_version[norm_parameter_registers[normused]]}, {boolchar_version[result]}\n"
-                    elif(fn.parameters[i].t.csize() == 4):
-                        instructions += f"mov {dwordize(norm_parameter_registers[normused])}, {dwordize(result)}\n"
-                    elif(fn.parameters[i].t.csize() == 2):
-                        instructions += f"mov {small_version[norm_parameter_registers[normused]]}, {small_version[result]}\n"
+                    instructions += Instruction("mov", [setSize(norm_parameter_registers[normused],
+                                                                fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())])
+
                     instructions += maskset(
                         norm_parameter_registers[normused], fn.parameters[i].t.csize())
                     rfree(result)
@@ -608,7 +630,8 @@ class Function:
 
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
-        instructions += f"mov {rax}, {ssevarsforrax}\n"
+
+        instructions += Instruction("mov", [rax, ssevarsforrax])
 
         # actual 'call' instruction
         instructions += fncall(fn)
@@ -622,7 +645,8 @@ class Function:
         instructions = ""
         wasfunc = False
 
-        # The tokens: ; , = += -= *= /= etc... will mark the end of an expression
+        # The tokens: ; , = += -= *= /= etc... will mark the end of an
+        # expression
         while opens > 0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
 
             # maintain track of open/close parenthesis
@@ -639,7 +663,7 @@ class Function:
             #   Their return values will be pushed tot he stack, and the ExpressionEvaluator will be able to pop
             #   these off later into the ralloc'd scratch registers.
             elif(self.current_token.tok == T_ID):
-                if(self.tokens[self.ctidx+1].tok == "("):
+                if(self.tokens[self.ctidx + 1].tok == "("):
                     wasfunc = True
                     start = self.current_token.start.copy()
                     fninstr, fn = self.buildFunctionCall()
@@ -648,25 +672,26 @@ class Function:
                                   self.current_token.start.copy())
                     token.fn = fn
                     exprtokens.append(token)
-                    instructions += fninstr+"\n"
+                    instructions += fninstr + "\n"
 
                     if(fn.returntype.isflt()):
-                        instructions += f"movq {rax}, {sse_return_register}\n"
-                    instructions += f"push {norm_return_register}\n"
+                        instructions += Instruction("movq",
+                                                    [rax, sse_return_register])
+                    instructions += Instruction("push", [norm_return_register])
 
                 # Member variables accessed from stack based structures can be abstracted as Variable objects
                 #   because they are effectively stored the same.
-                elif(self.tokens[self.ctidx+1].tok == T_DOT):
+                elif(self.tokens[self.ctidx + 1].tok == T_DOT):
                     wasfunc = True
                     start = self.current_token.start.copy()
                     var = self.getVariable(self.current_token.value)
-                    if(var == None):
+                    if(var is None):
                         throw(UnkownIdentifier(self.current_token))
                     self.advance()
                     self.advance()
                     member = self.current_token.value
                     memvar = var.t.getMember(member)
-                    if(memvar == None):
+                    if(memvar is None):
                         throw(UnkownIdentifier(self.current_token))
                     offset = memvar.offset
                     exprtokens.append(
@@ -708,7 +733,7 @@ class Function:
         instructions += ins
 
         # load returntype properties to the given reference
-        if(otyperef != None):
+        if(otyperef is not None):
             otyperef.load(ot)
 
         return instructions
@@ -737,14 +762,16 @@ class Function:
 
     def createDestructor(self, var):
         # create automatic destructors before the return statement
-        if(var.t.destructor == None):
+        if(var.t.destructor is None):
             return ""
         call_label = functionlabel(var.t.destructor)
         if(var.t.ptrdepth > 0):
-            params = f"mov {rdi}, {valueOf(var)}\n"
+            params = Instruction("mov", [rdi, valueOf(var)])
         else:
-            params = f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n"
-        instructions = f"{params}call {call_label.replace(':','')}\n"
+            params = Instruction(
+                "lea", [
+                    rdi, f"[rbp-{var.offset+var.t.csize()}]"])
+        instructions = f"{params}call {call_label[:-1]}\n"
         return instructions
 
     def buildDeclaration(self):                     # declare new var
@@ -754,12 +781,12 @@ class Function:
         name = self.checkForId()
 
         # check if variable exists already
-        if(self.getVariable(name) != None and not self.getVariable(name).glob):
-            throw(VariableRedeclaration(self.tokens[self.ctidx-1], name))
+        if(self.getVariable(name) is not None and not self.getVariable(name).glob):
+            throw(VariableRedeclaration(self.tokens[self.ctidx - 1], name))
 
         # check if varname is a datatype
-        if(self.compiler.getType(name) != None):
-            throw(UsingTypenameAsVariable(self.tokens[self.ctidx-1]))
+        if(self.compiler.getType(name) is not None):
+            throw(UsingTypenameAsVariable(self.tokens[self.ctidx - 1]))
 
         # add variable
         self.addVariable(Variable(t, name))
@@ -770,21 +797,24 @@ class Function:
 
         # if the variable is a stack-based structure,
         #   add its member variables too.
-        if(not var.isptr and var.t.members != None):
+        if(not var.isptr and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable)):
 
                     self.variables.append(Variable(v.t.copy(
-                    ), f"{var.name}.{v.name}", offset=var.offset+var.t.csize()-v.offset, isptr=v.isptr, signed=v.signed))
+                    ), f"{var.name}.{v.name}", offset=var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
                     # initialize to null
-                    self.addline(f"mov {valueOf(self.variables[-1])}, 0")
 
-            # if the declaration includes a constructor, call it with the correct parameters
+                    self.addline(Instruction(
+                        "mov", [valueOf(self.variables[-1]), 0]))
+
+            # if the declaration includes a constructor, call it with the
+            # correct parameters
             if(self.current_token.tok == T_OPENP):
                 # constructor
                 self.advance()
                 fnt = var.t.constructor
-                if(fnt == None):
+                if(fnt is None):
                     throw(UnkownFunction(self.current_token,
                                          f"{var.t.name}.constructor", [None]))
 
@@ -792,7 +822,10 @@ class Function:
                 # \see self.buildFunctionCall
 
                 call_label = fncall(fnt)
-                self.addline(f"lea {rdi}, [rbp-{var.offset+var.t.csize()}]\n")
+                self.addline(
+                    Instruction(
+                        "lea", [
+                            rdi, f"[rbp-{var.offset+var.t.csize()}]"]))
                 normsused = 1
                 sseused = 0
                 for p in fnt.parameters[1:]:
@@ -820,7 +853,7 @@ class Function:
 
         # if it is a stack-based structure, and it has a destructor
         #      add it's destructor to the end of the function
-        if(not isIntrinsic(var.t.name) and var.t.destructor != None):
+        if(not isIntrinsic(var.t.name) and var.t.destructor is not None):
 
             self.destructor_text += self.createDestructor(var)
 
@@ -836,7 +869,7 @@ class Function:
             self.checkTok(T_CLSIDX)
 
         if(isarr):
-            totalsize = product(sizes)*t.size(0)
+            totalsize = product(sizes) * t.size(0)
             var.stackarrsize = totalsize
             var.isStackarr = True
             var.stacksizes = sizes
@@ -935,12 +968,13 @@ class Function:
 
         id = self.current_token.value
 
-        if (self.compiler.isType(id) and self.tokens[self.ctidx+1].tok != T_OPENP):
+        if (self.compiler.isType(id)
+                and self.tokens[self.ctidx + 1].tok != T_OPENP):
             self.buildDeclaration()  # declaration
-        elif (self.getVariable(id) != None):
+        elif (self.getVariable(id) is not None):
             # assignment or blank call
 
-            if (self.compiler.getFunction(id) != None):
+            if (self.compiler.getFunction(id) is not None):
                 # fn call
                 self.buildBlankfnCall()
 

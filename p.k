@@ -1,16 +1,16 @@
 
 #include "std.k"
 
-
-function int main(int argc, char** argbv){
-    print("Hello World!");
-    return 0;
+function int test(){
+    return 02342;
 }
 
 
-/*
 function int main(int argc, char** argv){
-    
+
+    print("Hellow");
+    print(test());
+    print(__TIME__);
     fd_t sock = NORMAL_SOCKET;
     if(sock < 0){
         print("Could not open socket");
@@ -28,11 +28,11 @@ function int main(int argc, char** argv){
     addr->sin_addr   =  test;
     addr->sin_zero   =  0;
 
-    int err = connect(sock, addr, sockaddr_in);
-    print(err);
-    if(err){
-        print("Could not connect:");
-    }
+    //int err = connect(sock, addr, sockaddr_in);
+    //print(err);
+    //if(err){
+    //    print("Could not connect:");
+    //}
 
 
 
@@ -40,4 +40,3 @@ function int main(int argc, char** argv){
     return;
 }
 
-*/

@@ -46,22 +46,23 @@ class Lexer:
         op = self.ch
         begin = self.loc.copy()
         self.advance()
-        if(self.ch not in T.T_MULTIOP or op+self.ch not in T.MULTIOPERS):
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
             return Token(op, op, begin, self.loc.copy())
         op += self.ch
         self.advance()
-        if(self.ch not in T.T_MULTIOP or op+self.ch not in T.MULTIOPERS):
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
             return Token(op, op, begin, self.loc.copy())
         op += self.ch
         self.advance()
         return Token(op, op, begin, self.loc.copy())
 
-    # build a number based on digits, . for floats, and e for scientific notation
+    # build a number based on digits, . for floats, and e for scientific
+    # notation
     def buildNumber(self):
         num = self.ch
         begin = self.loc.copy()
         self.advance()
-        pchars = T.T_DIGITS+T.T_DOT+"e"
+        pchars = T.T_DIGITS + T.T_DOT + "e"
         if(self.ch == "x" or self.ch == "X"):
             num += self.ch
             self.advance()
@@ -96,7 +97,7 @@ class Lexer:
         while(self.ch != "\""):
             content += self.ch
             self.advance()
-            if(self.chidx == len(self.raw)-1):
+            if(self.chidx == len(self.raw) - 1):
                 throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
@@ -114,15 +115,15 @@ class Lexer:
         value = self.ch
         begin = self.loc.copy()
         self.advance()
-        pchars = T.T_IDCHARS+T.T_DIGITS
+        pchars = T.T_IDCHARS + T.T_DIGITS
 
         for ch in self.raw[self.chidx:]:
             if(ch in pchars):
                 value += ch
             else:
                 break
-        self.chidx += len(value)-2
-        self.loc.ch += len(value)-2
+        self.chidx += len(value) - 2
+        self.loc.ch += len(value) - 2
         self.advance()
         if(value in T.KEYWORDS):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
@@ -201,7 +202,8 @@ class Lexer:
             elif (self.ch == "-"):
                 advance()
                 prev = tokens[-1]
-                if prev.tok not in [T.T_INT, T.T_CHAR, T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
+                if prev.tok not in [T.T_INT, T.T_CHAR,
+                                    T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
