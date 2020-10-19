@@ -214,3 +214,9 @@ class TokenMismatch(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unmatched token: "
+
+
+class InvalidExpressionComponent(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Invalid expression component: "
