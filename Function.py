@@ -1,4 +1,3 @@
-from globals import *
 from Classes.Variable import *
 from Classes.DType import *
 from Classes.Token import *
@@ -10,6 +9,24 @@ import Classes.Optimizer
 import config
 import time
 import Classes.ExpressionComponent as EC
+
+from Assembly.Registers import *
+from Assembly.Instructions import Instruction
+
+from Assembly.CodeBlocks import function_allocator
+from Assembly.CodeBlocks import function_closer, fncall, check_fortrue
+from Assembly.CodeBlocks import loadToPtr, loadToReg, movVarToReg, movRegToVar
+from Assembly.CodeBlocks import valueOf, getLogicLabel, maskset, functionlabel
+import Assembly.CodeBlocks as CodeBlocks
+
+from Assembly.TypeSizes import isfloat
+import Assembly.TypeSizes as TypeSizes
+
+from Assembly.AVX import avx_ralloc, avx_rfree, avx_correctSize
+from Assembly.AVX import avx_loadToReg, avx_dropToAddress, avx_doToReg
+import Assembly.AVX as AVX
+
+from globals import TsCompatible
 
 # multiply all items in an array
 
@@ -95,7 +112,7 @@ class Function:
     def addVariable(self, v):
 
         v.offset = self.stackCounter
-        #self.stackCounter += v.t.size(0)
+        # self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8:
             self.stackCounter += 8
         else:
@@ -588,12 +605,9 @@ class Function:
                 instructions += self.evaluateRightsideExpression(ec)
                 # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
-                    if(fn.parameters[i].t.csize() == 1):
-                        instructions += f"mov {boolchar_version[norm_parameter_registers[normused]]}, {boolchar_version[result]}\n"
-                    elif(fn.parameters[i].t.csize() == 4):
-                        instructions += f"mov {dwordize(norm_parameter_registers[normused])}, {dwordize(result)}\n"
-                    elif(fn.parameters[i].t.csize() == 2):
-                        instructions += f"mov {small_version[norm_parameter_registers[normused]]}, {small_version[result]}\n"
+                    instructions += Instruction("mov", [setSize(norm_parameter_registers[normused],
+                                                                fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())])
+
                     instructions += maskset(
                         norm_parameter_registers[normused], fn.parameters[i].t.csize())
                     rfree(result)

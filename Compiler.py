@@ -9,8 +9,21 @@ from Classes.Location import Location
 from Classes.Constexpr import determineConstexpr
 from Lexer import Lexer
 from Classes.Error import *
-from globals import *
 import config
+
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE
+
+from Assembly.Registers import sse_parameter_registers
+from Assembly.Registers import norm_scratch_registers
+from Assembly.Registers import sse_scratch_registers
+from Assembly.Registers import norm_parameter_registers
+from Assembly.Registers import ralloc, rfree, rfreeAll
+from Assembly.Registers import sse_scratch_registers_inuse, norm_scratch_registers_inuse
+
+
+from Assembly.CodeBlocks import createIntrinsicConstant, functionlabel
+from Assembly.CodeBlocks import createFloatConstant
+from Assembly.CodeBlocks import createStringConstant
 
 #####################################
 #

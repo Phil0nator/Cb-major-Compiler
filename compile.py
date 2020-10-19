@@ -19,8 +19,7 @@ import time
 import traceback
 import os
 import argparse as arg
-from Classes.Error import *
-from globals import *
+from globals import fileTemplate
 import cProfile
 import pstats
 import io

@@ -1,4 +1,5 @@
 import config
+from Assembly.Registers import ralloc, rfree, rfreeAll
 ############################
 #   The ExpressionComponent class is used to represent parts of a leftside expression.
 #       It includes ID's, constants, operators, etc...

@@ -7,10 +7,45 @@
 #       to the ExpressionEvaluators, in that it will only call the
 #       "calculateConstant" function of globals.py for the evaluation.
 #####################################################
-from globals import *
+from globals import INT, operatorISO
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
+
+
+def calculateConstant(a, b, op):
+    if(op == "*"):
+        return EC.ExpressionComponent(int(a.accessor*b.accessor), INT.copy(), constint=True)
+    elif(op == "/"):
+        return EC.ExpressionComponent(int(a.accessor/b.accessor), INT.copy(), constint=True)
+    elif(op == "+"):
+        return EC.ExpressionComponent(int(a.accessor+b.accessor), INT.copy(), constint=True)
+    elif(op == "-"):
+        return EC.ExpressionComponent(int(a.accessor-b.accessor), INT.copy(), constint=True)
+    elif(op == "=="):
+        return EC.ExpressionComponent(int(a.accessor == b.accessor), INT.copy(), constint=True)
+    elif(op == "!="):
+        return EC.ExpressionComponent(int(a.accessor != b.accessor), INT.copy(), constint=True)
+    elif(op == "<="):
+        return EC.ExpressionComponent(int(a.accessor <= b.accessor), INT.copy(), constint=True)
+    elif(op == ">="):
+        return EC.ExpressionComponent(int(a.accessor >= b.accessor), INT.copy(), constint=True)
+    elif(op == ">"):
+        return EC.ExpressionComponent(int(a.accessor > b.accessor), INT.copy(), constint=True)
+    elif(op == "<"):
+        return EC.ExpressionComponent(int(a.accessor < b.accessor), INT.copy(), constint=True)
+    elif(op == "%"):
+        return EC.ExpressionComponent(int(a.accessor % b.accessor), INT.copy(), constint=True)
+    elif(op == ">>"):
+        return EC.ExpressionComponent(int(a.accessor >> b.accessor), INT.copy(), constint=True)
+    elif(op == "<<"):
+        return EC.ExpressionComponent(int(a.accessor << b.accessor), INT.copy(), constint=True)
+    elif(op == "||" or op == "|"):
+        return EC.ExpressionComponent(int(a.accessor or b.accessor), INT.copy(), constint=True)
+    elif(op == "&&" or op == "&"):
+        return EC.ExpressionComponent(int(a.accessor and b.accessor), INT.copy(), constint=True)
+    elif(op == "^"):
+        return EC.ExpressionComponent(int(a.accessor ^ b.accessor), INT.copy(), constint=True)
 
 
 # get result of a op b while taking initializer value for a and b if they are vars.

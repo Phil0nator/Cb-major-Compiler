@@ -1,8 +1,19 @@
-from globals import *
 from Classes.Error import *
 from Classes.Token import *
 from Classes.DType import *
+import Classes.ExpressionComponent as EC
+from Assembly.Registers import ralloc, rfree, rfreeAll
+from Classes.Variable import Variable
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE, operatorISO, typematch, canShiftmul
+from Assembly.CodeBlocks import loadToReg, castABD, doOperation
+from Assembly.CodeBlocks import valueOf, shiftInt, maskset
+from Assembly.CodeBlocks import shiftmul, getComparater, boolmath
 
+from Assembly.Instructions import signed_comparisons
+from Assembly.Registers import *
+
+from Classes.Constexpr import calculateConstant
+from Assembly.TypeSizes import psizeof, psizeoft
 
 #############################
 # optloadRegs is used to load
@@ -11,6 +22,8 @@ from Classes.DType import *
 #   This function ensures that values are
 #   loaded as few times as possible.
 ############################
+
+
 def optloadRegs(a, b, op, o):
     instr = ""
     o = a.type.copy()
