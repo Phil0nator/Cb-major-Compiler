@@ -34,6 +34,8 @@ if(len(avx_registers) == 0):
         avx_inuse.append(False)
 
 
+# AVX register allocation system
+
 def avx_ralloc():
     for i in range(15):
         if(not avx_inuse[i]):
@@ -47,9 +49,12 @@ def avx_rfree(reg):
     avx_inuse[avx_registers.index(reg)] = False
 
 
+# 2 vs 4 denotes number of qwords
 avx_load2 = "movdqu"
 avx_load4 = "vmovdqu"
 
+# 2 vs 4 denotes number of qwords
+# the '#' is replaced with a size specifier for byte, word, dword, qword
 avx_add2 = "padd#"
 avx_add4 = "vpadd#"
 
@@ -60,13 +65,7 @@ avx_mul2 = "pmulud#"
 avx_mul4 = "vpmulud#"
 
 
-#
-#   __simd __add2 dtype ( array, startp ) {
-#                                           ( operation )(array2, startp2),
-#                                           (operation)(arrayn, startpn)
-#                                         }(destarr, destarrstart)
-#
-
+# get AVX opcode for a human operation
 def avx_getOp(opspec):
     if("add" in opspec):
         if("2" in opspec):
@@ -96,11 +95,13 @@ def avx_getOp(opspec):
     if(opspec == "*4"):
         return avx_mul4
 
+# get AVX opcode for loading from size
+
 
 def avx_getLoader(opspec):
-    if(2 == opspec):
-        return avx_load2
-    return avx_load4
+    return avx_load2 if opspec == 2 else avx_load4
+
+# load area of memory to AVX register
 
 
 def avx_loadToReg(loadop, avxreg, arr, idx):
@@ -118,6 +119,7 @@ def avx_loadToReg(loadop, avxreg, arr, idx):
 
 avx_sizeSpecifier = ["b", "w", None, "d", None, None, None, "q"]
 
+# AVX int operations
 flt_avx_cmd = {
     "-": "subpd",
     "+": "addpd",
@@ -125,13 +127,15 @@ flt_avx_cmd = {
     "/": "divpd"
 }
 
+# perform avx operation on already-loaded data
+
 
 def avx_doToReg(op, opcount, size, dest, source, flt):
 
     if(not flt):
         cmd = avx_getOp(f"{op}{opcount}")
 
-        cmd = cmd.replace("#", avx_sizeSpecifier[size-1])
+        cmd = cmd.replace("#", avx_sizeSpecifier[size - 1])
         if(opcount == 4):
             return f"{cmd} {dest}, {source}, {dest}\n"
         return f"{cmd} {dest}, {source}\n"
@@ -141,6 +145,8 @@ def avx_doToReg(op, opcount, size, dest, source, flt):
             cmd = f"v{cmd}"
             return f"{cmd} {dest}, {source}, {dest}\n"
         return f"{cmd} {dest}, {source}\n"
+
+# deposit avx register to address
 
 
 def avx_dropToAddress(loadop, avxreg, arr, idx):

@@ -157,97 +157,6 @@ class Compiler:
         t.signed = signed
         return t
 
-    # the buildConstant function is used instead now.
-
-    @DeprecationWarning
-    # build a statement that starts with an id token
-    def buildIDInitiatedStatement(self):
-
-        value = self.current_token.value
-        if(self.isType(value)):
-            intr = self.isIntrinsic(value)
-
-            if(intr is None):
-
-                # the variable is not of an intrinsic type
-                pass
-
-            else:  # the variable is of an intrinsic type
-
-                t = intr
-                self.advance()
-                isptr = False
-                if(self.current_token.tok == "*"):
-                    isptr = True
-                    self.advance()
-
-                if (self.current_token.tok != T_ID):
-                    throw(ExpectedIdentifier(self.current_token))
-                name = self.current_token.value
-
-                self.advance()
-                if (self.current_token.tok == T_EQUALS):
-
-                    self.advance()
-
-                    if(not self.isIntrinsic(self.current_token.tok)):
-                        throw(ExpectedValue(self.current_token))
-
-                    if (intr is not None and self.current_token.tok != T_ID):
-
-                        v = Variable(
-                            t, name, glob=True, initializer=self.current_token.value, isptr=isptr)
-
-                        if(not isptr):
-                            self.initializers += "mov QWORD[%s], %s\n" % (
-                                name, self.current_token.value)
-                        else:
-                            tmpvar = Variable(
-                                t, "HvptrDest_%s" % self.heap_unnamed, glob=True, initializer=v.initializer, isptr=False)
-                            self.heap += createIntrinsicHeap(tmpvar)
-                            self.initializers += "mov QWORD[%s], %s\n" % (
-                                tmpvar.name, v.initializer)
-                            self.initializers += "mov QWORD[%s], %s\n" % (
-                                name, tmpvar.name)
-                            self.globals.append(tmpvar)
-                            self.heap_unnamed += 1
-
-                    elif (self.current_token.tok == T_ID):
-                        v = Variable(
-                            t, name, glob=True, initializer=self.current_token.value, isptr=isptr)
-                        glob = self.getGlob(self.current_token.value)
-                        if glob is not None:
-                            if (isptr):
-
-                                self.initializers += "mov QWORD[%s], %s\n" % (
-                                    name, self.current_token.value)
-
-                            else:
-
-                                self.initializers += movVarHeap(
-                                    v, self.getGlob(self.current_token.value))
-
-                        else:
-                            throw(UnexpectedIdentifier(self.current_token))
-
-                    else:
-                        throw(UnexpectedIdentifier(self.current_token))
-
-                    self.advance()
-                else:
-                    v = Variable(t, name, glob=True,
-                                 initializer=None, isptr=isptr)
-
-                self.globals.append(v)
-                self.heap += createIntrinsicHeap(v)
-
-                if(self.current_token.tok != T_ENDL):
-                    throw(ExpectedSemicolon(self.current_token))
-
-        else:
-            throw(UnexpectedIdentifier(self.current_token))
-        self.advance()
-
     # create a constant string value in self.constants
     def createStringConstant(self, content):
 
@@ -557,7 +466,7 @@ class Compiler:
                 if(self.current_token.value == "unsigned"):
                     s = self.current_token
                     self.advance()
-                    self.buildIDInitiatedStatement()
+                    self.createConstant()
                     v = self.globals[-1]
                     if(v.isflt()):
                         throw(InvalidSignSpecifier(s))

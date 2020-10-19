@@ -62,7 +62,8 @@ def createIntrinsicConstant(variable):
     if((variable.t.isflt())):
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
 
-    return "%s: %s %s\n" % (variable.name, getConstantReserver(variable.t), (variable.initializer))
+    return "%s: %s %s\n" % (variable.name, getConstantReserver(
+        variable.t), (variable.initializer))
 
 
 stringconstant_counter = 0

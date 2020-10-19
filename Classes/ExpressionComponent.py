@@ -10,7 +10,8 @@ from Assembly.Registers import ralloc, rfree, rfreeAll
 
 
 class ExpressionComponent:
-    def __init__(self, accessor, t, isoperation=False,  constint=False, token=None):
+    def __init__(self, accessor, t, isoperation=False,
+                 constint=False, token=None):
         self.type = t  # DType
         self.accessor = accessor  # value: any
         # \depricated
@@ -23,7 +24,8 @@ class ExpressionComponent:
         self.memory_location = None
 
     def isRegister(self):  # bool
-        return isinstance(self.accessor, str) and self.accessor in config.REGISTERS
+        return isinstance(
+            self.accessor, str) and self.accessor in config.REGISTERS
 
     def isStackpop(self):  # bool
         return self.accessor == "pop"

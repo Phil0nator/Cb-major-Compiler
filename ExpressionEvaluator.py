@@ -96,13 +96,15 @@ class ExpressionEvaluator:
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt()):
                         newinstr = None
 
-                        # if one arg is 0, and can be optimized, add no extra code.
+                        # if one arg is 0, and can be optimized, add no extra
+                        # code.
                         if(b.accessor == 0 and op not in ["/", "["] and op not in signed_comparisons):
                             apendee = a
                             newinstr = ""
                             newt = a.type.copy()
 
-                        # if can be optimized through bitshift multiplication/division
+                        # if can be optimized through bitshift
+                        # multiplication/division
                         if(op == "*" or op == "/"):
 
                             if(canShiftmul(b.accessor)):
@@ -140,7 +142,7 @@ class ExpressionEvaluator:
 
                         # if no valid optimizations couild be made:
                         #       do the normal evaluation
-                        if(newinstr == None):
+                        if(newinstr is None):
                             newinstr, newt, apendee = evaluator.performCastAndOperation(
                                 a, b, op, o)
 
@@ -217,7 +219,8 @@ class ExpressionEvaluator:
             throw(HangingOperator(self.fn.current_token))
         final = stack.pop()  # result
 
-        # at this point the result must be properly casted/moved into the specified destination
+        # at this point the result must be properly casted/moved into the
+        # specified destination
 
         o = final.type.copy()
 
@@ -265,7 +268,8 @@ class RightSideEvaluator(ExpressionEvaluator):
         # do not
         instr += boolmath(areg, None, T_NOT)
         o = BOOL.copy()
-        return instr, o, EC.ExpressionComponent(areg, BOOL.copy(), token=a.token)
+        return instr, o, EC.ExpressionComponent(
+            areg, BOOL.copy(), token=a.token)
 
     def evalANOT(self, a):
         needload = True
@@ -298,13 +302,15 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"lea {result}, [rbp-{a.accessor.offset}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
-            return instr, o, EC.ExpressionComponent(result, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                result, o.copy(), token=a.token)
 
         elif(a.memory_location):
             a.memory_location = False
             o = a.type.copy()
             o.ptrdepth += 1
-            return instr, o, EC.ExpressionComponent(a.accessor, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                a.accessor, o.copy(), token=a.token)
 
         else:
             throw(AddressOfConstant(a.token))
@@ -329,7 +335,8 @@ class RightSideEvaluator(ExpressionEvaluator):
             o = a.accessor.t.copy()
             o.ptrdepth -= 1
             rfree(tmp)
-            return instr, o, EC.ExpressionComponent(oreg, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                oreg, o.copy(), token=a.token)
         elif(a.isRegister()):
             result = ralloc(a.type.isflt())
             if(a.type.isflt()):
@@ -339,13 +346,14 @@ class RightSideEvaluator(ExpressionEvaluator):
             rfree(a.accessor)
             o = a.type.copy()
             o.ptrdepth -= 1
-            return instr, o, EC.ExpressionComponent(result, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                result, o.copy(), token=a.token)
 
     def typecast(self, a, e, o):
         instr = ""
         tid = e.type
         t = self.fn.compiler.getType(tid)
-        if(t == None):
+        if(t is None):
             throw(UnkownType(e.token))
         aval = ralloc(a.type.isflt())
         result = ralloc(t.isflt())
@@ -356,11 +364,13 @@ class RightSideEvaluator(ExpressionEvaluator):
             instr += loadToReg(aval, a.accessor)
             instr += cst
             rfree(aval)
-            return instr, o, EC.ExpressionComponent(result, t.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                result, t.copy(), token=a.token)
         else:
             rfree(aval)
             rfree(result)
-            return instr, o, EC.ExpressionComponent(a.accessor, t.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                a.accessor, t.copy(), token=a.token)
 
     # (used for rightside evaluation)
 
@@ -474,7 +484,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         instr = ""
         member = b.accessor
         memv = a.type.getMember(member)
-        if(memv == None):
+        if(memv is None):
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()
 
@@ -562,7 +572,7 @@ class RightSideEvaluator(ExpressionEvaluator):
     def evaluate(self, dest, pfix):
         instr, final = self.evaluatePostfix(pfix, self)
         ninster, o = self.depositFinal(final, final.type, dest)
-        return instr+ninster, o
+        return instr + ninster, o
 
 
 ############################################
@@ -624,7 +634,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         instr = ""
         member = b.accessor
         memv = a.type.getMember(member)
-        if(memv == None):
+        if(memv is None):
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()
 
@@ -636,7 +646,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr += f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
 
         rfree(a.accessor)
-        return instr, o, EC.ExpressionComponent(tmpaddr, memv.t.copy(), token=b.token)
+        return instr, o, EC.ExpressionComponent(
+            tmpaddr, memv.t.copy(), token=b.token)
 
     def evalNot(self, a):
         instr = ""
@@ -654,7 +665,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
         instr += boolmath(areg, None, T_NOT)
         o = BOOL.copy()
-        return instr, o, EC.ExpressionComponent(areg, BOOL.copy(), token=a.token)
+        return instr, o, EC.ExpressionComponent(
+            areg, BOOL.copy(), token=a.token)
 
     def evalANOT(self, a):
         instr = ""
@@ -686,7 +698,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 instr += f"lea {result}, [rbp-{a.accessor.offset}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
-            return instr, o, EC.ExpressionComponent(result, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                result, o.copy(), token=a.token)
 
         else:
             throw(AddressOfConstant(a.token))
@@ -710,7 +723,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
             o = a.accessor.t.copy()
             o.ptrdepth -= 1
             rfree(tmp)
-            return instr, o, EC.ExpressionComponent(oreg, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                oreg, o.copy(), token=a.token)
 
         elif(a.isRegister()):
             result = ralloc(a.type.isflt())
@@ -721,13 +735,14 @@ class LeftSideEvaluator(ExpressionEvaluator):
             rfree(a.accessor)
             o = a.type.copy()
             o.ptrdepth -= 1
-            return instr, o, EC.ExpressionComponent(result, o.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                result, o.copy(), token=a.token)
 
     def typecast(self, a, e, o):
         instr = ""
         tid = e.type
         t = self.fn.compiler.getType(tid)
-        if(t == None):
+        if(t is None):
             throw(UnkownType(e.token))
         aval = ralloc(a.type.isflt())
         result = ralloc(t.isflt())

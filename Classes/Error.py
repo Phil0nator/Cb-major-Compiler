@@ -15,21 +15,21 @@ class Error:
         line = self.tok.start.line + 1
         file = self.tok.start.file
         char = self.tok.start.ch
-        diff = self.tok.end.ch-char
+        diff = self.tok.end.ch - char
 
         file = config.loadRawFile(file, None)
 
         file = file[0:char] + error_indicator + \
-            file[char:self.tok.end.ch] + Style.RESET_ALL + file[char+diff:-1]
+            file[char:self.tok.end.ch] + Style.RESET_ALL + file[char + diff:-1]
         lines = file.split("\n")
 
         lp = ""
         if(len(lines) > 2):
-            lp = f"|{line-1}\t"+lines[line-2]+"\n"
+            lp = f"|{line-1}\t" + lines[line - 2] + "\n"
         if(len(lines) > 1):
-            lp += f"|{line}\t"+lines[line-1]+"\n"
-        if(line != len(lines)-1 and len(lines) > 1):
-            lp += f"|{line+1}\t"+lines[line]+"\n"
+            lp += f"|{line}\t" + lines[line - 1] + "\n"
+        if(line != len(lines) - 1 and len(lines) > 1):
+            lp += f"|{line+1}\t" + lines[line] + "\n"
 
         problem = lp
 

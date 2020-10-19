@@ -8,7 +8,8 @@ from Classes.Error import *
 
 
 class DType:
-    def __init__(self, name, size, members=None, ptrdepth=0, signed=True, destructor=None, constructor=None):
+    def __init__(self, name, size, members=None, ptrdepth=0,
+                 signed=True, destructor=None, constructor=None):
         self.name = name
         self.s = size  # base size if not pointer
         self.members = members  # for structures
@@ -33,7 +34,7 @@ class DType:
         return False
 
     def getMember(self, name):
-        if(self.members == None):
+        if(self.members is None):
             return None
         for m in self.members:
             if m.name == name:
@@ -45,13 +46,16 @@ class DType:
                       other.signed, other.destructor, other.constructor)
 
     def copy(self):  # duplicate
-        return DType(self.name, self.s, members=self.members, ptrdepth=self.ptrdepth, signed=self.signed, constructor=self.constructor, destructor=self.destructor)
+        return DType(self.name, self.s, members=self.members, ptrdepth=self.ptrdepth,
+                     signed=self.signed, constructor=self.constructor, destructor=self.destructor)
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
-        return config.GlobalCompiler.Tequals(self.name, "double") and self.ptrdepth == 0
+        return config.GlobalCompiler.Tequals(
+            self.name, "double") and self.ptrdepth == 0
 
     def isfltdepth(self, depth):  # determine if the type is a double/float at a given depth
-        return depth >= self.ptrdepth and config.GlobalCompiler.Tequals(self.name, "double")
+        return depth >= self.ptrdepth and config.GlobalCompiler.Tequals(
+            self.name, "double")
 
     def down(self):
         out = self.copy()
@@ -60,15 +64,16 @@ class DType:
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
-            return (self.name == other.name or config.GlobalCompiler.Tequals(self.name, other.name)) and self.ptrdepth == other.ptrdepth and self.signed == other.signed
+            return (self.name == other.name or config.GlobalCompiler.Tequals(
+                self.name, other.name)) and self.ptrdepth == other.ptrdepth and self.signed == other.signed
         else:
             return False
 
     def __repr__(self):  # pretty print
         if(self.signed):
-            return f"{self.name}"+"."*self.ptrdepth
+            return f"{self.name}" + "." * self.ptrdepth
         else:
-            return f"u{self.name}"+"."*self.ptrdepth
+            return f"u{self.name}" + "." * self.ptrdepth
 
 
 # layout for type precedence
@@ -90,7 +95,8 @@ type_precedence = {
 
 
 }
-# determine weather to cast a to b, or b to a based on precedence, pointerdepth, voids, etc...
+# determine weather to cast a to b, or b to a based on precedence,
+# pointerdepth, voids, etc...
 
 
 def determinePrecedence(a, b, fn):

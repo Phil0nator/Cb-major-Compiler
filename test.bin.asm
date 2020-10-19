@@ -1035,9 +1035,10 @@ STRING_CONSTANT_8: db ` %i ]\n`, 0
 FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_9: db `Bad realloc`, 0
 STRING_CONSTANT_10: db `%s`, 0
-STRING_CONSTANT_11: db `Could not open socket`, 0
-STRING_CONSTANT_12: db `127.0.0.1`, 0
-STRING_CONSTANT_13: db `Could not connect:`, 0
+STRING_CONSTANT_11: db `Hellow`, 0
+STRING_CONSTANT_12: db `Mon Oct 19 16:51:22 2020`, 0
+STRING_CONSTANT_13: db `Could not open socket`, 0
+STRING_CONSTANT_14: db `127.0.0.1`, 0
 nullptr: DQ 0
 null: DQ 0
 nullterm: DQ 0
@@ -1052,13 +1053,27 @@ global CMAIN
 _int_main_pintchar..:
 push rbp
 mov rbp, rsp
-sub rsp, 56
+sub rsp, 48
 mov [rbp-8], rdi
 mov [rbp-16], rsi
+mov rbx, STRING_CONSTANT_11
+mov rdi, rbx
+mov rax,0
+call _void_print_pchar.
+mov rax,0
+call _int_test_p
+push rax
+pop rdi
+mov rax,0
+call _void_print_pint
+mov rbx, STRING_CONSTANT_12
+mov rdi, rbx
+mov rax,0
+call _void_print_pchar.
 mov rdi, 2
 mov rsi, 1
 mov rdx, 0
-mov rax, 0
+mov rax,0
 call _fd_t_socket_pintintint
 push rax
 pop rax
@@ -1071,22 +1086,22 @@ mov rax, rbx
 and al, 00000001b
 cmp al, 1
 jne _LIFPOST_0x46
-mov rbx, STRING_CONSTANT_11
+mov rbx, STRING_CONSTANT_13
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pchar.
 jmp _LIFELSE_0x47
 _LIFPOST_0x46:
 _LIFELSE_0x47:
 mov QWORD[rbp-32], 0
-mov rbx, STRING_CONSTANT_12
+mov rbx, STRING_CONSTANT_14
 mov rdi, rbx
 lea rbx, [rbp-32]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _int_inet_aton_pchar.in_addr.
 mov rdi, 16
-mov rax, 0
+mov rax,0
 call _void._malloc_psize_t
 push rax
 pop rax
@@ -1107,35 +1122,17 @@ mov rbx, QWORD[rbp-40]
 lea rbx, [rbx+8]
 mov rcx, 0
 mov [rbx], rcx
-mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-mov rbx, QWORD[rbp-40]
-mov rsi, rbx
-mov rdx, 16
-mov rax, 0
-call _int_connect_pfd_tsockaddr_in.int
-push rax
-pop rax
-mov QWORD[rbp-48], rax
-mov rbx, QWORD[rbp-48]
-mov rdi, rbx
-mov rax, 0
-call _void_print_pint
-mov rax, QWORD[rbp-48]
-and al, 00000001b
-cmp al, 1
-jne _LIFPOST_0x48
-mov rbx, STRING_CONSTANT_13
-mov rdi, rbx
-mov rax, 0
-call _void_print_pchar.
-jmp _LIFELSE_0x49
-_LIFPOST_0x48:
-_LIFELSE_0x49:
 jmp ___int_main_pintchar..__return
 ___int_main_pintchar..__return:
-push rax
-pop rax
+leave
+ret
+_int_test_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+mov rax, 2342
+jmp ___int_test_p__return
+___int_test_p__return:
 leave
 ret
 _void._floads_pfd_t:
@@ -1147,7 +1144,7 @@ mov rbx, QWORD[rbp-8]
 mov rdi, rbx
 mov rsi, 0
 mov rdx, 2
-mov rax, 0
+mov rax,0
 call _int_lseek_pfd_tintint
 push rax
 pop rax
@@ -1159,11 +1156,11 @@ mov rbx, 0
 sub rbx, rcx
 mov rsi, rbx
 mov rdx, 2
-mov rax, 0
+mov rax,0
 call _int_lseek_pfd_tintint
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void._malloc_psize_t
 push rax
 pop rax
@@ -1174,7 +1171,7 @@ mov rbx, QWORD[rbp-24]
 mov rsi, rbx
 mov rbx, QWORD[rbp-16]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _ssize_t_read_pfd_tchar.size_t
 push rax
 mov rcx, 0
@@ -1195,8 +1192,6 @@ _LIFELSE_0x45:
 mov rax, QWORD[rbp-24]
 jmp ___void._floads_pfd_t__return
 ___void._floads_pfd_t__return:
-push rax
-pop rax
 leave
 ret
 _bool_fgets_pfd_tchar.size_t:
@@ -1212,7 +1207,7 @@ mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _ssize_t_read_pfd_tchar.size_t
 push rax
 mov rcx, 0
@@ -1225,13 +1220,11 @@ mov rdi, rbx
 mov rbx, QWORD[rbp-24]
 mov rsi, rbx
 mov rdx, 1
-mov rax, 0
+mov rax,0
 call _int_lseek_pfd_tintint
 mov rax, QWORD[rbp-32]
 jmp ___bool_fgets_pfd_tchar.size_t__return
 ___bool_fgets_pfd_tchar.size_t__return:
-push rax
-pop rax
 leave
 ret
 _int_fputs_pfd_tchar.:
@@ -1242,7 +1235,7 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _size_t_strlen_pchar.
 push rax
 pop rax
@@ -1253,7 +1246,7 @@ mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _ssize_t_write_pfd_tchar.size_t
 push rax
 pop rax
@@ -1263,14 +1256,12 @@ mov rdi, rbx
 mov rbx, QWORD[rbp-24]
 mov rsi, rbx
 mov rdx, 1
-mov rax, 0
+mov rax,0
 call _int_lseek_pfd_tintint
 mov rbx, QWORD[rbp-32]
 mov rax, rbx
 jmp ___int_fputs_pfd_tchar.__return
 ___int_fputs_pfd_tchar.__return:
-push rax
-pop rax
 leave
 ret
 _FILE_fopen_pchar.char.:
@@ -1370,7 +1361,7 @@ mov rbx, QWORD[rbp-40]
 mov rsi, rbx
 mov rbx, QWORD[rbp-32]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _fd_t_open_pchar.intmode_t
 push rax
 pop rax
@@ -1392,7 +1383,7 @@ mov rbx, QWORD[rbp-48]
 mov rdi, rbx
 mov rsi, 0
 mov rdx, 2
-mov rax, 0
+mov rax,0
 call _int_lseek_pfd_tintint
 jmp _LIFELSE_0x43
 _LIFPOST_0x42:
@@ -1400,8 +1391,6 @@ _LIFELSE_0x43:
 mov rax, QWORD[rbp-48]
 jmp ___FILE_fopen_pchar.char.__return
 ___FILE_fopen_pchar.char.__return:
-push rax
-pop rax
 leave
 ret
 _void_v3dcross_pVec3d.Vec3d.:
@@ -1424,8 +1413,6 @@ shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
 ___void_v3dcross_pVec3d.Vec3d.__return:
-push rax
-pop rax
 leave
 ret
 _void_v3dsub_pVec3d.Vec3d.:
@@ -1448,8 +1435,6 @@ shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
 ___void_v3dsub_pVec3d.Vec3d.__return:
-push rax
-pop rax
 leave
 ret
 _void_v3dadd_pVec3d.Vec3d.:
@@ -1472,8 +1457,6 @@ shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
 ___void_v3dadd_pVec3d.Vec3d.__return:
-push rax
-pop rax
 leave
 ret
 _void_iVec3d_pVec3d.doubledoubledouble:
@@ -1499,8 +1482,6 @@ movsd xmm8, QWORD[rbp-32]
 movsd xmm7, xmm8
 movq [rbx], xmm7
 ___void_iVec3d_pVec3d.doubledoubledouble__return:
-push rax
-pop rax
 leave
 ret
 _int_toInteger_pchar.:
@@ -1533,8 +1514,6 @@ imul rdx, 10
 loop _int_toint_lp2
 __int_toint_end:
 ___int_toInteger_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _char._getString_pchar.:
@@ -1545,7 +1524,7 @@ mov [rbp-8], rdi
 mov QWORD[rbp-16], 80
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void._malloc_psize_t
 push rax
 pop rax
@@ -1555,9 +1534,9 @@ mov rbx, STRING_CONSTANT_10
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _void_printf_pchar.char.
-mov rax, 0
+mov rax,0
 call _char_getchar_p
 push rax
 pop rbx
@@ -1579,7 +1558,7 @@ mov QWORD[rbp-16], rbx
 mov rdi, QWORD[rbp-24]
 mov rcx, QWORD[rbp-16]
 mov rsi, rcx
-mov rax, 0
+mov rax,0
 call _void._realloc_pvoid.size_t
 push rax
 pop rbx
@@ -1587,7 +1566,7 @@ mov QWORD[rbp-24], rbx
 jmp _LIFELSE_0x37
 _LIFPOST_0x36:
 _LIFELSE_0x37:
-mov rax, 0
+mov rax,0
 call _char_getchar_p
 push rax
 pop rbx
@@ -1617,14 +1596,12 @@ mov [rcx], rbx
 mov rdi, QWORD[rbp-24]
 mov rbx, QWORD[rbp-40]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _void._realloc_pvoid.size_t
 push rax
 pop rax
 jmp ___char._getString_pchar.__return
 ___char._getString_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _void_get_stdin_p:
@@ -1633,8 +1610,6 @@ mov rbp, rsp
 sub rsp, 8
 call get_stdin
 ___void_get_stdin_p__return:
-push rax
-pop rax
 leave
 ret
 _void_fgets_pchar.intFILE_T:
@@ -1646,8 +1621,6 @@ mov [rbp-16], rsi
 mov [rbp-24], rdx
 call fgets
 ___void_fgets_pchar.intFILE_T__return:
-push rax
-pop rax
 leave
 ret
 _void_getString_pchar.intchar.:
@@ -1660,8 +1633,6 @@ mov [rbp-24], rdx
 PRINT_STRING [rdx]
     GET_STRING [rdi], rsi
 ___void_getString_pchar.intchar.__return:
-push rax
-pop rax
 leave
 ret
 _int_getHex_pchar.:
@@ -1672,8 +1643,6 @@ mov [rbp-8], rdi
 PRINT_STRING [rdi]
     GET_HEX 8, rax
 ___int_getHex_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _char_getchar_p:
@@ -1682,8 +1651,6 @@ mov rbp, rsp
 sub rsp, 8
 call getchar
 ___char_getchar_p__return:
-push rax
-pop rax
 leave
 ret
 _char_getChar_pchar.:
@@ -1694,8 +1661,6 @@ mov [rbp-8], rdi
 PRINT_STRING [rdi]
     GET_CHAR rax
 ___char_getChar_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _uint_getUint_pchar.:
@@ -1706,8 +1671,6 @@ mov [rbp-8], rdi
 PRINT_STRING [rdi]
     GET_UDEC 8, rax
 ___uint_getUint_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _int_getInt_pchar.:
@@ -1718,8 +1681,6 @@ mov [rbp-8], rdi
 PRINT_STRING [rdi]
     GET_DEC 8, rax
 ___int_getInt_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pString.:
@@ -1731,11 +1692,9 @@ mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pchar.
 ___void_print_pString.__return:
-push rax
-pop rax
 leave
 ret
 _int_strfind_pString.char.:
@@ -1746,7 +1705,7 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _size_t_strlen_pchar.
 push rax
 pop rax
@@ -1785,7 +1744,7 @@ mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _bool_substrequ_pchar.char.size_t
 push rax
 pop rax
@@ -1814,8 +1773,6 @@ _LFOREND_0x30:
 mov rax, -1
 jmp ___int_strfind_pString.char.__return
 ___int_strfind_pString.char.__return:
-push rax
-pop rax
 leave
 ret
 _void_substring_pString.String.intint:
@@ -1834,12 +1791,12 @@ mov rbx, QWORD[rbp-16]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_free_pvoid.
 mov rbx, QWORD[rbp-16]
 mov r10, QWORD[rbp-40]
 mov rdi, r10
-mov rax, 0
+mov rax,0
 call _void._malloc_psize_t
 push rax
 pop rcx
@@ -1856,7 +1813,7 @@ add rbx, rcx
 mov rsi, rbx
 mov rbx, QWORD[rbp-40]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _void_memcpy_pvoid.void.size_t
 mov rbx, QWORD[rbp-16]
 lea rbx, [rbx+8]
@@ -1864,8 +1821,6 @@ mov r10, QWORD[rbp-40]
 mov rcx, r10
 mov [rbx], rcx
 ___void_substring_pString.String.intint__return:
-push rax
-pop rax
 leave
 ret
 _bool_strequ_pchar.char.:
@@ -1935,8 +1890,6 @@ mov rcx, rbx
 mov rax, rcx
 jmp ___bool_strequ_pchar.char.__return
 ___bool_strequ_pchar.char.__return:
-push rax
-pop rax
 leave
 ret
 _bool_substrequ_pchar.char.size_t:
@@ -1992,8 +1945,6 @@ mov rcx, rbx
 mov rax, rcx
 jmp ___bool_substrequ_pchar.char.size_t__return
 ___bool_substrequ_pchar.char.size_t__return:
-push rax
-pop rax
 leave
 ret
 _void_appendString_pString.char.:
@@ -2004,7 +1955,7 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _size_t_strlen_pchar.
 push rax
 pop rax
@@ -2019,7 +1970,7 @@ mov rbx, qword[rbx]
 mov rcx, QWORD[rbp-24]
 add rbx, rcx
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _void._realloc_pvoid.size_t
 push rax
 pop rax
@@ -2034,7 +1985,7 @@ cmp al, 1
 jne _LIFPOST_0x1c
 mov rbx, STRING_CONSTANT_9
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pchar.
 jmp _LIFELSE_0x1d
 _LIFPOST_0x1c:
@@ -2049,7 +2000,7 @@ mov rdi, QWORD[rbp-40]
 mov rsi, QWORD[rbp-16]
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _void_memcpy_pvoid.void.size_t
 mov rbx, QWORD[rbp-8]
 mov r10, QWORD[rbp-32]
@@ -2065,8 +2016,6 @@ add r10, r11
 mov rcx, r10
 mov [rbx], rcx
 ___void_appendString_pString.char.__return:
-push rax
-pop rax
 leave
 ret
 _void_iString_pString.char.:
@@ -2077,7 +2026,7 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _size_t_strlen_pchar.
 push rax
 pop rax
@@ -2090,7 +2039,7 @@ mov [rbx], rcx
 mov rbx, QWORD[rbp-8]
 mov r10, QWORD[rbp-24]
 mov rdi, r10
-mov rax, 0
+mov rax,0
 call _void._malloc_psize_t
 push rax
 pop rcx
@@ -2102,11 +2051,9 @@ mov rdi, rbx
 mov rsi, QWORD[rbp-16]
 mov rbx, QWORD[rbp-24]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _void_memcpy_pvoid.void.size_t
 ___void_iString_pString.char.__return:
-push rax
-pop rax
 leave
 ret
 _void_xString_pString.:
@@ -2118,11 +2065,9 @@ mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_free_pvoid.
 ___void_xString_pString.__return:
-push rax
-pop rax
 leave
 ret
 _int_shutdown_pfd_tint:
@@ -2134,8 +2079,6 @@ mov [rbp-16], rsi
 mov rax, 48
     syscall
 ___int_shutdown_pfd_tint__return:
-push rax
-pop rax
 leave
 ret
 _int_listen_pfd_tint:
@@ -2147,8 +2090,6 @@ mov [rbp-16], rsi
 mov rax, 50
     syscall
 ___int_listen_pfd_tint__return:
-push rax
-pop rax
 leave
 ret
 _int_bind_pfd_tsockaddr_in.int:
@@ -2161,8 +2102,6 @@ mov [rbp-24], rdx
 mov rax, 49
     syscall
 ___int_bind_pfd_tsockaddr_in.int__return:
-push rax
-pop rax
 leave
 ret
 _int_accept_pfd_tsockaddr_in.int:
@@ -2175,8 +2114,6 @@ mov [rbp-24], rdx
 mov rax, 43
     syscall
 ___int_accept_pfd_tsockaddr_in.int__return:
-push rax
-pop rax
 leave
 ret
 _int_connect_pfd_tsockaddr_in.int:
@@ -2189,8 +2126,6 @@ mov [rbp-24], rdx
 mov rax, 42
     syscall
 ___int_connect_pfd_tsockaddr_in.int__return:
-push rax
-pop rax
 leave
 ret
 _fd_t_socket_pintintint:
@@ -2203,8 +2138,6 @@ mov [rbp-24], rdx
 mov rax, 41
     syscall
 ___fd_t_socket_pintintint__return:
-push rax
-pop rax
 leave
 ret
 _int_inet_aton_pchar.in_addr.:
@@ -2220,7 +2153,7 @@ mov rbx, 0
 mov SIL,bl
 and rsi, 0xff
 mov rdx, 4
-mov rax, 0
+mov rax,0
 call _void_memset_pvoid.ucharsize_t
 lea rbx, [rbp-88]
 mov QWORD[rbp-96], rbx
@@ -2239,7 +2172,7 @@ mov rcx, QWORD[rbp-48]
 mov rbx, rcx
 mov DIL,bl
 and rdi, 0xff
-mov rax, 0
+mov rax,0
 call _bool_isdigit_pchar
 push rax
 pop rax
@@ -2379,8 +2312,6 @@ mov [rcx], rbx
 mov rax, 1
 jmp ___int_inet_aton_pchar.in_addr.__return
 ___int_inet_aton_pchar.in_addr.__return:
-push rax
-pop rax
 leave
 ret
 _bool_isdigit_pchar:
@@ -2400,8 +2331,6 @@ and rbx, rcx
 mov rax, rbx
 jmp ___bool_isdigit_pchar__return
 ___bool_isdigit_pchar__return:
-push rax
-pop rax
 leave
 ret
 _int_lseek_pfd_tintint:
@@ -2414,8 +2343,6 @@ mov [rbp-24], rdx
 mov rax, 8
     syscall
 ___int_lseek_pfd_tintint__return:
-push rax
-pop rax
 leave
 ret
 _int_chdir_pchar.:
@@ -2426,8 +2353,6 @@ mov [rbp-8], rdi
 mov rax, 80
     syscall
 ___int_chdir_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _int_creat_pchar.mode_t:
@@ -2439,8 +2364,6 @@ mov [rbp-16], rsi
 mov rax, 85
     syscall
 ___int_creat_pchar.mode_t__return:
-push rax
-pop rax
 leave
 ret
 _int_rmdir_pchar.:
@@ -2451,8 +2374,6 @@ mov [rbp-8], rdi
 mov rax, 84
     syscall
 ___int_rmdir_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _int_mkdir_pchar.mode_t:
@@ -2464,8 +2385,6 @@ mov [rbp-16], rsi
 mov rax, 83
     syscall
 ___int_mkdir_pchar.mode_t__return:
-push rax
-pop rax
 leave
 ret
 _int_close_pfd_t:
@@ -2476,8 +2395,6 @@ mov [rbp-8], rdi
 mov rax, 3
     syscall
 ___int_close_pfd_t__return:
-push rax
-pop rax
 leave
 ret
 _fd_t_open_pchar.intmode_t:
@@ -2490,8 +2407,6 @@ mov [rbp-24], rdx
 mov rax, 2
         syscall
 ___fd_t_open_pchar.intmode_t__return:
-push rax
-pop rax
 leave
 ret
 _ssize_t_write_pfd_tchar.size_t:
@@ -2504,8 +2419,6 @@ mov [rbp-24], rdx
 mov rax, 1
         syscall
 ___ssize_t_write_pfd_tchar.size_t__return:
-push rax
-pop rax
 leave
 ret
 _ssize_t_read_pfd_tchar.size_t:
@@ -2518,8 +2431,6 @@ mov [rbp-24], rdx
 xor rax, rax
     syscall
 ___ssize_t_read_pfd_tchar.size_t__return:
-push rax
-pop rax
 leave
 ret
 _time_t_time_ptime_t.:
@@ -2530,8 +2441,6 @@ mov [rbp-8], rdi
 mov rax, 201
     syscall
 ___time_t_time_ptime_t.__return:
-push rax
-pop rax
 leave
 ret
 _int_utimes_pchar.timeval_t.:
@@ -2543,8 +2452,6 @@ mov [rbp-16], rsi
 mov rax, 235
     syscall
 ___int_utimes_pchar.timeval_t.__return:
-push rax
-pop rax
 leave
 ret
 _int_settimeofday_ptimeval_t.timezone_t.:
@@ -2556,8 +2463,6 @@ mov [rbp-16], rsi
 mov rax, 164
     syscall
 ___int_settimeofday_ptimeval_t.timezone_t.__return:
-push rax
-pop rax
 leave
 ret
 _int_setitimer_pintitimerval_t.itimerval_t.:
@@ -2570,8 +2475,6 @@ mov [rbp-24], rdx
 mov rax, 38
     syscall
 ___int_setitimer_pintitimerval_t.itimerval_t.__return:
-push rax
-pop rax
 leave
 ret
 _int_gettimeofday_ptimeval_t.timezone_t.:
@@ -2583,8 +2486,6 @@ mov [rbp-16], rsi
 mov rax, 96
     syscall
 ___int_gettimeofday_ptimeval_t.timezone_t.__return:
-push rax
-pop rax
 leave
 ret
 _int_getitimer_pintitimerval_t.:
@@ -2596,8 +2497,6 @@ mov [rbp-16], rsi
 mov rax, 36
         syscall
 ___int_getitimer_pintitimerval_t.__return:
-push rax
-pop rax
 leave
 ret
 _int_adjtime_ptimeval_t.timeval_t:
@@ -2607,22 +2506,18 @@ sub rsp, 40
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 ___int_adjtime_ptimeval_t.timeval_t__return:
-push rax
-pop rax
 leave
 ret
 _void_srand_p:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-mov rax, 0
+mov rax,0
 call _int_rdrand_p
 push rax
 pop rbx
 mov [rand_next], rbx
 ___void_srand_p__return:
-push rax
-pop rax
 leave
 ret
 _int_rand_p:
@@ -2651,8 +2546,6 @@ mov rbx, [rand_next]
 mov rax, rbx
 jmp ___int_rand_p__return
 ___int_rand_p__return:
-push rax
-pop rax
 leave
 ret
 _int_rdrand_p:
@@ -2661,8 +2554,6 @@ mov rbp, rsp
 sub rsp, 8
 rdrand rax
 ___int_rdrand_p__return:
-push rax
-pop rax
 leave
 ret
 _double_abs_pdouble:
@@ -2675,8 +2566,6 @@ movsd xmm1, xmm0
   xorpd xmm1, xmm2
   andpd xmm0, xmm1
 ___double_abs_pdouble__return:
-push rax
-pop rax
 leave
 ret
 _int_abs_pint:
@@ -2689,8 +2578,6 @@ mov rax, rdi
   xor rax, rdi
   sub rax, rdi
 ___int_abs_pint__return:
-push rax
-pop rax
 leave
 ret
 _int_floor_pdouble:
@@ -2700,8 +2587,6 @@ sub rsp, 16
 movsd [rbp-8], xmm0
 cvttsd2si rax, xmm0
 ___int_floor_pdouble__return:
-push rax
-pop rax
 leave
 ret
 _int_ceil_pdouble:
@@ -2712,8 +2597,6 @@ movsd [rbp-8], xmm0
 cvttsd2si rax, xmm0
   inc rax
 ___int_ceil_pdouble__return:
-push rax
-pop rax
 leave
 ret
 _int_round_pdouble:
@@ -2723,8 +2606,6 @@ sub rsp, 16
 movsd [rbp-8], xmm0
 cvtsd2si rax, xmm0
 ___int_round_pdouble__return:
-push rax
-pop rax
 leave
 ret
 _double_pow_pdoubleint:
@@ -2739,8 +2620,6 @@ dec rdi
     dec rdi
     jnz _int_pow_pintint_flp
 ___double_pow_pdoubleint__return:
-push rax
-pop rax
 leave
 ret
 _double_pow_pintint:
@@ -2753,12 +2632,10 @@ mov rbx, QWORD[rbp-8]
 mov rdi, rbx
 mov rbx, QWORD[rbp-16]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _int_pow_pintint
 cvtsi2sd xmm0, rax
 ___double_pow_pintint__return:
-push rax
-pop rax
 leave
 ret
 _int_pow_pintint:
@@ -2774,8 +2651,6 @@ mov rax, rdi
   dec rsi
   jnz _int_pow_pintint_flp
 ___int_pow_pintint__return:
-push rax
-pop rax
 leave
 ret
 _int_sqrt_pint:
@@ -2787,8 +2662,6 @@ cvtsi2sd xmm0, rdi
   sqrtsd xmm0, xmm0
   cvttsd2si rax, xmm0
 ___int_sqrt_pint__return:
-push rax
-pop rax
 leave
 ret
 _double_sqrt_pint:
@@ -2799,8 +2672,6 @@ mov [rbp-8], rdi
 cvtsi2sd xmm0, rdi
     sqrtsd xmm0, xmm0
 ___double_sqrt_pint__return:
-push rax
-pop rax
 leave
 ret
 _double_sqrt_pdouble:
@@ -2810,8 +2681,6 @@ sub rsp, 16
 movsd [rbp-8], xmm0
 sqrtsd xmm0, xmm0
 ___double_sqrt_pdouble__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pint.int:
@@ -2830,7 +2699,7 @@ cmp al, 1
 jne _LIFPOST_0x8
 mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pchar.
 mov rax, 0
 jmp ___void_print_pint.int__return
@@ -2840,7 +2709,7 @@ _LIFELSE_0x9:
 mov rbx, STRING_CONSTANT_6
 mov rdi, rbx
 mov rsi, 0
-mov rax, 0
+mov rax,0
 call _void_printf_pchar.int
 mov QWORD[rbp-24], 0
 jmp _LFORCMP_0xb
@@ -2852,7 +2721,7 @@ mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*8]
 mov rbx, qword[rbx]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _void_printf_pchar.int
 _LFORUPDATE_0xc:
 mov rbx, 1
@@ -2878,11 +2747,9 @@ mov rcx, QWORD[rbp-8]
 lea rcx, [rcx+rbx*8]
 mov rcx, qword[rcx]
 mov rsi, rcx
-mov rax, 0
+mov rax,0
 call _void_printf_pchar.int
 ___void_print_pint.int__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pvoid.:
@@ -2894,11 +2761,9 @@ mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-16], rbx
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pint
 ___void_print_pvoid.__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pbool:
@@ -2913,7 +2778,7 @@ cmp al, 1
 jne _LIFPOST_0x6
 mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pchar.
 mov rax, 0
 jmp ___void_print_pbool__return
@@ -2922,13 +2787,11 @@ _LIFPOST_0x6:
 _LIFELSE_0x7:
 mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
-mov rax, 0
+mov rax,0
 call _void_print_pchar.
 mov rax, 0
 jmp ___void_print_pbool__return
 ___void_print_pbool__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pchar:
@@ -2939,8 +2802,6 @@ mov [rbp-8], rdi
 PRINT_CHAR rdi
 NEWLINE
 ___void_print_pchar__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pchar.:
@@ -2951,8 +2812,6 @@ mov [rbp-8], rdi
 PRINT_STRING [rdi]
 NEWLINE
 ___void_print_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pdouble:
@@ -2964,11 +2823,9 @@ mov rbx, STRING_CONSTANT_2
 mov rdi, rbx
 movsd xmm7, QWORD[rbp-8]
 movsd xmm0, xmm7
-mov rax, 1
+mov rax,1
 call _void_printf_pchar.double
 ___void_print_pdouble__return:
-push rax
-pop rax
 leave
 ret
 _void_print_puint:
@@ -2980,11 +2837,9 @@ mov rbx, STRING_CONSTANT_1
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _void_printf_pchar.uint
 ___void_print_puint__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pshort:
@@ -2995,8 +2850,6 @@ mov [rbp-8], rdi
 PRINT_DEC 4, rdi
         NEWLINE
 ___void_print_pshort__return:
-push rax
-pop rax
 leave
 ret
 _void_print_pint:
@@ -3008,11 +2861,9 @@ mov rbx, STRING_CONSTANT_0
 mov rdi, rbx
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
-mov rax, 0
+mov rax,0
 call _void_printf_pchar.int
 ___void_print_pint__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.doubledouble:
@@ -3027,8 +2878,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.doubledouble__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.intint:
@@ -3043,8 +2892,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.intint__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.char.:
@@ -3058,8 +2905,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.char.__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.double:
@@ -3074,8 +2919,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.double__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.uint:
@@ -3089,8 +2932,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.uint__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.:
@@ -3103,8 +2944,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.voidvoidvoid:
@@ -3120,8 +2959,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.voidvoidvoid__return:
-push rax
-pop rax
 leave
 ret
 _void_printf_pchar.int:
@@ -3135,8 +2972,6 @@ call printf
 FFLUSH_STDOUT
 UNALIGN_STACK
 ___void_printf_pchar.int__return:
-push rax
-pop rax
 leave
 ret
 _void_sscanf_pchar.char.voidvoidvoidvoid:
@@ -3153,8 +2988,6 @@ ALIGN_STACK
     call sscanf
     UNALIGN_STACK
 ___void_sscanf_pchar.char.voidvoidvoidvoid__return:
-push rax
-pop rax
 leave
 ret
 _void_sscanf_pchar.char.voidvoidvoid:
@@ -3170,8 +3003,6 @@ ALIGN_STACK
     call sscanf
     UNALIGN_STACK
 ___void_sscanf_pchar.char.voidvoidvoid__return:
-push rax
-pop rax
 leave
 ret
 _void_sscanf_pchar.char.voidvoid:
@@ -3186,8 +3017,6 @@ ALIGN_STACK
     call sscanf
     UNALIGN_STACK
 ___void_sscanf_pchar.char.voidvoid__return:
-push rax
-pop rax
 leave
 ret
 _void_sscanf_pchar.char.void:
@@ -3201,8 +3030,6 @@ ALIGN_STACK
     call sscanf
     UNALIGN_STACK
 ___void_sscanf_pchar.char.void__return:
-push rax
-pop rax
 leave
 ret
 _size_t_strlen_pchar.:
@@ -3218,8 +3045,6 @@ mov rax, -1
     cmp bl, 0
     jnz _size_t_strlen_pchar._flp
 ___size_t_strlen_pchar.__return:
-push rax
-pop rax
 leave
 ret
 _void_strcpy_pchar.char.:
@@ -3234,8 +3059,6 @@ _void_strcpy_pchar.char._flp:
     mov [rdi], bl
     jnz _void_strcpy_pchar.char._flp
 ___void_strcpy_pchar.char.__return:
-push rax
-pop rax
 leave
 ret
 _void_memset_pvoid.ucharsize_t:
@@ -3250,8 +3073,6 @@ _void_memset_pvoid.ucharsize_t_flp:
     mov [rdi+rdx], sil
     jnz _void_memset_pvoid.ucharsize_t_flp
 ___void_memset_pvoid.ucharsize_t__return:
-push rax
-pop rax
 leave
 ret
 _void_avx_memcpy_pvoid.void.size_t:
@@ -3320,14 +3141,12 @@ add rbx, rcx
 mov rsi, rbx
 mov rbx, QWORD[rbp-32]
 mov rdx, rbx
-mov rax, 0
+mov rax,0
 call _void_memcpy_pvoid.void.size_t
 jmp _LIFELSE_0x5
 _LIFPOST_0x4:
 _LIFELSE_0x5:
 ___void_avx_memcpy_pvoid.void.size_t__return:
-push rax
-pop rax
 leave
 ret
 _void_memcpy_pvoid.void.size_t:
@@ -3347,8 +3166,6 @@ mov [rbp-24], rdx
     dec rdx
     jnz _void_memcpy_pvoid.void.int_flp
 ___void_memcpy_pvoid.void.size_t__return:
-push rax
-pop rax
 leave
 ret
 _void_free_pvoid.:
@@ -3360,8 +3177,6 @@ ALIGN_STACK
     call free
     UNALIGN_STACK
 ___void_free_pvoid.__return:
-push rax
-pop rax
 leave
 ret
 _void._realloc_pvoid.size_t:
@@ -3374,8 +3189,6 @@ ALIGN_STACK
     call realloc
     UNALIGN_STACK
 ___void._realloc_pvoid.size_t__return:
-push rax
-pop rax
 leave
 ret
 _void._calloc_psize_t:
@@ -3387,8 +3200,6 @@ ALIGN_STACK
     call calloc
     UNALIGN_STACK
 ___void._calloc_psize_t__return:
-push rax
-pop rax
 leave
 ret
 _void._malloc_psize_t:
@@ -3400,8 +3211,6 @@ ALIGN_STACK
     call malloc
     UNALIGN_STACK
 ___void._malloc_psize_t__return:
-push rax
-pop rax
 leave
 ret
 _int_htonl_pint:
@@ -3413,8 +3222,6 @@ ALIGN_STACK
     call htonl
     UNALIGN_STACK
 ___int_htonl_pint__return:
-push rax
-pop rax
 leave
 ret
 _uint32_bitswap32_puint32:
@@ -3452,8 +3259,6 @@ or rcx, r10
 mov rax, rcx
 jmp ___uint32_bitswap32_puint32__return
 ___uint32_bitswap32_puint32__return:
-push rax
-pop rax
 leave
 ret
 _int_bitswap64_pint:
@@ -3503,8 +3308,6 @@ or rbx, rcx
 mov rax, rbx
 jmp ___int_bitswap64_pint__return
 ___int_bitswap64_pint__return:
-push rax
-pop rax
 leave
 ret
 

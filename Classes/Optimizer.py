@@ -65,11 +65,11 @@ class Optimizer:
         for i in range(len(self.lines)):
 
             line = self.getTokens(self.lines[i])
-            if line == None or len(line) == 0:
+            if line is None or len(line) == 0:
                 continue
 
             if line[0] == "push":
-                lastwaspush = line[0]+line[1]
+                lastwaspush = line[0] + line[1]
             elif(line[0] != "pop"):
                 lastwaspush = ""
 

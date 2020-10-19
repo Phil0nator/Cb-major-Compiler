@@ -11,7 +11,8 @@
 #
 ###################################
 class Variable:
-    def __init__(self, t, name, glob=False, offset=0, initializer=None, isptr=False, mutable=True, signed=True, isStackarr=False):
+    def __init__(self, t, name, glob=False, offset=0, initializer=None,
+                 isptr=False, mutable=True, signed=True, isStackarr=False):
         self.t = t                      # data type
         self.name = name                  # str: name
         self.glob = glob                  # bool: is global
@@ -28,7 +29,8 @@ class Variable:
         self.stacksizes = []            # ^ sizes
 
     def isflt(self):  # redundant to DType.isflt
-        # return (self.t.name == "float" or self.t.name == "double") and self.isptr == False
+        # return (self.t.name == "float" or self.t.name == "double") and
+        # self.isptr == False
         return self.t.isflt()
 
     def __repr__(self):  # pretty print

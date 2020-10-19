@@ -15,44 +15,61 @@ from Classes.Variable import Variable
 
 def calculateConstant(a, b, op):
     if(op == "*"):
-        return EC.ExpressionComponent(int(a.accessor*b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor * b.accessor), INT.copy(), constint=True)
     elif(op == "/"):
-        return EC.ExpressionComponent(int(a.accessor/b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor / b.accessor), INT.copy(), constint=True)
     elif(op == "+"):
-        return EC.ExpressionComponent(int(a.accessor+b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor + b.accessor), INT.copy(), constint=True)
     elif(op == "-"):
-        return EC.ExpressionComponent(int(a.accessor-b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor - b.accessor), INT.copy(), constint=True)
     elif(op == "=="):
-        return EC.ExpressionComponent(int(a.accessor == b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor == b.accessor), INT.copy(), constint=True)
     elif(op == "!="):
-        return EC.ExpressionComponent(int(a.accessor != b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor != b.accessor), INT.copy(), constint=True)
     elif(op == "<="):
-        return EC.ExpressionComponent(int(a.accessor <= b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor <= b.accessor), INT.copy(), constint=True)
     elif(op == ">="):
-        return EC.ExpressionComponent(int(a.accessor >= b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor >= b.accessor), INT.copy(), constint=True)
     elif(op == ">"):
-        return EC.ExpressionComponent(int(a.accessor > b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor > b.accessor), INT.copy(), constint=True)
     elif(op == "<"):
-        return EC.ExpressionComponent(int(a.accessor < b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor < b.accessor), INT.copy(), constint=True)
     elif(op == "%"):
-        return EC.ExpressionComponent(int(a.accessor % b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor % b.accessor), INT.copy(), constint=True)
     elif(op == ">>"):
-        return EC.ExpressionComponent(int(a.accessor >> b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor >> b.accessor), INT.copy(), constint=True)
     elif(op == "<<"):
-        return EC.ExpressionComponent(int(a.accessor << b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor << b.accessor), INT.copy(), constint=True)
     elif(op == "||" or op == "|"):
-        return EC.ExpressionComponent(int(a.accessor or b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor or b.accessor), INT.copy(), constint=True)
     elif(op == "&&" or op == "&"):
-        return EC.ExpressionComponent(int(a.accessor and b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor and b.accessor), INT.copy(), constint=True)
     elif(op == "^"):
-        return EC.ExpressionComponent(int(a.accessor ^ b.accessor), INT.copy(), constint=True)
+        return EC.ExpressionComponent(
+            int(a.accessor ^ b.accessor), INT.copy(), constint=True)
 
 
-# get result of a op b while taking initializer value for a and b if they are vars.
+# get result of a op b while taking initializer value for a and b if they
+# are vars.
 def evaluate(a, b, op):
     if(isinstance(a.accessor, Variable)):
         a.accessor = a.accessor.initializer
-    if(b != None and isinstance(b.accessor, Variable)):
+    if(b is not None and isinstance(b.accessor, Variable)):
         b.accessor = b.accessor.initializer
     return calculateConstant(a, b, op)
 
