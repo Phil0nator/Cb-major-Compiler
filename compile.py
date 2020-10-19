@@ -4,7 +4,8 @@
 #   The large outline steps:
 #       - parse cmd arguments
 #       - load entrypoint file
-#       - pre-process / lex first file (including subsequent include statements)
+#       - pre-process / lex first file (including
+#           subsequent include statements)
 #       - use Compiler.py to seperate structures, functions, globals, etc...
 #       - use Function.py to compile function bodies
 #       - parse together all the raw assembly
@@ -20,7 +21,9 @@ import os
 import argparse as arg
 from Classes.Error import *
 from globals import *
-import cProfile, pstats, io
+import cProfile
+import pstats
+import io
 
 from Lexer import Lexer
 from PreParser import PreProcessor
@@ -28,30 +31,30 @@ from Compiler import Compiler
 from Linker import *
 import config
 
+
 def main():
 
-    beginTime = time.time() # record time of start
-    with open(config.__fileinput__, "rb") as inpf: # read entrypoint
+    # record time of start
+    beginTime = time.time()
+
+    # read entrypoint
+    with open(config.__fileinput__, "rb") as inpf:
         raw = inpf.read().decode()
 
     # preprocess
     lex = Lexer(config.__fileinput__, raw)
     firstTokens = lex.getTokens()
 
-
     pp = PreProcessor(firstTokens)
     totals = pp.process()
 
-    
     # global compilation
     c = Compiler()
     config.GlobalCompiler = c
-    
 
     c.compile(totals)
 
     # function compilation
-    
     try:
         c.finalize()
     except AttributeError as e:
@@ -63,41 +66,32 @@ def main():
     if(c.panicmode):
         print("Could not finish compilation due to errors.")
         exit(1)
-    
+
     # feed to template
-    asm = "%s"%fileTemplate
+    asm = "%s" % fileTemplate
     asm = asm.replace("%%HEAP%%", c.heap)
     asm = asm.replace("%%CONSTANTS%%", c.constants)
     asm = asm.replace("%%TEXT%%", c.text)
     asm = asm.replace("%%INITIALIZE%%", c.initializers)
     asm = asm.replace("%%ENTRY%%", c.entry)
-    
 
+    # cleanup
+    asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
 
-    #cleanup
-    asm = asm.replace("\n\n","\n").replace("\n\n","\n")
-    
-    
-    
+    # linking, and running
 
-    #linking, and running
-
-    with open(config.__fileoutput__+".asm", "wb") as f:
+    with open(config.__fileoutput__ + ".asm", "wb") as f:
         f.write(asm.encode())
 
     os.system(assemble(config.__fileoutput__))
     if(config.__executable__):
-        os.system(link(config.__fileoutput__,config.__fileoutput__))
-        os.remove(config.__fileoutput__+".o")
+        os.system(link(config.__fileoutput__, config.__fileoutput__))
+        os.remove(config.__fileoutput__ + ".o")
 
     if(not config.__tonasm__):
-        os.remove(config.__fileoutput__+".asm")
-    
+        os.remove(config.__fileoutput__ + ".asm")
 
-    print("Compiled and Linked symbols in %s s"%(time.time()-beginTime))
-    
-
-
+    print("Compiled and Linked symbols in %s s" % (time.time() - beginTime))
 
 
 if(__name__ == "__main__"):
@@ -117,9 +111,7 @@ if(__name__ == "__main__"):
     else:
         main()
 
-
-
     if(config.__autorun__):
         runtime = time.time()
         os.system(f"./{config.__fileoutput__}")
-        print("\nRuntime: %s s"%(time.time()-runtime))
+        print("\nRuntime: %s s" % (time.time() - runtime))

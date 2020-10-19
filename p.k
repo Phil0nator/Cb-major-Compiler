@@ -2,7 +2,13 @@
 #include "std.k"
 
 
+function int main(int argc, char** argbv){
+    print("Hello World!");
+    return 0;
+}
 
+
+/*
 function int main(int argc, char** argv){
     
     fd_t sock = NORMAL_SOCKET;
@@ -34,3 +40,4 @@ function int main(int argc, char** argv){
     return;
 }
 
+*/
