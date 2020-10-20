@@ -54,6 +54,10 @@ class Lexer:
             return Token(op, op, begin, self.loc.copy())
         op += self.ch
         self.advance()
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
+            return Token(op, op, begin, self.loc.copy())
+        op += self.ch
+        self.advance()
         return Token(op, op, begin, self.loc.copy())
 
     # build a number based on digits, . for floats, and e for scientific

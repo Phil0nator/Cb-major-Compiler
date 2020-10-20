@@ -9,7 +9,7 @@ from Assembly.CodeBlocks import loadToReg, castABD, doOperation
 from Assembly.CodeBlocks import valueOf, shiftInt, maskset
 from Assembly.CodeBlocks import shiftmul, getComparater, boolmath
 
-from Assembly.Instructions import signed_comparisons
+from Assembly.Instructions import signed_comparisons, Instruction
 from Assembly.Registers import *
 
 from Classes.Constexpr import calculateConstant
@@ -27,6 +27,8 @@ from Assembly.TypeSizes import psizeof, psizeoft
 def optloadRegs(a, b, op, o):
     instr = ""
     o = a.type.copy()
+    areg = ""
+    breg = ""
     needLoadA = True
     needLoadB = True
     if(a.isRegister()):
@@ -34,17 +36,17 @@ def optloadRegs(a, b, op, o):
         needLoadA = False
     else:
         areg = ralloc(a.type.isflt())
+    if(b is not None):
+        if(b.isRegister()):
+            breg = b.accessor
+            needLoadB = False
+        else:
+            breg = ralloc(a.type.isflt())
 
-    if(b.isRegister()):
-        breg = b.accessor
-        needLoadB = False
-    else:
-        breg = ralloc(a.type.isflt())
-
-    if(needLoadB):
-        instr += loadToReg(breg, b.accessor)
-    if(needLoadA):
-        instr += loadToReg(areg, a.accessor)
+        if(needLoadB):
+            instr += loadToReg(breg, b.accessor)
+        if(needLoadA):
+            instr += loadToReg(areg, a.accessor)
     return areg, breg, o, instr
 
 
@@ -73,7 +75,94 @@ class ExpressionEvaluator:
     def __init__(self, fn):
         self.fn = fn
 
+    def mult_div_optimization(self, a, b, op):
+        if(canShiftmul(b.accessor)):
+            newinstr = ""
+            newinstr += bringdown_memloc(a)
+            if(a.isRegister()):
+                areg = a.accessor
+            else:
+                areg = ralloc(False)
+                newinstr += loadToReg(areg, a.accessor)
+
+            if(op == "*"):
+                newinstr += f"shl {valueOf(areg)}, {shiftmul(b.accessor)}\n"
+            else:
+                newinstr += f"shr {valueOf(areg)}, {shiftmul(b.accessor)}\n"
+            a.accessor = areg
+            apendee = a
+        newt = a.type.copy()
+        return newinstr, newt, apendee
+
+    def const_shift_optimization(self, a, b, op):
+        newinstr = ""
+        newinstr += bringdown_memloc(a)
+        if(a.isRegister()):
+            areg = a.accessor
+        else:
+            areg = ralloc(False)
+            newinstr += loadToReg(areg, a.accessor)
+
+        newinstr += shiftInt(areg,
+                             b.accessor, op, a.type.signed)
+        a.accessor = areg
+        apendee = a
+        newt = a.type.copy()
+        return newinstr, newt, apendee
+
+    def inc_dec_optimization(self, a, b, op):
+        newinstr = ""
+        newinstr += bringdown_memloc(a)
+        if(a.isRegister()):
+            areg = a.accessor
+        else:
+            areg = ralloc(False)
+            newinstr += loadToReg(areg, a.accessor)
+
+        cmd = "inc" if op == '+' else "dec"
+
+        newinstr += Instruction(cmd, [areg])
+        a.accessor = areg
+        apendee = a
+        newt = a.type.copy()
+        return newinstr, newt, apendee
+
+    def check_semiconstexpr_optimization(self, a, b, op):
+        newinstr = None
+        newt = None
+        apendee = None
+        # if one arg is 0, and can be optimized, add no extra
+        # code.
+        if(b.accessor == 0 and op not in ["/", "["] and op not in signed_comparisons):
+            apendee = a
+            newinstr = ""
+            newt = a.type.copy()
+
+        # if can be optimized through bitshift
+        # multiplication/division
+        if(op == "*" or op == "/"):
+
+            newinstr, newt, apendee = self.mult_div_optimization(
+                a, b, op)
+        # can be optimized by not loading the constant
+        # to a register. (shift by register requires expensive
+        # use of cl register specifically)
+        if(op in [">>", "<<"]):
+
+            newinstr, newt, apendee = self.const_shift_optimization(
+                a, b, op)
+
+        # can be optimized through the inc or dec
+        # operators instead of 'add <...>, 1 '
+        if(op in ["+", "-"] and b.accessor == 1):
+
+            newinstr, newt, apendee = self.inc_dec_optimization(
+                a, b, op)
+
+        return newinstr, newt, apendee
+
     # evaluate a generated postfix list of EC's
+
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
         stack = []      # used for evaluation
@@ -94,51 +183,10 @@ class ExpressionEvaluator:
                     # if one operand is constant
                     # optimize for semi constexpr
                     elif(b.isconstint() and not a.isconstint() and not a.type.isflt()):
-                        newinstr = None
 
-                        # if one arg is 0, and can be optimized, add no extra
-                        # code.
-                        if(b.accessor == 0 and op not in ["/", "["] and op not in signed_comparisons):
-                            apendee = a
-                            newinstr = ""
-                            newt = a.type.copy()
-
-                        # if can be optimized through bitshift
-                        # multiplication/division
-                        if(op == "*" or op == "/"):
-
-                            if(canShiftmul(b.accessor)):
-                                newinstr = ""
-                                newinstr += bringdown_memloc(a)
-                                if(a.isRegister()):
-                                    areg = a.accessor
-                                else:
-                                    areg = ralloc(False)
-                                    newinstr += loadToReg(areg, a.accessor)
-
-                                if(op == "*"):
-                                    newinstr += f"shl {valueOf(areg)}, {shiftmul(b.accessor)}\n"
-                                else:
-                                    newinstr += f"shr {valueOf(areg)}, {shiftmul(b.accessor)}\n"
-                                a.accessor = areg
-                                apendee = a
-                            newt = a.type.copy()
-
-                        if(op in [">>", "<<"]):
-
-                            newinstr = ""
-                            newinstr += bringdown_memloc(a)
-                            if(a.isRegister()):
-                                areg = a.accessor
-                            else:
-                                areg = ralloc(False)
-                                newinstr += loadToReg(areg, a.accessor)
-
-                            newinstr += shiftInt(areg,
-                                                 b.accessor, op, a.type.signed)
-                            a.accessor = areg
-                            apendee = a
-                            newt = a.type.copy()
+                        # check for and do any possible optimizations
+                        newinstr, newt, apendee = self.check_semiconstexpr_optimization(
+                            a, b, op)
 
                         # if no valid optimizations couild be made:
                         #       do the normal evaluation

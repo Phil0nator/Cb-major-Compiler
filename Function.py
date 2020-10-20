@@ -4,7 +4,7 @@ from Classes.Token import *
 from Classes.Error import *
 from Postfixer import Postfixer
 from ExpressionEvaluator import RightSideEvaluator
-from ExpressionEvaluator import LeftSideEvaluator
+from ExpressionEvaluator import LeftSideEvaluator, optloadRegs
 import Classes.Optimizer
 import config
 import time
@@ -13,7 +13,7 @@ import Classes.ExpressionComponent as EC
 from Assembly.Registers import *
 from Assembly.Instructions import Instruction
 
-from Assembly.CodeBlocks import function_allocator
+from Assembly.CodeBlocks import function_allocator, doIntOperation, doFloatOperation
 from Assembly.CodeBlocks import function_closer, fncall, check_fortrue
 from Assembly.CodeBlocks import loadToPtr, loadToReg, movVarToReg, movRegToVar
 from Assembly.CodeBlocks import valueOf, getLogicLabel, maskset, functionlabel
@@ -920,35 +920,24 @@ class Function:
 
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
-            op = setter.tok[0]
-            cmd = ""
-            if(op == "+"):
-                cmd = "add"
-            elif(op == "-"):
-                cmd = "sub"
-            # add extra instructions for the shortcut
+            op = setter.tok[:-1]
 
-            if(dest.type.isflt() and dest.isRegister()):
-                x = ralloc(True)
-                tmp = ralloc(True)
-                self.addline(f"movsd {tmp}, [{valueOf(dest.accessor)}]")
-                self.addline(f"{cmd+'sd'} {tmp}, {value}\n")
-                self.addline(f"movsd [{valueOf(dest.accessor)}], {tmp}\n")
-                rfree(tmp)
-                rfree(x)
-            elif(dest.type.isflt()):
-                x = ralloc(True)
-                tmp = ralloc(True)
+            areg = ralloc(dest.type.isflt())
 
-                self.addline(f"movsd {tmp}, {valueOf(dest.accessor)}")
-                self.addline(f"{cmd+'sd'} {tmp}, {value}\n")
-                self.addline(f"movsd {valueOf(dest.accessor)}, {tmp}\n")
-                rfree(tmp)
-                rfree(x)
+            self.addline(loadToReg(areg, dest.accessor))
+            if(dest.type.isflt()):
+                self.addline(doFloatOperation(areg, value, op))
             else:
                 self.addline(
-                    f"{cmd} {valueOf(dest.accessor, exactSize=True)}, {setSize(value, dest.type.csize())}\n")
+                    doIntOperation(
+                        areg,
+                        value,
+                        op,
+                        dest.type.signed))
 
+            self.addline(loadToPtr(dest.accessor, areg))
+
+            rfree(areg)
         rfree(value)
         rfree(dest.accessor)
         if(self.current_token.tok == T_ENDL):
