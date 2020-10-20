@@ -343,7 +343,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         elif(isinstance(a.accessor, Variable)):
 
             result = ralloc(False)
-            if(a.accessor.isStackarr):
+            if(a.accessor.isStackarr or a.accessor.t.members != None):
                 instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 

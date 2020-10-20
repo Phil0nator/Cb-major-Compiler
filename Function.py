@@ -109,6 +109,7 @@ class Function:
             self.stackCounter += 8
         else:
             self.stackCounter += v.t.csize() + 8
+            v.stackarrsize = v.t.csize()
         self.variables.append(v)
 
     def addline(self, l):                           # add a line of assembly to raw
@@ -763,7 +764,7 @@ class Function:
             params = Instruction(
                 "lea", [
                     rdi, f"[rbp-{var.offset+var.t.csize()}]"])
-        instructions = f"{params}call {call_label[:-1]}\n"
+        instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
     def buildDeclaration(self):                     # declare new var
