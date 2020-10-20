@@ -1,12 +1,11 @@
-#include "include/std.k"
-int test = 265;
 
+#include "std.k"
 
 
 
 function int main(int argc, char** argv){
 
-    print("Hello World!");
+
 
     return;
 }

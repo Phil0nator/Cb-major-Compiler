@@ -1,7 +1,9 @@
 #ifndef __SYSSOCK
 #define __SYSSOCK 1
 
-#include "include/sys/files.k" // fd_t, read, write, etc...
+#include "files.k" // fd_t, read, write, etc...
+#include "printf.k" // sscanf
+#include "memory.k"  // malloc
 
 typedef unsigned int32 in_addr;
 
@@ -65,10 +67,63 @@ struct linger_t {
 #define AF_INET6 10 
 #define AF_MAX   12 
 
+
+#define NORMAL_SOCKET socket(AF_INET, SOCK_STREAM, 0)
+
+
 function bool isdigit(char c){
-    return c > '0' && c < '9';
+    return c >= '0' && c <= '9';
 }
 
+function int inet_aton(char* cp, in_addr *addr){
+
+    in_addr val;
+    int base = 10;
+    int n;
+    char c;
+    unsigned int parts[4];
+    memset(&parts, 0, 4);
+    unsigned int *pp = &parts;
+    c = @cp;
+
+    while(true){
+        val = 0;
+        while (true){
+            if(isdigit(c)){
+                val = (val*base)+(c-'0');
+                cp+=1;
+                c = @cp;
+            }else{
+                break;
+            }
+            
+        }
+        if(c == '.'){
+            if(pp > (parts+4*int)){
+                return 0;
+            }
+            @pp = val;
+            pp+=int;
+            cp+=1;
+            c = @cp;
+        }else{
+            break;
+        }
+    }
+    @pp = val;
+
+    if(c != 0 && c != ' '){
+        return 0;
+    }
+
+
+    
+
+    val = val || ((parts[0] << 24) || (parts[1] << 16) || (parts[2] << 8));
+    @addr = val;
+    return 1;
+
+}
 
 
 

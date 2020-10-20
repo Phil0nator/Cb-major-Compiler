@@ -1,20 +1,20 @@
 #ifndef __STD
 #define __STD 1
+#include "bits.k"
+#include "stddef.k"
+#include "memory.k"
+#include "printf.k"
+#include "math.k"
+#include "random.k"
 
-#include "include/stddef.k"
-#include "include/memory.k"
-#include "include/printf.k"
-#include "include/math.k"
-#include "include/random.k"
+#include "sys/time.k"
+#include "sys/files.k"
+#include "sys/sock.k"
 
-#include "include/sys/time.k"
-#include "include/sys/files.k"
-#include "include/sys/sock.k"
-
-#include "include/string.k"
-#include "include/input.k"
-#include "include/Vec3d.k"
-#include "include/filesystem.k"
+#include "string.k"
+#include "input.k"
+#include "Vec3d.k"
+#include "filesystem.k"
 
 
 #endif

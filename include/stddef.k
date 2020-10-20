@@ -33,8 +33,8 @@ typedef char i8_t; /* 8 bit signed type */
 /*
   * Default boolean values;
 */
-#define true    1
-#define false   0
+#define true    $bool 1
+#define false   $bool 0
 
 /*
   * float == double

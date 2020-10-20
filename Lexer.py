@@ -11,128 +11,152 @@ from globals import *
 #   The Lexer class is used to take a raw text file
 #       and translate it into Token objects for a Compiler and Function
 #       object to compile.
-#       
+#
 #       \see Classes.Token
 #       \see Compiler
 #       \see Function
 #
 ##########################
+
+
 class Lexer:
     def __init__(self, fname, raw):
-        self.loc = Location(fname,1,0)
-        self.raw = raw.replace("\t","")
+        self.loc = Location(fname, 1, 0)
+        self.raw = raw.replace("\t", "")
         self.raw += chr(1)
         self.ch = self.raw[0]
         self.chidx = 0
-
+        self.size = len(self.raw)
 
     def advance(self):  # increment the current character
 
-        self.chidx+=1
-        if(self.chidx < len(self.raw)):
+        self.chidx += 1
+        if(self.chidx < self.size):
             self.ch = self.raw[self.chidx]
-            self.loc.ch+=1
+            self.loc.ch += 1
             if self.ch == "\n":
-                self.loc.line+=1
-            return
+                self.loc.line += 1
+            return self.ch
         else:
-            throw(UnexepectedEOFError(Token(self.ch,self.ch,self.loc.copy(),self.loc)))
+            throw(UnexepectedEOFError(
+                Token(self.ch, self.ch, self.loc.copy(), self.loc)))
 
-    def buildMultichar(self): # build math operators that use more than one character (max = 3)
+    # build math operators that use more than one character (max = 3)
+    def buildMultichar(self):
         op = self.ch
         begin = self.loc.copy()
         self.advance()
-        if(self.ch not in T.T_MULTIOP or op+self.ch not in T.MULTIOPERS):
-            return Token(op,op,begin,self.loc.copy())
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
+            return Token(op, op, begin, self.loc.copy())
         op += self.ch
         self.advance()
-        if(self.ch not in T.T_MULTIOP or op+self.ch not in T.MULTIOPERS):
-            return Token(op,op,begin,self.loc.copy())
-        op+=self.ch
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
+            return Token(op, op, begin, self.loc.copy())
+        op += self.ch
         self.advance()
-        return Token(op,op,begin,self.loc.copy())
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
+            return Token(op, op, begin, self.loc.copy())
+        op += self.ch
+        self.advance()
+        return Token(op, op, begin, self.loc.copy())
 
-    def buildNumber(self): # build a number based on digits, . for floats, and e for scientific notation
+    # build a number based on digits, . for floats, and e for scientific
+    # notation
+    def buildNumber(self):
         num = self.ch
         begin = self.loc.copy()
         self.advance()
-        pchars = T.T_DIGITS+T.T_DOT+"e"
+        pchars = T.T_DIGITS + T.T_DOT + "e"
         if(self.ch == "x" or self.ch == "X"):
-            num+=self.ch
+            num += self.ch
             self.advance()
-            pchars+="abcdefABCDEF"
+            pchars += "abcdefABCDEF"
         while self.ch in pchars:
-            num+=self.ch
+            num += self.ch
             self.advance()
-            if("e" in num): pchars+="-"
-            
+            if("e" in num):
+                pchars += "-"
+
         t = T.T_INT
         if(T.T_DOT in num or "e" in num):
             val = float(num)
-            t=T.T_DOUBLE
+            t = T.T_DOUBLE
         else:
             if("x" in num):
-                val = int(num,16)
+                val = int(num, 16)
             else:
                 val = int(num)
-        
-        return Token(t,val,begin,self.loc.copy())
-            
 
-    def buildString(self): # build a string value with escape characters 
+        return Token(t, val, begin, self.loc.copy())
+
+    def buildString(self):  # build a string value with escape characters
         self.advance()
         begin = self.loc.copy()
         if(self.ch == "\""):
             self.advance()
             return Token(T.T_STRING, "", begin, self.loc.copy())
         content = self.ch
-        self.advance()
+        ch = self.advance()
 
-            
-        while(self.ch != "\""):
-            content+=self.ch
-            self.advance()
-            if(self.chidx == len(self.raw)-1): throw(TokenMismatch(Token("\"", "\"", begin, begin)))
+        while(ch != "\""):
+            content += ch
+            ch = self.advance()
+            if(self.chidx == len(self.raw) - 1):
+                throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         self.advance()
-        return Token(T.T_STRING, content,begin,self.loc.copy())
+        return Token(T.T_STRING, content, begin, self.loc.copy())
 
-    def buildChar(self): # build a char token with one char
+    def buildChar(self):  # build a char token with one char
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
         self.advance()
         self.advance()
-        return Token(T.T_CHAR, v,begin,self.loc.copy())
+        return Token(T.T_CHAR, v, begin, self.loc.copy())
 
-    def buildAmbiguous(self): # build unkown identifier. Could be : ID, Keyword, Type, etc...
+    # build unkown identifier. Could be : ID, Keyword, Type, etc...
+    def buildAmbiguous(self):
         value = self.ch
         begin = self.loc.copy()
         self.advance()
+        raw = self.raw
+        chidx = self.chidx
+        count = 0
 
-        while self.ch in T.T_IDCHARS+T.T_DIGITS:
-            value += self.ch
-            self.advance()
-        if( value in T.KEYWORDS ):
+        for ch in raw[chidx:]:
+            char = ord(ch)
+            if(T.isidchar(char) or T.isdigit(char)):
+                count += 1
+            else:
+                break
+
+        value = f"{value}{raw[chidx:chidx+count]}"
+        lv = len(value) - 2
+        self.chidx += lv
+        self.loc.ch += lv
+        self.advance()
+        if(value in T.KEYWORDS):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
- 
-    # main function to get all tokens for a given text file. 
+
+    # main function to get all tokens for a given text file.
     # getDirectives can be set to True by the PreProcessor to only see directives
     # \see PreParser
-    def getTokens(self, getDirectives = False): 
+    def getTokens(self, getDirectives=False):
         tokens = []
         directives = []
+        advance = self.advance
         while self.ch != chr(1):
 
             if(self.ch == "\n" or self.ch == " "):
-                self.advance()
+                advance()
 
             elif(self.ch == "\\"):
-                self.advance()
-                self.advance()
+                advance()
+                advance()
 
             elif (self.ch == "#"):
-                self.advance()
+                advance()
                 t = self.buildAmbiguous()
                 t.tok = T.T_DIRECTIVE
                 tokens.append(t)
@@ -148,52 +172,54 @@ class Lexer:
                 #     directives.append(out)
 
             elif(self.ch == "$"):
-                self.advance()
+                advance()
                 t = self.buildAmbiguous()
                 t.tok = T.T_TYPECAST
 
                 while self.ch == "*":
-                    self.advance()
-                    t.value+="."
+                    advance()
+                    t.value += "."
 
                 tokens.append(t)
 
-
             elif(self.ch == ";"):
-                tokens.append(Token(T.T_ENDL,T.T_ENDL,self.loc.copy(),self.loc.copy()))
-                self.advance()
+                tokens.append(Token(T.T_ENDL, T.T_ENDL,
+                                    self.loc.copy(), self.loc.copy()))
+                advance()
             elif(self.ch == "+"):
                 tokens.append(self.buildMultichar())
             elif(self.ch == "/"):
-                self.advance()
+                advance()
                 if(self.ch == "/"):
                     while self.ch != "\n":
-                        self.advance()
+                        advance()
                 elif(self.ch == "*"):
                     comment = "  "
                     while comment[-2:] != "*/":
                         self.advance()
-                        comment+=self.ch
-                    self.advance()                    
+                        comment += self.ch
+                    advance()
                 else:
-                    self.chidx-=2
-                    self.advance()
-                    tokens.append(self.buildMultichar())                    
-            
+                    self.chidx -= 2
+                    advance()
+                    tokens.append(self.buildMultichar())
+
             elif (self.ch in "()}{[],^@%~."):
-                tokens.append(Token(self.ch,self.ch,self.loc.copy(),self.loc.copy()))
-                self.advance()
+                tokens.append(
+                    Token(self.ch, self.ch, self.loc.copy(), self.loc.copy()))
+                advance()
 
             elif (self.ch == "-"):
-                self.advance()
+                advance()
                 prev = tokens[-1]
-                if prev.tok not in [T.T_INT, T.T_CHAR, T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
+                if prev.tok not in [T.T_INT, T.T_CHAR,
+                                    T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
                     #t = Token("-","-",self.loc.copy(),self.loc.copy())
-                    self.chidx-=2
-                    self.advance()
+                    self.chidx -= 2
+                    advance()
                     t = self.buildMultichar()
 
                 tokens.append(t)
@@ -201,10 +227,10 @@ class Lexer:
                 token = self.buildMultichar()
                 tokens.append(token)
 
-            elif (self.ch in T.T_DIGITS):
+            elif (T.isdigit(ord(self.ch))):
                 token = self.buildNumber()
                 tokens.append(token)
-                
+
             elif (self.ch == "\""):
                 token = self.buildString()
                 tokens.append(token)
@@ -213,17 +239,18 @@ class Lexer:
                 token = self.buildChar()
                 tokens.append(token)
 
-            elif (self.ch in T.T_IDCHARS):
+            elif (T.isidchar(ord(self.ch))):
                 token = self.buildAmbiguous()
                 tokens.append(token)
-            
-            else:
-                throw(UnkownCharSequence(Token(self.ch, self.ch,self.loc.copy(),self.loc.copy())))
 
-        tokens.append(Token(T.T_EOF,T.T_EOF,self.loc.copy(),self.loc.copy()))
-        
-        
-        if(getDirectives): return directives
-        
-        
+            else:
+                throw(UnkownCharSequence(
+                    Token(self.ch, self.ch, self.loc.copy(), self.loc.copy())))
+
+        tokens.append(
+            Token(T.T_EOF, T.T_EOF, self.loc.copy(), self.loc.copy()))
+
+        if(getDirectives):
+            return directives
+
         return tokens

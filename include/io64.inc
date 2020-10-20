@@ -40,6 +40,7 @@ CEXTERN fgets
 CEXTERN puts
 CEXTERN fputs
 CEXTERN fflush
+CEXTERN sscanf
 
 CEXTERN getchar
 
@@ -65,6 +66,7 @@ CEXTERN thrd_join
 
 
 CEXTERN inet_aton
+CEXTERN htonl
 
 ; Make stack be 16 bytes aligned
 %macro ALIGN_STACK 0.nolist

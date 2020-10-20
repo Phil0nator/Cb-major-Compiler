@@ -9,7 +9,40 @@
 
 
 
+function void sscanf(char* template, char* format, void a){
+    __asm{"
+    ALIGN_STACK
+    call sscanf
+    UNALIGN_STACK
+    "}
+}
 
+function void sscanf(char* template, char* format, void a, void b){
+    __asm{"
+    ALIGN_STACK
+    call sscanf
+    UNALIGN_STACK
+    "}
+}
+
+
+function void sscanf(char* template, char* format, void a, void b, void c){
+    __asm{"
+    ALIGN_STACK
+    call sscanf
+    UNALIGN_STACK
+    "}
+}
+
+
+
+function void sscanf(char* template, char* format, void a, void b, void c, void d){
+    __asm{"
+    ALIGN_STACK
+    call sscanf
+    UNALIGN_STACK
+    "}
+}
 
 
 

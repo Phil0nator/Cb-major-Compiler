@@ -4,7 +4,7 @@
 
 
 
-#include "include/stddef.k"
+#include "stddef.k"
 typedef unsigned int fd_t;  /* file descriptor datatype */
 typedef int mode_t;
 
