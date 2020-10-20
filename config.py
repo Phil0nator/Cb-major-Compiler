@@ -56,6 +56,9 @@ __profile__ = args.profile
 __oplevel__ = 1
 __executable__ = not args.object
 
+__CEXTERNS__ = ""
+
+
 if(args.optimize2):
     __oplevel__ = 2
 elif(args.optimize3):

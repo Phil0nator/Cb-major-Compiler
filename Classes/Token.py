@@ -115,7 +115,10 @@ KEYWORDS = [
     "__sub4",
     "__mul4",
     "return",
-    "typedef"
+    "typedef",
+
+    "extern",
+    "__cdecl"
 
 
 

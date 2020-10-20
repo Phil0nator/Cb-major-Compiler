@@ -1,4 +1,6 @@
 
+%%CEXTERNS%%
+
 section .data
     %%CONSTANTS%%
 

@@ -24,6 +24,8 @@ check_fortrue = f"{ensure_boolean}cmp al, 1\n"
 
 
 def functionlabel(fn):
+    if(fn.extern):
+        return fn.name + ":"
     out = "_%s_%s_%s:\n" % (fn.returntype, fn.name, "p#")
     types = ""
     for p in fn.parameters:

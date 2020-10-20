@@ -196,13 +196,14 @@ class PreProcessor:
                 self.delmov()
 
     # main function
+
     def process(self):
 
         while self.current_token.tok != T_EOF:
             self.update()
             if(self.current_token.tok == T_DIRECTIVE):
                 # token is directive
-
+                self.current_token.value = self.current_token.value.lower()
                 if(self.current_token.value == "include"):
                     # build include statement
                     self.buildIncludeStatement()

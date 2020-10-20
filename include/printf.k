@@ -44,6 +44,14 @@ function void sscanf(char* template, char* format, void a, void b, void c, void 
     "}
 }
 
+function void printf(char* single){
+    __asm{"
+    ALIGN_STACK
+    call printf
+    FFLUSH_STDOUT
+    UNALIGN_STACK
+    "}
+}
 
 
 function void printf(char* template, int format){
@@ -67,19 +75,7 @@ FFLUSH_STDOUT
 UNALIGN_STACK
     "}
 }
-function void printf(char* template){
 
-    __asm{"
-    
-ALIGN_STACK
-call printf
-FFLUSH_STDOUT
-UNALIGN_STACK
-
-
-    "}
-
-}
 function void printf(char*template, unsigned int format){
     
     __asm{"

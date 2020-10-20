@@ -236,3 +236,9 @@ class InvalidExpressionComponent(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Invalid expression component: "
+
+
+class ExpectedLValue(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Expected Rightside Expression: "

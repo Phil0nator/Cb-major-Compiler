@@ -76,6 +76,9 @@ class ExpressionEvaluator:
         self.fn = fn
 
     def mult_div_optimization(self, a, b, op):
+        newinstr = None
+        newt = None
+        apendee = None
         if(canShiftmul(b.accessor)):
             newinstr = ""
             newinstr += bringdown_memloc(a)
@@ -256,6 +259,13 @@ class ExpressionEvaluator:
                         stack.append(apendee)
                         instr += ninster
 
+                    elif(e.accessor == "++" or e.accessor == "--"):
+
+                        ninster, o, apendee = evaluator.incdec(
+                            a, e.accessor, o)
+                        stack.append(apendee)
+                        instr += ninster
+
                     else:
                         print(e)
                         exit(1)
@@ -293,6 +303,24 @@ class ExpressionEvaluator:
 class RightSideEvaluator(ExpressionEvaluator):
     def __init__(self, fn):
         self.fn = fn
+
+    def incdec(self, a, op, o):
+        needload = True
+        instr = ""
+        instr += bringdown_memloc(a)
+        if(a.isRegister()):
+            areg = a.accessor
+            needload = False
+        else:
+            areg = ralloc(False)
+        if(needload):
+            instr += loadToReg(areg, a.accessor)
+
+        cmd = "inc" if op == "++" else "dec"
+
+        instr += Instruction(cmd, [areg])
+        o = a.type.copy()
+        return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
 
     def evalNot(self, a):
         # must be bool compatible
@@ -343,7 +371,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         elif(isinstance(a.accessor, Variable)):
 
             result = ralloc(False)
-            if(a.accessor.isStackarr or a.accessor.t.members != None):
+            if(a.accessor.isStackarr or a.accessor.t.members is not None):
                 instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
@@ -390,12 +418,32 @@ class RightSideEvaluator(ExpressionEvaluator):
             if(a.type.isflt()):
                 instr += f"movsd {result}, [{a.accessor}]\n"
             else:
-                instr += f"mov {result}, [{a.accessor}]\n"
+                instr += maskset(result, a.type.size(1))
+                instr += f"mov {setSize( result, a.type.size(1))}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
             rfree(a.accessor)
             o = a.type.copy()
             o.ptrdepth -= 1
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
+
+        elif(a.accessor == "pop"):
+            result = ralloc(False)
+            instr += loadToReg(result, a.accessor)
+            a.accessor = result
+            areg = ralloc(a.type.isflt())
+
+            if(a.type.isflt()):
+                instr += f"movsd {areg}, [{a.accessor}]\n"
+            else:
+                instr += maskset(areg, a.type.size(1))
+                instr += f"mov {setSize( areg, a.type.size(1))}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
+            rfree(a.accessor)
+            rfree(result)
+
+            o = a.type.copy()
+            o.ptrdepth -= 1
+            return instr, o, EC.ExpressionComponent(
+                areg, o.copy(), token=a.token)
 
     def typecast(self, a, e, o):
         instr = ""
@@ -641,6 +689,24 @@ class RightSideEvaluator(ExpressionEvaluator):
 class LeftSideEvaluator(ExpressionEvaluator):
     def __init__(self, fn):
         self.fn = fn
+
+    def incdec(self, a, op, o):
+        needload = True
+        instr = ""
+        instr += bringdown_memloc(a)
+        if(a.isRegister()):
+            areg = a.accessor
+            needload = False
+        else:
+            areg = ralloc(False)
+        if(needload):
+            instr += loadToReg(areg, a.accessor)
+
+        cmd = "inc" if op == "++" else "dec"
+
+        instr += Instruction(cmd, [areg])
+        o = a.type.copy()
+        return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
 
     # Do an operation with a op b -> o:DType
 

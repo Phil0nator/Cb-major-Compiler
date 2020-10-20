@@ -63,8 +63,11 @@ class Function:
         # stack containing labels to jump to if the "break" keyword is used
         self.breaks = []
 
-        self.current_token = self.tokens[0]     # current token
+        self.current_token = self.tokens[0] if len(self.tokens) > 0 else None     # current token
         self.ctidx = 0                          # corrent token index
+
+        # extern is in reference to c-standard names vs .k names
+        self.extern = False
 
         self.destructor_text = ""
 
@@ -903,6 +906,11 @@ class Function:
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
         self.addline(insters)
+
+        # check for early eol before rightside
+        if(self.current_token.tok == T_ENDL):
+            throw(ExpectedLValue(self.current_token))
+
         setter = self.current_token
         self.advance()
 
@@ -991,7 +999,7 @@ class Function:
                 self.advance()
 
     def compile(self):      # main
-
+        if(self.current_token is None): return
         self.addline(functionlabel(self))  # label
         # stack allocator (size undetermined at this point)
         self.addline("/*%%ALLOCATOR%%*/")

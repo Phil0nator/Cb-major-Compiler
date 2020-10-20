@@ -196,7 +196,6 @@ class Compiler:
 
     # isolate a function and build a Function object
     def createFunction(self):
-        self.advance()
 
         rettype = self.checkType()
 
@@ -241,6 +240,10 @@ class Compiler:
         # check for early end (just declaration, no assignment)
         if(self.current_token.tok == T_ENDL):
             self.advance()
+
+            f = Function(name, parameters, rettype, self, [])
+            self.functions.append(f)
+
             return
 
         if(self.current_token.tok != T_OPENSCOPE):
@@ -317,6 +320,7 @@ class Compiler:
 
                 # member function
                 if(self.current_token.value == "function"):
+                    self.advance()
                     self.createFunction()
                     f = self.functions.pop()
                     gv = self.globals.pop()
@@ -485,10 +489,17 @@ class Compiler:
                         throw(ExpectedSemicolon(self.current_token))
                     self.advance()
 
+                elif(self.current_token.value == "extern"):
+                    self.advance()
+                    self.createFunction()
+                    fn = self.functions[-1]
+                    fn.extern = True
+
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()
 
                 elif (self.current_token.value == "function"):
+                    self.advance()
                     self.createFunction()
 
             else:

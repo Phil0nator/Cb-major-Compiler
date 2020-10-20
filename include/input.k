@@ -1,9 +1,11 @@
 #ifndef __INPUT
 #define __INPUT 1
 
+#include "stddef.k"
+#include "printf.k"
+#include "memory.k"
+#include "filesystem.k"
 
-
-typedef void* FILE_T;
 
 function int getInt(char* msg){
     __asm{"
@@ -17,12 +19,7 @@ function unsigned int getUint(char* msg){
     GET_UDEC 8, rax
     "}
 }
-function char getChar(char* msg){
-    __asm{"
-    PRINT_STRING [rdi]
-    GET_CHAR rax
-    "}
-}
+
 function char getchar(){
     __asm{"call getchar"}
 }
@@ -39,11 +36,7 @@ function void getString(char* buffer, int maxlen, char* msg){
     GET_STRING [rdi], rsi 
     "}
 }
-function void fgets(char* buffer, int len, FILE_T file){
 
-    __asm{"call fgets"}
-
-}
 
 function void get_stdin(){
     __asm{"call get_stdin"}
@@ -56,7 +49,8 @@ function char* getString(char* msg){
     int c;
     size_t len = 0;
     printf("%s", msg);
-    c = getchar();
+
+    fgets(STDIN, &c, 1);
 
     while (c != 10) {
         //str[len] = c;
@@ -64,7 +58,8 @@ function char* getString(char* msg){
             size = size * 2;
             str = realloc(str, size);
         }
-        c = getchar();
+        str[len] = c;
+        fgets(STDIN, &c, 1);
         len=len+1;
     }
     str[len+1]=0;
@@ -77,37 +72,22 @@ function char* getString(char* msg){
 
 function int toInteger(char* str){
 
-    __asm{
-"
-mov r8, rdi
-xor rax, rax
-xor rbx, rbx
-mov rcx, -1
-mov rdx, 1
-_int_toint_lp1:
-inc rcx
-mov bl, [r8+rcx]
-cmp bl, '0'
-jl __int_toint_end
-cmp bl, '9'
-jg __int_toint_end
-
-cmp bl, 0
-jne _int_toint_lp1
-dec r8
-_int_toint_lp2:
-xor rbx, rbx
-mov bl, [ r8+rcx ]
-
-sub rbx, 48 ; offset
-imul rbx, rdx
-add rax, rbx
-imul rdx, 10
-
-loop _int_toint_lp2
-__int_toint_end:
-"
+    int l = strlen(str);
+    bool positive = true;
+    if(str[0] == '-'){
+        positive=false;
+        str=str+1;
+        l-=1;
     }
+
+    int total = 0;
+    for(int i = 0; i < l;i+=1){
+        total = (total*10)+(str[i]-'0'); 
+    }
+    if(!positive){
+        return 0-total;
+    }
+    return total;
 
 
 }

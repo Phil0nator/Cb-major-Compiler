@@ -73,6 +73,7 @@ def main():
     asm = asm.replace("%%TEXT%%", c.text)
     asm = asm.replace("%%INITIALIZE%%", c.initializers)
     asm = asm.replace("%%ENTRY%%", c.entry)
+    asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
 
     # cleanup
     asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
