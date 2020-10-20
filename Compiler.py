@@ -106,8 +106,9 @@ class Compiler:
         return next((True for tdef in self.tdefs if (
             (tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta)), False)
 
-    def getType(self, q):               # get type of name q
+    def getType(self, qu):               # get type of name q
         pd = 0
+        q = f"{qu}"
         pd = q.count(".")
         q = q.replace(".", "")
 
@@ -242,6 +243,12 @@ class Compiler:
             self.advance()
 
             f = Function(name, parameters, rettype, self, [])
+            self.globals.append(
+                Variable(
+                    f.returntype.copy(),
+                    f.name,
+                    glob=True))
+
             self.functions.append(f)
 
             return
@@ -493,7 +500,31 @@ class Compiler:
                     self.advance()
                     self.createFunction()
                     fn = self.functions[-1]
+                    config.__CEXTERNS__ += "extern " + \
+                        functionlabel(fn)[:-2] + "\n"
+
+                elif(self.current_token.value == "cextern"):
+                    self.advance()
+                    self.createFunction()
+                    fn = self.functions[-1]
                     fn.extern = True
+                    config.__CEXTERNS__ += "CEXTERN" + \
+                        functionlabel(fn)[:-2] + "\n"
+
+                elif(self.current_token.value == "__cdecl"):
+                    self.advance()
+                    self.createFunction()
+                    fn = self.functions[-1]
+                    config.__CEXTERNS__ += "global " + \
+                        functionlabel(fn)[:-2] + ""
+                    fn.extern = True
+
+                elif(self.current_token.value == "global"):
+                    self.advance()
+                    self.createFunction()
+                    fn = self.functions[-1]
+                    config.__CEXTERNS__ += "global " + \
+                        functionlabel(fn)[:-2] + ""
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()
@@ -507,6 +538,14 @@ class Compiler:
 
     # compile all functions and fill in raw assembly info
     def finalize(self):
+
+        # the Compiler needs to find the best suitable entrypoint.
+        # The first function called main will be used, reguardless of
+        # returntype, or parameters.
+        for f in self.functions:
+            if f.name == "main":
+                self.entry = f
+                f.extern = True
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.
@@ -522,11 +561,4 @@ class Compiler:
             if(config.DO_DEBUG):
                 f.asm = f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
 
-            self.text = f"{f.asm}{self.text}"
-
-        # now that all the functions have been compiled, the Compiler needs to find the best suitable entrypoint.
-        # The first function called main will be used, reguardless of
-        # returntype, or parameters.
-        for f in self.functions:
-            if f.name == "main":
-                self.entry = "call %s" % functionlabel(f).replace(":", "")
+            self.text = f"{self.text}{f.asm}"

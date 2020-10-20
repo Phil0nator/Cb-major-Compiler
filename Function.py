@@ -63,7 +63,8 @@ class Function:
         # stack containing labels to jump to if the "break" keyword is used
         self.breaks = []
 
-        self.current_token = self.tokens[0] if len(self.tokens) > 0 else None     # current token
+        self.current_token = self.tokens[0] if len(
+            self.tokens) > 0 else None     # current token
         self.ctidx = 0                          # corrent token index
 
         # extern is in reference to c-standard names vs .k names
@@ -999,7 +1000,8 @@ class Function:
                 self.advance()
 
     def compile(self):      # main
-        if(self.current_token is None): return
+        if(self.current_token is None):
+            return
         self.addline(functionlabel(self))  # label
         # stack allocator (size undetermined at this point)
         self.addline("/*%%ALLOCATOR%%*/")

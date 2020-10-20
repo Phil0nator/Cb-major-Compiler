@@ -69,11 +69,9 @@ def main():
     # feed to template
     asm = "%s" % fileTemplate
     asm = asm.replace("%%HEAP%%", c.heap)
-    asm = asm.replace("%%CONSTANTS%%", c.constants)
     asm = asm.replace("%%TEXT%%", c.text)
-    asm = asm.replace("%%INITIALIZE%%", c.initializers)
-    asm = asm.replace("%%ENTRY%%", c.entry)
     asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
+    asm = asm.replace("%%CONSTANTS%%", c.constants)
 
     # cleanup
     asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
@@ -86,7 +84,13 @@ def main():
     os.system(assemble(config.__fileoutput__))
     if(config.__executable__):
         os.system(link(config.__fileoutput__, config.__fileoutput__))
-        os.remove(config.__fileoutput__ + ".o")
+    else:
+        os.system(
+            linkonly(
+                config.__fileoutput__ +
+                ".o",
+                config.__fileoutput__))
+    os.remove(config.__fileoutput__ + ".o")
 
     if(not config.__tonasm__):
         os.remove(config.__fileoutput__ + ".asm")

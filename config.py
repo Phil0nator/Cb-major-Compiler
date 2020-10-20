@@ -44,6 +44,8 @@ parser.add_argument("-p", "--profile", action="store_true", default=False,
                     help="Print profiling statistics about the compiler for debugging/optimization")
 parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
+parser.add_argument("-l", "--link", action="append", help="Link object files")
+
 
 args = parser.parse_args()
 __fileinput__ = args.input
@@ -55,6 +57,7 @@ DO_DEBUG = args.debug
 __profile__ = args.profile
 __oplevel__ = 1
 __executable__ = not args.object
+__linkables__ = args.link
 
 __CEXTERNS__ = ""
 

@@ -3,7 +3,21 @@ import config
 
 
 def link(i, o):
-    return f"gcc \"{config.includepath}/macro.c\" -Wimplicit-function-declaration \"{i}\".o -no-pie -lm -o \"{o}\""
+    if(config.__linkables__):
+        links = config.__linkables__
+        linktext = f"\"{links[0]}\""
+
+        for l in links[1:]:
+            linktext = f"{linktext} \"{l}\""
+        linktext += f"{i}.o"
+    else:
+        linktext = f"\"{i}.o\""
+    return f"gcc \"{config.includepath}/macro.c\" {linktext}  -no-pie -lm -o \"{o}\""
+
+
+def linkonly(i, o):
+    # return f"ld {i} -E --dynamic-linker -felf64 -r -o {o}"
+    return ""
 
 
 def assemble(o):

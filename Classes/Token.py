@@ -118,7 +118,9 @@ KEYWORDS = [
     "typedef",
 
     "extern",
-    "__cdecl"
+    "cextern",
+    "__cdecl",
+    "global"
 
 
 
