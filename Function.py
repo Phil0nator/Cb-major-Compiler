@@ -71,6 +71,7 @@ class Function:
     def advance(self):                              # advance token
         self.ctidx += 1
         self.current_token = self.tokens[self.ctidx]
+        return self.current_token
 
     # get the raw asm label used to call this function
 
@@ -95,20 +96,11 @@ class Function:
 
     def getVariable(self, q):
 
-        for v in self.variables:
-            if (v.name == q):
-                return v
-
-        local = [v for v in self.variables if v.name == q]
-        if(len(local) != 0):
-            return local[0]
-
-        globq = self.compiler.getGlob(q)
-        if(globq is not None):
-            return globq
-        return None
+        return next((v for v in self.variables if v.name == q),
+                    self.compiler.getGlob(q))
 
     # add a given variable, and set its stack offset
+
     def addVariable(self, v):
 
         v.offset = self.stackCounter

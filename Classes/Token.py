@@ -58,6 +58,19 @@ MULTIOPERS = ["->", "!=", "<=", ">=", "==", "+=", "*=",
 T_DIGITS = "0123456789"
 T_IDCHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 
+# c >= '0' and c <= '9'
+
+
+def isdigit(c):
+    return (c) >= 48 and (c) <= 57
+
+# (c <= 'Z' and c >= 'A') or (c >= 'a' and c <= 'z') or c == '_'
+
+
+def isidchar(c):
+    return ((c) >= 97 and (c) <= 122) or ((c) >= 65 and (c) <= 90) or c == 95
+
+
 T_EQUALS = "="
 
 T_OPENP = "("

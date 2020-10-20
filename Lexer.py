@@ -36,7 +36,7 @@ class Lexer:
             self.loc.ch += 1
             if self.ch == "\n":
                 self.loc.line += 1
-            return
+            return self.ch
         else:
             throw(UnexepectedEOFError(
                 Token(self.ch, self.ch, self.loc.copy(), self.loc)))
@@ -92,11 +92,11 @@ class Lexer:
             self.advance()
             return Token(T.T_STRING, "", begin, self.loc.copy())
         content = self.ch
-        self.advance()
+        ch = self.advance()
 
-        while(self.ch != "\""):
-            content += self.ch
-            self.advance()
+        while(ch != "\""):
+            content += ch
+            ch = self.advance()
             if(self.chidx == len(self.raw) - 1):
                 throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         self.advance()
@@ -115,15 +115,20 @@ class Lexer:
         value = self.ch
         begin = self.loc.copy()
         self.advance()
-        pchars = T.T_IDCHARS + T.T_DIGITS
-
-        for ch in self.raw[self.chidx:]:
-            if(ch in pchars):
-                value += ch
+        raw = self.raw
+        chidx = self.chidx
+        count = 0
+        for ch in raw[chidx:]:
+            char = ord(ch)
+            if(T.isidchar(char) or T.isdigit(char)):
+                count += 1
             else:
                 break
-        self.chidx += len(value) - 2
-        self.loc.ch += len(value) - 2
+
+        value = f"{value}{raw[chidx:chidx+count]}"
+        lv = len(value) - 2
+        self.chidx += lv
+        self.loc.ch += lv
         self.advance()
         if(value in T.KEYWORDS):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
@@ -217,7 +222,7 @@ class Lexer:
                 token = self.buildMultichar()
                 tokens.append(token)
 
-            elif (self.ch in T.T_DIGITS):
+            elif (T.isdigit(ord(self.ch))):
                 token = self.buildNumber()
                 tokens.append(token)
 
@@ -229,7 +234,7 @@ class Lexer:
                 token = self.buildChar()
                 tokens.append(token)
 
-            elif (self.ch in T.T_IDCHARS):
+            elif (T.isidchar(ord(self.ch))):
                 token = self.buildAmbiguous()
                 tokens.append(token)
 

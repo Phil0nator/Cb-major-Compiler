@@ -81,21 +81,16 @@ class Compiler:
         return self.getType(q) is not None
 
     def isIntrinsic(self, q):           # return: if q is primitive
-
-        out = [t for t in INTRINSICS if self.Tequals(t.name, q)]
-        return out[0] if len(out) != 0 else None
+        return next((t for t in INTRINSICS if self.Tequals(t.name, q)), None)
 
     def ismember(self, q):
         return q in self.possible_members
 
     def getGlob(self, q):               # get global variable of name q
-        out = [g for g in self.globals if g.name == q]
-        return out[0] if len(out) != 0 else None
+        return next((g for g in self.globals if g.name == q), None)
 
     def getFunction(self, q):           # get first function of name q
-
-        out = [f for f in self.functions if f.name == q]
-        return out[0] if len(out) != 0 else None
+        return next((f for f in self.functions if f.name == q), None)
 
     def advance(self):                  # move to next token
         self.ctidx += 1
@@ -108,24 +103,20 @@ class Compiler:
     def Tequals(self, ta, tb):          # determine DType equality (including typedefs)
         if(ta == tb):
             return True
-
-        for tdef in self.tdefs:
-            if(tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta:
-                return True
-
-        return False
+        return next((True for tdef in self.tdefs if (
+            (tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta)), False)
 
     def getType(self, q):               # get type of name q
         pd = 0
         pd = q.count(".")
         q = q.replace(".", "")
 
-        out = [t for t in self.types if t.name == q]
-        if(len(out) == 0):
+        out = next((t for t in self.types if t.name == q), None)
+        if(out is None):
             return None
-        out[0] = out[0].copy()
-        out[0].ptrdepth = pd
-        return out[0]
+        out = out.copy()
+        out.ptrdepth = pd
+        return out
 
     def checkType(self):                # check the next tokens for a type, and return it
 

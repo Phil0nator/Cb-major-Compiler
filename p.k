@@ -11,6 +11,11 @@ function int main(int argc, char** argv){
     print("Hellow");
     print(test());
     print(__TIME__);
+
+    int a = argc+test()/26;
+
+    print(a);
+
     fd_t sock = NORMAL_SOCKET;
     if(sock < 0){
         print("Could not open socket");

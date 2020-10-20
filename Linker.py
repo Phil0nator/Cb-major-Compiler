@@ -7,4 +7,4 @@ def link(i, o):
 
 
 def assemble(o):
-    return f"nasm -felf64 {o}.asm -w+number-overflow"
+    return f"nasm -felf64 {o}.asm -w-number-overflow"

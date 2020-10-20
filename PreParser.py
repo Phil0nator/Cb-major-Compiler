@@ -107,10 +107,7 @@ class PreProcessor:
         self.dels += 1
 
     def getDefn(self, name):                    # get a definition by name
-        for d in self.definitions:
-            if d[0] == name:
-                return d
-        return None
+        return next((d for d in self.definitions if d[0] == name), None)
 
     def checkToks(self, tok):                   # check for specific tokens
         if(self.current_token.tok not in tok):

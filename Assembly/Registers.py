@@ -58,6 +58,18 @@ r13b = "r13b"
 r14b = "r14b"
 r15b = "r15b"
 
+
+REGISTERS = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+             "al", "bl", "cl", "dl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b",
+             "eax", "ebx", "ecx", "edx", "esi", "edi", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d",
+             "ax", "bx", "cx", "dx", "si", "di", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"
+             ]
+if(REGISTERS[-1] == "r15w"):
+    for i in range(15):
+        REGISTERS.append(f"xmm{i}")
+        REGISTERS.append(f"ymm{i}")
+
+
 boolchar_version = {
 
     rax: al,

@@ -1,5 +1,5 @@
 import config
-from Assembly.Registers import ralloc, rfree, rfreeAll
+from Assembly.Registers import ralloc, rfree, rfreeAll, REGISTERS
 ############################
 #   The ExpressionComponent class is used to represent parts of a leftside expression.
 #       It includes ID's, constants, operators, etc...
@@ -25,7 +25,7 @@ class ExpressionComponent:
 
     def isRegister(self):  # bool
         return isinstance(
-            self.accessor, str) and self.accessor in config.REGISTERS
+            self.accessor, str) and self.accessor in REGISTERS
 
     def isStackpop(self):  # bool
         return self.accessor == "pop"
