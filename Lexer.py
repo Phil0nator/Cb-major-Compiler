@@ -118,6 +118,7 @@ class Lexer:
         raw = self.raw
         chidx = self.chidx
         count = 0
+
         for ch in raw[chidx:]:
             char = ord(ch)
             if(T.isidchar(char) or T.isdigit(char)):
