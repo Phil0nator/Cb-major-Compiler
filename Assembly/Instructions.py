@@ -60,8 +60,6 @@ class Peephole:
                 continue
             op, dest, source, flags = self.parseLine(l)
 
-
-
             # redundant push and pop instructions
             if(prev[0] == "push" and op == "pop"):
 
@@ -71,14 +69,12 @@ class Peephole:
                     dest != prev[1]) else None
                 lines[i] = None
 
-
             # redunant mov instructions
             if(prev[0] in ["mov", "movq", "movsd"] and op == prev[0]):
-                if(prev[1] == source and not ("[" in prev[2] and "[" in dest ) and not isdigit(ord(prev[2][0]))):
+                if(prev[1] == source and not ("[" in prev[2] and "[" in dest) and not isdigit(ord(prev[2][0]))):
                     lines[i] = None
                     lines[pi] = Instruction(
                         op, [dest, prev[2]]) if dest != prev[2] else None
-
 
             # zeroing-by-mov is less efficient than xor
             if(op == "mov" and dest in REGISTERS and source == "0"):

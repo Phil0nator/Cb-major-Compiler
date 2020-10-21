@@ -88,9 +88,11 @@ class ExpressionEvaluator:
                 areg = ralloc(False)
                 newinstr += loadToReg(areg, a.accessor)
             shiftdir = "<<" if op == "*" else ">>"
-            newinstr += shiftInt(valueOf(areg), shiftmul(b.accessor), shiftdir, a.type.signed)
+            newinstr += shiftInt(valueOf(areg),
+                                 shiftmul(b.accessor),
+                                 shiftdir,
+                                 a.type.signed)
 
-            
             a.accessor = areg
             apendee = a
         newt = a.type.copy()

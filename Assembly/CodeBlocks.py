@@ -284,7 +284,7 @@ def cmpF(areg, breg, op):
 
 def boolmath(areg, breg, op):
     cmd = ""
-    if(op == "|" or op =="||"):
+    if(op == "|" or op == "||"):
         cmd = "or"
     elif(op == "&" or op == "&&"):
         cmd = "and"

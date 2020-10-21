@@ -64,11 +64,10 @@ def calculateConstant(a, b, op):
             int(a.accessor & b.accessor), INT.copy(), constint=True)
     elif(op == "|"):
         return EC.ExpressionComponent(
-            int(a.accessor | b.accessor), INT.copy(), constint=True)       
+            int(a.accessor | b.accessor), INT.copy(), constint=True)
     elif(op == "^"):
         return EC.ExpressionComponent(
             int(a.accessor ^ b.accessor), INT.copy(), constint=True)
-
 
 
 # get result of a op b while taking initializer value for a and b if they
