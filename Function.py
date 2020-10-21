@@ -72,7 +72,7 @@ class Function:
 
         self.destructor_text = ""
 
-        self.peephole = Peephole()
+        self.peephole = Peephole()              # optimizer
 
     def advance(self):                              # advance token
         self.ctidx += 1

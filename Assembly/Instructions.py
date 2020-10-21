@@ -2,6 +2,24 @@ import config
 from Classes.Token import isdigit
 from Assembly.Registers import REGISTERS
 
+################################################
+#
+#   The Peephole is used to optimize a small segment of
+#       already-compiled assembly code based on the
+#       optimization level set by -O2, or -O3.
+#
+#       -O2 will simply attempt to eliminate redundant
+#       push, pop, mov, and zeroing operations
+#
+#       -O3 will attempt to predetermine values that will
+#       always end up being the same, and will aggressively
+#       alter the given code for a faster runtime.
+#
+#
+#
+#
+#################################################
+
 
 class Peephole:
     def __init__(self):
@@ -25,7 +43,7 @@ class Peephole:
         self.instructions = ""
 
     def opl3(self):
-        return opl2()
+        return self.opl2()
 
     def opl2(self):
         lines = self.instructions.replace(
@@ -42,6 +60,9 @@ class Peephole:
                 continue
             op, dest, source, flags = self.parseLine(l)
 
+
+
+            # redundant push and pop instructions
             if(prev[0] == "push" and op == "pop"):
 
                 lines[pi] = Instruction(
@@ -50,12 +71,16 @@ class Peephole:
                     dest != prev[1]) else None
                 lines[i] = None
 
+
+            # redunant mov instructions
             if(prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
                 if(prev[1] == source and "[" not in prev[2] and not isdigit(ord(prev[2][0]))):
                     lines[i] = None
                     lines[pi] = Instruction(
                         op, [dest, prev[2]]) if dest != prev[2] else None
 
+
+            # zeroing-by-mov is less efficient than xor
             if(op == "mov" and dest in REGISTERS and source == "0"):
                 lines[i] = Instruction("xor", [dest, dest])
 
