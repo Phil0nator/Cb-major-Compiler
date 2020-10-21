@@ -279,14 +279,14 @@ def cmpI(areg, breg, signed, op):
 def cmpF(areg, breg, op):
 
     comparator = getComparater(False, op)
-    return f"ucomisd {areg}, {breg}\nset{comparator} {al}\n"
+    return f"ucomisd {areg}, {breg}\nset{comparator} {'al'}\n"
 
 
 def boolmath(areg, breg, op):
     cmd = ""
-    if(op == "||"):
+    if(op == "|" or op =="||"):
         cmd = "or"
-    elif(op == "&&"):
+    elif(op == "&" or op == "&&"):
         cmd = "and"
     elif(op == "^"):
         cmd = "xor"
@@ -296,14 +296,15 @@ def boolmath(areg, breg, op):
         return f"not {areg}\n"
 
     instr = f"{cmd} {areg}, {breg}\n"
+
     return instr
 
 
 def bitmathf(areg, breg, op):
     cmd = ""
-    if(op == "&&"):
+    if(op == "&&" or op == "&"):
         cmd = "pand"
-    elif(op == "||"):
+    elif(op == "||" or op == "|"):
         cmd = "por"
     elif(op == "^"):
         cmd = "pxor"
@@ -364,4 +365,4 @@ def castABD(a, b, areg, breg, newbreg):
 
 
 def shiftmul(i):
-    return int(math.log2(i))
+    return int(math.log2(i)) if i > 0 else 0

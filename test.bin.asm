@@ -1240,11 +1240,12 @@ mov rbx, QWORD[rbp-24]
 xor rdx, rdx
 mov rax, rbx
 idiv rcx
-mov QWORD[rbp-32], rdx
+ mov rbx, rdx
+mov QWORD[rbp-32], rbx
 mov rcx, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 sub rbx, rcx
-shr rbx, 2
+sar rbx, 2
 mov QWORD[rbp-40], rbx
 mov QWORD[rbp-48], 0
 jmp _LFORCMP_0x1
@@ -1853,7 +1854,8 @@ mov rbp, rsp
 sub rsp, 8
 mov rax, 0
 call _int_rdrand_p
-mov [rand_next], rax
+mov rbx, rax
+mov [rand_next], rbx
 ___void_srand_p__return:
 leave
 ret
@@ -1986,6 +1988,8 @@ mov DIL, bl
 and rdi, 0xff
 xor rax, rax
 call _bool_isdigit_pchar
+push rax
+pop rax
 and al, 1
 jz _LIFPOST_0x14
 mov rcx, QWORD[rbp-32]
@@ -2013,7 +2017,8 @@ _LIFELSE_0x15:
 _LWHILECMP_0x12:
 mov rbx, 1
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 and al, 1
 jnz _LWHILESTART_0x11
 _LWHILEEND_0x13:
@@ -2061,7 +2066,8 @@ _LIFELSE_0x17:
 _LWHILECMP_0xf:
 mov rbx, 1
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 and al, 1
 jnz _LWHILESTART_0xe
 _LWHILEEND_0x10:
@@ -2211,6 +2217,8 @@ mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 xor rax, rax
 call _size_t_strlen_pchar.
+push rax
+pop rax
 mov QWORD[rbp-24], rax
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
@@ -2221,7 +2229,8 @@ mov r10, QWORD[rbp-24]
 mov rdi, r10
 xor rax, rax
 call _void._malloc_psize_t
-mov [rbx], rax
+mov rcx, rax
+mov [rbx], rcx
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
@@ -2244,6 +2253,8 @@ mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 xor rax, rax
 call _size_t_strlen_pchar.
+push rax
+pop rax
 mov QWORD[rbp-24], rax
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+0]
@@ -2257,6 +2268,8 @@ add rbx, rcx
 mov rsi, rbx
 xor rax, rax
 call _void._realloc_pvoid.size_t
+push rax
+pop rax
 mov QWORD[rbp-32], rax
 mov rbx, QWORD[rbp-32]
 mov rcx, [nullptr]
@@ -2324,7 +2337,8 @@ and al, 1
 jz _LIFPOST_0x22
 mov rbx, 0
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 jmp ___bool_substrequ_pchar.char.size_t__return
 jmp _LIFELSE_0x23
 _LIFPOST_0x22:
@@ -2345,7 +2359,8 @@ jnz _LFORTOP_0x1e
 _LFOREND_0x21:
 mov rbx, 1
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 jmp ___bool_substrequ_pchar.char.size_t__return
 ___bool_substrequ_pchar.char.size_t__return:
 leave
@@ -2376,7 +2391,8 @@ and al, 1
 jz _LIFPOST_0x27
 mov rbx, 0
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 jmp ___bool_strequ_pchar.char.__return
 jmp _LIFELSE_0x28
 _LIFPOST_0x27:
@@ -2386,7 +2402,7 @@ mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*1]
 mov bl, byte[rbx]
 and rbx, 0xff
-xor rcx, rcx
+mov rcx, 0
 mov r10, rbx
 cmp rcx, r10
 sete cl
@@ -2404,13 +2420,15 @@ mov QWORD[rbp-24], rcx
 _LWHILECMP_0x25:
 mov rbx, 1
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 and al, 1
 jnz _LWHILESTART_0x24
 _LWHILEEND_0x26:
 mov rbx, 1
 and rcx, 0xff
-mov rax, rbx
+mov rcx, rbx
+mov rax, rcx
 jmp ___bool_strequ_pchar.char.__return
 ___bool_strequ_pchar.char.__return:
 leave
@@ -2438,7 +2456,8 @@ mov r10, QWORD[rbp-40]
 mov rdi, r10
 xor rax, rax
 call _void._malloc_psize_t
-mov [rbx], rax
+mov rcx, rax
+mov [rbx], rcx
 mov rbx, QWORD[rbp-16]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
@@ -2470,6 +2489,8 @@ mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 xor rax, rax
 call _size_t_strlen_pchar.
+push rax
+pop rax
 mov QWORD[rbp-24], rax
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
@@ -2506,6 +2527,8 @@ mov rbx, QWORD[rbp-24]
 mov rdx, rbx
 xor rax, rax
 call _bool_substrequ_pchar.char.size_t
+push rax
+pop rax
 and al, 1
 jz _LIFPOST_0x31
 mov rbx, QWORD[rbp-40]
@@ -2641,6 +2664,8 @@ mov rbx, QWORD[rbp-32]
 mov rdx, rbx
 xor rax, rax
 call _fd_t_open_pchar.intmode_t
+push rax
+pop rax
 mov QWORD[rbp-48], rax
 mov rcx, 140
 mov rbx, QWORD[rbp-24]
@@ -2678,6 +2703,8 @@ mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 xor rax, rax
 call _size_t_strlen_pchar.
+push rax
+pop rax
 mov QWORD[rbp-24], rax
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
@@ -2687,6 +2714,8 @@ mov rbx, QWORD[rbp-24]
 mov rdx, rbx
 xor rax, rax
 call _ssize_t_write_pfd_tchar.size_t
+push rax
+pop rax
 mov QWORD[rbp-32], rax
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
@@ -2717,7 +2746,7 @@ mov rdx, rbx
 xor rax, rax
 call _ssize_t_read_pfd_tchar.size_t
 push rax
-xor rcx, rcx
+mov rcx, 0
 pop rbx
 cmp rbx, rcx
 setg bl
@@ -2745,6 +2774,8 @@ xor rsi, rsi
 mov rdx, 2
 xor rax, rax
 call _int_lseek_pfd_tintint
+push rax
+pop rax
 mov QWORD[rbp-16], rax
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
@@ -2759,6 +2790,8 @@ mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 xor rax, rax
 call _void._malloc_psize_t
+push rax
+pop rax
 mov QWORD[rbp-24], rax
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
@@ -2769,7 +2802,7 @@ mov rdx, rbx
 xor rax, rax
 call _ssize_t_read_pfd_tchar.size_t
 push rax
-xor rcx, rcx
+mov rcx, 0
 pop rbx
 cmp rbx, rcx
 setl bl
@@ -2856,6 +2889,8 @@ mov rbx, QWORD[rbp-16]
 mov rdi, rbx
 xor rax, rax
 call _void._malloc_psize_t
+push rax
+pop rax
 mov QWORD[rbp-24], rax
 mov QWORD[rbp-40], 0
 mov rdi, STRING_CONSTANT_10
@@ -2879,14 +2914,15 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x44
 mov rcx, QWORD[rbp-16]
-shl rcx, 1
+sal rcx, 1
 mov QWORD[rbp-16], rcx
 mov rdi, QWORD[rbp-24]
 mov rcx, QWORD[rbp-16]
 mov rsi, rcx
 xor rax, rax
 call _void._realloc_pvoid.size_t
-mov QWORD[rbp-24], rax
+mov rbx, rax
+mov QWORD[rbp-24], rbx
 jmp _LIFELSE_0x45
 _LIFPOST_0x44:
 _LIFELSE_0x45:
@@ -2924,6 +2960,8 @@ mov rbx, QWORD[rbp-40]
 mov rsi, rbx
 xor rax, rax
 call _void._realloc_pvoid.size_t
+push rax
+pop rax
 jmp ___char._getString_pchar.__return
 ___char._getString_pchar.__return:
 leave
@@ -2937,10 +2975,13 @@ mov rbx, QWORD[rbp-8]
 mov rdi, rbx
 xor rax, rax
 call _size_t_strlen_pchar.
+push rax
+pop rax
 mov QWORD[rbp-16], rax
 mov rbx, 1
 and rcx, 0xff
-mov QWORD[rbp-24], rbx
+mov rcx, rbx
+mov QWORD[rbp-24], rcx
 mov rcx, 0
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*1]
@@ -3005,7 +3046,7 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x4c
 mov rcx, QWORD[rbp-32]
-xor rbx, rbx
+mov rbx, 0
 sub rbx, rcx
 mov rax, rbx
 jmp ___int_toInteger_pchar.__return
@@ -3112,9 +3153,16 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 40
 mov [rbp-8], rdi
 mov [rbp-16], rsi
+mov QWORD[rbp-24], 26
+mov QWORD[rbp-32], 25
+mov rbx, QWORD[rbp-24]
+shl rbx, 5
+mov rdi, rbx
+xor rax, rax
+call _void_print_puint
 jmp __main__return
 __main__return:
 leave

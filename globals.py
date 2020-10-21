@@ -203,7 +203,7 @@ def operatorISO(op):
 # optimizations
 def canShiftmul(val):
 
-    x = math.log2(val)
+    x = math.log2(val) if val > 0 else 3.14
     if(not x.is_integer()):
         return False
     return True
