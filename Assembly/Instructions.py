@@ -73,8 +73,8 @@ class Peephole:
 
 
             # redunant mov instructions
-            if(prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
-                if(prev[1] == source and "[" not in prev[2] and not isdigit(ord(prev[2][0]))):
+            if(prev[0] in ["mov", "movq", "movsd"] and op == prev[0]):
+                if(prev[1] == source and not ("[" in prev[2] and "[" in dest ) and not isdigit(ord(prev[2][0]))):
                     lines[i] = None
                     lines[pi] = Instruction(
                         op, [dest, prev[2]]) if dest != prev[2] else None

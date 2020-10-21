@@ -53,15 +53,22 @@ def calculateConstant(a, b, op):
     elif(op == "<<"):
         return EC.ExpressionComponent(
             int(a.accessor << b.accessor), INT.copy(), constint=True)
-    elif(op == "||" or op == "|"):
+    elif(op == "||"):
         return EC.ExpressionComponent(
             int(a.accessor or b.accessor), INT.copy(), constint=True)
-    elif(op == "&&" or op == "&"):
+    elif(op == "&&"):
         return EC.ExpressionComponent(
             int(a.accessor and b.accessor), INT.copy(), constint=True)
+    elif(op == "&"):
+        return EC.ExpressionComponent(
+            int(a.accessor & b.accessor), INT.copy(), constint=True)
+    elif(op == "|"):
+        return EC.ExpressionComponent(
+            int(a.accessor | b.accessor), INT.copy(), constint=True)       
     elif(op == "^"):
         return EC.ExpressionComponent(
             int(a.accessor ^ b.accessor), INT.copy(), constint=True)
+
 
 
 # get result of a op b while taking initializer value for a and b if they

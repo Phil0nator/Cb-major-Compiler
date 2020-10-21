@@ -111,7 +111,8 @@ def avx_loadToReg(loadop, avxreg, arr, idx):
         out += (f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out += (f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     else:
-        out += (f"shl {idx}, {shiftmul(arr.t.csize())}\n")
+        s = shiftmul(arr.t.csize())
+        out += (f"shl {idx}, {s}\n") if s != 0 else ""
         out += (f"add {idx}, [rbp-{arr.offset}]\n")
         out += (f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     return out
@@ -156,7 +157,8 @@ def avx_dropToAddress(loadop, avxreg, arr, idx):
         out += (f"sub {idx}, {arr.offset+arr.stackarrsize}\n")
         out += (f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     else:
-        out += (f"shl {idx}, {shiftmul(arr.t.csize())}\n")
+        s = shiftmul(arr.t.csize())
+        out += (f"shl {idx}, {s}\n") if s != 0 else ""
         out += (f"add {idx}, [rbp-{arr.offset}]\n")
         out += (f"{avx_getLoader(loadop)} [{idx}], {avxreg}\n")
     return out
