@@ -72,7 +72,6 @@ class Function:
 
         self.destructor_text = ""
 
-
         self.peephole = Peephole()
 
     def advance(self):                              # advance token
@@ -127,7 +126,6 @@ class Function:
             self.peephole.flush()
         else:
             self.asm = f"{self.asm}{l}\n"
-
 
     def addcomment(self, c):                        # add a comment to the assembly
         self.asm += ";" + c + "\n"
@@ -603,7 +601,7 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                instructions.addline( self.evaluateRightsideExpression(EC.ExpressionComponent(
+                instructions.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(
                     sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
                 )
                 sseused += 1
@@ -620,10 +618,10 @@ class Function:
                 instructions.addline(self.evaluateRightsideExpression(ec))
                 # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
-                    instructions.addline( Instruction("mov", [setSize(norm_parameter_registers[normused],
-                                                                fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
+                    instructions.addline(Instruction("mov", [setSize(norm_parameter_registers[normused],
+                                                                     fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
 
-                    instructions.addline( maskset(
+                    instructions.addline(maskset(
                         norm_parameter_registers[normused], fn.parameters[i].t.csize()))
                     rfree(result)
                 normused += 1
@@ -641,7 +639,7 @@ class Function:
         instructions.addline(Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
-        instructions.addline( fncall(fn) )
+        instructions.addline(fncall(fn))
         return instructions.get(), fn
 
     # construct expression components from tokens
@@ -916,11 +914,9 @@ class Function:
 
         peephole = Peephole()
 
-
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
-        
-        
+
         peephole.addline(insters)
 
         # check for early eol before rightside
@@ -969,8 +965,6 @@ class Function:
             self.advance()
 
         self.addline(peephole.get())
-
-
 
     # build statement starting with an ambiguous ID token
 

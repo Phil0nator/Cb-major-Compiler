@@ -10,7 +10,7 @@ def link(i, o):
         for l in links[1:]:
             linktext = f"{linktext} \"{l}\" "
         linktext += f" {i}.o"
-    
+
     else:
         linktext = f"\"{i}.o\""
     return f"gcc \"{config.includepath}/macro.c\" {linktext}  -no-pie -lm -o \"{o}\""

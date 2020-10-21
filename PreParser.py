@@ -196,10 +196,9 @@ class PreProcessor:
                 self.delmov()
                 if(self.current_token.tok == T_DIRECTIVE):
                     if(self.current_token.value.startswith("if")):
-                        opens+=1
+                        opens += 1
                     elif(self.current_token.value == "endif"):
-                        opens-=1
-
+                        opens -= 1
 
     def addobject(self):
         self.delmov()
@@ -207,17 +206,12 @@ class PreProcessor:
         q = self.current_token.value
 
         for d in config.include_directories:
-            if(os.path.exists(d+"/"+q)):
-                config.__linkables__.append(d+"/"+q)
+            if(os.path.exists(d + "/" + q)):
+                config.__linkables__.append(d + "/" + q)
                 self.delmov()
                 return
-        
 
         throw(FileNotFound(self.current_token))
-
-
-
-
 
     # main function
 
@@ -242,7 +236,7 @@ class PreProcessor:
 
                 elif(self.current_token.value == "endif"):
                     self.delmov()
-                
+
                 elif(self.current_token.value == "link"):
                     self.addobject()
 

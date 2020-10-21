@@ -57,7 +57,7 @@ DO_DEBUG = args.debug
 __profile__ = args.profile
 __oplevel__ = 1
 __executable__ = not args.object
-__linkables__ = args.link if args.link != None else []
+__linkables__ = args.link if args.link is not None else []
 
 __CEXTERNS__ = ""
 
