@@ -191,9 +191,14 @@ class PreProcessor:
         if(q is None):
             self.delmov()
         else:
-            while not (self.current_token.tok ==
-                       T_DIRECTIVE and self.current_token.value == "endif"):
+            opens = 1
+            while opens > 0:
                 self.delmov()
+                if(self.current_token.tok == T_DIRECTIVE):
+                    if(self.current_token.value.startswith("if")):
+                        opens+=1
+                    elif(self.current_token.value == "endif"):
+                        opens-=1
 
 
     def addobject(self):

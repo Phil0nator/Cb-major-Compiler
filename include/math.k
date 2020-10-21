@@ -27,7 +27,7 @@
 double M_MINZERO_MEM = M_MINZERO;
 
 
-function double sqrt(double a){
+global double sqrt(double a){
 
     __asm{"
     
@@ -37,7 +37,7 @@ function double sqrt(double a){
 
 }
 
-function double sqrt(int a){
+global double sqrt(int a){
 
   __asm{"
   
@@ -49,7 +49,7 @@ function double sqrt(int a){
 
 }
 
-function int sqrt(int a){
+global int sqrt(int a){
 
   __asm{"
   
@@ -65,7 +65,7 @@ function int sqrt(int a){
 
 
 
-function int pow(int base, int exp){
+global int pow(int base, int exp){
 
   __asm{"
   
@@ -81,13 +81,13 @@ function int pow(int base, int exp){
 
 }
 
-function double pow(int base, int exp){
+global double pow(int base, int exp){
 
   pow(base, exp);
   __asm{"cvtsi2sd xmm0, rax"}
 
 }
-function double pow(double base, int exp){
+global double pow(double base, int exp){
 
   __asm{"
   
@@ -102,23 +102,33 @@ function double pow(double base, int exp){
   "}
 
 }
+global double pow(double base, double exponent){
+
+  
+
+}
 
 
-
-function int round(double x){
+global int round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
-function int ceil(double x){
+
+
+global int ceil(double x){
   __asm{"
   cvttsd2si rax, xmm0
   inc rax
   "}
 }
-function int floor(double x){
+
+
+global int floor(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
-function int abs(int x){
+
+
+global int abs(int x){
 
   __asm{"
   
@@ -131,7 +141,8 @@ function int abs(int x){
 
 }
 
-function double abs(double x){
+
+global double abs(double x){
 
   __asm{"
   movsd xmm1, xmm0

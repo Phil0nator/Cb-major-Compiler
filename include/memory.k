@@ -72,6 +72,7 @@ function void memcpy(void *dest, void* source, size_t bytes){
 
 }
 
+#ifdef __AVX
 function void avx_memcpy(void* dest, void* source, size_t bytes){
 
     int offset = bytes%32;
@@ -83,6 +84,7 @@ function void avx_memcpy(void* dest, void* source, size_t bytes){
         memcpy(dest+avxcount, source+avxcount, offset);
     }
 }
+#endif
 
 function void memset(void* dest, unsigned char value, size_t bytes){
     __asm{"

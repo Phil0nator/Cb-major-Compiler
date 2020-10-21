@@ -253,7 +253,7 @@ class Function:
 
         self.continues.append(postlabel)
 
-        preInstructions += f"{check_fortrue}jne {postlabel}\n"
+        preInstructions += f"{check_fortrue}jz {postlabel}\n"
 
         self.addline(preInstructions)
         self.checkTok(T_OPENSCOPE)
@@ -341,7 +341,7 @@ class Function:
         self.addline(updatev)
         self.addline(f"{comparisonlabel}:\n")
         self.addline(getCondition)
-        self.addline(f"{check_fortrue}\nje {toplabel}\n")
+        self.addline(f"{check_fortrue}\njnz {toplabel}\n")
         self.addline(f"{endlabel}:")
         self.advance()
 
@@ -366,7 +366,7 @@ class Function:
         # ... }
         cmpinst = self.evaluateRightsideExpression(
             EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
-        cmpinst += f"{check_fortrue}je {startlabel}\n"
+        cmpinst += f"{check_fortrue}jnz {startlabel}\n"
         self.advance()
         self.checkTok(T_OPENSCOPE)
 

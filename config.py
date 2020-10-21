@@ -73,7 +73,7 @@ callpath = os.getcwd()
 includepath = f"{compilepath}/include/" if compilepath != "" else f"include/"
 
 
-include_directories = [compilepath, callpath, includepath]
+include_directories = ["", compilepath, callpath, includepath]
 
 
 def loadRawFile(path, token):

@@ -20,7 +20,7 @@ import math
 ensure_boolean = "and al, 1\n"
 
 
-check_fortrue = f"{ensure_boolean}cmp al, 1\n"
+check_fortrue = f"{ensure_boolean}"
 
 
 def functionlabel(fn):
@@ -273,7 +273,6 @@ def doIntOperation(areg, breg, op, signed, size=8):
 def cmpI(areg, breg, signed, op):
 
     comparator = getComparater(signed, op)
-
     return f"\ncmp {areg}, {breg}\nset{comparator} {boolchar_version[areg]}\n"
 
 
