@@ -11,7 +11,7 @@ import time
 import Classes.ExpressionComponent as EC
 
 from Assembly.Registers import *
-from Assembly.Instructions import Instruction
+from Assembly.Instructions import Instruction, Peephole
 
 from Assembly.CodeBlocks import function_allocator, doIntOperation, doFloatOperation
 from Assembly.CodeBlocks import function_closer, fncall, check_fortrue
@@ -72,6 +72,9 @@ class Function:
 
         self.destructor_text = ""
 
+
+        self.peephole = Peephole()
+
     def advance(self):                              # advance token
         self.ctidx += 1
         self.current_token = self.tokens[self.ctidx]
@@ -118,7 +121,13 @@ class Function:
 
     def addline(self, l):                           # add a line of assembly to raw
         # self.asm+=l+"\n"
-        self.asm = f"{self.asm}{l}\n"
+        if(config.__oplevel__ >= 2):
+            self.peephole.addline(l)
+            self.asm = f"{self.asm}{self.peephole.get()}\n"
+            self.peephole.flush()
+        else:
+            self.asm = f"{self.asm}{l}\n"
+
 
     def addcomment(self, c):                        # add a comment to the assembly
         self.asm += ";" + c + "\n"
@@ -548,7 +557,7 @@ class Function:
         fnstartt = self.current_token
         # placeholder
         fn = None
-        instructions = ""
+        instructions = Peephole()
 
         self.advance()
         self.checkTok(T_OPENP)
@@ -594,8 +603,9 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                instructions += self.evaluateRightsideExpression(EC.ExpressionComponent(
+                instructions.addline( self.evaluateRightsideExpression(EC.ExpressionComponent(
                     sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
+                )
                 sseused += 1
             # else, load to normal register of the correct size
             else:
@@ -607,14 +617,14 @@ class Function:
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
-                instructions += self.evaluateRightsideExpression(ec)
+                instructions.addline(self.evaluateRightsideExpression(ec))
                 # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
-                    instructions += Instruction("mov", [setSize(norm_parameter_registers[normused],
-                                                                fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())])
+                    instructions.addline( Instruction("mov", [setSize(norm_parameter_registers[normused],
+                                                                fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
 
-                    instructions += maskset(
-                        norm_parameter_registers[normused], fn.parameters[i].t.csize())
+                    instructions.addline( maskset(
+                        norm_parameter_registers[normused], fn.parameters[i].t.csize()))
                     rfree(result)
                 normused += 1
 
@@ -628,11 +638,11 @@ class Function:
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
 
-        instructions += Instruction("mov", [rax, ssevarsforrax])
+        instructions.addline(Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
-        instructions += fncall(fn)
-        return instructions, fn
+        instructions.addline( fncall(fn) )
+        return instructions.get(), fn
 
     # construct expression components from tokens
 
@@ -904,9 +914,14 @@ class Function:
 
         inst = ""
 
+        peephole = Peephole()
+
+
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
-        self.addline(insters)
+        
+        
+        peephole.addline(insters)
 
         # check for early eol before rightside
         if(self.current_token.tok == T_ENDL):
@@ -922,11 +937,11 @@ class Function:
         ev = self.evaluateRightsideExpression(
             EC.ExpressionComponent(value, dest.type, token=dest.token))
 
-        self.addline(inst)
-        self.addline(ev)
+        peephole.addline(inst)
+        peephole.addline(ev)
 
         if(setter.tok == T_EQUALS):  # normal
-            self.addline(loadToPtr(dest.accessor, value))
+            peephole.addline(loadToPtr(dest.accessor, value))
 
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
@@ -934,24 +949,28 @@ class Function:
 
             areg = ralloc(dest.type.isflt())
 
-            self.addline(loadToReg(areg, dest.accessor))
+            peephole.addline(loadToReg(areg, dest.accessor))
             if(dest.type.isflt()):
-                self.addline(doFloatOperation(areg, value, op))
+                peephole.addline(doFloatOperation(areg, value, op))
             else:
-                self.addline(
+                peephole.addline(
                     doIntOperation(
                         areg,
                         value,
                         op,
                         dest.type.signed))
 
-            self.addline(loadToPtr(dest.accessor, areg))
+            peephole.addline(loadToPtr(dest.accessor, areg))
 
             rfree(areg)
         rfree(value)
         rfree(dest.accessor)
         if(self.current_token.tok == T_ENDL):
             self.advance()
+
+        self.addline(peephole.get())
+
+
 
     # build statement starting with an ambiguous ID token
 

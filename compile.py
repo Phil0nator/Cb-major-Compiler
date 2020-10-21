@@ -84,13 +84,13 @@ def main():
     os.system(assemble(config.__fileoutput__))
     if(config.__executable__):
         os.system(link(config.__fileoutput__, config.__fileoutput__))
+        os.remove(config.__fileoutput__ + ".o")
     else:
         os.system(
             linkonly(
                 config.__fileoutput__ +
                 ".o",
                 config.__fileoutput__))
-    os.remove(config.__fileoutput__ + ".o")
 
     if(not config.__tonasm__):
         os.remove(config.__fileoutput__ + ".asm")

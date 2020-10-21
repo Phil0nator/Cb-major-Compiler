@@ -516,7 +516,7 @@ class Compiler:
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
-                        functionlabel(fn)[:-2] + ""
+                        functionlabel(fn)[:-2] + "\n"
                     fn.extern = True
 
                 elif(self.current_token.value == "global"):
@@ -524,7 +524,7 @@ class Compiler:
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
-                        functionlabel(fn)[:-2] + ""
+                        functionlabel(fn)[:-2] + "\n"
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()

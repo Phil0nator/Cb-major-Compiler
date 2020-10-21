@@ -17,7 +17,7 @@ import math
 
 
 # bitmasks for boolean values
-ensure_boolean = "and al, 00000001b\n"
+ensure_boolean = "and al, 1\n"
 
 
 check_fortrue = f"{ensure_boolean}cmp al, 1\n"
@@ -44,7 +44,7 @@ sub rsp, %s
 
 
 def zeroize(reg):
-    return Instruction(I.xor, [reg, reg])
+    return Instruction("xor", [reg, reg])
 
 
 def label(name):

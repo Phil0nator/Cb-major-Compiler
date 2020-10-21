@@ -195,6 +195,25 @@ class PreProcessor:
                        T_DIRECTIVE and self.current_token.value == "endif"):
                 self.delmov()
 
+
+    def addobject(self):
+        self.delmov()
+        self.checkToks([T_STRING])
+        q = self.current_token.value
+
+        for d in config.include_directories:
+            if(os.path.exists(d+"/"+q)):
+                config.__linkables__.append(d+"/"+q)
+                self.delmov()
+                return
+        
+
+        throw(FileNotFound(self.current_token))
+
+
+
+
+
     # main function
 
     def process(self):
@@ -218,6 +237,9 @@ class PreProcessor:
 
                 elif(self.current_token.value == "endif"):
                     self.delmov()
+                
+                elif(self.current_token.value == "link"):
+                    self.addobject()
 
             elif(self.current_token.tok == T_ID):
                 self.checkDefn()
