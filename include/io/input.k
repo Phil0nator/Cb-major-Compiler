@@ -5,42 +5,45 @@
 #include "printf.k"
 #include "memory.k"
 #include "filesystem.k"
+#include "sprintf.k"
 
-
+#define MAX_INT64LEN 40
 function int getInt(char* msg){
-    __asm{"
-    PRINT_STRING [rdi]
-    GET_DEC 8, rax
-    "}
+    
+    printf(msg);
+    char buff[MAX_INT64LEN];
+    memset(&buff, 0, MAX_INT64LEN);
+    fgets(STDIN, &buff, MAX_INT64LEN);
+    return toInteger(&buff, true);
+
 }
 function unsigned int getUint(char* msg){
-    __asm{"
-    PRINT_STRING [rdi]
-    GET_UDEC 8, rax
-    "}
+
+    printf(msg);
+    char buff[MAX_INT64LEN];
+    memset(&buff, 0, MAX_INT64LEN);
+    fgets(STDIN, &buff, MAX_INT64LEN);
+    return toInteger(&buff, true);
+
 }
 
 function char getchar(){
-    __asm{"call getchar"}
+    char c;
+    fgets(STDIN, &c, 1);
+    return c;
 }
 
 function int getHex(char* msg){
-    __asm{"
-    PRINT_STRING [rdi]
-    GET_HEX 8, rax
-    "}
+    /*TODO*/
 }
 function void getString(char* buffer, int maxlen, char* msg){
-    __asm{"
-    PRINT_STRING [rdx]
-    GET_STRING [rdi], rsi 
-    "}
+    
+    printf(msg);
+    fgets(STDIN, buffer, maxlen);
+
 }
 
 
-function void get_stdin(){
-    __asm{"call get_stdin"}
-}
 
 function char* getString(char* msg){
     
@@ -70,24 +73,30 @@ function char* getString(char* msg){
 }
 
 
-function int toInteger(char* str){
+function int toInteger(char* str, bool signed){
 
-    int l = strlen(str);
-    bool positive = true;
-    if(str[0] == '-'){
-        positive=false;
-        str=str+1;
-        l-=1;
+    while(@str == ' '){
+        str+=1;
     }
 
-    int total = 0;
-    for(int i = 0; i < l;i+=1){
-        total = (total*10)+(str[i]-'0'); 
+    char c = $char (@str);
+    int val = 0;
+    bool negative = false;
+    if(c == '-' && signed){
+        negative = true;
+        str+=1;
+        c = $char(@str);
     }
-    if(!positive){
-        return 0-total;
+    while(c != 0 && c != 10 && c != ' '){
+        val = (val*10)+(c-'0');
+        str+=1;
+        c = $char (@str);
     }
-    return total;
+
+    if(negative){
+        return 0-val;
+    }
+    return val;
 
 
 }

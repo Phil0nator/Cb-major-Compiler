@@ -37,7 +37,9 @@ cextern void printf(char* fmt, void arg1, void arg2, void arg3, void arg4);
 cextern void printf(char* fmt, void arg1, void arg2, void arg3);
 cextern void printf(char* fmt, void arg1, void arg2);
 cextern void printf(char* fmt, void arg1);
-cextern void printf(char* fmt);
+global void printf(char* fmt){
+    fputs(STDOUT, fmt);
+}
 
 
 

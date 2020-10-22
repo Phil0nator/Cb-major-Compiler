@@ -51,8 +51,7 @@ CEXTERN thrd_create
 CEXTERN thrd_equal
 CEXTERN thrd_detach
 CEXTERN thrd_join
-CEXTERN inet_aton
-CEXTERN htonl
+
 ; Make stack be 16 bytes aligned
 %macro ALIGN_STACK 0.nolist
     enter 0, 0
@@ -983,45 +982,6 @@ section .text
     sasmMacroFuncE
 %endmacro
 %endif
-%define SYS_mmap	9
-%define CSIGNAL 0x000000ff
-%define CLONE_VM 0x00000100
-%define CLONE_FS 0x00000200
-%define CLONE_FILES 0x00000400
-%define CLONE_SIGHAND 0x00000800
-%define CLONE_PTRACE 0x00002000
-%define CLONE_VFORK 0x00004000
-%define CLONE_PARENT 0x00008000
-%define CLONE_THREAD 0x00010000
-%define CLONE_NEWNS 0x00020000
-%define CLONE_SYSVSEM 0x00040000
-%define CLONE_SETTLS 0x00080000
-%define CLONE_PARENT_SETTID 0x00100000
-%define CLONE_CHILD_CLEARTID 0x00200000
-%define CLONE_DETACHED 0x00400000 
-%define CLONE_UNTRACED 0x00800000 
-%define CLONE_CHILD_SETTID 0x01000000 
-%define CLONE_NEWCGROUP 0x02000000 
-%define CLONE_NEWUTS 0x04000000 
-%define CLONE_NEWIPC 0x08000000 
-%define CLONE_NEWUSER 0x10000000 
-%define CLONE_NEWPID 0x20000000 
-%define CLONE_NEWNET 0x40000000 
-%define CLONE_IO 0x80000000 
-%define THREAD_FLAGS CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_PARENT|CLONE_THREAD|CLONE_IO
-%define PROT_READ 1
-%define PROT_WRITE 2
-%define PROT_EXEC 4
-%define PROT_NONE 0
-%define PROT_GROWSDOWN 16777216
-%define PROT_GROWSUP 33554432
-%define MAP_SHARED 1
-%define MAP_PRIVATE 2
-%define MAP_SHARED_VALIDATE 3
-%define MAP_TYPE 15
-%define MAP_ANONYMOUS 32
-%define MAP_GROWSDOWN 0x00100
-%define MAP_STACK 0x20000
 global _double_sqrt_pdouble
 global _double_sqrt_pint
 global _int_sqrt_pint
@@ -1052,14 +1012,16 @@ extern print
 extern print
 extern print
 extern print
-extern print
+global _void_printf_pchar.
 section .data
     FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_0: db `True`, 0
 STRING_CONSTANT_1: db `False`, 0
 STRING_CONSTANT_2: db `%s`, 0
 STRING_CONSTANT_3: db `The int: %i , the double: %f, a string: %s, and a bool %b.`, 0
-STRING_CONSTANT_4: db `Hello World!`, 0
+STRING_CONSTANT_4: db `Hello World!\n`, 0
+STRING_CONSTANT_5: db `Number? :`, 0
+STRING_CONSTANT_6: db `%i\n`, 0
 nullptr: DQ 0
 null: DQ 0
 nullterm: DQ 0
@@ -1165,21 +1127,6 @@ or r10, r11
 mov rax, r10
 jmp ___uint32_bitswap32_puint32__return
 ___uint32_bitswap32_puint32__return:
-leave
-ret
-
-;[ function int htonl( [[ Variable: int x @ 8]] ) ]
-
-_int_htonl_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [ Variable: int x @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call htonl
-    UNALIGN_STACK
-___int_htonl_pint__return:
 leave
 ret
 
@@ -2507,8 +2454,24 @@ ret
 ;[ function void printf( [[ Variable: char. fmt @ 0], [ Variable: void arg1 @ 0]] ) ]
 
 
-;[ function void printf( [[ Variable: char. fmt @ 0]] ) ]
+;[ function void printf( [[ Variable: char. fmt @ 8]] ) ]
 
+_void_printf_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: char. fmt @ 8]
+mov [rbp-8], rdi
+;[[ int : 1]]
+mov rdi, 1
+;[[ id : fmt]]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
+mov rax, 0
+call _int_fputs_pfd_tchar.
+___void_printf_pchar.__return:
+leave
+ret
 
 ;[ function int rdrand( [] ) ]
 
@@ -3378,11 +3341,50 @@ ret
 _int_getInt_pchar.:
 push rbp
 mov rbp, rsp
-sub rsp, 16
+sub rsp, 64
 ;Load Parameter: [ Variable: char. msg @ 8]
 mov [rbp-8], rdi
-PRINT_STRING [rdi]
-    GET_DEC 8, rax
+;[[ id : msg]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+mov rax, 0
+call _void_printf_pchar.
+;[[ & : &], [ id : buff]]
+lea rbx, [rbp-56]
+mov rdi, rbx
+;[[ int : 0]]
+mov rbx, 0
+mov SIL, bl
+and rsi, 0xff
+;[[ int : 40]]
+mov rdx, 40
+mov rax, 0
+call _void_memset_pvoid.ucharsize_t
+;[[ int : 0]]
+mov rdi, 0
+;[[ & : &], [ id : buff]]
+lea rbx, [rbp-56]
+mov rsi, rbx
+;[[ int : 40]]
+mov rdx, 40
+mov rax, 0
+call _bool_fgets_pfd_tchar.size_t
+;[[ & : &], [ id : buff]]
+lea rbx, [rbp-56]
+mov rdi, rbx
+;[[ $ : bool], [ int : 1]]
+mov r10, 1
+and r11, 0xff
+mov r11, r10
+mov rbx, r11
+mov SIL, bl
+and rsi, 0xff
+mov rax, 0
+call _int_toInteger_pchar.bool
+push rax
+;[[ fn(x) : [ function int toInteger( [[ Variable: char. str @ 0], [ Variable: bool signed @ 0]] ) ] ]]
+pop rax
+jmp ___int_getInt_pchar.__return
 ___int_getInt_pchar.__return:
 leave
 ret
@@ -3392,11 +3394,50 @@ ret
 _uint_getUint_pchar.:
 push rbp
 mov rbp, rsp
-sub rsp, 16
+sub rsp, 64
 ;Load Parameter: [ Variable: char. msg @ 8]
 mov [rbp-8], rdi
-PRINT_STRING [rdi]
-    GET_UDEC 8, rax
+;[[ id : msg]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+mov rax, 0
+call _void_printf_pchar.
+;[[ & : &], [ id : buff]]
+lea rbx, [rbp-56]
+mov rdi, rbx
+;[[ int : 0]]
+mov rbx, 0
+mov SIL, bl
+and rsi, 0xff
+;[[ int : 40]]
+mov rdx, 40
+mov rax, 0
+call _void_memset_pvoid.ucharsize_t
+;[[ int : 0]]
+mov rdi, 0
+;[[ & : &], [ id : buff]]
+lea rbx, [rbp-56]
+mov rsi, rbx
+;[[ int : 40]]
+mov rdx, 40
+mov rax, 0
+call _bool_fgets_pfd_tchar.size_t
+;[[ & : &], [ id : buff]]
+lea rbx, [rbp-56]
+mov rdi, rbx
+;[[ $ : bool], [ int : 1]]
+mov r10, 1
+and r11, 0xff
+mov r11, r10
+mov rbx, r11
+mov SIL, bl
+and rsi, 0xff
+mov rax, 0
+call _int_toInteger_pchar.bool
+push rax
+;[[ fn(x) : [ function int toInteger( [[ Variable: char. str @ 0], [ Variable: bool signed @ 0]] ) ] ]]
+pop rax
+jmp ___uint_getUint_pchar.__return
 ___uint_getUint_pchar.__return:
 leave
 ret
@@ -3406,8 +3447,19 @@ ret
 _char_getchar_p:
 push rbp
 mov rbp, rsp
-sub rsp, 8
-call getchar
+sub rsp, 16
+;[[ int : 0]]
+mov rdi, 0
+;[[ & : &], [ id : c]]
+lea rbx, [rbp-8]
+mov rsi, rbx
+;[[ int : 1]]
+mov rdx, 1
+mov rax, 0
+call _bool_fgets_pfd_tchar.size_t
+;[[ id : c]]
+mov rax, QWORD[rbp-8]
+jmp ___char_getchar_p__return
 ___char_getchar_p__return:
 leave
 ret
@@ -3420,8 +3472,6 @@ mov rbp, rsp
 sub rsp, 16
 ;Load Parameter: [ Variable: char. msg @ 8]
 mov [rbp-8], rdi
-PRINT_STRING [rdi]
-    GET_HEX 8, rax
 ___int_getHex_pchar.__return:
 leave
 ret
@@ -3438,20 +3488,22 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 ;Load Parameter: [ Variable: char. msg @ 24]
 mov [rbp-24], rdx
-PRINT_STRING [rdx]
-    GET_STRING [rdi], rsi
+;[[ id : msg]]
+mov rbx, QWORD[rbp-24]
+mov rdi, rbx
+mov rax, 0
+call _void_printf_pchar.
+;[[ int : 0]]
+mov rdi, 0
+;[[ id : buffer]]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
+;[[ id : maxlen]]
+mov rbx, QWORD[rbp-16]
+mov rdx, rbx
+mov rax, 0
+call _bool_fgets_pfd_tchar.size_t
 ___void_getString_pchar.intchar.__return:
-leave
-ret
-
-;[ function void get_stdin( [] ) ]
-
-_void_get_stdin_p:
-push rbp
-mov rbp, rsp
-sub rsp, 8
-call get_stdin
-___void_get_stdin_p__return:
 leave
 ret
 
@@ -3578,123 +3630,153 @@ ___char._getString_pchar.__return:
 leave
 ret
 
-;[ function int toInteger( [[ Variable: char. str @ 8]] ) ]
+;[ function int toInteger( [[ Variable: char. str @ 8], [ Variable: bool signed @ 16]] ) ]
 
-_int_toInteger_pchar.:
+_int_toInteger_pchar.bool:
 push rbp
 mov rbp, rsp
 sub rsp, 48
 ;Load Parameter: [ Variable: char. str @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: bool signed @ 16]
+mov [rbp-16], rsi
+jmp _LWHILECMP_0x45
+_LWHILESTART_0x44:
 ;[[ id : str]]
-mov rbx, QWORD[rbp-8]
-mov rdi, rbx
-mov rax, 0
-call _size_t_strlen_pchar.
-push rax
-;[[ fn(x) : [ function size_t strlen( [[ Variable: char. str @ 8]] ) ] ]]
-pop rax
-mov QWORD[rbp-16], rax
-;[[ $ : bool], [ int : 1]]
+;[[ int : 1]]
 mov rbx, 1
+mov r10, QWORD[rbp-8]
+add r10, rbx
+mov QWORD[rbp-8], r10
+_LWHILECMP_0x45:
+;[[ @ : @], [ id : str], [ == : ==], [ char : 32]]
+mov rbx, QWORD[rbp-8]
+  ; here
+and r10, 0xff
+mov r10b, byte[rbx]
+mov rbx, 32
+cmp r10, rbx
+sete r10b
+mov rax, r10
+and al, 1
+jnz _LWHILESTART_0x44
+_LWHILEEND_0x46:
+;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
+mov rbx, QWORD[rbp-8]
+  ; here
+and r10, 0xff
+mov r10b, byte[rbx]
+mov QWORD[rbp-24], r10
+;[[ int : 0]]
+mov QWORD[rbp-32], 0
+;[[ $ : bool], [ int : 0]]
+mov rbx, 0
 and r10, 0xff
 mov r10, rbx
-mov QWORD[rbp-24], r10
-;[[ id : str], [ [ : [], [ int : 0], [ ] : ]], [ == : ==], [ char : 45]]
-mov r10, 0
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+r10*1]
-mov bl, byte[rbx]
-and rbx, 0xff
+mov QWORD[rbp-40], r10
+;[[ id : c], [ == : ==], [ char : 45], [ && : &&], [ id : signed]]
 mov r10, 45
+mov rbx, QWORD[rbp-24]
 cmp rbx, r10
 sete bl
+mov r10, QWORD[rbp-16]
+and rbx, r10
 mov rax, rbx
 and al, 1
-jz _LIFPOST_0x44
-;[[ id : positive]]
-;[[ $ : bool], [ int : 0]]
-mov r10, 0
+jz _LIFPOST_0x47
+;[[ id : negative]]
+;[[ $ : bool], [ int : 1]]
+mov r10, 1
 and r11, 0xff
 mov r11, r10
 mov rbx, r11
-mov QWORD[rbp-24], rbx
+mov QWORD[rbp-40], rbx
 ;[[ id : str]]
-;[[ id : str], [ + : +], [ int : 1]]
-mov r10, QWORD[rbp-8]
-inc r10
-mov rbx, r10
-mov QWORD[rbp-8], rbx
-;[[ id : l]]
 ;[[ int : 1]]
 mov rbx, 1
-mov r10, QWORD[rbp-16]
-sub r10, rbx
-mov QWORD[rbp-16], r10
-jmp _LIFELSE_0x45
-_LIFPOST_0x44:
-_LIFELSE_0x45:
-;[[ int : 0]]
-mov QWORD[rbp-32], 0
-;[[ int : 0]]
-mov QWORD[rbp-40], 0
-jmp _LFORCMP_0x47
-_LFORTOP_0x46:
-;[[ id : total]]
-;[[ ( : (], [ id : total], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : str], [ [ : [], [ id : i], [ ] : ]], [ - : -], [ char : 48], [ ) : )]]
+mov r10, QWORD[rbp-8]
+add r10, rbx
+mov QWORD[rbp-8], r10
+;[[ id : c]]
+;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
+mov r10, QWORD[rbp-8]
+  ; here
+and r11, 0xff
+mov r11b, byte[r10]
+mov rbx, r11
+mov QWORD[rbp-24], rbx
+jmp _LIFELSE_0x48
+_LIFPOST_0x47:
+_LIFELSE_0x48:
+jmp _LWHILECMP_0x4a
+_LWHILESTART_0x49:
+;[[ id : val]]
+;[[ ( : (], [ id : val], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
 mov r11, 10
 mov r10, QWORD[rbp-32]
 imul r10, r11
-mov r12, QWORD[rbp-40]
-mov r11, QWORD[rbp-8]
-lea r11, [r11+r12*1]
-mov r11b, byte[r11]
-and r11, 0xff
+mov r12, 48
+mov r11, QWORD[rbp-24]
+sub r11, r12
 mov r12, r11
 add r10, r12
-mov r11, 48
-mov r12, r11
-sub r10, r12
 mov rbx, r10
 mov QWORD[rbp-32], rbx
-_LFORUPDATE_0x48:
-;[[ id : i]]
+;[[ id : str]]
 ;[[ int : 1]]
 mov rbx, 1
-mov r10, QWORD[rbp-40]
+mov r10, QWORD[rbp-8]
 add r10, rbx
-mov QWORD[rbp-40], r10
-_LFORCMP_0x47:
-;[[ id : i], [ < : <], [ id : l]]
-mov r10, QWORD[rbp-16]
+mov QWORD[rbp-8], r10
+;[[ id : c]]
+;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
+mov r10, QWORD[rbp-8]
+  ; here
+and r11, 0xff
+mov r11b, byte[r10]
+mov rbx, r11
+mov QWORD[rbp-24], rbx
+_LWHILECMP_0x4a:
+;[[ id : c], [ != : !=], [ int : 0], [ && : &&], [ id : c], [ != : !=], [ int : 10], [ && : &&], [ id : c], [ != : !=], [ char : 32]]
+mov rbx, 0
+mov r10, QWORD[rbp-24]
+mov r11, r10
+cmp rbx, r11
+setne bl
+mov r10, 10
+mov r11, QWORD[rbp-24]
+mov r12, r11
+cmp r10, r12
+setne r10b
+and rbx, r10
+mov r11, 32
+mov r10, QWORD[rbp-24]
+cmp r10, r11
+setne r10b
+and rbx, r10
+mov rax, rbx
+and al, 1
+jnz _LWHILESTART_0x49
+_LWHILEEND_0x4b:
+;[[ id : negative]]
 mov rbx, QWORD[rbp-40]
-cmp rbx, r10
-setl bl
 mov rax, rbx
 and al, 1
-jnz _LFORTOP_0x46
-_LFOREND_0x49:
-;[[ ! : !], [ id : positive]]
-mov rbx, QWORD[rbp-24]
-cmp rbx, 0
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x4a
-;[[ int : 0], [ - : -], [ id : total]]
+jz _LIFPOST_0x4c
+;[[ int : 0], [ - : -], [ id : val]]
 mov r10, QWORD[rbp-32]
 mov rbx, 0
 sub rbx, r10
 mov rax, rbx
-jmp ___int_toInteger_pchar.__return
-jmp _LIFELSE_0x4b
-_LIFPOST_0x4a:
-_LIFELSE_0x4b:
-;[[ id : total]]
+jmp ___int_toInteger_pchar.bool__return
+jmp _LIFELSE_0x4d
+_LIFPOST_0x4c:
+_LIFELSE_0x4d:
+;[[ id : val]]
 mov rbx, QWORD[rbp-32]
 mov rax, rbx
-jmp ___int_toInteger_pchar.__return
-___int_toInteger_pchar.__return:
+jmp ___int_toInteger_pchar.bool__return
+___int_toInteger_pchar.bool__return:
 leave
 ret
 
@@ -3831,7 +3913,7 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 40
 ;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: char.. argv @ 16]
@@ -3842,6 +3924,22 @@ mov QWORD[rbp-24], rbx
 ;[[ id : STRING_CONSTANT_4]]
 mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
+mov rax, 0
+call _void_printf_pchar.
+;[[ id : STRING_CONSTANT_5]]
+mov rbx, STRING_CONSTANT_5
+mov rdi, rbx
+mov rax, 0
+call _int_getInt_pchar.
+push rax
+;[[ fn(x) : [ function int getInt( [[ Variable: char. msg @ 8]] ) ] ]]
+pop rax
+mov QWORD[rbp-32], rax
+;[[ id : STRING_CONSTANT_6]]
+mov rbx, STRING_CONSTANT_6
+mov rdi, rbx
+;[[ id : a]]
+mov rsi, QWORD[rbp-32]
 mov rax, 0
 call printf
 jmp __main__return

@@ -23,13 +23,5 @@ function uint32 bitswap32(uint32 x){
     || (((x) && $uint32 0x0000ff00) << 8) || (((x) && $uint32 0x000000ff) << 24));
 }
 
-function int htonl(int x){
-    __asm{"
-    ALIGN_STACK
-    call htonl
-    UNALIGN_STACK
-    "}
-}
-
 
 #endif

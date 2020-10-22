@@ -45,6 +45,8 @@ function int toStr(int val, char* buffer, bool signed){
 
 
 
+
+
 function int toStr(double val, char* buffer, int multiplier){
 
     int integral = val;
