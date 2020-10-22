@@ -1,5 +1,8 @@
 
 
+#ifndef __SPRINTF
+#define __SPRINTF 1
+
 
 #define FORMAT_INT64 'i'
 #define FORMAT_UINT64 'u'
@@ -9,6 +12,7 @@
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
 #define FORMAT_FLOAT 'f'
+#define FORMAT_HEX 'h'
 #define DOUBLE_PRECISION_MULTIPLIER 100000000000000
 #define FLOAT_PRECISION_MULTIPLIER 10000000
 #include "math.k"
@@ -46,8 +50,7 @@ function int toStr(double val, char* buffer, int multiplier){
     int integral = val;
     int l = toStr(integral, buffer, 1);
     buffer+=l;
-    val -= integral;
-    val = val * multiplier;
+    val = (abs(val)-integral)*multiplier;
     @buffer = '.';
     buffer+=1;
     l += toStr(round(val), buffer, 0);
@@ -60,7 +63,7 @@ function int toStr(double val, char* buffer, int multiplier){
 
 
 
-function int __sprintf(char* str, char* fmt, void* args){
+global int __sprintf(char* str, char* fmt, void* args){
 
     int argc = 0;
 
@@ -157,3 +160,19 @@ function int __sprintf(char* str, char* fmt, void* args){
 
 
 
+
+global int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4){
+
+    void* args = malloc(4*void);
+
+    args[0]=arg1;
+    args[1]=arg2;
+    args[2]=arg3;
+    args[3]=arg4;
+    int l = __sprintf(dest,fmt,args);
+    free(args);
+    return l;
+}
+
+
+#endif

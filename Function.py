@@ -946,9 +946,7 @@ class Function:
             x = ralloc(dest.type.isflt())
             areg = ralloc(dest.type.isflt())
 
-            
             peephole.addline(loadToReg(areg, dest.accessor))
-            
 
             if(dest.type.isflt()):
                 peephole.addline(doFloatOperation(areg, value, op))
@@ -965,8 +963,6 @@ class Function:
             rfree(areg)
             rfree(x)
 
-        
-        
         rfree(value)
         rfree(dest.accessor)
         if(self.current_token.tok == T_ENDL):

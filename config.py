@@ -8,6 +8,7 @@
 ########
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
+from colorama import Style, Fore
 import argparse as arg
 import sys
 import Classes.Error as E
@@ -19,11 +20,13 @@ required = {'argparse', 'colorama', "termcolor", "cpuid"}
 installed = {pkg.key for pkg in pkg_resources.working_set}
 missing = required - installed
 
+
 if missing:
     python = sys.executable
     subprocess.check_call(
         [python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
 ###################################
+
 
 parser = arg.ArgumentParser(
     description='Compile, link, and debug .k programs.')
@@ -66,6 +69,9 @@ if(args.optimize2):
     __oplevel__ = 2
 elif(args.optimize3):
     __oplevel__ = 3
+
+if(__oplevel__ > 1):
+    print(f"{Style.BRIGHT}{Fore.RED}Warning!{Style.RESET_ALL}: The use of increased optimization levels is under development. ")
 GlobalCompiler = None
 
 compilepath = (sys.path[0])
@@ -95,8 +101,6 @@ def loadRawFile(path, token):
 
 
 raw_filedata = []
-
-
 
 
 LAST_RALLOC = None

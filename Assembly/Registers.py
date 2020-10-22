@@ -225,7 +225,6 @@ sse_parameter_registers = [
 norm_scratch_registers = [
 
     rbx,
-    rcx,
     r10,
     r11,
     r12,
@@ -271,11 +270,10 @@ norm_scratch_registers_inuse = [
 ]
 
 
-
 # register allocation and deallocation system:
 
 def ralloc(flt, size=8):
-    
+
     config.LAST_RALLOC = traceback.format_stack()
     if(flt):
         for i in range(len(sse_scratch_registers_inuse)):

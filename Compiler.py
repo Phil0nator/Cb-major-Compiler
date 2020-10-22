@@ -508,7 +508,7 @@ class Compiler:
                     self.createFunction()
                     fn = self.functions[-1]
                     fn.extern = True
-                    config.__CEXTERNS__ += "CEXTERN" + \
+                    config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-2] + "\n"
 
                 elif(self.current_token.value == "__cdecl"):

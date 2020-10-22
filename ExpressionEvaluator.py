@@ -604,7 +604,6 @@ class RightSideEvaluator(ExpressionEvaluator):
                 rfree(final.accessor)
             return instr, o
 
-
         if(final.type.__eq__(dest.type)):
 
             if(isinstance(final.accessor, Variable)):
@@ -639,7 +638,10 @@ class RightSideEvaluator(ExpressionEvaluator):
                     final.accessor = "rax"
                 if(config.GlobalCompiler.Tequals(final.type.name, "void")):
 
-                    cmd = "movq"  if("[" not in valueOf(castdest)+valueOf(final.accessor)) else "mov"
+                    cmd = "movq" if(
+                        "[" not in valueOf(castdest) +
+                        valueOf(
+                            final.accessor)) else "mov"
                     cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
                 else:
@@ -649,7 +651,10 @@ class RightSideEvaluator(ExpressionEvaluator):
                     instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
                     final.accessor = "xmm7"
                 if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
-                    cmd = "movq"  if("[" not in valueOf(castdest)+valueOf(final.accessor)) else "mov"
+                    cmd = "movq" if(
+                        "[" not in valueOf(castdest) +
+                        valueOf(
+                            final.accessor)) else "mov"
                     cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
                 else:
@@ -678,7 +683,6 @@ class RightSideEvaluator(ExpressionEvaluator):
     def evaluate(self, dest, pfix):
         instr, final = self.evaluatePostfix(pfix, self)
         ninster, o = self.depositFinal(final, final.type, dest)
-        
 
         return instr + ninster, o
 
@@ -731,7 +735,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 throw(UsingFloatAsIndex(b.token))
 
             instr += bringdown_memlocs(a, b)
-
 
             areg, breg, o, ninstr = optloadRegs(a, b, op, o)
             instr += ninstr

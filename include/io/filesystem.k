@@ -5,7 +5,7 @@
 
 #include "include/stddef.k"
 #include "include/memory.k"
-
+#include "sys/files.k"
 
 typedef fd_t FILE;
 
