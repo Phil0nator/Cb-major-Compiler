@@ -29,7 +29,7 @@ function size_t strlen(char *str){
     mov bl, [rdi]
     inc rax
     inc rdi
-    cmp bl, 0
+    test bl, bl
     jnz _size_t_strlen_pchar._flp
     
     "}

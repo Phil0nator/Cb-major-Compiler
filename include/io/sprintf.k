@@ -119,14 +119,13 @@ global int __sprintf(char* str, char* fmt, void* args){
 
 
                 bool b = args[argc];
-                char* boolean_string;
+                char* boolean_string = "False";
                 if(b){
                     boolean_string = "True";
-                }else{
-                    boolean_string = "False";
                 }
                 int bsize = strcpy(str, boolean_string);
-                str+=ssize;
+                
+                str+=bsize;
             }
 
             else if (c == FORMAT_DOUBLE){

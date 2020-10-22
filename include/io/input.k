@@ -78,7 +78,6 @@ function int toInteger(char* str, bool signed){
     while(@str == ' '){
         str+=1;
     }
-
     char c = $char (@str);
     int val = 0;
     bool negative = false;

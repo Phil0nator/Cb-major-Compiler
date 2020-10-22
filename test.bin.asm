@@ -1015,13 +1015,11 @@ extern print
 global _void_printf_pchar.
 section .data
     FLT_CONSTANT_0: dq 0x0.0p+0
-STRING_CONSTANT_0: db `True`, 0
-STRING_CONSTANT_1: db `False`, 0
+STRING_CONSTANT_0: db `False`, 0
+STRING_CONSTANT_1: db `True`, 0
 STRING_CONSTANT_2: db `%s`, 0
 STRING_CONSTANT_3: db `The int: %i , the double: %f, a string: %s, and a bool %b.`, 0
-STRING_CONSTANT_4: db `Hello World!\n`, 0
-STRING_CONSTANT_5: db `Number? :`, 0
-STRING_CONSTANT_6: db `%i\n`, 0
+STRING_CONSTANT_4: db `%i\n`, 0
 nullptr: DQ 0
 null: DQ 0
 nullterm: DQ 0
@@ -1235,7 +1233,7 @@ mov rbx, QWORD[rbp-24]
 xor rdx, rdx
 mov rax, rbx
 idiv r10
- mov rbx, rdx
+mov rbx, rdx
 mov QWORD[rbp-32], rbx
 ;[[ ( : (], [ id : bytes], [ - : -], [ id : offset], [ ) : )], [ / : /], [ int : 4]]
 mov r10, QWORD[rbp-32]
@@ -1581,7 +1579,7 @@ mov rax, -1
     mov bl, [rdi]
     inc rax
     inc rdi
-    cmp bl, 0
+    test bl, bl
     jnz _size_t_strlen_pchar._flp
 ___size_t_strlen_pchar.__return:
 leave
@@ -1683,7 +1681,7 @@ mov r11, QWORD[rbp-8]
 xor rdx, rdx
 mov rax, r11
 idiv r12
- mov r11, rdx
+mov r11, rdx
 mov r12, r11
 and r13, 0xff
 mov r13, r12
@@ -1876,7 +1874,6 @@ jmp _LWHILECMP_0xf
 _LWHILESTART_0xe:
 ;[[ @ : @], [ id : fmt], [ != : !=], [ char : 37]]
 mov rbx, QWORD[rbp-16]
-  ; here
 and r10, 0xff
 mov r10b, byte[rbx]
 mov rbx, 37
@@ -1893,7 +1890,6 @@ mov rbx, QWORD[rbp-8]
 mov r10, rbx
 ;[[ @ : @], [ id : fmt]]
 mov r11, QWORD[rbp-16]
-  ; here
 and r12, 0xff
 mov r12b, byte[r11]
 mov rbx, r12
@@ -1909,7 +1905,6 @@ add r10, rbx
 mov QWORD[rbp-16], r10
 ;[[ @ : @], [ id : fmt]]
 mov rbx, QWORD[rbp-16]
-  ; here
 and r10, 0xff
 mov r10b, byte[rbx]
 mov QWORD[rbp-48], r10
@@ -2072,6 +2067,9 @@ mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
 mov rbx, qword[rbx]
 mov QWORD[rbp-104], rbx
+;[[ id : STRING_CONSTANT_0]]
+mov rbx, STRING_CONSTANT_0
+mov QWORD[rbp-112], rbx
 ;[[ id : b]]
 mov rbx, QWORD[rbp-104]
 mov rax, rbx
@@ -2079,18 +2077,12 @@ and al, 1
 jz _LIFPOST_0x1d
 ;[[ id : boolean_string]]
 ;[[ id : boolean_string]]
-;[[ id : STRING_CONSTANT_0]]
-mov r10, STRING_CONSTANT_0
-mov rbx, r10
-mov QWORD[rbp-112], rbx
-jmp _LIFELSE_0x1e
-_LIFPOST_0x1d:
-;[[ id : boolean_string]]
-;[[ id : boolean_string]]
 ;[[ id : STRING_CONSTANT_1]]
 mov r10, STRING_CONSTANT_1
 mov rbx, r10
 mov QWORD[rbp-112], rbx
+jmp _LIFELSE_0x1e
+_LIFPOST_0x1d:
 _LIFELSE_0x1e:
 ;[[ id : str]]
 mov rbx, QWORD[rbp-8]
@@ -2106,8 +2098,8 @@ pop rax
 mov QWORD[rbp-120], rax
 ;[[ id : str]]
 ;[[ id : str]]
-;[[ id : ssize]]
-mov rbx, QWORD[rbp-96]
+;[[ id : bsize]]
+mov rbx, QWORD[rbp-120]
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
@@ -2225,7 +2217,6 @@ mov QWORD[rbp-8], r10
 _LWHILECMP_0xf:
 ;[[ @ : @], [ id : fmt], [ != : !=], [ int : 0]]
 mov rbx, QWORD[rbp-16]
-  ; here
 and r10, 0xff
 mov r10b, byte[rbx]
 mov rbx, 0
@@ -2385,6 +2376,17 @@ sub rsp, 100040
 mov [rbp-8], rdi
 ;Load Parameter: [ Variable: void. args @ 16]
 mov [rbp-16], rsi
+;[[ id : normform], [ [ : [], [ int : 100000], [ ] : ]]]
+mov r10, 100000
+lea rbx, [rbp-100024]
+lea rbx, [rbx+r10*1]
+;[[ id : normform], [ [ : [], [ int : 100000], [ ] : ]]]
+mov r10, 100000
+lea rbx, [rbp-100024]
+lea rbx, [rbx+r10*1]
+;[[ int : 0]]
+mov r10, 0
+mov byte[rbx], r10b
 ;[[ & : &], [ id : normform]]
 lea rbx, [rbp-100024]
 mov rdi, rbx
@@ -2432,8 +2434,8 @@ mov [rbp-32], rcx
 mov [rbp-40], r8
 ;Load Parameter: [ Variable: void arg5 @ 48]
 mov [rbp-48], r9
-;[[ int : 5], [ * : *], [ id : void]]
-mov rdi, 40
+;[[ int : 6], [ * : *], [ id : void]]
+mov rdi, 48
 mov rax, 0
 call _void._malloc_psize_t
 push rax
@@ -2782,7 +2784,6 @@ mov QWORD[rbp-96], rbx
 ;[[ id : c]]
 ;[[ @ : @], [ id : cp]]
 mov r10, QWORD[rbp-8]
-  ; here
 and r11, 0xff
 mov r11b, byte[r10]
 mov rbx, r11
@@ -2833,7 +2834,6 @@ mov QWORD[rbp-8], r10
 ;[[ id : c]]
 ;[[ @ : @], [ id : cp]]
 mov r10, QWORD[rbp-8]
-  ; here
 and r11, 0xff
 mov r11b, byte[r10]
 mov rbx, r11
@@ -2902,7 +2902,6 @@ mov QWORD[rbp-8], r10
 ;[[ id : c]]
 ;[[ @ : @], [ id : cp]]
 mov r10, QWORD[rbp-8]
-  ; here
 and r11, 0xff
 mov r11b, byte[r10]
 mov rbx, r11
@@ -3769,7 +3768,6 @@ mov QWORD[rbp-8], r10
 _LWHILECMP_0x45:
 ;[[ @ : @], [ id : str], [ == : ==], [ char : 32]]
 mov rbx, QWORD[rbp-8]
-  ; here
 and r10, 0xff
 mov r10b, byte[rbx]
 mov rbx, 32
@@ -3781,7 +3779,6 @@ jnz _LWHILESTART_0x44
 _LWHILEEND_0x46:
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov rbx, QWORD[rbp-8]
-  ; here
 and r10, 0xff
 mov r10b, byte[rbx]
 mov QWORD[rbp-24], r10
@@ -3821,7 +3818,6 @@ mov QWORD[rbp-8], r10
 ;[[ id : c]]
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov r10, QWORD[rbp-8]
-  ; here
 and r11, 0xff
 mov r11b, byte[r10]
 mov rbx, r11
@@ -3855,7 +3851,6 @@ mov QWORD[rbp-8], r10
 ;[[ id : c]]
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov r10, QWORD[rbp-8]
-  ; here
 and r11, 0xff
 mov r11b, byte[r10]
 mov rbx, r11
@@ -4040,6 +4035,101 @@ ___void_v3dcross_pVec3d.Vec3d.__return:
 leave
 ret
 
+;[ function bool isPrime( [[ Variable: uint x @ 8]] ) ]
+
+_bool_isPrime_puint:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [ Variable: uint x @ 8]
+mov [rbp-8], rdi
+;[[ id : x], [ % : %], [ int : 2], [ == : ==], [ int : 0]]
+mov rbx, 2
+mov r10, QWORD[rbp-8]
+xor rdx, rdx
+mov rax, rbx
+idiv r10
+mov rbx, rdx
+mov r10, 0
+cmp rbx, r10
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x4e
+;[[ $ : bool], [ int : 0]]
+mov rbx, 0
+and r10, 0xff
+mov r10, rbx
+mov rax, r10
+jmp ___bool_isPrime_puint__return
+jmp _LIFELSE_0x4f
+_LIFPOST_0x4e:
+_LIFELSE_0x4f:
+;[[ id : x]]
+cvtsi2sd xmm0, QWORD[rbp-8]
+mov rax, 0
+call _double_sqrt_pdouble
+movq rax, xmm0
+push rax
+;[[ fn(x) : [ function double sqrt( [[ Variable: double a @ 8]] ) ] ]]
+pop rax
+movq xmm7, rax
+cvttsd2si rbx, xmm7
+mov QWORD[rbp-16], rbx
+;[[ int : 3]]
+mov QWORD[rbp-24], 3
+jmp _LFORCMP_0x51
+_LFORTOP_0x50:
+;[[ id : x], [ % : %], [ id : i], [ == : ==], [ int : 0]]
+mov rbx, QWORD[rbp-24]
+mov r10, QWORD[rbp-8]
+xor rdx, rdx
+mov rax, rbx
+idiv r10
+mov rbx, rdx
+mov r10, 0
+cmp rbx, r10
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x54
+;[[ $ : bool], [ int : 0]]
+mov rbx, 0
+and r10, 0xff
+mov r10, rbx
+mov rax, r10
+jmp ___bool_isPrime_puint__return
+jmp _LIFELSE_0x55
+_LIFPOST_0x54:
+_LIFELSE_0x55:
+_LFORUPDATE_0x52:
+;[[ id : i]]
+;[[ id : i]]
+;[[ int : 1]]
+mov rbx, 1
+mov r10, QWORD[rbp-24]
+add r10, rbx
+mov QWORD[rbp-24], r10
+_LFORCMP_0x51:
+;[[ id : i], [ < : <], [ id : maxsmall]]
+mov r10, QWORD[rbp-16]
+mov rbx, QWORD[rbp-24]
+cmp rbx, r10
+setl bl
+mov rax, rbx
+and al, 1
+jnz _LFORTOP_0x50
+_LFOREND_0x53:
+;[[ $ : bool], [ int : 1]]
+mov rbx, 1
+and r10, 0xff
+mov r10, rbx
+mov rax, r10
+jmp ___bool_isPrime_puint__return
+___bool_isPrime_puint__return:
+leave
+ret
+
 ;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
 
 main:
@@ -4053,24 +4143,18 @@ mov [rbp-16], rsi
 ;[[ id : STRING_CONSTANT_3]]
 mov rbx, STRING_CONSTANT_3
 mov QWORD[rbp-24], rbx
+;[[ int : 1]]
+mov rdi, 1
+mov rax, 0
+call _bool_isPrime_puint
+push rax
+;[[ fn(x) : [ function bool isPrime( [[ Variable: uint x @ 8]] ) ] ]]
+pop rax
+mov QWORD[rbp-32], rax
 ;[[ id : STRING_CONSTANT_4]]
 mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
-mov rax, 0
-call _void_printf_pchar.
-;[[ id : STRING_CONSTANT_5]]
-mov rbx, STRING_CONSTANT_5
-mov rdi, rbx
-mov rax, 0
-call _int_getInt_pchar.
-push rax
-;[[ fn(x) : [ function int getInt( [[ Variable: char. msg @ 8]] ) ] ]]
-pop rax
-mov QWORD[rbp-32], rax
-;[[ id : STRING_CONSTANT_6]]
-mov rbx, STRING_CONSTANT_6
-mov rdi, rbx
-;[[ id : a]]
+;[[ id : b]]
 mov rsi, QWORD[rbp-32]
 mov rax, 0
 call printf

@@ -401,7 +401,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         elif(isinstance(a.accessor, Variable)):
 
             tmp = ralloc(False)
-            instr += f"mov {tmp}, {valueOf(a.accessor)}\n  ; here\n"
+            instr += f"mov {tmp}, {valueOf(a.accessor)}\n"
             if(a.accessor.t.isflt()):
                 oreg = ralloc(True)
                 instr += f"movsd {oreg}, [{tmp}]\n"
@@ -521,6 +521,15 @@ class RightSideEvaluator(ExpressionEvaluator):
                 throw(TypeMismatch(a.token, a.type, b.type))
             newtype, toConvert = determinePrecedence(a.type, b.type, self.fn)
             o = newtype.copy()
+            
+            
+            #TODO:
+            #   The casting system will sometimes reverse the 
+            #   order of operands!
+            #
+            #   \/\/\/\/\//\/\/\/\/\/\/\/\/\/\
+            
+            
             if(newtype.__eq__(a.type)):
                 # cast to a
                 castee = b
@@ -561,6 +570,7 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             instr += doOperation(caster.type, creg,
                                  newcoreg, op, caster.type.signed)
+            
             # handle float comparison
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
 

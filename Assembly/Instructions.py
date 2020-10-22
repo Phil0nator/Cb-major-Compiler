@@ -55,7 +55,7 @@ class Peephole:
         for l in lines[1:]:
             l = l.strip()
 
-            if(l.startswith(";")):
+            if(l.startswith(";") or lines[pi] is None):
                 i+=1
                 continue
 
@@ -74,11 +74,12 @@ class Peephole:
             
 
             # excessive mov statements
-            if(prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
+            if  (prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
                 if(prev[1] == source and "[" not in prev[2] and not isdigit(ord(prev[2][0]))):
+
+
                     lines[i] = None
                     lines[pi] = Instruction(op, [dest, prev[2]]) if dest != prev[2] else None
-
 
 
 

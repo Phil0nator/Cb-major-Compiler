@@ -71,7 +71,7 @@ elif(args.optimize3):
     __oplevel__ = 3
 
 if(__oplevel__ > 1):
-    print(f"{Style.BRIGHT}{Fore.RED}Warning!{Style.RESET_ALL}: The use of increased optimization levels is under development. ")
+    print(f"{Style.BRIGHT}{Fore.RED}Warning!{Style.RESET_ALL}: Oplvl != 0 ")
 GlobalCompiler = None
 
 compilepath = (sys.path[0])

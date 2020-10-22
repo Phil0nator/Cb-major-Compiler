@@ -548,6 +548,11 @@ class Function:
             self.advance()
 
     def buildFunctionCall(self):
+
+        #TODO:
+        # Nested functions can sometimes overwrite eachother's parameters;
+
+
         # function name
         fid = self.current_token.value
         # token of function name
@@ -638,6 +643,7 @@ class Function:
         instructions.addline(Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
+        
         instructions.addline(fncall(fn))
         return instructions.get(), fn
 

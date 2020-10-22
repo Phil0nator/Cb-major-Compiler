@@ -46,8 +46,8 @@ typedef short int32;
 #include "io/io.k"
 
 
-
-
+#define MAX_INT 9223372036854775807
+#define MAX_UINT 18446744073709551615
 
 
 

@@ -13,6 +13,7 @@
 global void __printf(char* fmt, void* args){
 
     char normform[__PRINTF_MAXNORMUSE];
+    normform[__PRINTF_MAXNORMUSE]=0;
     int l = __sprintf(&normform,fmt,args);
     write(STDOUT, &normform, l);
 
@@ -20,7 +21,7 @@ global void __printf(char* fmt, void* args){
 
 __cdecl void printf(char* fmt, void arg1, void arg2, void arg3, void arg4, void arg5){
 
-    void* args =malloc(5*void);
+    void* args =malloc(6*void);
     args[0]=arg1;
     args[1]=arg2;
     args[2]=arg3;

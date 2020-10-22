@@ -265,7 +265,8 @@ def doIntOperation(areg, breg, op, signed, size=8):
         else:
             asmop = "div"
 
-        return f"xor rdx, rdx\nmov {rax}, {areg}\n{asmop} {breg}\n mov {areg}, {rdx}\n"
+        out = f"xor rdx, rdx\nmov {rax}, {areg}\n{asmop} {breg}\nmov {areg}, {rdx}\n"
+        return out
     elif(op in [">>", "<<"]):
         return shiftInt(areg, breg, op, signed)
 
