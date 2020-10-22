@@ -1260,6 +1260,7 @@ add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
 _LFORUPDATE_0x2:
 ;[[ id : i]]
+;[[ id : i]]
 ;[[ id : i], [ + : +], [ int : 4]]
 mov r11, 4
 mov r10, QWORD[rbp-48]
@@ -1613,9 +1614,13 @@ jz _LIFPOST_0x6
 ;[[ @ : @], [ id : buffer]]
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
+;[[ @ : @], [ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov r10, rbx
 ;[[ char : 45]]
 mov rbx, 45
 mov byte[r10], bl
+;[[ id : buffer]]
 ;[[ id : buffer]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -1623,12 +1628,14 @@ mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
 ;[[ id : val]]
+;[[ id : val]]
 ;[[ int : 0], [ - : -], [ id : val]]
 mov r11, QWORD[rbp-8]
 mov r10, 0
 sub r10, r11
 mov rbx, r10
 mov QWORD[rbp-8], rbx
+;[[ id : signspace]]
 ;[[ id : signspace]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -1647,6 +1654,7 @@ pop rbx
 inc rbx
 mov QWORD[rbp-40], rbx
 ;[[ id : buffer]]
+;[[ id : buffer]]
 ;[[ id : l]]
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-16]
@@ -1657,11 +1665,15 @@ mov QWORD[rbp-48], 0
 jmp _LFORCMP_0x9
 _LFORTOP_0x8:
 ;[[ id : buffer]]
+;[[ id : buffer]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-16]
 sub r10, rbx
 mov QWORD[rbp-16], r10
+;[[ @ : @], [ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov r10, rbx
 ;[[ @ : @], [ id : buffer]]
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
@@ -1680,6 +1692,7 @@ add r13, r12
 mov rbx, r13
 mov byte[r10], bl
 ;[[ id : val]]
+;[[ id : val]]
 ;[[ int : 10]]
 mov rbx, 10
 mov r10, QWORD[rbp-8]
@@ -1689,6 +1702,7 @@ idiv rbx
 mov r10, rax
 mov QWORD[rbp-8], r10
 _LFORUPDATE_0xa:
+;[[ id : i]]
 ;[[ id : i]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -1747,11 +1761,13 @@ push rax
 pop rax
 mov QWORD[rbp-40], rax
 ;[[ id : buffer]]
+;[[ id : buffer]]
 ;[[ id : l]]
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
+;[[ id : val]]
 ;[[ id : val]]
 ;[[ id : val]]
 movsd xmm7, QWORD[rbp-8]
@@ -1773,15 +1789,20 @@ movsd QWORD[rbp-8], xmm7
 ;[[ @ : @], [ id : buffer]]
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
+;[[ @ : @], [ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov r10, rbx
 ;[[ char : 46]]
 mov rbx, 46
 mov byte[r10], bl
+;[[ id : buffer]]
 ;[[ id : buffer]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
+;[[ id : l]]
 ;[[ id : l]]
 ;[[ id : val]]
 movsd xmm7, QWORD[rbp-8]
@@ -1867,6 +1888,9 @@ jz _LIFPOST_0x11
 ;[[ @ : @], [ id : str]]
 mov rbx, QWORD[rbp-8]
 mov r10, rbx
+;[[ @ : @], [ id : str]]
+mov rbx, QWORD[rbp-8]
+mov r10, rbx
 ;[[ @ : @], [ id : fmt]]
 mov r11, QWORD[rbp-16]
   ; here
@@ -1876,6 +1900,7 @@ mov rbx, r12
 mov byte[r10], bl
 jmp _LIFELSE_0x12
 _LIFPOST_0x11:
+;[[ id : fmt]]
 ;[[ id : fmt]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -1919,6 +1944,7 @@ push rax
 pop rax
 mov QWORD[rbp-64], rax
 ;[[ id : str]]
+;[[ id : str]]
 ;[[ id : size], [ - : -], [ int : 1]]
 mov r10, QWORD[rbp-64]
 dec r10
@@ -1945,6 +1971,9 @@ mov r10, rbx
 and r11, 0xff
 mov r11, r10
 mov QWORD[rbp-72], r11
+;[[ @ : @], [ id : str]]
+mov rbx, QWORD[rbp-8]
+mov r10, rbx
 ;[[ @ : @], [ id : str]]
 mov rbx, QWORD[rbp-8]
 mov r10, rbx
@@ -1985,6 +2014,7 @@ push rax
 pop rax
 mov QWORD[rbp-88], rax
 ;[[ id : str]]
+;[[ id : str]]
 ;[[ id : usize], [ - : -], [ int : 1]]
 mov r10, QWORD[rbp-88]
 dec r10
@@ -2018,6 +2048,7 @@ push rax
 pop rax
 mov QWORD[rbp-96], rax
 ;[[ id : str]]
+;[[ id : str]]
 ;[[ id : ssize], [ - : -], [ int : 1]]
 mov r10, QWORD[rbp-96]
 dec r10
@@ -2047,12 +2078,14 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x1d
 ;[[ id : boolean_string]]
+;[[ id : boolean_string]]
 ;[[ id : STRING_CONSTANT_0]]
 mov r10, STRING_CONSTANT_0
 mov rbx, r10
 mov QWORD[rbp-112], rbx
 jmp _LIFELSE_0x1e
 _LIFPOST_0x1d:
+;[[ id : boolean_string]]
 ;[[ id : boolean_string]]
 ;[[ id : STRING_CONSTANT_1]]
 mov r10, STRING_CONSTANT_1
@@ -2071,6 +2104,7 @@ push rax
 ;[[ fn(x) : [ function int strcpy( [[ Variable: char. dest @ 8], [ Variable: char. source @ 16]] ) ] ]]
 pop rax
 mov QWORD[rbp-120], rax
+;[[ id : str]]
 ;[[ id : str]]
 ;[[ id : ssize]]
 mov rbx, QWORD[rbp-96]
@@ -2108,6 +2142,7 @@ push rax
 ;[[ fn(x) : [ function int toStr( [[ Variable: double val @ 8], [ Variable: char. buffer @ 16], [ Variable: int multiplier @ 24]] ) ] ]]
 pop rax
 mov QWORD[rbp-136], rax
+;[[ id : str]]
 ;[[ id : str]]
 ;[[ id : dsize], [ - : -], [ int : 1]]
 mov r10, QWORD[rbp-136]
@@ -2148,6 +2183,7 @@ push rax
 pop rax
 mov QWORD[rbp-152], rax
 ;[[ id : str]]
+;[[ id : str]]
 ;[[ id : fsize], [ - : -], [ int : 1]]
 mov r10, QWORD[rbp-152]
 dec r10
@@ -2165,6 +2201,7 @@ _LIFELSE_0x18:
 _LIFELSE_0x16:
 _LIFELSE_0x14:
 ;[[ id : argc]]
+;[[ id : argc]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-32]
@@ -2172,11 +2209,13 @@ add r10, rbx
 mov QWORD[rbp-32], r10
 _LIFELSE_0x12:
 ;[[ id : fmt]]
+;[[ id : fmt]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
+;[[ id : str]]
 ;[[ id : str]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -2237,10 +2276,18 @@ mov QWORD[rbp-56], rax
 mov r10, 0
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
+;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
+mov r10, 0
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : arg1]]
 mov r11, QWORD[rbp-24]
 mov r10, r11
 mov qword[rbx], r10
+;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
+mov r10, 1
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
 mov r10, 1
 mov rbx, QWORD[rbp-56]
@@ -2253,10 +2300,18 @@ mov qword[rbx], r10
 mov r10, 2
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
+;[[ id : args], [ [ : [], [ int : 2], [ ] : ]]]
+mov r10, 2
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : arg3]]
 mov r11, QWORD[rbp-40]
 mov r10, r11
 mov qword[rbx], r10
+;[[ id : args], [ [ : [], [ int : 3], [ ] : ]]]
+mov r10, 3
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 3], [ ] : ]]]
 mov r10, 3
 mov rbx, QWORD[rbp-56]
@@ -2389,10 +2444,18 @@ mov QWORD[rbp-56], rax
 mov r10, 0
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
+;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
+mov r10, 0
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : arg1]]
 mov r11, QWORD[rbp-16]
 mov r10, r11
 mov qword[rbx], r10
+;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
+mov r10, 1
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
 mov r10, 1
 mov rbx, QWORD[rbp-56]
@@ -2405,6 +2468,10 @@ mov qword[rbx], r10
 mov r10, 2
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
+;[[ id : args], [ [ : [], [ int : 2], [ ] : ]]]
+mov r10, 2
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : arg3]]
 mov r11, QWORD[rbp-32]
 mov r10, r11
@@ -2413,10 +2480,18 @@ mov qword[rbx], r10
 mov r10, 3
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
+;[[ id : args], [ [ : [], [ int : 3], [ ] : ]]]
+mov r10, 3
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : arg4]]
 mov r11, QWORD[rbp-40]
 mov r10, r11
 mov qword[rbx], r10
+;[[ id : args], [ [ : [], [ int : 4], [ ] : ]]]
+mov r10, 4
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 4], [ ] : ]]]
 mov r10, 4
 mov rbx, QWORD[rbp-56]
@@ -2491,6 +2566,7 @@ push rbp
 mov rbp, rsp
 sub rsp, 8
 ;[[ id : rand_next]]
+;[[ id : rand_next]]
 ;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ << : <<], [ int : 13], [ ) : )]]
 mov r10, [rand_next]
 sal r10, 13
@@ -2499,6 +2575,7 @@ xor r11, r10
 mov rbx, r11
 mov [rand_next], rbx
 ;[[ id : rand_next]]
+;[[ id : rand_next]]
 ;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ >> : >>], [ int : 17], [ ) : )]]
 mov r10, [rand_next]
 sar r10, 17
@@ -2506,6 +2583,7 @@ mov r11, [rand_next]
 xor r11, r10
 mov rbx, r11
 mov [rand_next], rbx
+;[[ id : rand_next]]
 ;[[ id : rand_next]]
 ;[[ id : rand_next], [ ^ : ^], [ ( : (], [ id : rand_next], [ << : <<], [ int : 5], [ ) : )]]
 mov r10, [rand_next]
@@ -2528,6 +2606,7 @@ _void_srand_p:
 push rbp
 mov rbp, rsp
 sub rsp, 8
+;[[ id : rand_next]]
 ;[[ id : rand_next]]
 mov rax, 0
 call _int_rdrand_p
@@ -2700,6 +2779,7 @@ call _void_memset_pvoid.ucharsize_t
 lea rbx, [rbp-88]
 mov QWORD[rbp-96], rbx
 ;[[ id : c]]
+;[[ id : c]]
 ;[[ @ : @], [ id : cp]]
 mov r10, QWORD[rbp-8]
   ; here
@@ -2709,6 +2789,7 @@ mov rbx, r11
 mov QWORD[rbp-48], rbx
 jmp _LWHILECMP_0x24
 _LWHILESTART_0x23:
+;[[ id : val]]
 ;[[ id : val]]
 ;[[ int : 0]]
 mov rbx, 0
@@ -2728,6 +2809,7 @@ pop rax
 and al, 1
 jz _LIFPOST_0x29
 ;[[ id : val]]
+;[[ id : val]]
 ;[[ ( : (], [ id : val], [ * : *], [ id : base], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
 mov r10, QWORD[rbp-32]
 mov r11, QWORD[rbp-24]
@@ -2741,11 +2823,13 @@ add r10, r12
 mov rbx, r10
 mov QWORD[rbp-24], rbx
 ;[[ id : cp]]
+;[[ id : cp]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
+;[[ id : c]]
 ;[[ id : c]]
 ;[[ @ : @], [ id : cp]]
 mov r10, QWORD[rbp-8]
@@ -2794,9 +2878,13 @@ _LIFELSE_0x2e:
 ;[[ @ : @], [ id : pp]]
 mov rbx, QWORD[rbp-96]
 mov r10, rbx
+;[[ @ : @], [ id : pp]]
+mov rbx, QWORD[rbp-96]
+mov r10, rbx
 ;[[ id : val]]
 mov rbx, QWORD[rbp-24]
 mov qword[r10], rbx
+;[[ id : pp]]
 ;[[ id : pp]]
 ;[[ id : int]]
 mov rbx, 8
@@ -2804,11 +2892,13 @@ mov r10, QWORD[rbp-96]
 add r10, rbx
 mov QWORD[rbp-96], r10
 ;[[ id : cp]]
+;[[ id : cp]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
+;[[ id : c]]
 ;[[ id : c]]
 ;[[ @ : @], [ id : cp]]
 mov r10, QWORD[rbp-8]
@@ -2830,6 +2920,9 @@ mov rax, r10
 and al, 1
 jnz _LWHILESTART_0x23
 _LWHILEEND_0x25:
+;[[ @ : @], [ id : pp]]
+mov rbx, QWORD[rbp-96]
+mov r10, rbx
 ;[[ @ : @], [ id : pp]]
 mov rbx, QWORD[rbp-96]
 mov r10, rbx
@@ -2857,6 +2950,7 @@ jmp _LIFELSE_0x30
 _LIFPOST_0x2f:
 _LIFELSE_0x30:
 ;[[ id : val]]
+;[[ id : val]]
 ;[[ id : val], [ || : ||], [ ( : (], [ ( : (], [ id : parts], [ [ : [], [ int : 0], [ ] : ]], [ << : <<], [ int : 24], [ ) : )], [ || : ||], [ ( : (], [ id : parts], [ [ : [], [ int : 1], [ ] : ]], [ << : <<], [ int : 16], [ ) : )], [ || : ||], [ ( : (], [ id : parts], [ [ : [], [ int : 2], [ ] : ]], [ << : <<], [ int : 8], [ ) : )], [ ) : )]]
 mov r11, 0
 lea r10, [rbp-88]
@@ -2880,6 +2974,9 @@ shl r11, 8
 or r10, r11
 mov rbx, r10
 mov QWORD[rbp-24], rbx
+;[[ @ : @], [ id : addr]]
+mov rbx, QWORD[rbp-16]
+mov r10, rbx
 ;[[ @ : @], [ id : addr]]
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
@@ -3034,6 +3131,7 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x31
 ;[[ id : f]]
+;[[ id : f]]
 ;[[ int : 0]]
 mov rbx, 0
 mov QWORD[rbp-40], rbx
@@ -3047,6 +3145,7 @@ sete bl
 mov rax, rbx
 and al, 1
 jz _LIFPOST_0x33
+;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -3062,6 +3161,7 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x35
 ;[[ id : f]]
+;[[ id : f]]
 ;[[ int : 1], [ || : ||], [ int : 8]]
 mov rbx, 1
 mov QWORD[rbp-40], rbx
@@ -3075,6 +3175,7 @@ sete bl
 mov rax, rbx
 and al, 1
 jz _LIFPOST_0x37
+;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 2]]
 mov rbx, 2
@@ -3090,9 +3191,11 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x39
 ;[[ id : m]]
+;[[ id : m]]
 ;[[ int : 1792]]
 mov rbx, 1792
 mov QWORD[rbp-32], rbx
+;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 2], [ || : ||], [ int : 64]]
 mov rbx, 2
@@ -3100,9 +3203,11 @@ mov QWORD[rbp-40], rbx
 jmp _LIFELSE_0x3a
 _LIFPOST_0x39:
 ;[[ id : m]]
+;[[ id : m]]
 ;[[ int : 1792]]
 mov rbx, 1792
 mov QWORD[rbp-32], rbx
+;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 2], [ || : ||], [ int : 8], [ || : ||], [ int : 64]]
 mov rbx, 2
@@ -3555,11 +3660,13 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x42
 ;[[ id : size]]
+;[[ id : size]]
 ;[[ id : size], [ * : *], [ int : 2]]
 mov r10, QWORD[rbp-16]
 sal r10, 1
 mov rbx, r10
 mov QWORD[rbp-16], rbx
+;[[ id : str]]
 ;[[ id : str]]
 ;[[ id : str]]
 mov rdi, QWORD[rbp-24]
@@ -3579,6 +3686,10 @@ _LIFELSE_0x43:
 mov r10, QWORD[rbp-40]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*1]
+;[[ id : str], [ [ : [], [ id : len], [ ] : ]]]
+mov r10, QWORD[rbp-40]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+r10*1]
 ;[[ id : c]]
 mov r10, QWORD[rbp-32]
 mov byte[rbx], r10b
@@ -3591,6 +3702,7 @@ mov rsi, rbx
 mov rdx, 1
 mov rax, 0
 call _bool_fgets_pfd_tchar.size_t
+;[[ id : len]]
 ;[[ id : len]]
 ;[[ id : len], [ + : +], [ int : 1]]
 mov r10, QWORD[rbp-40]
@@ -3607,6 +3719,11 @@ mov rax, rbx
 and al, 1
 jnz _LWHILESTART_0x3f
 _LWHILEEND_0x41:
+;[[ id : str], [ [ : [], [ id : len], [ + : +], [ int : 1], [ ] : ]]]
+mov rbx, QWORD[rbp-40]
+inc rbx
+mov r10, QWORD[rbp-24]
+lea r10, [r10+rbx*1]
 ;[[ id : str], [ [ : [], [ id : len], [ + : +], [ int : 1], [ ] : ]]]
 mov rbx, QWORD[rbp-40]
 inc rbx
@@ -3642,6 +3759,7 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 jmp _LWHILECMP_0x45
 _LWHILESTART_0x44:
+;[[ id : str]]
 ;[[ id : str]]
 ;[[ int : 1]]
 mov rbx, 1
@@ -3685,6 +3803,7 @@ mov rax, rbx
 and al, 1
 jz _LIFPOST_0x47
 ;[[ id : negative]]
+;[[ id : negative]]
 ;[[ $ : bool], [ int : 1]]
 mov r10, 1
 and r11, 0xff
@@ -3692,11 +3811,13 @@ mov r11, r10
 mov rbx, r11
 mov QWORD[rbp-40], rbx
 ;[[ id : str]]
+;[[ id : str]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
+;[[ id : c]]
 ;[[ id : c]]
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov r10, QWORD[rbp-8]
@@ -3711,6 +3832,7 @@ _LIFELSE_0x48:
 jmp _LWHILECMP_0x4a
 _LWHILESTART_0x49:
 ;[[ id : val]]
+;[[ id : val]]
 ;[[ ( : (], [ id : val], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
 mov r11, 10
 mov r10, QWORD[rbp-32]
@@ -3723,11 +3845,13 @@ add r10, r12
 mov rbx, r10
 mov QWORD[rbp-32], rbx
 ;[[ id : str]]
+;[[ id : str]]
 ;[[ int : 1]]
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
+;[[ id : c]]
 ;[[ id : c]]
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov r10, QWORD[rbp-8]
@@ -3796,6 +3920,8 @@ movsd [rbp-24], xmm1
 movsd [rbp-32], xmm2
 ;[[ id : this], [ -> : ->], [ id : x]]
 mov rbx, QWORD[rbp-8]
+;[[ id : this], [ -> : ->], [ id : x]]
+mov rbx, QWORD[rbp-8]
 ;[[ id : a]]
 movsd xmm8, QWORD[rbp-16]
 movsd xmm7, xmm8
@@ -3803,10 +3929,16 @@ movq qword[rbx], xmm7
 ;[[ id : this], [ -> : ->], [ id : y]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
+;[[ id : this], [ -> : ->], [ id : y]]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
 ;[[ id : b]]
 movsd xmm8, QWORD[rbp-24]
 movsd xmm7, xmm8
 movq qword[rbx], xmm7
+;[[ id : this], [ -> : ->], [ id : z]]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+16]
 ;[[ id : this], [ -> : ->], [ id : z]]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+16]

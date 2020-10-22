@@ -49,33 +49,46 @@ class Peephole:
         lines = self.instructions.replace(
             "\n\n", "\n").replace(
             "\t", "").split("\n")
-        outlines = ""
         prev = self.parseLine(lines[0])
         pi = 0
         i = 1
         for l in lines[1:]:
             l = l.strip()
 
-            if(len(l) < 5 or l.startswith(";")):
+            if(l.startswith(";")):
+                i+=1
                 continue
+
             op, dest, source, flags = self.parseLine(l)
 
             # redundant push and pop instructions
             if(prev[0] == "push" and op == "pop"):
+                
+
 
                 lines[pi] = Instruction(
                     "mov", [
                         dest, prev[1]]) if(
                     dest != prev[1]) else None
                 lines[i] = None
+            
+
+            # excessive mov statements
+            if(prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
+                if(prev[1] == source and "[" not in prev[2] and not isdigit(ord(prev[2][0]))):
+                    lines[i] = None
+                    lines[pi] = Instruction(op, [dest, prev[2]]) if dest != prev[2] else None
+
+
+
 
             # zeroing-by-mov is less efficient than xor
-            if(op == "mov" and dest in REGISTERS and source == "0"):
+            elif(op == "mov" and dest in REGISTERS and source == "0"):
                 lines[i] = Instruction("xor", [dest, dest])
 
             prev = (op, dest, source, flags)
-            pi += 1
             i += 1
+            pi = i-1
 
         lines = list(filter(None, lines))
         self.instructions = str.join("\n", lines)
