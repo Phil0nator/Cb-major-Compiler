@@ -6,7 +6,7 @@
 
 function int main(int argc, char** argv){
 
-    char* fmt = "The int: %i, the other int: %i, a string: %s, and a bool %b. Also, a double %f";
+    char* fmt = "The int: %i, the double: %f, a string: %s, and a bool %b.";
     char* dest = malloc(1000);
     
     bool val = true;
@@ -15,15 +15,13 @@ function int main(int argc, char** argv){
     void* args = malloc(6*int);
 
     args[0] = argc;
-    args[1] = second;
+    args[1] = 2.45;
     args[2] = "abc";
     args[3] = val;
-    args[4] = 2.45;
 
 
-    __sprintf(dest, fmt, args);
-
-
+    int len = __sprintf(dest, fmt, args);
+    print(len);
     print(dest);
 
 

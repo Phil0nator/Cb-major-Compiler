@@ -5,10 +5,12 @@
 #define FORMAT_UINT64 'u'
 #define FORMAT_CHAR 'c'
 #define FORMAT_BOOL 'b'
-#define FORMAT_DOUBLE 'f'
+#define FORMAT_DOUBLE 'd'
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
-#define DOUBLE_PRECISION_MULTIPLIER 10000000
+#define FORMAT_FLOAT 'f'
+#define DOUBLE_PRECISION_MULTIPLIER 100000000000000
+#define FLOAT_PRECISION_MULTIPLIER 10000000
 #include "math.k"
 #include "string.k"
 
@@ -39,17 +41,17 @@ function int toStr(int val, char* buffer, bool signed){
 
 
 
-function int toStr(double val, char* buffer){
+function int toStr(double val, char* buffer, int multiplier){
 
     int integral = val;
     int l = toStr(integral, buffer, 1);
     buffer+=l;
     val -= integral;
-    val = val * DOUBLE_PRECISION_MULTIPLIER;
+    val = val * multiplier;
     @buffer = '.';
     buffer+=1;
-    l += toStr($int val, buffer, 0);
-    return l;
+    l += toStr(round(val), buffer, 0);
+    return l-1;
 
 
 }
@@ -125,8 +127,14 @@ function int __sprintf(char* str, char* fmt, void* args){
             else if (c == FORMAT_DOUBLE){
 
                 double d = args[argc];
-                int dsize = toStr(d, str);
+                int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
                 str += dsize-1;
+
+            } else if (c == FORMAT_FLOAT){
+
+                double f = args[argc];
+                int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
+                str += fsize-1;
 
             }
 
