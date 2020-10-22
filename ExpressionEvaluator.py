@@ -401,7 +401,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         elif(isinstance(a.accessor, Variable)):
 
             tmp = ralloc(False)
-            instr += f"mov {tmp}, {valueOf(a.accessor)}\n"
+            instr += f"mov {tmp}, {valueOf(a.accessor)}\n  ; here\n"
             if(a.accessor.t.isflt()):
                 oreg = ralloc(True)
                 instr += f"movsd {oreg}, [{tmp}]\n"
@@ -604,6 +604,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 rfree(final.accessor)
             return instr, o
 
+
         if(final.type.__eq__(dest.type)):
 
             if(isinstance(final.accessor, Variable)):
@@ -636,14 +637,23 @@ class RightSideEvaluator(ExpressionEvaluator):
                 elif(final.accessor == "pop"):
                     instr += f"pop {rax}\n"
                     final.accessor = "rax"
+                if(config.GlobalCompiler.Tequals(final.type.name, "void")):
 
-                cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                    cmd = "movq"  if("[" not in valueOf(castdest)+valueOf(final.accessor)) else "mov"
+                    cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+
+                else:
+                    cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
             elif(not dest.type.isflt() and final.type.isflt()):
                 if(final.accessor == "pop"):
                     instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
                     final.accessor = "xmm7"
+                if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
+                    cmd = "movq"  if("[" not in valueOf(castdest)+valueOf(final.accessor)) else "mov"
+                    cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
-                cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                else:
+                    cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
             else:
                 cst = False
 
@@ -663,12 +673,13 @@ class RightSideEvaluator(ExpressionEvaluator):
                 rfree(final.accessor)
 
             rfree(castdest)
-
         return instr, o
 
     def evaluate(self, dest, pfix):
         instr, final = self.evaluatePostfix(pfix, self)
         ninster, o = self.depositFinal(final, final.type, dest)
+        
+
         return instr + ninster, o
 
 
@@ -721,8 +732,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             instr += bringdown_memlocs(a, b)
 
-            if(b.isconstint() and b.accessor == 0):  # index 0 means nothing
-                return "", a.type.copy(), a
 
             areg, breg, o, ninstr = optloadRegs(a, b, op, o)
             instr += ninstr

@@ -1034,140 +1034,41 @@ global _int_ceil_pdouble
 global _int_floor_pdouble
 global _int_abs_pint
 global _double_abs_pdouble
-extern _ssize_t_read_pfd_tchar.size_t
-extern _ssize_t_write_pfd_tchar.size_t
-extern _fd_t_open_pchar.intmode_t
-extern _int_close_pfd_t
-extern _int_mkdir_pchar.mode_t
-extern _int_rmdir_pchar.
-extern _int_creat_pchar.mode_t
-extern _int_chdir_pchar.
-extern _int_lseek_pfd_tintint
+global _int_log_pint
 section .data
-    STRING_CONSTANT_0: db `%li\n`, 0
-STRING_CONSTANT_1: db `%lu\n`, 0
-STRING_CONSTANT_2: db `%lf\n`, 0
-STRING_CONSTANT_3: db `True`, 0
-STRING_CONSTANT_4: db `False`, 0
-STRING_CONSTANT_5: db `[]`, 0
-STRING_CONSTANT_6: db `[`, 0
-STRING_CONSTANT_7: db ` %i ,`, 0
-STRING_CONSTANT_8: db ` %i ]\n`, 0
-FLT_CONSTANT_0: dq 0x0.0p+0
-STRING_CONSTANT_9: db `Bad realloc`, 0
-STRING_CONSTANT_10: db `%s`, 0
+    FLT_CONSTANT_0: dq 0x0.0p+0
+STRING_CONSTANT_0: db `True`, 0
+STRING_CONSTANT_1: db `False`, 0
+STRING_CONSTANT_2: db `%li\n`, 0
+STRING_CONSTANT_3: db `%lu\n`, 0
+STRING_CONSTANT_4: db `%lf\n`, 0
+STRING_CONSTANT_5: db `True`, 0
+STRING_CONSTANT_6: db `False`, 0
+STRING_CONSTANT_7: db `[]`, 0
+STRING_CONSTANT_8: db `[`, 0
+STRING_CONSTANT_9: db ` %i ,`, 0
+STRING_CONSTANT_10: db ` %i ]\n`, 0
+STRING_CONSTANT_11: db `The int: %i, the other int: %i, a string: %s, and a bool %b. Also, a double %f`, 0
+STRING_CONSTANT_12: db `abc`, 0
+FLT_CONSTANT_1: dq 0x1.399999999999ap+1
 nullptr: DQ 0
 null: DQ 0
 nullterm: DQ 0
 M_MINZERO_MEM: DQ 0
-rand_next: DQ 1
 section .bss
 align 16
     
     __heap_padding__: resz 1
 section .text
 global CMAIN
-_int_bitswap64_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rbx, 18374686479671623680
-mov rcx, QWORD[rbp-8]
-and rbx, rcx
-shr rbx, 56
-mov rcx, 71776119061217280
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shr rcx, 40
-or rbx, rcx
-mov rcx, 280375465082880
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shr rcx, 24
-or rbx, rcx
-mov rcx, 1095216660480
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shr rcx, 8
-or rbx, rcx
-mov rcx, 4278190080
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shl rcx, 8
-or rbx, rcx
-mov rcx, 16711680
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shl rcx, 24
-or rbx, rcx
-mov rcx, 65280
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shl rcx, 40
-or rbx, rcx
-mov rcx, 255
-mov r10, QWORD[rbp-8]
-and rcx, r10
-shl rcx, 56
-or rbx, rcx
-mov rax, rbx
-jmp ___int_bitswap64_pint__return
-___int_bitswap64_pint__return:
-leave
-ret
-_uint32_bitswap32_puint32:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rbx, 4278190080
-and rcx, 0xffffffff
-mov rcx, rbx
-mov rbx, QWORD[rbp-8]
-and rcx, rbx
-shr rcx, 24
-mov rbx, 16711680
-and r10, 0xffffffff
-mov r10, rbx
-mov rbx, QWORD[rbp-8]
-and r10, rbx
-shr r10, 8
-or rcx, r10
-mov rbx, 65280
-and r10, 0xffffffff
-mov r10, rbx
-mov rbx, QWORD[rbp-8]
-and r10, rbx
-shl r10, 8
-or rcx, r10
-mov rbx, 255
-and r10, 0xffffffff
-mov r10, rbx
-mov rbx, QWORD[rbp-8]
-and r10, rbx
-shl r10, 24
-or rcx, r10
-mov rax, rcx
-jmp ___uint32_bitswap32_puint32__return
-___uint32_bitswap32_puint32__return:
-leave
-ret
-_int_htonl_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-ALIGN_STACK
-    call htonl
-    UNALIGN_STACK
-___int_htonl_pint__return:
-leave
-ret
+
+;[ function void. malloc( [[ Variable: size_t size @ 8]] ) ]
+
 _void._malloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: size_t size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call malloc
@@ -1175,10 +1076,14 @@ ALIGN_STACK
 ___void._malloc_psize_t__return:
 leave
 ret
+
+;[ function void. calloc( [[ Variable: size_t size @ 8]] ) ]
+
 _void._calloc_psize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: size_t size @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call calloc
@@ -1186,11 +1091,16 @@ ALIGN_STACK
 ___void._calloc_psize_t__return:
 leave
 ret
+
+;[ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ]
+
 _void._realloc_pvoid.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: void. og @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: size_t newsize @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
     call realloc
@@ -1198,10 +1108,14 @@ ALIGN_STACK
 ___void._realloc_pvoid.size_t__return:
 leave
 ret
+
+;[ function void free( [[ Variable: void. ptr @ 8]] ) ]
+
 _void_free_pvoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: void. ptr @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call free
@@ -1209,12 +1123,18 @@ ALIGN_STACK
 ___void_free_pvoid.__return:
 leave
 ret
+
+;[ function void memcpy( [[ Variable: void. dest @ 8], [ Variable: void. source @ 16], [ Variable: size_t bytes @ 24]] ) ]
+
 _void_memcpy_pvoid.void.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: void. dest @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: void. source @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t bytes @ 24]
 mov [rbp-24], rdx
 ; rax = final dest:
     
@@ -1228,13 +1148,20 @@ mov [rbp-24], rdx
 ___void_memcpy_pvoid.void.size_t__return:
 leave
 ret
+
+;[ function void avx_memcpy( [[ Variable: void. dest @ 8], [ Variable: void. source @ 16], [ Variable: size_t bytes @ 24]] ) ]
+
 _void_avx_memcpy_pvoid.void.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 56
+;Load Parameter: [ Variable: void. dest @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: void. source @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t bytes @ 24]
 mov [rbp-24], rdx
+;[[ id : bytes], [ % : %], [ int : 32]]
 mov rcx, 32
 mov rbx, QWORD[rbp-24]
 xor rdx, rdx
@@ -1242,30 +1169,37 @@ mov rax, rbx
 idiv rcx
  mov rbx, rdx
 mov QWORD[rbp-32], rbx
+;[[ ( : (], [ id : bytes], [ - : -], [ id : offset], [ ) : )], [ / : /], [ int : 4]]
 mov rcx, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 sub rbx, rcx
 sar rbx, 2
 mov QWORD[rbp-40], rbx
+;[[ int : 0]]
 mov QWORD[rbp-48], 0
 jmp _LFORCMP_0x1
 _LFORTOP_0x0:
+;[[ id : i]]
 mov rcx, QWORD[rbp-48]
 mov rbx, rcx
 shl rbx, 3
 add rbx, [rbp-16]
 vmovdqu ymm0, [rbx]
-mov rcx, QWORD[rbp-48]
-mov rbx, rcx
+;[[ id : i]]
+mov rbx, QWORD[rbp-48]
 shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
 _LFORUPDATE_0x2:
+;[[ id : i]]
+;[[ id : i], [ + : +], [ int : 4]]
 mov r10, 4
 mov rcx, QWORD[rbp-48]
 add rcx, r10
-mov QWORD[rbp-48], rcx
+mov rbx, rcx
+mov QWORD[rbp-48], rbx
 _LFORCMP_0x1:
+;[[ id : i], [ < : <], [ id : avxcount]]
 mov rcx, QWORD[rbp-40]
 mov rbx, QWORD[rbp-48]
 cmp rbx, rcx
@@ -1274,6 +1208,7 @@ mov rax, rbx
 and al, 1
 jnz _LFORTOP_0x0
 _LFOREND_0x3:
+;[[ id : offset], [ != : !=], [ int : 0]]
 mov rcx, 0
 mov rbx, QWORD[rbp-32]
 cmp rbx, rcx
@@ -1281,16 +1216,20 @@ setne bl
 mov rax, rbx
 and al, 1
 jz _LIFPOST_0x4
+;[[ id : dest], [ + : +], [ id : avxcount]]
 mov rbx, QWORD[rbp-8]
 mov rcx, QWORD[rbp-40]
 add rbx, rcx
 mov rdi, rbx
+;[[ id : source], [ + : +], [ id : avxcount]]
 mov rbx, QWORD[rbp-16]
 mov rcx, QWORD[rbp-40]
 add rbx, rcx
 mov rsi, rbx
-mov rdx, QWORD[rbp-32]
-xor rax, rax
+;[[ id : offset]]
+mov rbx, QWORD[rbp-32]
+mov rdx, rbx
+mov rax, 0
 call _void_memcpy_pvoid.void.size_t
 jmp _LIFELSE_0x5
 _LIFPOST_0x4:
@@ -1298,12 +1237,18 @@ _LIFELSE_0x5:
 ___void_avx_memcpy_pvoid.void.size_t__return:
 leave
 ret
+
+;[ function void memset( [[ Variable: void. dest @ 8], [ Variable: uchar value @ 16], [ Variable: size_t bytes @ 24]] ) ]
+
 _void_memset_pvoid.ucharsize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: void. dest @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: uchar value @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: size_t bytes @ 24]
 mov [rbp-24], rdx
 _void_memset_pvoid.ucharsize_t_flp:
     dec rdx
@@ -1312,24 +1257,254 @@ _void_memset_pvoid.ucharsize_t_flp:
 ___void_memset_pvoid.ucharsize_t__return:
 leave
 ret
-_void_strcpy_pchar.char.:
+
+;[ function double sqrt( [[ Variable: double a @ 8]] ) ]
+
+_double_sqrt_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
+movsd [rbp-8], xmm0
+sqrtsd xmm0, xmm0
+___double_sqrt_pdouble__return:
+leave
+ret
+
+;[ function double sqrt( [[ Variable: int a @ 8]] ) ]
+
+_double_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+    sqrtsd xmm0, xmm0
+___double_sqrt_pint__return:
+leave
+ret
+
+;[ function int sqrt( [[ Variable: int a @ 8]] ) ]
+
+_int_sqrt_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
+mov [rbp-8], rdi
+cvtsi2sd xmm0, rdi
+  sqrtsd xmm0, xmm0
+  cvttsd2si rax, xmm0
+___int_sqrt_pint__return:
+leave
+ret
+
+;[ function int pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_int_pow_pintint:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
 mov [rbp-16], rsi
-_void_strcpy_pchar.char._flp:
-    mov bl, [rsi]
-    cmp bl, 0
-    mov [rdi], bl
-    jnz _void_strcpy_pchar.char._flp
-___void_strcpy_pchar.char.__return:
+mov rax, rdi
+  dec rsi
+  _int_pow_pintint_flp:
+  mul rdi
+  dec rsi
+  jnz _int_pow_pintint_flp
+___int_pow_pintint__return:
 leave
 ret
+
+;[ function double pow( [[ Variable: int base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_double_pow_pintint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: int base @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rsi
+;[[ id : base]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+;[[ id : exp]]
+mov rbx, QWORD[rbp-16]
+mov rsi, rbx
+mov rax, 0
+call _int_pow_pintint
+cvtsi2sd xmm0, rax
+___double_pow_pintint__return:
+leave
+ret
+
+;[ function double pow( [[ Variable: double base @ 8], [ Variable: int exp @ 16]] ) ]
+
+_double_pow_pdoubleint:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: double base @ 8]
+movsd [rbp-8], xmm0
+;Load Parameter: [ Variable: int exp @ 16]
+mov [rbp-16], rdi
+dec rdi
+    _double_pow_pdoubleint_flp:
+    mulsd xmm0, xmm0
+    dec rdi
+    jnz _int_pow_pintint_flp
+___double_pow_pdoubleint__return:
+leave
+ret
+
+;[ function double pow( [[ Variable: double base @ 8], [ Variable: double exponent @ 16]] ) ]
+
+_double_pow_pdoubledouble:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: double base @ 8]
+movsd [rbp-8], xmm0
+;Load Parameter: [ Variable: double exponent @ 16]
+movsd [rbp-16], xmm1
+___double_pow_pdoubledouble__return:
+leave
+ret
+
+;[ function int round( [[ Variable: double x @ 8]] ) ]
+
+_int_round_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvtsd2si rax, xmm0
+___int_round_pdouble__return:
+leave
+ret
+
+;[ function int ceil( [[ Variable: double x @ 8]] ) ]
+
+_int_ceil_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+  inc rax
+___int_ceil_pdouble__return:
+leave
+ret
+
+;[ function int floor( [[ Variable: double x @ 8]] ) ]
+
+_int_floor_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+cvttsd2si rax, xmm0
+___int_floor_pdouble__return:
+leave
+ret
+
+;[ function int abs( [[ Variable: int x @ 8]] ) ]
+
+_int_abs_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int x @ 8]
+mov [rbp-8], rdi
+mov rax, rdi
+  sar rdi, 63
+  xor rax, rdi
+  sub rax, rdi
+___int_abs_pint__return:
+leave
+ret
+
+;[ function double abs( [[ Variable: double x @ 8]] ) ]
+
+_double_abs_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: double x @ 8]
+movsd [rbp-8], xmm0
+movsd xmm1, xmm0
+  movsd xmm2, [M_MINZERO_MEM]
+  xorpd xmm1, xmm2
+  andpd xmm0, xmm1
+___double_abs_pdouble__return:
+leave
+ret
+
+;[ function int log( [[ Variable: int x @ 8]] ) ]
+
+_int_log_pint:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [ Variable: int x @ 8]
+mov [rbp-8], rdi
+xor rbx, rbx
+  mov rax, rdi
+  mov rcx, 10
+  _int_log_pint_flp:
+  xor rdx, rdx
+  div rcx
+  test rax, rax
+  jnz _int_log_pint_inc
+  jmp _int_log_pint_end
+  _int_log_pint_inc:
+  inc rbx
+  jmp _int_log_pint_flp
+  
+  _int_log_pint_end:
+  mov rax, rbx
+___int_log_pint__return:
+leave
+ret
+
+;[ function int strcpy( [[ Variable: char. dest @ 8], [ Variable: char. source @ 16]] ) ]
+
+_int_strcpy_pchar.char.:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [ Variable: char. dest @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. source @ 16]
+mov [rbp-16], rsi
+mov rax, -1
+    _void_strcpy_pchar.char._flp:
+    inc rax
+    mov bl, [rsi]
+    mov [rdi], bl
+    inc rdi
+    inc rsi
+    test bl, bl
+    jnz _void_strcpy_pchar.char._flp
+___int_strcpy_pchar.char.__return:
+leave
+ret
+
+;[ function size_t strlen( [[ Variable: char. str @ 8]] ) ]
+
 _size_t_strlen_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. str @ 8]
 mov [rbp-8], rdi
 mov rax, -1
     _size_t_strlen_pchar._flp:
@@ -1341,12 +1516,586 @@ mov rax, -1
 ___size_t_strlen_pchar.__return:
 leave
 ret
+
+;[ function int toStr( [[ Variable: int val @ 8], [ Variable: char. buffer @ 16], [ Variable: bool signed @ 24]] ) ]
+
+_int_toStr_pintchar.bool:
+push rbp
+mov rbp, rsp
+sub rsp, 56
+;Load Parameter: [ Variable: int val @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. buffer @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: bool signed @ 24]
+mov [rbp-24], rdx
+;[[ int : 0]]
+mov QWORD[rbp-32], 0
+;[[ id : val], [ < : <], [ int : 0], [ && : &&], [ id : signed]]
+mov rcx, 0
+mov rbx, QWORD[rbp-8]
+cmp rbx, rcx
+setl bl
+mov rcx, QWORD[rbp-24]
+and rbx, rcx
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x6
+;[[ @ : @], [ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov rcx, rbx
+;[[ char : 45]]
+mov rbx, 45
+mov byte[rcx], bl
+;[[ id : buffer]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ id : val]]
+;[[ int : 0], [ - : -], [ id : val]]
+mov r10, QWORD[rbp-8]
+mov rcx, 0
+sub rcx, r10
+mov rbx, rcx
+mov QWORD[rbp-8], rbx
+;[[ id : signspace]]
+;[[ int : 1]]
+mov rbx, 1
+mov QWORD[rbp-32], rbx
+jmp _LIFELSE_0x7
+_LIFPOST_0x6:
+_LIFELSE_0x7:
+;[[ id : val]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+mov rax, 0
+call _int_log_pint
+push rax
+;[[ fn(x) : [ function int log( [[ Variable: int x @ 8]] ) ] ], [ + : +], [ int : 1]]
+pop rbx
+inc rbx
+mov QWORD[rbp-40], rbx
+;[[ id : buffer]]
+;[[ id : l]]
+mov rbx, QWORD[rbp-40]
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ int : 0]]
+mov QWORD[rbp-48], 0
+jmp _LFORCMP_0x9
+_LFORTOP_0x8:
+;[[ id : buffer]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-16]
+sub rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ @ : @], [ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov rcx, rbx
+;[[ $ : char], [ ( : (], [ id : val], [ % : %], [ int : 10], [ ) : )], [ + : +], [ char : 48]]
+mov r11, 10
+mov r10, QWORD[rbp-8]
+xor rdx, rdx
+mov rax, r10
+idiv r11
+ mov r10, rdx
+mov r11, r10
+and r12, 0xff
+mov r12, r11
+mov r11, 48
+add r12, r11
+mov rbx, r12
+mov byte[rcx], bl
+;[[ id : val]]
+;[[ int : 10]]
+mov rbx, 10
+mov rcx, QWORD[rbp-8]
+xor rdx, rdx
+mov rax,rcx
+idiv rbx
+mov rcx, rax
+mov QWORD[rbp-8], rcx
+_LFORUPDATE_0xa:
+;[[ id : i]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-48]
+add rcx, rbx
+mov QWORD[rbp-48], rcx
+_LFORCMP_0x9:
+;[[ id : i], [ < : <], [ id : l]]
+mov rcx, QWORD[rbp-40]
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+setl bl
+mov rax, rbx
+and al, 1
+jnz _LFORTOP_0x8
+_LFOREND_0xb:
+;[[ id : l], [ + : +], [ id : signspace]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-40]
+add rbx, rcx
+mov rax, rbx
+jmp ___int_toStr_pintchar.bool__return
+___int_toStr_pintchar.bool__return:
+leave
+ret
+
+;[ function int toStr( [[ Variable: double val @ 8], [ Variable: char. buffer @ 16]] ) ]
+
+_int_toStr_pdoublechar.:
+push rbp
+mov rbp, rsp
+sub rsp, 40
+;Load Parameter: [ Variable: double val @ 8]
+movsd [rbp-8], xmm0
+;Load Parameter: [ Variable: char. buffer @ 16]
+mov [rbp-16], rdi
+;[[ id : val]]
+cvttsd2si rbx, QWORD[rbp-8]
+mov QWORD[rbp-24], rbx
+;[[ id : integral]]
+mov rbx, QWORD[rbp-24]
+mov rdi, rbx
+;[[ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov rsi, rbx
+;[[ int : 1]]
+mov rbx, 1
+mov dl, bl
+and rdx, 0xff
+mov rax, 0
+call _int_toStr_pintchar.bool
+push rax
+;[[ fn(x) : [ function int toStr( [[ Variable: int val @ 8], [ Variable: char. buffer @ 16], [ Variable: bool signed @ 24]] ) ] ]]
+pop rax
+mov QWORD[rbp-32], rax
+;[[ id : buffer]]
+;[[ id : l]]
+mov rbx, QWORD[rbp-32]
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ id : val]]
+;[[ id : integral]]
+cvtsi2sd xmm7, QWORD[rbp-24]
+movsd xmm8, QWORD[rbp-8]
+subsd xmm8, xmm7
+movsd QWORD[rbp-8], xmm8
+;[[ id : val]]
+;[[ id : val], [ * : *], [ int : 10000000]]
+movsd xmm8, QWORD[rbp-8]
+mov rbx, 10000000
+cvtsi2sd xmm9, rbx
+mulsd xmm8, xmm9
+movsd xmm7, xmm8
+movsd QWORD[rbp-8], xmm7
+;[[ @ : @], [ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov rcx, rbx
+;[[ char : 46]]
+mov rbx, 46
+mov byte[rcx], bl
+;[[ id : buffer]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ id : l]]
+;[[ $ : int], [ id : val]]
+movsd xmm7, QWORD[rbp-8]
+cvttsd2si rbx, xmm7
+mov rdi, rbx
+;[[ id : buffer]]
+mov rbx, QWORD[rbp-16]
+mov rsi, rbx
+;[[ int : 0]]
+mov rbx, 0
+mov dl, bl
+and rdx, 0xff
+mov rax, 0
+call _int_toStr_pintchar.bool
+push rax
+;[[ fn(x) : [ function int toStr( [[ Variable: int val @ 8], [ Variable: char. buffer @ 16], [ Variable: bool signed @ 24]] ) ] ]]
+pop rbx
+mov rcx, QWORD[rbp-32]
+add rcx, rbx
+mov QWORD[rbp-32], rcx
+;[[ id : l]]
+mov rbx, QWORD[rbp-32]
+mov rax, rbx
+jmp ___int_toStr_pdoublechar.__return
+___int_toStr_pdoublechar.__return:
+leave
+ret
+
+;[ function int __sprintf( [[ Variable: char. str @ 8], [ Variable: char. fmt @ 16], [ Variable: void. args @ 24]] ) ]
+
+_int___sprintf_pchar.char.void.:
+push rbp
+mov rbp, rsp
+sub rsp, 144
+;Load Parameter: [ Variable: char. str @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. fmt @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [ Variable: void. args @ 24]
+mov [rbp-24], rdx
+;[[ int : 0]]
+mov QWORD[rbp-32], 0
+;[[ $ : int], [ id : str]]
+mov rbx, QWORD[rbp-8]
+mov QWORD[rbp-40], rbx
+;[[ id : str], [ == : ==], [ int : 0], [ || : ||], [ id : fmt], [ == : ==], [ int : 0]]
+mov rbx, QWORD[rbp-8]
+mov rcx, 0
+cmp rbx, rcx
+sete bl
+mov rcx, QWORD[rbp-16]
+mov r10, 0
+cmp rcx, r10
+sete cl
+or rbx, rcx
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0xc
+;[[ int : 0]]
+mov rax, 0
+jmp ___int___sprintf_pchar.char.void.__return
+jmp _LIFELSE_0xd
+_LIFPOST_0xc:
+_LIFELSE_0xd:
+jmp _LWHILECMP_0xf
+_LWHILESTART_0xe:
+;[[ @ : @], [ id : fmt], [ != : !=], [ char : 37]]
+mov rbx, QWORD[rbp-16]
+  ; here
+and rcx, 0xff
+mov cl, byte[rbx]
+mov rbx, 37
+cmp rcx, rbx
+setne cl
+mov rax, rcx
+and al, 1
+jz _LIFPOST_0x11
+;[[ @ : @], [ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rcx, rbx
+;[[ @ : @], [ id : fmt]]
+mov r10, QWORD[rbp-16]
+  ; here
+and r11, 0xff
+mov r11b, byte[r10]
+mov rbx, r11
+mov byte[rcx], bl
+jmp _LIFELSE_0x12
+_LIFPOST_0x11:
+;[[ id : fmt]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ @ : @], [ id : fmt]]
+mov rbx, QWORD[rbp-16]
+  ; here
+and rcx, 0xff
+mov cl, byte[rbx]
+mov QWORD[rbp-48], rcx
+;[[ id : c], [ == : ==], [ char : 105]]
+mov rcx, 105
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x13
+;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+rcx*8]
+mov rbx, qword[rbx]
+mov QWORD[rbp-56], rbx
+;[[ id : num]]
+mov rbx, QWORD[rbp-56]
+mov rdi, rbx
+;[[ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
+;[[ int : 1]]
+mov rbx, 1
+mov dl, bl
+and rdx, 0xff
+mov rax, 0
+call _int_toStr_pintchar.bool
+push rax
+;[[ fn(x) : [ function int toStr( [[ Variable: int val @ 8], [ Variable: char. buffer @ 16], [ Variable: bool signed @ 24]] ) ] ]]
+pop rax
+mov QWORD[rbp-64], rax
+;[[ id : str]]
+;[[ id : size], [ - : -], [ int : 1]]
+mov rcx, QWORD[rbp-64]
+dec rcx
+mov rbx, rcx
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov QWORD[rbp-8], rcx
+jmp _LIFELSE_0x14
+_LIFPOST_0x13:
+;[[ id : c], [ == : ==], [ char : 99]]
+mov rcx, 99
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x15
+;[[ $ : char], [ id : args], [ [ : [], [ id : argc], [ ] : ]]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+rcx*8]
+mov rbx, qword[rbx]
+mov rcx, rbx
+and r10, 0xff
+mov r10, rcx
+mov QWORD[rbp-72], r10
+;[[ @ : @], [ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rcx, rbx
+;[[ id : cf]]
+mov r10, QWORD[rbp-72]
+mov rbx, r10
+mov byte[rcx], bl
+jmp _LIFELSE_0x16
+_LIFPOST_0x15:
+;[[ id : c], [ == : ==], [ char : 117]]
+mov rcx, 117
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x17
+;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+rcx*8]
+mov rbx, qword[rbx]
+mov QWORD[rbp-80], rbx
+;[[ id : unum]]
+mov rbx, QWORD[rbp-80]
+mov rdi, rbx
+;[[ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
+;[[ int : 0]]
+mov rbx, 0
+mov dl, bl
+and rdx, 0xff
+mov rax, 0
+call _int_toStr_pintchar.bool
+push rax
+;[[ fn(x) : [ function int toStr( [[ Variable: int val @ 8], [ Variable: char. buffer @ 16], [ Variable: bool signed @ 24]] ) ] ]]
+pop rax
+mov QWORD[rbp-88], rax
+;[[ id : str]]
+;[[ id : usize], [ - : -], [ int : 1]]
+mov rcx, QWORD[rbp-88]
+dec rcx
+mov rbx, rcx
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov QWORD[rbp-8], rcx
+jmp _LIFELSE_0x18
+_LIFPOST_0x17:
+;[[ id : c], [ == : ==], [ char : 115]]
+mov rcx, 115
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x19
+;[[ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+rcx*8]
+mov rbx, qword[rbx]
+mov rsi, rbx
+mov rax, 0
+call _int_strcpy_pchar.char.
+push rax
+;[[ fn(x) : [ function int strcpy( [[ Variable: char. dest @ 8], [ Variable: char. source @ 16]] ) ] ]]
+pop rax
+mov QWORD[rbp-96], rax
+;[[ id : str]]
+;[[ id : ssize], [ - : -], [ int : 1]]
+mov rcx, QWORD[rbp-96]
+dec rcx
+mov rbx, rcx
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov QWORD[rbp-8], rcx
+jmp _LIFELSE_0x1a
+_LIFPOST_0x19:
+;[[ id : c], [ == : ==], [ char : 98]]
+mov rcx, 98
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x1b
+;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+rcx*8]
+mov rbx, qword[rbx]
+mov QWORD[rbp-104], rbx
+;[[ id : b]]
+mov rbx, QWORD[rbp-104]
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x1d
+;[[ id : boolean_string]]
+;[[ id : STRING_CONSTANT_0]]
+mov rcx, STRING_CONSTANT_0
+mov rbx, rcx
+mov QWORD[rbp-112], rbx
+jmp _LIFELSE_0x1e
+_LIFPOST_0x1d:
+;[[ id : boolean_string]]
+;[[ id : STRING_CONSTANT_1]]
+mov rcx, STRING_CONSTANT_1
+mov rbx, rcx
+mov QWORD[rbp-112], rbx
+_LIFELSE_0x1e:
+;[[ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+;[[ id : boolean_string]]
+mov rbx, QWORD[rbp-112]
+mov rsi, rbx
+mov rax, 0
+call _int_strcpy_pchar.char.
+push rax
+;[[ fn(x) : [ function int strcpy( [[ Variable: char. dest @ 8], [ Variable: char. source @ 16]] ) ] ]]
+pop rax
+mov QWORD[rbp-120], rax
+;[[ id : str]]
+;[[ id : ssize]]
+mov rbx, QWORD[rbp-96]
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov QWORD[rbp-8], rcx
+jmp _LIFELSE_0x1c
+_LIFPOST_0x1b:
+;[[ id : c], [ == : ==], [ char : 102]]
+mov rcx, 102
+mov rbx, QWORD[rbp-48]
+cmp rbx, rcx
+sete bl
+mov rax, rbx
+and al, 1
+jz _LIFPOST_0x1f
+;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
+mov rcx, QWORD[rbp-32]
+mov rbx, QWORD[rbp-24]
+lea rbx, [rbx+rcx*8]
+mov rbx, qword[rbx]
+movq xmm7, rbx
+movsd QWORD[rbp-128], xmm7
+;[[ id : d]]
+movsd xmm7, QWORD[rbp-128]
+movsd xmm0, xmm7
+;[[ id : str]]
+mov rbx, QWORD[rbp-8]
+mov rdi, rbx
+mov rax, 1
+call _int_toStr_pdoublechar.
+push rax
+;[[ fn(x) : [ function int toStr( [[ Variable: double val @ 8], [ Variable: char. buffer @ 16]] ) ] ]]
+pop rax
+mov QWORD[rbp-136], rax
+;[[ id : str]]
+;[[ id : dsize], [ - : -], [ int : 1]]
+mov rcx, QWORD[rbp-136]
+dec rcx
+mov rbx, rcx
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov QWORD[rbp-8], rcx
+jmp _LIFELSE_0x20
+_LIFPOST_0x1f:
+_LIFELSE_0x20:
+_LIFELSE_0x1c:
+_LIFELSE_0x1a:
+_LIFELSE_0x18:
+_LIFELSE_0x16:
+_LIFELSE_0x14:
+;[[ id : argc]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-32]
+add rcx, rbx
+mov QWORD[rbp-32], rcx
+_LIFELSE_0x12:
+;[[ id : fmt]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-16]
+add rcx, rbx
+mov QWORD[rbp-16], rcx
+;[[ id : str]]
+;[[ int : 1]]
+mov rbx, 1
+mov rcx, QWORD[rbp-8]
+add rcx, rbx
+mov QWORD[rbp-8], rcx
+_LWHILECMP_0xf:
+;[[ @ : @], [ id : fmt], [ != : !=], [ int : 0]]
+mov rbx, QWORD[rbp-16]
+  ; here
+and rcx, 0xff
+mov cl, byte[rbx]
+mov rbx, 0
+mov r10, rcx
+cmp rbx, r10
+setne bl
+mov rax, rbx
+and al, 1
+jnz _LWHILESTART_0xe
+_LWHILEEND_0x10:
+;[[ ( : (], [ $ : int], [ id : str], [ ) : )], [ - : -], [ id : og]]
+mov rcx, QWORD[rbp-40]
+mov rbx, QWORD[rbp-8]
+sub rbx, rcx
+mov rax, rbx
+jmp ___int___sprintf_pchar.char.void.__return
+___int___sprintf_pchar.char.void.__return:
+leave
+ret
+
+;[ function void sscanf( [[ Variable: char. template @ 8], [ Variable: char. format @ 16], [ Variable: void a @ 24]] ) ]
+
 _void_sscanf_pchar.char.void:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. format @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: void a @ 24]
 mov [rbp-24], rdx
 ALIGN_STACK
     call sscanf
@@ -1354,13 +2103,20 @@ ALIGN_STACK
 ___void_sscanf_pchar.char.void__return:
 leave
 ret
+
+;[ function void sscanf( [[ Variable: char. template @ 8], [ Variable: char. format @ 16], [ Variable: void a @ 24], [ Variable: void b @ 32]] ) ]
+
 _void_sscanf_pchar.char.voidvoid:
 push rbp
 mov rbp, rsp
 sub rsp, 40
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. format @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: void a @ 24]
 mov [rbp-24], rdx
+;Load Parameter: [ Variable: void b @ 32]
 mov [rbp-32], rcx
 ALIGN_STACK
     call sscanf
@@ -1368,14 +2124,22 @@ ALIGN_STACK
 ___void_sscanf_pchar.char.voidvoid__return:
 leave
 ret
+
+;[ function void sscanf( [[ Variable: char. template @ 8], [ Variable: char. format @ 16], [ Variable: void a @ 24], [ Variable: void b @ 32], [ Variable: void c @ 40]] ) ]
+
 _void_sscanf_pchar.char.voidvoidvoid:
 push rbp
 mov rbp, rsp
 sub rsp, 48
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. format @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: void a @ 24]
 mov [rbp-24], rdx
+;Load Parameter: [ Variable: void b @ 32]
 mov [rbp-32], rcx
+;Load Parameter: [ Variable: void c @ 40]
 mov [rbp-40], r8
 ALIGN_STACK
     call sscanf
@@ -1383,15 +2147,24 @@ ALIGN_STACK
 ___void_sscanf_pchar.char.voidvoidvoid__return:
 leave
 ret
+
+;[ function void sscanf( [[ Variable: char. template @ 8], [ Variable: char. format @ 16], [ Variable: void a @ 24], [ Variable: void b @ 32], [ Variable: void c @ 40], [ Variable: void d @ 48]] ) ]
+
 _void_sscanf_pchar.char.voidvoidvoidvoid:
 push rbp
 mov rbp, rsp
 sub rsp, 56
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. format @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: void a @ 24]
 mov [rbp-24], rdx
+;Load Parameter: [ Variable: void b @ 32]
 mov [rbp-32], rcx
+;Load Parameter: [ Variable: void c @ 40]
 mov [rbp-40], r8
+;Load Parameter: [ Variable: void d @ 48]
 mov [rbp-48], r9
 ALIGN_STACK
     call sscanf
@@ -1399,10 +2172,14 @@ ALIGN_STACK
 ___void_sscanf_pchar.char.voidvoidvoidvoid__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. single @ 8]] ) ]
+
 _void_printf_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. single @ 8]
 mov [rbp-8], rdi
 ALIGN_STACK
     call printf
@@ -1411,11 +2188,16 @@ ALIGN_STACK
 ___void_printf_pchar.__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: int format @ 16]] ) ]
+
 _void_printf_pchar.int:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1424,13 +2206,20 @@ UNALIGN_STACK
 ___void_printf_pchar.int__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: void a @ 16], [ Variable: void b @ 24], [ Variable: void c @ 32]] ) ]
+
 _void_printf_pchar.voidvoidvoid:
 push rbp
 mov rbp, rsp
 sub rsp, 40
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: void a @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: void b @ 24]
 mov [rbp-24], rdx
+;Load Parameter: [ Variable: void c @ 32]
 mov [rbp-32], rcx
 ALIGN_STACK
 call printf
@@ -1439,11 +2228,16 @@ UNALIGN_STACK
 ___void_printf_pchar.voidvoidvoid__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: uint format @ 16]] ) ]
+
 _void_printf_pchar.uint:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: uint format @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1452,11 +2246,16 @@ UNALIGN_STACK
 ___void_printf_pchar.uint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: double f @ 16]] ) ]
+
 _void_printf_pchar.double:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double f @ 16]
 movsd [rbp-16], xmm0
 ALIGN_STACK
 mov rax, 1
@@ -1466,11 +2265,16 @@ UNALIGN_STACK
 ___void_printf_pchar.double__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: char. other @ 16]] ) ]
+
 _void_printf_pchar.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char. other @ 16]
 mov [rbp-16], rsi
 ALIGN_STACK
 call printf
@@ -1479,12 +2283,18 @@ UNALIGN_STACK
 ___void_printf_pchar.char.__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: int a @ 16], [ Variable: int b @ 24]] ) ]
+
 _void_printf_pchar.intint:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int a @ 16]
 mov [rbp-16], rsi
+;Load Parameter: [ Variable: int b @ 24]
 mov [rbp-24], rdx
 ALIGN_STACK
 call printf
@@ -1493,12 +2303,18 @@ UNALIGN_STACK
 ___void_printf_pchar.intint__return:
 leave
 ret
+
+;[ function void printf( [[ Variable: char. template @ 8], [ Variable: double a @ 16], [ Variable: double b @ 24]] ) ]
+
 _void_printf_pchar.doubledouble:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: char. template @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: double a @ 16]
 movsd [rbp-16], xmm0
+;Load Parameter: [ Variable: double b @ 24]
 movsd [rbp-24], xmm1
 ALIGN_STACK
 call printf
@@ -1507,151 +2323,225 @@ UNALIGN_STACK
 ___void_printf_pchar.doubledouble__return:
 leave
 ret
+
+;[ function void print( [[ Variable: int a @ 8]] ) ]
+
 _void_print_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: int a @ 8]
 mov [rbp-8], rdi
-mov rdi, STRING_CONSTANT_0
-mov rsi, QWORD[rbp-8]
-xor rax, rax
+;[[ id : STRING_CONSTANT_2]]
+mov rbx, STRING_CONSTANT_2
+mov rdi, rbx
+;[[ id : a]]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
+mov rax, 0
 call _void_printf_pchar.int
 ___void_print_pint__return:
 leave
 ret
+
+;[ function void print( [[ Variable: short a @ 8]] ) ]
+
 _void_print_pshort:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: short a @ 8]
 mov [rbp-8], rdi
 PRINT_DEC 4, rdi
         NEWLINE
 ___void_print_pshort__return:
 leave
 ret
+
+;[ function void print( [[ Variable: uint a @ 8]] ) ]
+
 _void_print_puint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: uint a @ 8]
 mov [rbp-8], rdi
-mov rdi, STRING_CONSTANT_1
-mov rsi, QWORD[rbp-8]
-xor rax, rax
+;[[ id : STRING_CONSTANT_3]]
+mov rbx, STRING_CONSTANT_3
+mov rdi, rbx
+;[[ id : a]]
+mov rbx, QWORD[rbp-8]
+mov rsi, rbx
+mov rax, 0
 call _void_printf_pchar.uint
 ___void_print_puint__return:
 leave
 ret
+
+;[ function void print( [[ Variable: double a @ 8]] ) ]
+
 _void_print_pdouble:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: double a @ 8]
 movsd [rbp-8], xmm0
-mov rdi, STRING_CONSTANT_2
-movsd xmm0, QWORD[rbp-8]
+;[[ id : STRING_CONSTANT_4]]
+mov rbx, STRING_CONSTANT_4
+mov rdi, rbx
+;[[ id : a]]
+movsd xmm7, QWORD[rbp-8]
+movsd xmm0, xmm7
 mov rax, 1
 call _void_printf_pchar.double
 ___void_print_pdouble__return:
 leave
 ret
+
+;[ function void print( [[ Variable: char. a @ 8]] ) ]
+
 _void_print_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char. a @ 8]
 mov [rbp-8], rdi
 PRINT_STRING [rdi]
 NEWLINE
 ___void_print_pchar.__return:
 leave
 ret
+
+;[ function void print( [[ Variable: char a @ 8]] ) ]
+
 _void_print_pchar:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: char a @ 8]
 mov [rbp-8], rdi
 PRINT_CHAR rdi
 NEWLINE
 ___void_print_pchar__return:
 leave
 ret
+
+;[ function void print( [[ Variable: bool a @ 8]] ) ]
+
 _void_print_pbool:
 push rbp
 mov rbp, rsp
 sub rsp, 16
+;Load Parameter: [ Variable: bool a @ 8]
 mov [rbp-8], rdi
+;[[ id : a]]
 mov rbx, QWORD[rbp-8]
 mov rax, rbx
 and al, 1
-jz _LIFPOST_0x6
-mov rdi, STRING_CONSTANT_3
-xor rax, rax
+jz _LIFPOST_0x21
+;[[ id : STRING_CONSTANT_5]]
+mov rbx, STRING_CONSTANT_5
+mov rdi, rbx
+mov rax, 0
 call _void_print_pchar.
+;[[ int : 0]]
 mov rax, 0
 jmp ___void_print_pbool__return
-jmp _LIFELSE_0x7
-_LIFPOST_0x6:
-_LIFELSE_0x7:
-mov rdi, STRING_CONSTANT_4
-xor rax, rax
+jmp _LIFELSE_0x22
+_LIFPOST_0x21:
+_LIFELSE_0x22:
+;[[ id : STRING_CONSTANT_6]]
+mov rbx, STRING_CONSTANT_6
+mov rdi, rbx
+mov rax, 0
 call _void_print_pchar.
+;[[ int : 0]]
 mov rax, 0
 jmp ___void_print_pbool__return
 ___void_print_pbool__return:
 leave
 ret
+
+;[ function void print( [[ Variable: void. a @ 8]] ) ]
+
 _void_print_pvoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
+;Load Parameter: [ Variable: void. a @ 8]
 mov [rbp-8], rdi
+;[[ id : a]]
 mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-16], rbx
-mov rdi, QWORD[rbp-16]
-xor rax, rax
+;[[ id : ptr]]
+mov rbx, QWORD[rbp-16]
+mov rdi, rbx
+mov rax, 0
 call _void_print_pint
 ___void_print_pvoid.__return:
 leave
 ret
+
+;[ function void print( [[ Variable: int. a @ 8], [ Variable: int len @ 16]] ) ]
+
 _void_print_pint.int:
 push rbp
 mov rbp, rsp
 sub rsp, 32
+;Load Parameter: [ Variable: int. a @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: int len @ 16]
 mov [rbp-16], rsi
+;[[ id : len], [ == : ==], [ int : 0]]
 mov rcx, 0
 mov rbx, QWORD[rbp-16]
 cmp rbx, rcx
 sete bl
 mov rax, rbx
 and al, 1
-jz _LIFPOST_0x8
-mov rdi, STRING_CONSTANT_5
-xor rax, rax
+jz _LIFPOST_0x23
+;[[ id : STRING_CONSTANT_7]]
+mov rbx, STRING_CONSTANT_7
+mov rdi, rbx
+mov rax, 0
 call _void_print_pchar.
+;[[ int : 0]]
 mov rax, 0
 jmp ___void_print_pint.int__return
-jmp _LIFELSE_0x9
-_LIFPOST_0x8:
-_LIFELSE_0x9:
-mov rdi, STRING_CONSTANT_6
-xor rsi, rsi
-xor rax, rax
+jmp _LIFELSE_0x24
+_LIFPOST_0x23:
+_LIFELSE_0x24:
+;[[ id : STRING_CONSTANT_8]]
+mov rbx, STRING_CONSTANT_8
+mov rdi, rbx
+;[[ int : 0]]
+mov rsi, 0
+mov rax, 0
 call _void_printf_pchar.int
+;[[ int : 0]]
 mov QWORD[rbp-24], 0
-jmp _LFORCMP_0xb
-_LFORTOP_0xa:
-mov rdi, STRING_CONSTANT_7
+jmp _LFORCMP_0x26
+_LFORTOP_0x25:
+;[[ id : STRING_CONSTANT_9]]
+mov rbx, STRING_CONSTANT_9
+mov rdi, rbx
+;[[ id : a], [ [ : [], [ id : i], [ ] : ]]]
 mov rcx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+rcx*8]
-mov rsi, qword[rbx]
-xor rax, rax
+mov rbx, qword[rbx]
+mov rsi, rbx
+mov rax, 0
 call _void_printf_pchar.int
-_LFORUPDATE_0xc:
+_LFORUPDATE_0x27:
+;[[ id : i]]
+;[[ int : 1]]
 mov rbx, 1
 mov rcx, QWORD[rbp-24]
 add rcx, rbx
 mov QWORD[rbp-24], rcx
-_LFORCMP_0xb:
+_LFORCMP_0x26:
+;[[ id : i], [ < : <], [ id : len], [ - : -], [ int : 1]]
 mov rbx, QWORD[rbp-16]
 dec rbx
 mov rcx, QWORD[rbp-24]
@@ -1659,1524 +2549,110 @@ cmp rcx, rbx
 setl cl
 mov rax, rcx
 and al, 1
-jnz _LFORTOP_0xa
-_LFOREND_0xd:
-mov rdi, STRING_CONSTANT_8
+jnz _LFORTOP_0x25
+_LFOREND_0x28:
+;[[ id : STRING_CONSTANT_10]]
+mov rbx, STRING_CONSTANT_10
+mov rdi, rbx
+;[[ id : a], [ [ : [], [ id : len], [ - : -], [ int : 1], [ ] : ]]]
 mov rbx, QWORD[rbp-16]
 dec rbx
 mov rcx, QWORD[rbp-8]
 lea rcx, [rcx+rbx*8]
-mov rsi, qword[rcx]
-xor rax, rax
+mov rcx, qword[rcx]
+mov rsi, rcx
+mov rax, 0
 call _void_printf_pchar.int
 ___void_print_pint.int__return:
 leave
 ret
-_double_sqrt_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-movsd [rbp-8], xmm0
-sqrtsd xmm0, xmm0
-___double_sqrt_pdouble__return:
-leave
-ret
-_double_sqrt_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-cvtsi2sd xmm0, rdi
-    sqrtsd xmm0, xmm0
-___double_sqrt_pint__return:
-leave
-ret
-_int_sqrt_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-cvtsi2sd xmm0, rdi
-  sqrtsd xmm0, xmm0
-  cvttsd2si rax, xmm0
-___int_sqrt_pint__return:
-leave
-ret
-_int_pow_pintint:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, rdi
-  dec rsi
-  _int_pow_pintint_flp:
-  mul rdi
-  dec rsi
-  jnz _int_pow_pintint_flp
-___int_pow_pintint__return:
-leave
-ret
-_double_pow_pintint:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-16]
-xor rax, rax
-call _int_pow_pintint
-cvtsi2sd xmm0, rax
-___double_pow_pintint__return:
-leave
-ret
-_double_pow_pdoubleint:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-movsd [rbp-8], xmm0
-mov [rbp-16], rdi
-dec rdi
-    _double_pow_pdoubleint_flp:
-    mulsd xmm0, xmm0
-    dec rdi
-    jnz _int_pow_pintint_flp
-___double_pow_pdoubleint__return:
-leave
-ret
-_double_pow_pdoubledouble:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-movsd [rbp-8], xmm0
-movsd [rbp-16], xmm1
-___double_pow_pdoubledouble__return:
-leave
-ret
-_int_round_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-movsd [rbp-8], xmm0
-cvtsd2si rax, xmm0
-___int_round_pdouble__return:
-leave
-ret
-_int_ceil_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-movsd [rbp-8], xmm0
-cvttsd2si rax, xmm0
-  inc rax
-___int_ceil_pdouble__return:
-leave
-ret
-_int_floor_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-movsd [rbp-8], xmm0
-cvttsd2si rax, xmm0
-___int_floor_pdouble__return:
-leave
-ret
-_int_abs_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rax, rdi
-  sar rdi, 63
-  xor rax, rdi
-  sub rax, rdi
-___int_abs_pint__return:
-leave
-ret
-_double_abs_pdouble:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-movsd [rbp-8], xmm0
-movsd xmm1, xmm0
-  movsd xmm2, [M_MINZERO_MEM]
-  xorpd xmm1, xmm2
-  andpd xmm0, xmm1
-___double_abs_pdouble__return:
-leave
-ret
-_int_rdrand_p:
-push rbp
-mov rbp, rsp
-sub rsp, 8
-rdrand rax
-___int_rdrand_p__return:
-leave
-ret
-_int_rand_p:
-push rbp
-mov rbp, rsp
-sub rsp, 8
-mov rcx, [rand_next]
-sal rcx, 13
-mov r10, [rand_next]
-xor r10, rcx
-mov [rand_next], r10
-mov rcx, [rand_next]
-sar rcx, 17
-mov r10, [rand_next]
-xor r10, rcx
-mov [rand_next], r10
-mov rcx, [rand_next]
-sal rcx, 5
-mov r10, [rand_next]
-xor r10, rcx
-mov [rand_next], r10
-mov rbx, [rand_next]
-mov rax, rbx
-jmp ___int_rand_p__return
-___int_rand_p__return:
-leave
-ret
-_void_srand_p:
-push rbp
-mov rbp, rsp
-sub rsp, 8
-mov rax, 0
-call _int_rdrand_p
-mov rbx, rax
-mov [rand_next], rbx
-___void_srand_p__return:
-leave
-ret
-_int_adjtime_ptimeval_t.timeval_t:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-___int_adjtime_ptimeval_t.timeval_t__return:
-leave
-ret
-_int_getitimer_pintitimerval_t.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, 36
-        syscall
-___int_getitimer_pintitimerval_t.__return:
-leave
-ret
-_int_gettimeofday_ptimeval_t.timezone_t.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, 96
-    syscall
-___int_gettimeofday_ptimeval_t.timezone_t.__return:
-leave
-ret
-_int_setitimer_pintitimerval_t.itimerval_t.:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov rax, 38
-    syscall
-___int_setitimer_pintitimerval_t.itimerval_t.__return:
-leave
-ret
-_int_settimeofday_ptimeval_t.timezone_t.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, 164
-    syscall
-___int_settimeofday_ptimeval_t.timezone_t.__return:
-leave
-ret
-_int_utimes_pchar.timeval_t.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, 235
-    syscall
-___int_utimes_pchar.timeval_t.__return:
-leave
-ret
-_time_t_time_ptime_t.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rax, 201
-    syscall
-___time_t_time_ptime_t.__return:
-leave
-ret
 
+;[ function int main( [[ Variable: int argc @ 8], [ Variable: char.. argv @ 16]] ) ]
 
-_bool_isdigit_pchar:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rcx, 48
-mov rbx, QWORD[rbp-8]
-cmp rbx, rcx
-setge bl
-mov r10, 57
-mov rcx, QWORD[rbp-8]
-cmp rcx, r10
-setle cl
-and rbx, rcx
-mov rax, rbx
-jmp ___bool_isdigit_pchar__return
-___bool_isdigit_pchar__return:
-leave
-ret
-_int_inet_aton_pchar.in_addr.:
-push rbp
-mov rbp, rsp
-sub rsp, 104
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov QWORD[rbp-32], 10
-lea rbx, [rbp-88]
-mov rdi, rbx
-xor rbx, rbx
-mov SIL, bl
-and rsi, 0xff
-mov rdx, 4
-xor rax, rax
-call _void_memset_pvoid.ucharsize_t
-lea rbx, [rbp-88]
-mov QWORD[rbp-96], rbx
-mov rcx, QWORD[rbp-8]
-and r10, 0xff
-mov r10b, byte[rcx]
-mov QWORD[rbp-48], r10
-jmp _LWHILECMP_0xf
-_LWHILESTART_0xe:
-mov rbx, 0
-mov QWORD[rbp-24], rbx
-jmp _LWHILECMP_0x12
-_LWHILESTART_0x11:
-mov rbx, QWORD[rbp-48]
-mov DIL, bl
-and rdi, 0xff
-xor rax, rax
-call _bool_isdigit_pchar
-push rax
-pop rax
-and al, 1
-jz _LIFPOST_0x14
-mov rcx, QWORD[rbp-32]
-mov r11, QWORD[rbp-24]
-imul rcx, r11
-mov r11, 48
-mov r10, QWORD[rbp-48]
-sub r10, r11
-mov r11, r10
-add rcx, r11
-mov QWORD[rbp-24], rcx
-mov rbx, 1
-mov rbx, QWORD[rbp-8]
-add rbx, rbx
-mov QWORD[rbp-8], rbx
-mov rcx, QWORD[rbp-8]
-and r10, 0xff
-mov r10b, byte[rcx]
-mov QWORD[rbp-48], r10
-jmp _LIFELSE_0x15
-_LIFPOST_0x14:
-jmp _LWHILEEND_0x13
-_LIFELSE_0x15:
-_LWHILECMP_0x12:
-mov rbx, 1
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-and al, 1
-jnz _LWHILESTART_0x11
-_LWHILEEND_0x13:
-mov rcx, 46
-mov rbx, QWORD[rbp-48]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x16
-mov rbx, 32
-lea rcx, [rbp-88]
-add rbx, rcx
-mov rcx, QWORD[rbp-96]
-cmp rcx, rbx
-seta cl
-mov rax, rcx
-and al, 1
-jz _LIFPOST_0x18
-mov rax, 0
-jmp ___int_inet_aton_pchar.in_addr.__return
-jmp _LIFELSE_0x19
-_LIFPOST_0x18:
-_LIFELSE_0x19:
-mov rcx, QWORD[rbp-96]
-mov rbx, QWORD[rbp-24]
-mov [rcx], rbx
-mov rbx, 8
-mov rbx, QWORD[rbp-96]
-add rbx, rbx
-mov QWORD[rbp-96], rbx
-mov rbx, 1
-mov rbx, QWORD[rbp-8]
-add rbx, rbx
-mov QWORD[rbp-8], rbx
-mov rcx, QWORD[rbp-8]
-and r10, 0xff
-mov r10b, byte[rcx]
-mov QWORD[rbp-48], r10
-jmp _LIFELSE_0x17
-_LIFPOST_0x16:
-jmp _LWHILEEND_0x10
-_LIFELSE_0x17:
-_LWHILECMP_0xf:
-mov rbx, 1
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-and al, 1
-jnz _LWHILESTART_0xe
-_LWHILEEND_0x10:
-mov rcx, QWORD[rbp-96]
-mov rbx, QWORD[rbp-24]
-mov [rcx], rbx
-mov rbx, 0
-mov rcx, QWORD[rbp-48]
-mov r10, rcx
-cmp rbx, r10
-setne bl
-mov r10, 32
-mov rcx, QWORD[rbp-48]
-cmp rcx, r10
-setne cl
-and rbx, rcx
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x1a
-mov rax, 0
-jmp ___int_inet_aton_pchar.in_addr.__return
-jmp _LIFELSE_0x1b
-_LIFPOST_0x1a:
-_LIFELSE_0x1b:
-mov r10, 0
-lea rcx, [rbp-88]
-lea rcx, [rcx+r10*8]
-mov rcx, qword[rcx]
-shl rcx, 24
-mov r11, QWORD[rbp-24]
-or rcx, r11
-mov r11, 1
-lea r10, [rbp-88]
-lea r10, [r10+r11*8]
-mov r10, qword[r10]
-shl r10, 16
-or rcx, r10
-mov r11, 2
-lea r10, [rbp-88]
-lea r10, [r10+r11*8]
-mov r10, qword[r10]
-shl r10, 8
-or rcx, r10
-mov QWORD[rbp-24], rcx
-mov rcx, QWORD[rbp-16]
-mov rbx, QWORD[rbp-24]
-mov [rcx], r10
-mov rax, 1
-jmp ___int_inet_aton_pchar.in_addr.__return
-___int_inet_aton_pchar.in_addr.__return:
-leave
-ret
-_fd_t_socket_pintintint:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov rax, 41
-    syscall
-___fd_t_socket_pintintint__return:
-leave
-ret
-_int_connect_pfd_tsockaddr_in.int:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov rax, 42
-    syscall
-___int_connect_pfd_tsockaddr_in.int__return:
-leave
-ret
-_int_accept_pfd_tsockaddr_in.int:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov rax, 43
-    syscall
-___int_accept_pfd_tsockaddr_in.int__return:
-leave
-ret
-_int_bind_pfd_tsockaddr_in.int:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov rax, 49
-    syscall
-___int_bind_pfd_tsockaddr_in.int__return:
-leave
-ret
-_int_listen_pfd_tint:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, 50
-    syscall
-___int_listen_pfd_tint__return:
-leave
-ret
-_int_shutdown_pfd_tint:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rax, 48
-    syscall
-___int_shutdown_pfd_tint__return:
-leave
-ret
-_void_xString_pString.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rdi, qword[rbx]
-xor rax, rax
-call _void_free_pvoid.
-___void_xString_pString.__return:
-leave
-ret
-_void_iString_pString.char.:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rdi, QWORD[rbp-16]
-xor rax, rax
-call _size_t_strlen_pchar.
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov rcx, QWORD[rbp-24]
-mov [rbx], r10
-mov rbx, QWORD[rbp-8]
-mov rdi, QWORD[rbp-24]
-xor rax, rax
-call _void._malloc_psize_t
-mov rcx, rax
-mov [rbx], rcx
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rdi, qword[rbx]
-mov rsi, QWORD[rbp-16]
-mov rdx, QWORD[rbp-24]
-xor rax, rax
-call _void_memcpy_pvoid.void.size_t
-___void_iString_pString.char.__return:
-leave
-ret
-_void_appendString_pString.char.:
-push rbp
-mov rbp, rsp
-sub rsp, 48
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rdi, QWORD[rbp-16]
-xor rax, rax
-call _size_t_strlen_pchar.
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rdi, qword[rbx]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov rbx, qword[rbx]
-mov rcx, QWORD[rbp-24]
-add rbx, rcx
-mov rsi, rbx
-xor rax, rax
-call _void._realloc_pvoid.size_t
-push rax
-pop rax
-mov QWORD[rbp-32], rax
-mov rbx, QWORD[rbp-32]
-mov rcx, [nullptr]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x1c
-mov rdi, STRING_CONSTANT_9
-xor rax, rax
-call _void_print_pchar.
-jmp _LIFELSE_0x1d
-_LIFPOST_0x1c:
-_LIFELSE_0x1d:
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov rbx, qword[rbx]
-mov rcx, QWORD[rbp-32]
-add rcx, rbx
-mov QWORD[rbp-40], rcx
-mov rdi, QWORD[rbp-40]
-mov rsi, QWORD[rbp-16]
-mov rdx, QWORD[rbp-24]
-xor rax, rax
-call _void_memcpy_pvoid.void.size_t
-mov rbx, QWORD[rbp-8]
-mov rcx, QWORD[rbp-32]
-mov [rbx], r10
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov r10, QWORD[rbp-8]
-lea r10, [r10+8]
-mov r10, qword[r10]
-mov r11, QWORD[rbp-24]
-add r10, r11
-mov [rbx], r10
-___void_appendString_pString.char.__return:
-leave
-ret
-_bool_substrequ_pchar.char.size_t:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov QWORD[rbp-32], 0
-jmp _LFORCMP_0x1f
-_LFORTOP_0x1e:
-mov rcx, QWORD[rbp-32]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+rcx*1]
-mov r10, QWORD[rbp-32]
-mov rcx, QWORD[rbp-16]
-lea rcx, [rcx+r10*1]
-mov bl, byte[rbx]
-and rbx, 0xff
-mov cl, byte[rcx]
-and rcx, 0xff
-cmp rbx, rcx
-setne bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x22
-mov rbx, 0
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-jmp ___bool_substrequ_pchar.char.size_t__return
-jmp _LIFELSE_0x23
-_LIFPOST_0x22:
-_LIFELSE_0x23:
-_LFORUPDATE_0x20:
-mov rbx, 1
-mov rcx, QWORD[rbp-32]
-add rcx, rbx
-mov QWORD[rbp-32], rcx
-_LFORCMP_0x1f:
-mov rcx, QWORD[rbp-24]
-mov rbx, QWORD[rbp-32]
-cmp rbx, rcx
-setl bl
-mov rax, rbx
-and al, 1
-jnz _LFORTOP_0x1e
-_LFOREND_0x21:
-mov rbx, 1
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-jmp ___bool_substrequ_pchar.char.size_t__return
-___bool_substrequ_pchar.char.size_t__return:
-leave
-ret
-_bool_strequ_pchar.char.:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov QWORD[rbp-24], 0
-jmp _LWHILECMP_0x25
-_LWHILESTART_0x24:
-mov rcx, QWORD[rbp-24]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+rcx*1]
-mov r10, QWORD[rbp-24]
-mov rcx, QWORD[rbp-16]
-lea rcx, [rcx+r10*1]
-mov bl, byte[rbx]
-and rbx, 0xff
-mov cl, byte[rcx]
-and rcx, 0xff
-cmp rbx, rcx
-setne bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x27
-mov rbx, 0
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-jmp ___bool_strequ_pchar.char.__return
-jmp _LIFELSE_0x28
-_LIFPOST_0x27:
-_LIFELSE_0x28:
-mov rcx, QWORD[rbp-24]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+rcx*1]
-mov bl, byte[rbx]
-and rbx, 0xff
-mov rcx, 0
-mov r10, rbx
-cmp rcx, r10
-sete cl
-mov rax, rcx
-and al, 1
-jz _LIFPOST_0x29
-jmp _LWHILEEND_0x26
-jmp _LIFELSE_0x2a
-_LIFPOST_0x29:
-_LIFELSE_0x2a:
-mov rbx, 1
-mov rcx, QWORD[rbp-24]
-add rcx, rbx
-mov QWORD[rbp-24], rcx
-_LWHILECMP_0x25:
-mov rbx, 1
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-and al, 1
-jnz _LWHILESTART_0x24
-_LWHILEEND_0x26:
-mov rbx, 1
-and rcx, 0xff
-mov rcx, rbx
-mov rax, rcx
-jmp ___bool_strequ_pchar.char.__return
-___bool_strequ_pchar.char.__return:
-leave
-ret
-_void_substring_pString.String.intint:
-push rbp
-mov rbp, rsp
-sub rsp, 48
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov [rbp-32], rcx
-mov rcx, QWORD[rbp-24]
-mov rbx, QWORD[rbp-32]
-sub rbx, rcx
-mov QWORD[rbp-40], rbx
-mov rbx, QWORD[rbp-16]
-lea rbx, [rbx+0]
-mov rdi, qword[rbx]
-xor rax, rax
-call _void_free_pvoid.
-mov rbx, QWORD[rbp-16]
-mov rdi, QWORD[rbp-40]
-xor rax, rax
-call _void._malloc_psize_t
-mov rcx, rax
-mov [rbx], rcx
-mov rbx, QWORD[rbp-16]
-lea rbx, [rbx+0]
-mov rdi, qword[rbx]
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rbx, qword[rbx]
-mov rcx, QWORD[rbp-24]
-add rbx, rcx
-mov rsi, rbx
-mov rdx, QWORD[rbp-40]
-xor rax, rax
-call _void_memcpy_pvoid.void.size_t
-mov rbx, QWORD[rbp-16]
-lea rbx, [rbx+8]
-mov rcx, QWORD[rbp-40]
-mov [rbx], r10
-___void_substring_pString.String.intint__return:
-leave
-ret
-_int_strfind_pString.char.:
-push rbp
-mov rbp, rsp
-sub rsp, 48
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rdi, QWORD[rbp-16]
-xor rax, rax
-call _size_t_strlen_pchar.
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov rbx, qword[rbx]
-mov rcx, QWORD[rbp-24]
-cmp rcx, rbx
-setg cl
-mov rax, rcx
-and al, 1
-jz _LIFPOST_0x2b
-mov rax, -1
-jmp ___int_strfind_pString.char.__return
-jmp _LIFELSE_0x2c
-_LIFPOST_0x2b:
-_LIFELSE_0x2c:
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-mov rbx, qword[rbx]
-mov rcx, QWORD[rbp-24]
-sub rbx, rcx
-mov QWORD[rbp-32], rbx
-mov QWORD[rbp-40], 0
-jmp _LFORCMP_0x2e
-_LFORTOP_0x2d:
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rbx, qword[rbx]
-mov rcx, QWORD[rbp-40]
-add rbx, rcx
-mov rdi, rbx
-mov rsi, QWORD[rbp-16]
-mov rdx, QWORD[rbp-24]
-xor rax, rax
-call _bool_substrequ_pchar.char.size_t
-push rax
-pop rax
-and al, 1
-jz _LIFPOST_0x31
-mov rbx, QWORD[rbp-40]
-mov rax, rbx
-jmp ___int_strfind_pString.char.__return
-jmp _LIFELSE_0x32
-_LIFPOST_0x31:
-_LIFELSE_0x32:
-_LFORUPDATE_0x2f:
-mov rbx, 1
-mov rcx, QWORD[rbp-40]
-add rcx, rbx
-mov QWORD[rbp-40], rcx
-_LFORCMP_0x2e:
-mov rcx, QWORD[rbp-32]
-mov rbx, QWORD[rbp-40]
-cmp rbx, rcx
-setl bl
-mov rax, rbx
-and al, 1
-jnz _LFORTOP_0x2d
-_LFOREND_0x30:
-mov rax, -1
-jmp ___int_strfind_pString.char.__return
-___int_strfind_pString.char.__return:
-leave
-ret
-_void_print_pString.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+0]
-mov rdi, qword[rbx]
-xor rax, rax
-call _void_print_pchar.
-___void_print_pString.__return:
-leave
-ret
-_FILE_fopen_pchar.char.:
-push rbp
-mov rbp, rsp
-sub rsp, 56
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rcx, 0
-mov rbx, QWORD[rbp-16]
-lea rbx, [rbx+rcx*1]
-mov r10, 1
-mov rcx, QWORD[rbp-16]
-lea rcx, [rcx+r10*1]
-mov bl, byte[rbx]
-and rbx, 0xff
-mov cl, byte[rcx]
-and rcx, 0xff
-add rbx, rcx
-mov QWORD[rbp-24], rbx
-mov QWORD[rbp-32], 0
-mov QWORD[rbp-40], 0
-mov rcx, 114
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x33
-mov rbx, 0
-mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x34
-_LIFPOST_0x33:
-mov rcx, 119
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x35
-mov rbx, 1
-mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x36
-_LIFPOST_0x35:
-mov rcx, 97
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x37
-mov rbx, 1
-mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x38
-_LIFPOST_0x37:
-mov rcx, 157
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x39
-mov rbx, 2
-mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x3a
-_LIFPOST_0x39:
-mov rcx, 162
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x3b
-mov rbx, 1792
-mov QWORD[rbp-32], rbx
-mov rbx, 2
-mov QWORD[rbp-40], rbx
-jmp _LIFELSE_0x3c
-_LIFPOST_0x3b:
-mov rbx, 1792
-mov QWORD[rbp-32], rbx
-mov rbx, 2
-mov QWORD[rbp-40], rbx
-_LIFELSE_0x3c:
-_LIFELSE_0x3a:
-_LIFELSE_0x38:
-_LIFELSE_0x36:
-_LIFELSE_0x34:
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-40]
-mov rdx, QWORD[rbp-32]
-xor rax, rax
-call _fd_t_open_pchar.intmode_t
-push rax
-pop rax
-mov QWORD[rbp-48], rax
-mov rcx, 140
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-sete bl
-mov r10, 87
-mov rcx, QWORD[rbp-24]
-cmp rcx, r10
-sete cl
-or rbx, rcx
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x3d
-mov rdi, QWORD[rbp-48]
-xor rsi, rsi
-mov rdx, 2
-xor rax, rax
-call _int_lseek_pfd_tintint
-jmp _LIFELSE_0x3e
-_LIFPOST_0x3d:
-_LIFELSE_0x3e:
-mov rax, QWORD[rbp-48]
-jmp ___FILE_fopen_pchar.char.__return
-___FILE_fopen_pchar.char.__return:
-leave
-ret
-_int_fputs_pfd_tchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rdi, QWORD[rbp-16]
-xor rax, rax
-call _size_t_strlen_pchar.
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-16]
-mov rdx, QWORD[rbp-24]
-xor rax, rax
-call _ssize_t_write_pfd_tchar.size_t
-push rax
-pop rax
-mov QWORD[rbp-32], rax
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-24]
-mov rdx, 1
-xor rax, rax
-call _int_lseek_pfd_tintint
-mov rbx, QWORD[rbp-32]
-mov rax, rbx
-jmp ___int_fputs_pfd_tchar.__return
-___int_fputs_pfd_tchar.__return:
-leave
-ret
-_bool_fgets_pfd_tchar.size_t:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-16]
-mov rdx, QWORD[rbp-24]
-xor rax, rax
-call _ssize_t_read_pfd_tchar.size_t
-push rax
-mov rcx, 0
-pop rbx
-cmp rbx, rcx
-setg bl
-mov QWORD[rbp-32], rbx
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-24]
-mov rdx, 1
-xor rax, rax
-call _int_lseek_pfd_tintint
-mov rax, QWORD[rbp-32]
-jmp ___bool_fgets_pfd_tchar.size_t__return
-___bool_fgets_pfd_tchar.size_t__return:
-leave
-ret
-_void._floads_pfd_t:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-mov rdi, QWORD[rbp-8]
-xor rsi, rsi
-mov rdx, 2
-xor rax, rax
-call _int_lseek_pfd_tintint
-push rax
-pop rax
-mov QWORD[rbp-16], rax
-mov rdi, QWORD[rbp-8]
-mov rcx, QWORD[rbp-16]
-xor rbx, rbx
-sub rbx, rcx
-mov rsi, rbx
-mov rdx, 2
-xor rax, rax
-call _int_lseek_pfd_tintint
-mov rdi, QWORD[rbp-16]
-xor rax, rax
-call _void._malloc_psize_t
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-mov rdi, QWORD[rbp-8]
-mov rsi, QWORD[rbp-24]
-mov rdx, QWORD[rbp-16]
-xor rax, rax
-call _ssize_t_read_pfd_tchar.size_t
-push rax
-mov rcx, 0
-pop rbx
-cmp rbx, rcx
-setl bl
-mov QWORD[rbp-32], rbx
-mov rbx, QWORD[rbp-32]
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x3f
-mov rax, 0
-jmp ___void._floads_pfd_t__return
-jmp _LIFELSE_0x40
-_LIFPOST_0x3f:
-_LIFELSE_0x40:
-mov rax, QWORD[rbp-24]
-jmp ___void._floads_pfd_t__return
-___void._floads_pfd_t__return:
-leave
-ret
-_int_getInt_pchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-PRINT_STRING [rdi]
-    GET_DEC 8, rax
-___int_getInt_pchar.__return:
-leave
-ret
-_uint_getUint_pchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-PRINT_STRING [rdi]
-    GET_UDEC 8, rax
-___uint_getUint_pchar.__return:
-leave
-ret
-_char_getchar_p:
-push rbp
-mov rbp, rsp
-sub rsp, 8
-call getchar
-___char_getchar_p__return:
-leave
-ret
-_int_getHex_pchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-PRINT_STRING [rdi]
-    GET_HEX 8, rax
-___int_getHex_pchar.__return:
-leave
-ret
-_void_getString_pchar.intchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov [rbp-24], rdx
-PRINT_STRING [rdx]
-    GET_STRING [rdi], rsi
-___void_getString_pchar.intchar.__return:
-leave
-ret
-_void_get_stdin_p:
-push rbp
-mov rbp, rsp
-sub rsp, 8
-call get_stdin
-___void_get_stdin_p__return:
-leave
-ret
-_char._getString_pchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 48
-mov [rbp-8], rdi
-mov QWORD[rbp-16], 80
-mov rdi, QWORD[rbp-16]
-xor rax, rax
-call _void._malloc_psize_t
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-mov QWORD[rbp-40], 0
-mov rdi, STRING_CONSTANT_10
-mov rsi, QWORD[rbp-8]
-xor rax, rax
-call _void_printf_pchar.char.
-mov rdi, 0
-lea rbx, [rbp-32]
-mov rsi, rbx
-mov rdx, 1
-xor rax, rax
-call _bool_fgets_pfd_tchar.size_t
-jmp _LWHILECMP_0x42
-_LWHILESTART_0x41:
-mov rcx, QWORD[rbp-16]
-mov rbx, QWORD[rbp-40]
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x44
-mov rcx, QWORD[rbp-16]
-sal rcx, 1
-mov QWORD[rbp-16], rcx
-mov rdi, QWORD[rbp-24]
-mov rsi, QWORD[rbp-16]
-xor rax, rax
-call _void._realloc_pvoid.size_t
-mov rbx, rax
-mov QWORD[rbp-24], rbx
-jmp _LIFELSE_0x45
-_LIFPOST_0x44:
-_LIFELSE_0x45:
-mov rcx, QWORD[rbp-40]
-mov rbx, QWORD[rbp-24]
-lea rbx, [rbx+rcx*1]
-mov rcx, QWORD[rbp-32]
-mov [rbx], rcx
-mov rdi, 0
-lea rbx, [rbp-32]
-mov rsi, rbx
-mov rdx, 1
-xor rax, rax
-call _bool_fgets_pfd_tchar.size_t
-mov rcx, QWORD[rbp-40]
-inc rcx
-mov QWORD[rbp-40], rcx
-_LWHILECMP_0x42:
-mov rcx, 10
-mov rbx, QWORD[rbp-32]
-cmp rbx, rcx
-setne bl
-mov rax, rbx
-and al, 1
-jnz _LWHILESTART_0x41
-_LWHILEEND_0x43:
-mov rbx, QWORD[rbp-40]
-inc rbx
-mov rcx, QWORD[rbp-24]
-lea rcx, [rcx+rbx*1]
-xor rbx, rbx
-mov [rcx], rbx
-mov rdi, QWORD[rbp-24]
-mov rsi, QWORD[rbp-40]
-xor rax, rax
-call _void._realloc_pvoid.size_t
-push rax
-pop rax
-jmp ___char._getString_pchar.__return
-___char._getString_pchar.__return:
-leave
-ret
-_int_toInteger_pchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 48
-mov [rbp-8], rdi
-mov rdi, QWORD[rbp-8]
-xor rax, rax
-call _size_t_strlen_pchar.
-push rax
-pop rax
-mov QWORD[rbp-16], rax
-mov rbx, 1
-and rcx, 0xff
-mov rcx, rbx
-mov QWORD[rbp-24], rcx
-mov rcx, 0
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+rcx*1]
-mov bl, byte[rbx]
-and rbx, 0xff
-mov rcx, 45
-cmp rbx, rcx
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x46
-mov rcx, 0
-and r10, 0xff
-mov rbx, rcx
-mov QWORD[rbp-24], r10
-mov rcx, QWORD[rbp-8]
-inc rcx
-mov QWORD[rbp-8], rcx
-mov rbx, 1
-mov rcx, QWORD[rbp-16]
-sub rcx, rbx
-mov QWORD[rbp-16], rcx
-jmp _LIFELSE_0x47
-_LIFPOST_0x46:
-_LIFELSE_0x47:
-mov QWORD[rbp-32], 0
-mov QWORD[rbp-40], 0
-jmp _LFORCMP_0x49
-_LFORTOP_0x48:
-mov r10, 10
-mov rcx, QWORD[rbp-32]
-imul rcx, r10
-mov r11, QWORD[rbp-40]
-mov r10, QWORD[rbp-8]
-lea r10, [r10+r11*1]
-mov r10b, byte[r10]
-and r10, 0xff
-mov r11, r10
-add rcx, r11
-mov r10, 48
-mov r11, r10
-sub rcx, r11
-mov QWORD[rbp-32], rcx
-_LFORUPDATE_0x4a:
-mov rbx, 1
-mov rcx, QWORD[rbp-40]
-add rcx, rbx
-mov QWORD[rbp-40], rcx
-_LFORCMP_0x49:
-mov rcx, QWORD[rbp-16]
-mov rbx, QWORD[rbp-40]
-cmp rbx, rcx
-setl bl
-mov rax, rbx
-and al, 1
-jnz _LFORTOP_0x48
-_LFOREND_0x4b:
-mov rbx, QWORD[rbp-24]
-cmp rbx, 0
-sete bl
-mov rax, rbx
-and al, 1
-jz _LIFPOST_0x4c
-mov rcx, QWORD[rbp-32]
-mov rbx, 0
-sub rbx, rcx
-mov rax, rbx
-jmp ___int_toInteger_pchar.__return
-jmp _LIFELSE_0x4d
-_LIFPOST_0x4c:
-_LIFELSE_0x4d:
-mov rbx, QWORD[rbp-32]
-mov rax, rbx
-jmp ___int_toInteger_pchar.__return
-___int_toInteger_pchar.__return:
-leave
-ret
-_int_firstDigit_pint:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-mov [rbp-8], rdi
-mov r8, 10
-    mov rax, rdi
-    _int_lastDigit_pint_flp:
-    mov r9, rax
-    xor rdx, rdx
-    div r8
-    test rax, rax
-    jnz _int_lastDigit_pint_flp
-    mov rax, r9
-___int_firstDigit_pint__return:
-leave
-ret
-_void_toStr_pintchar.:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rdi, QWORD[rbp-8]
-xor rax, rax
-call _int_firstDigit_pint
-push rax
-pop rax
-mov QWORD[rbp-24], rax
-jmp _LWHILECMP_0x4f
-_LWHILESTART_0x4e:
-mov rcx, QWORD[rbp-16]
-mov r10, QWORD[rbp-24]
-and r11, 0xff
-mov r11, r10
-mov r10, 48
-add r11, r10
-mov [rcx], r11
-mov rbx, 1
-mov rbx, QWORD[rbp-16]
-add rbx, rbx
-mov QWORD[rbp-16], rbx
-mov rbx, 10
-mov rcx, QWORD[rbp-8]
-xor rdx, rdx
-mov rax,rcx
-idiv rbx
-mov QWORD[rbp-8], rax
-mov rdi, QWORD[rbp-8]
-xor rax, rax
-call _int_firstDigit_pint
-mov rbx, rax
-mov QWORD[rbp-24], rbx
-_LWHILECMP_0x4f:
-mov rcx, 0
-mov rbx, QWORD[rbp-24]
-cmp rbx, rcx
-setne bl
-mov rax, rbx
-and al, 1
-jnz _LWHILESTART_0x4e
-_LWHILEEND_0x50:
-___void_toStr_pintchar.__return:
-leave
-ret
-_void_iVec3d_pVec3d.doubledoubledouble:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-movsd [rbp-16], xmm0
-movsd [rbp-24], xmm1
-movsd [rbp-32], xmm2
-mov rbx, QWORD[rbp-8]
-movsd xmm7, QWORD[rbp-16]
-movq [rbx], xmm7
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+8]
-movsd xmm7, QWORD[rbp-24]
-movq [rbx], xmm7
-mov rbx, QWORD[rbp-8]
-lea rbx, [rbx+16]
-movsd xmm7, QWORD[rbp-32]
-movq [rbx], xmm7
-___void_iVec3d_pVec3d.doubledoubledouble__return:
-leave
-ret
-_void_v3dadd_pVec3d.Vec3d.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-8]
-vmovdqu ymm0, [rbx]
-mov rcx, 0
-shl rcx, 3
-add rcx, [rbp-16]
-vmovdqu ymm1, [rcx]
-vaddpd ymm0, ymm1, ymm0
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-8]
-vmovdqu [rbx], ymm0
-___void_v3dadd_pVec3d.Vec3d.__return:
-leave
-ret
-_void_v3dsub_pVec3d.Vec3d.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-8]
-vmovdqu ymm0, [rbx]
-mov rcx, 0
-shl rcx, 3
-add rcx, [rbp-16]
-vmovdqu ymm1, [rcx]
-vsubpd ymm0, ymm1, ymm0
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-8]
-vmovdqu [rbx], ymm0
-___void_v3dsub_pVec3d.Vec3d.__return:
-leave
-ret
-_void_v3dcross_pVec3d.Vec3d.:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-8]
-vmovdqu ymm0, [rbx]
-mov rcx, 0
-shl rcx, 3
-add rcx, [rbp-16]
-vmovdqu ymm1, [rcx]
-vmulpd ymm0, ymm1, ymm0
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-8]
-vmovdqu [rbx], ymm0
-___void_v3dcross_pVec3d.Vec3d.__return:
-leave
-ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 64
+;Load Parameter: [ Variable: int argc @ 8]
 mov [rbp-8], rdi
+;Load Parameter: [ Variable: char.. argv @ 16]
 mov [rbp-16], rsi
-lea rbx, [rbp-32]
+;[[ id : STRING_CONSTANT_11]]
+mov rbx, STRING_CONSTANT_11
+mov QWORD[rbp-24], rbx
+;[[ int : 1000]]
+mov rdi, 1000
+mov rax, 0
+call _void._malloc_psize_t
+push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 8]] ) ] ]]
+pop rax
+mov QWORD[rbp-32], rax
+;[[ $ : bool], [ int : 1]]
+mov rbx, 1
+and rcx, 0xff
+mov rcx, rbx
+mov QWORD[rbp-40], rcx
+;[[ int : -27]]
+mov QWORD[rbp-48], -27
+;[[ int : 6], [ * : *], [ id : int]]
+mov rdi, 48
+mov rax, 0
+call _void._malloc_psize_t
+push rax
+;[[ fn(x) : [ function void. malloc( [[ Variable: size_t size @ 8]] ) ] ]]
+pop rax
+mov QWORD[rbp-56], rax
+;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
+mov rcx, 0
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+rcx*8]
+;[[ id : argc]]
+mov rcx, QWORD[rbp-8]
+mov qword[rbx], rcx
+;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
+mov rcx, 1
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+rcx*8]
+;[[ id : second]]
+mov rcx, QWORD[rbp-48]
+mov qword[rbx], rcx
+;[[ id : args], [ [ : [], [ int : 2], [ ] : ]]]
+mov rcx, 2
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+rcx*8]
+;[[ id : STRING_CONSTANT_12]]
+mov rcx, STRING_CONSTANT_12
+mov qword[rbx], rcx
+;[[ id : args], [ [ : [], [ int : 3], [ ] : ]]]
+mov rcx, 3
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+rcx*8]
+;[[ id : val]]
+mov rcx, QWORD[rbp-40]
+mov qword[rbx], rcx
+;[[ id : args], [ [ : [], [ int : 4], [ ] : ]]]
+mov rcx, 4
+mov rbx, QWORD[rbp-56]
+lea rbx, [rbx+rcx*8]
+;[[ id : FLT_CONSTANT_1]]
+mov rcx, [FLT_CONSTANT_1]
+mov qword[rbx], rcx
+;[[ id : dest]]
+mov rbx, QWORD[rbp-32]
 mov rdi, rbx
-xor rbx, rbx
-mov SIL, bl
-and rsi, 0xff
-mov rdx, 8
-xor rax, rax
-call _void_memset_pvoid.ucharsize_t
-mov rdi, 125
-lea rbx, [rbp-32]
+;[[ id : fmt]]
+mov rbx, QWORD[rbp-24]
 mov rsi, rbx
-xor rax, rax
-call _void_toStr_pintchar.
-lea rbx, [rbp-32]
+;[[ id : args]]
+mov rbx, QWORD[rbp-56]
+mov rdx, rbx
+mov rax, 0
+call _int___sprintf_pchar.char.void.
+;[[ id : dest]]
+mov rbx, QWORD[rbp-32]
 mov rdi, rbx
-xor rax, rax
+mov rax, 0
 call _void_print_pchar.
 jmp __main__return
 __main__return:

@@ -88,7 +88,8 @@ class Peephole:
         self.instructions = str.join("\n", lines)
 
     def get(self):
-
+        if(self.optlvl == 1):
+            return self.instructions
         self.opl2() if(self.optlvl == 2) else self.opl3()
         return self.instructions
 

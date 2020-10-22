@@ -3,7 +3,7 @@
 */
 #ifndef __MEMORY
 #define __MEMORY 1
-
+#include "stddef.k"
 
 function void* malloc(size_t size){
 
@@ -97,34 +97,5 @@ function void memset(void* dest, unsigned char value, size_t bytes){
     "}
 }
 
-function void strcpy(char* dest, char* source){
-    __asm{"
-    
-    _void_strcpy_pchar.char._flp:
-    mov bl, [rsi]
-    cmp bl, 0
-    mov [rdi], bl
-    jnz _void_strcpy_pchar.char._flp
-    
-    
-    
-    "}
-}
-
-
-function size_t strlen(char *str){
-
-    __asm{"
-    mov rax, -1
-    _size_t_strlen_pchar._flp:
-    mov bl, [rdi]
-    inc rax
-    inc rdi
-    cmp bl, 0
-    jnz _size_t_strlen_pchar._flp
-    
-    "}
-
-}
 
 #endif

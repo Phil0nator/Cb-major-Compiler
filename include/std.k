@@ -12,7 +12,7 @@
 #include "sys/sock.k"
 
 #include "string.k"
-#include "input.k"
+#include "io/input.k"
 #include "Vec3d.k"
 #include "filesystem.k"
 

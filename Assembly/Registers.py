@@ -8,6 +8,8 @@
 
 
 from Classes.Variable import Variable
+import config
+import traceback
 # REGISTERS
 
 rax = "rax"
@@ -269,15 +271,12 @@ norm_scratch_registers_inuse = [
 ]
 
 
-# return registers
-norm_return_register = rax
-sse_return_register = xmm0
-
 
 # register allocation and deallocation system:
 
-
 def ralloc(flt, size=8):
+    
+    config.LAST_RALLOC = traceback.format_stack()
     if(flt):
         for i in range(len(sse_scratch_registers_inuse)):
             if(not sse_scratch_registers_inuse[i]):
@@ -324,3 +323,8 @@ def setSize(reg, size):
         return dword_version[reg]
 
     return reg
+
+
+# return registers
+norm_return_register = rax
+sse_return_register = xmm0

@@ -95,3 +95,8 @@ def loadRawFile(path, token):
 
 
 raw_filedata = []
+
+
+
+
+LAST_RALLOC = None

@@ -101,6 +101,13 @@ def createIntrinsicHeap(variable):
 
 def loadToPtr(dest, source):
 
+    if(isinstance(dest, EC.ExpressionComponent)):
+        
+        size = dest.type.size(1)
+        if(isinstance(dest.accessor, Variable)):
+            return loadToReg(dest.accessor, source)
+        return loadToReg(f'{psizeoft(dest.type)}[{dest.accessor}]', setSize( source, size))
+
     if(isinstance(dest, Variable)):
         return loadToReg(dest, source)
     return loadToReg(f"[{dest}]", source)
@@ -351,6 +358,11 @@ def doOperation(t, areg, breg, op, signed=False):
 
 
 def castABD(a, b, areg, breg, newbreg):
+
+    if(a.type.isflt() and config.GlobalCompiler.Tequals(b.type.name, "void")) or (b.type.isflt() and config.GlobalCompiler.Tequals(a.type.name, "void")):
+        return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
+    
+
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
             out = maskset(newbreg, a.type.csize())

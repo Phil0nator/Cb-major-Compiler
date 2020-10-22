@@ -155,4 +155,27 @@ global double abs(double x){
 
 
 
+global int log(int x){
+  __asm{"
+  xor rbx, rbx
+  mov rax, rdi
+  mov rcx, 10
+  _int_log_pint_flp:
+  xor rdx, rdx
+  div rcx
+  test rax, rax
+  jnz _int_log_pint_inc
+  jmp _int_log_pint_end
+  _int_log_pint_inc:
+  inc rbx
+  jmp _int_log_pint_flp
+  
+  _int_log_pint_end:
+  mov rax, rbx
+
+  "}
+
+}
+
+
 #endif

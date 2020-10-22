@@ -311,7 +311,6 @@ class Function:
         # example: for (a; b; ...){ ... }
         getCondition = self.evaluateRightsideExpression(
             EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
-
         self.checkSemi()
 
         self.addline(f"jmp {comparisonlabel}\n")
@@ -741,6 +740,8 @@ class Function:
         if(otyperef is not None):
             otyperef.load(ot)
 
+        rfreeAll()
+
         return instructions
 
     # evaluate the destination for a rightside expression.
@@ -937,15 +938,18 @@ class Function:
         peephole.addline(ev)
 
         if(setter.tok == T_EQUALS):  # normal
-            peephole.addline(loadToPtr(dest.accessor, value))
+            peephole.addline(loadToPtr(dest, value))
 
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
             op = setter.tok[:-1]
-
+            x = ralloc(dest.type.isflt())
             areg = ralloc(dest.type.isflt())
 
+            
             peephole.addline(loadToReg(areg, dest.accessor))
+            
+
             if(dest.type.isflt()):
                 peephole.addline(doFloatOperation(areg, value, op))
             else:
@@ -959,6 +963,10 @@ class Function:
             peephole.addline(loadToPtr(dest.accessor, areg))
 
             rfree(areg)
+            rfree(x)
+
+        
+        
         rfree(value)
         rfree(dest.accessor)
         if(self.current_token.tok == T_ENDL):

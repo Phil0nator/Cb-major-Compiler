@@ -92,32 +92,6 @@ function int toInteger(char* str){
 
 }
 
-function int firstDigit(int x){
-    __asm{"
-    mov r8, 10
-    mov rax, rdi
-    _int_lastDigit_pint_flp:
-    mov r9, rax
-    xor rdx, rdx
-    div r8
-    test rax, rax
-    jnz _int_lastDigit_pint_flp
-    mov rax, r9
-    "}
-}
-
-
-function void toStr(int val, char* buffer){
-
-    int a = firstDigit(val);
-    while (a != 0){
-        @buffer = $char a +'0';
-        buffer+=1;
-        val/=10;
-        a = firstDigit(val);
-    }
-
-}
 
 
 #endif
