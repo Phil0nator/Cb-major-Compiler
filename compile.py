@@ -72,6 +72,8 @@ def main():
     asm = asm.replace("%%TEXT%%", c.text)
     asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
     asm = asm.replace("%%CONSTANTS%%", c.constants)
+    asm = asm.replace("%%MACROTEXT%%", config.__macrotext__)
+
 
     # cleanup
     asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")

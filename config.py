@@ -62,6 +62,12 @@ __oplevel__ = 1
 __executable__ = not args.object
 __linkables__ = args.link if args.link is not None else []
 
+
+
+__macros__ = []
+__macrotext__ = ""
+
+
 __CEXTERNS__ = ""
 
 

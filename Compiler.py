@@ -197,6 +197,10 @@ class Compiler:
 
     # isolate a function and build a Function object
     def createFunction(self):
+        inline = False
+        if(self.current_token.tok == T_KEYWORD):
+            if(self.current_token.value == "inline"):
+                inline = True
 
         rettype = self.checkType()
 

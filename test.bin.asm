@@ -1013,8 +1013,9 @@ extern print
 extern print
 extern print
 global _void_printf_pchar.
+
 section .data
-    FLT_CONSTANT_0: dq 0x0.0p+0
+FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_0: db `False`, 0
 STRING_CONSTANT_1: db `True`, 0
 STRING_CONSTANT_2: db `%s`, 0
@@ -1027,8 +1028,7 @@ M_MINZERO_MEM: DQ 0
 rand_next: DQ 1
 section .bss
 align 16
-    
-    __heap_padding__: resz 1
+__heap_padding__: resz 1
 section .text
 global CMAIN
 
