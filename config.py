@@ -49,9 +49,12 @@ parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
 parser.add_argument("-l", "--link", action="append", help="Link object files")
 
-parser.add_argument("-nw", "--nowarn", action="store_true", help="Suppress warnings",default=False)
-
-
+parser.add_argument(
+    "-nw",
+    "--nowarn",
+    action="store_true",
+    help="Suppress warnings",
+    default=False)
 
 
 args = parser.parse_args()

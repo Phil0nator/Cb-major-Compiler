@@ -2,44 +2,16 @@
 #include "std.k"
 
 
-function bool isPrime(unsigned int x){
-
-    if ( x%2 == 0) { return false;} 
-
-    int maxsmall = sqrt(x);
-
-    for (int i = 3; i <= maxsmall; i+=2){
-
-        if( x % i == 0 ){ return false; }
-
-    }
-
-    return true;
-
-
-}
-
 
 
 function int main(int argc, char** argv){
 
-    register int a = 26;
 
-    register float b = 5.335745;
+    for(int i = 0 ; i < 10000000; i+=1){
 
-    switch( argc ){
-
-
-
-        case 1{
-            printf("%d\n",b);
-            break;
-        }
+        printf("This is a test string to test how slow printf is and what the deal is with optimization\r");
 
     }
-
-
-
 
 
     return 5;

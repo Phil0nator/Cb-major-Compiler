@@ -1019,8 +1019,7 @@ FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_0: db `False`, 0
 STRING_CONSTANT_1: db `True`, 0
 STRING_CONSTANT_2: db `%s`, 0
-FLT_CONSTANT_1: dq 0x1.557cd898b2e9dp+2
-STRING_CONSTANT_3: db `%d\n`, 0
+STRING_CONSTANT_3: db `This is a test string to test how slow printf is and what the deal is with optimization\r`, 0
 nullptr: DQ 0
 null: DQ 0
 nullterm: DQ 0
@@ -1211,9 +1210,8 @@ shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu [rbx], ymm0
 .L0x2:
-mov r11, 4
 mov r10, QWORD[rbp-48]
-add r10, r11
+add r10, 4
 mov QWORD[rbp-48], r10
 .L0x1:
 mov r10, QWORD[rbp-40]
@@ -1514,8 +1512,7 @@ mov r11, rdx
 mov r12, r11
 and r13, 0xff
 mov r13, r12
-mov r11, 48
-add r13, r11
+add r13, 48
 mov rbx, r13
 mov byte[r10], bl
 mov rbx, 10
@@ -1567,8 +1564,7 @@ mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
-movsd xmm8, QWORD[rbp-8]
-movsd xmm0, xmm8
+movsd xmm0, QWORD[rbp-8]
 mov rax, 1
 call _double_abs_pdouble
 movq rax, xmm0
@@ -1590,8 +1586,7 @@ mov rbx, 1
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
-movsd xmm7, QWORD[rbp-8]
-movsd xmm0, xmm7
+movsd xmm0, QWORD[rbp-8]
 mov rax, 1
 call _int_round_pdouble
 mov rdi, rax
@@ -1804,10 +1799,10 @@ jz .L0x1f
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
-movq xmm7, qword[rbx]
+mov rbx, qword[rbx]
+movq xmm7, rbx
 movsd QWORD[rbp-128], xmm7
-movsd xmm7, QWORD[rbp-128]
-movsd xmm0, xmm7
+movsd xmm0, QWORD[rbp-128]
 mov rdi, QWORD[rbp-8]
 mov rsi, 100000000000000
 mov rax, 1
@@ -1831,10 +1826,10 @@ jz .L0x21
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
-movq xmm7, qword[rbx]
+mov rbx, qword[rbx]
+movq xmm7, rbx
 movsd QWORD[rbp-144], xmm7
-movsd xmm7, QWORD[rbp-144]
-movsd xmm0, xmm7
+movsd xmm0, QWORD[rbp-144]
 mov rdi, QWORD[rbp-8]
 mov rsi, 10000000
 mov rax, 1
@@ -2220,9 +2215,8 @@ jz .L0x29
 mov r10, QWORD[rbp-32]
 mov r12, QWORD[rbp-24]
 imul r12, r10
-mov r11, 48
 mov r10, QWORD[rbp-48]
-sub r10, r11
+sub r10, 48
 mov r11, r10
 add r12, r11
 mov QWORD[rbp-24], r12
@@ -2253,13 +2247,12 @@ sete bl
 mov rax, rbx
 and al, 1
 jz .L0x2b
-mov rbx, 32
-lea r10, [rbp-88]
-add r10, rbx
-mov rbx, QWORD[rbp-96]
-cmp rbx, r10
-seta bl
-mov rax, rbx
+lea rbx, [rbp-88]
+add rbx, 32
+mov r10, QWORD[rbp-96]
+cmp r10, rbx
+seta r10b
+mov rax, r10
 and al, 1
 jz .L0x2d
 mov rax, 0
@@ -2886,9 +2879,8 @@ jmp .L0x4a
 mov r11, 10
 mov r10, QWORD[rbp-32]
 imul r10, r11
-mov r12, 48
 mov r11, QWORD[rbp-24]
-sub r11, r12
+sub r11, 48
 mov r12, r11
 add r10, r12
 mov QWORD[rbp-32], r10
@@ -2944,22 +2936,19 @@ movsd [rbp-24], xmm1
 movsd [rbp-32], xmm2
 mov rbx, QWORD[rbp-8]
 mov rbx, QWORD[rbp-8]
-movsd xmm8, QWORD[rbp-16]
-movsd xmm7, xmm8
+movsd xmm7, QWORD[rbp-16]
 movq qword[rbx], xmm7
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+8]
-movsd xmm8, QWORD[rbp-24]
-movsd xmm7, xmm8
+movsd xmm7, QWORD[rbp-24]
 movq qword[rbx], xmm7
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+16]
 mov rbx, QWORD[rbp-8]
 lea rbx, [rbx+16]
-movsd xmm8, QWORD[rbp-32]
-movsd xmm7, xmm8
+movsd xmm7, QWORD[rbp-32]
 movq qword[rbx], xmm7
 ___void_iVec3d_pVec3d.doubledoubledouble__return:
 leave
@@ -3030,102 +3019,33 @@ vmovdqu [rbx], ymm0
 ___void_v3dcross_pVec3d.Vec3d.__return:
 leave
 ret
-_bool_isPrime_puint:
+main:
 push rbp
 mov rbp, rsp
 sub rsp, 32
 mov [rbp-8], rdi
-mov rbx, 2
-mov r10, QWORD[rbp-8]
-xor rdx, rdx
-mov rax, r10
-idiv rbx
-mov r10, rdx
-test r10, r10
-setz r10b
-mov rax, r10
-and al, 1
-jz .L0x4e
-mov rbx, 0
-and r10, 0xff
-mov r10, rbx
-mov rax, r10
-jmp ___bool_isPrime_puint__return
+mov [rbp-16], rsi
+mov QWORD[rbp-24], 0
 jmp .L0x4f
 .L0x4e:
-.L0x4f:
-cvtsi2sd xmm0, QWORD[rbp-8]
+mov rbx, STRING_CONSTANT_3
+mov rdi, rbx
 xor rax, rax
-call _double_sqrt_pdouble
-movq rax, xmm0
-movq xmm7, rax
-cvttsd2si rbx, xmm7
-mov QWORD[rbp-16], rbx
-mov QWORD[rbp-24], 3
-jmp .L0x51
+call _void_printf_pchar.
 .L0x50:
-mov rbx, QWORD[rbp-24]
-mov r10, QWORD[rbp-8]
-xor rdx, rdx
-mov rax, r10
-idiv rbx
-mov r10, rdx
-test r10, r10
-setz r10b
-mov rax, r10
-and al, 1
-jz .L0x54
-mov rbx, 0
-and r10, 0xff
-mov r10, rbx
-mov rax, r10
-jmp ___bool_isPrime_puint__return
-jmp .L0x55
-.L0x54:
-.L0x55:
-.L0x52:
-mov rbx, 2
+mov rbx, 1
 mov r11, QWORD[rbp-24]
 add r11, rbx
 mov QWORD[rbp-24], r11
-.L0x51:
-mov r10, QWORD[rbp-16]
+.L0x4f:
+mov r10, 10000000
 mov rbx, QWORD[rbp-24]
 cmp rbx, r10
-setle bl
+setl bl
 mov rax, rbx
 and al, 1
-jnz .L0x50
-.L0x53:
-mov rbx, 1
-and r10, 0xff
-mov r10, rbx
-mov rax, r10
-jmp ___bool_isPrime_puint__return
-___bool_isPrime_puint__return:
-leave
-ret
-main:
-push rbp
-mov rbp, rsp
-sub rsp, 40
-mov [rbp-8], rdi
-mov [rbp-16], rsi
-mov rbx, 26
-movsd xmm8, [FLT_CONSTANT_1]
-movsd xmm7, xmm8
-mov r10, QWORD[rbp-8]
-cmp r10, 1
-je .L0x57
-jmp .L0x56
-.L0x57:
-mov r11, STRING_CONSTANT_3
-mov rdi, r11
-movq rsi, xmm7
-mov rax, 1
-call printf
-jmp .L0x56
-.L0x56:
+jnz .L0x4e
+.L0x51:
 mov rax, 5
 jmp __main__return
 __main__return:

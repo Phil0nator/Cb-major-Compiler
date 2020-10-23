@@ -243,14 +243,11 @@ class ExpectedLValue(Error):
         self.tok = tok
         self.message = f"Expected Rightside Expression: "
 
+
 class RegsiterStructure(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Cannot create structure in register: "
-
-
-
-
 
 
 class Warning:

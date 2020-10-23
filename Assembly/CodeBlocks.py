@@ -122,6 +122,14 @@ def spush(v: EC.ExpressionComponent):
     return f"push {v.accessor}\n"
 
 
+def spop(v: EC.ExpressionComponent):
+    if(v.type.isflt()):
+        return f"pop {rax}\nmovq {valueOf(v.accessor)}, {rax}\n"
+    if(isinstance(v.accessor, Variable)):
+        return f"pop {rax}\nmov {valueOf(v.accessor)}, {rax}\n"
+    return f"pop {v.accessor}\n"
+
+
 def fncall(fn):
     return "call %s\n" % fn.getCallingLabel()
 
@@ -197,6 +205,8 @@ def loadToReg(reg, value):
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
 # only for parameter loading
+
+
 def movRegToVar(od, reg):
     if("xmm" not in reg):
         return "mov [rbp-%s], %s" % ((od), reg)

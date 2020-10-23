@@ -16,7 +16,7 @@ from Assembly.Instructions import Instruction, Peephole
 from Assembly.CodeBlocks import function_allocator, doIntOperation, doFloatOperation
 from Assembly.CodeBlocks import function_closer, fncall, check_fortrue
 from Assembly.CodeBlocks import loadToPtr, loadToReg, movVarToReg, movRegToVar
-from Assembly.CodeBlocks import valueOf, getLogicLabel, maskset, functionlabel
+from Assembly.CodeBlocks import valueOf, getLogicLabel, maskset, functionlabel, spush, spop
 import Assembly.CodeBlocks as CodeBlocks
 
 from Assembly.TypeSizes import isfloat
@@ -80,7 +80,12 @@ class Function:
 
         self.peephole = Peephole()              # optimizer
 
-        self.regdeclremain = 2                  # remaining available register declarations
+        # remaining available register declarations (normal regs)
+        self.regdeclremain_norm = 2
+        # remaining available register declarations (sse)
+        self.regdeclremain_sse = 4
+        # ExpressionComponents to keep track of register declarations
+        self.regdecls = []
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -591,6 +596,29 @@ class Function:
 
         rfree(cmpvalue)
 
+    def buildRegdecl(self):
+        if(self.regdeclremain_norm < 0 or self.regdeclremain_sse < 0):
+            warn(RegisterDeclWarning(self.current_token))
+            self.advance()
+            self.buildDeclaration(register=False)
+            return
+        else:
+            s = self.current_token
+            self.advance()
+
+            self.buildDeclaration(register=True)
+
+            v = self.variables[-1]
+            self.regdecls.append(
+                EC.ExpressionComponent(
+                    v.register, v.t, token=s))
+            print(self.regdecls)
+            
+            if(v.t.isflt()):
+                self.regdeclremain_sse -= 1
+            else:
+                self.regdeclremain_norm -= 1
+
     # build a statement that starts with a keyword
 
     def buildKeywordStatement(self):
@@ -613,16 +641,7 @@ class Function:
 
         elif(word == "register"):
 
-            if(self.regdeclremain == 0):
-                warn(RegisterDeclWarning(self.current_token))
-
-            s = self.current_token
-            self.advance()
-            self.buildDeclaration(register=True)
-            if(self.regdeclremain == 0):
-                return
-
-            self.regdeclremain -= 1
+            self.buildRegdecl()
 
         elif(word == "if"):
             self.buildIfStatement()
@@ -655,6 +674,18 @@ class Function:
 
         else:
             throw(UnexpectedToken(self.current_token))
+
+    def pushregs(self):
+        out = ""
+        for r in self.regdecls:
+            out += spush(r)
+        return out
+
+    def restoreregs(self):
+        out = ""
+        for r in reversed(self.regdecls):
+            out += spop(r)
+        return out
 
     def buildFunctionCall(self):
 
@@ -707,6 +738,9 @@ class Function:
         sseused = 0
         normused = 0
 
+        instructions.addline(self.pushregs())
+
+
         # for each parameter
         for i in range(pcount):
 
@@ -753,6 +787,7 @@ class Function:
         # actual 'call' instruction
 
         instructions.addline(fncall(fn))
+        instructions.addline(self.restoreregs())
         return instructions.get(), fn
 
     # construct expression components from tokens
@@ -893,6 +928,10 @@ class Function:
         return instructions
 
     def buildDeclaration(self, register=False):                     # declare new var
+        if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):
+            self.buildRegdecl()
+            return
+
 
         t = self.checkForType()
 
@@ -915,9 +954,10 @@ class Function:
         # which is set by self.addVariable
         var = self.variables[-1]
         var.isptr = t.ptrdepth > 0
-        
+
         # set the variable's register if one is given
-        var.register = ralloc(t.isflt()) if register!=False else None
+        var.register = ralloc(
+            t.isflt()) if register != False else None
 
         # if the variable is a stack-based structure,
         #   add its member variables too.
@@ -1151,7 +1191,7 @@ class Function:
 
         self.asm += self.suffix           # readonly memory
 
-        if self.regdeclremain != 2:
+        if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:
                 rfree(v.register)
 

@@ -141,6 +141,14 @@ class ExpressionEvaluator:
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
 
+    def noloadOp(self, a, b, op):
+
+        areg, breg, o, newinstr = optloadRegs(a, None, op, None)
+        cmd = "add" if op == "+" else "sub"
+        newinstr+=f"{cmd} {areg}, {b.accessor}\n"
+        return newinstr, a.type.copy(), EC.ExpressionComponent(areg, a.type.copy(),token=a.token)
+
+
     def check_semiconstexpr_optimization(self, a, b, op):
         newinstr = None
         newt = None
@@ -181,6 +189,10 @@ class ExpressionEvaluator:
 
             newinstr, newt, apendee = self.inc_dec_optimization(
                 a, b, op)
+
+        # can be optimized through reduced register loading
+        elif(op in ["+", "-"]):
+            newinstr, newt, apendee = self.noloadOp(a,b,op)
 
         # comparisons with zero can be optimized through the
         # test instruction, followed by the 'z' or 'nz' conditional
