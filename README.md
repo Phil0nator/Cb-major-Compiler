@@ -42,10 +42,18 @@ function int main(int argc, char** argv){
 
 ## Keywords
 
-```function``` Declare a basic function
+```function``` Declare a basic function 
+
+
 ```global``` Declare a function to be linkable as an object file
+
+
 ```extern ``` Declare a function defined in a linkable object file
+
+
 ```__cdecl``` Declare a global function suitable for use with C
+
+
 ```cextern``` Declare a function defined in an object file from gcc
 
 
