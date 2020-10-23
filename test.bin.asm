@@ -1267,10 +1267,9 @@ and al, 1
 jnz _LFORTOP_0x0
 _LFOREND_0x3:
 ;[[ id : offset], [ != : !=], [ int : 0]]
-xor r10, r10
 mov rbx, QWORD[rbp-32]
-cmp rbx, r10
-setne bl
+test rbx, rbx
+setnz bl
 mov rax, rbx
 and al, 1
 jz _LIFPOST_0x4
@@ -1739,9 +1738,8 @@ movsd xmm7, QWORD[rbp-8]
 movsd xmm0, xmm7
 mov rax, 1
 call _double_abs_pdouble
-movq rax, xmm0
+movq xmm7, xmm0
 ;[[ ( : (], [ fn(x) : [ function double abs( [[ Variable: double x @ 8]] ) ] ], [ - : -], [ id : integral], [ ) : )], [ * : *], [ id : multiplier]]
-movq xmm7, rax
 mov rbx, QWORD[rbp-32]
 cvtsi2sd xmm8, rbx
 subsd xmm7, xmm8
@@ -1815,13 +1813,11 @@ mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-40], rbx
 ;[[ id : str], [ == : ==], [ int : 0], [ || : ||], [ id : fmt], [ == : ==], [ int : 0]]
 mov rbx, QWORD[rbp-8]
-mov r10, 0
-cmp rbx, r10
-sete bl
+test rbx, rbx
+setz bl
 mov r10, QWORD[rbp-16]
-mov r11, 0
-cmp r10, r11
-sete r10b
+test r10, r10
+setz r10b
 or rbx, r10
 mov rax, rbx
 and al, 1
@@ -2032,8 +2028,7 @@ jz _LIFPOST_0x1d
 ;[[ id : boolean_string]]
 ;[[ id : boolean_string]]
 ;[[ id : STRING_CONSTANT_1]]
-mov rbx, STRING_CONSTANT_1
-mov QWORD[rbp-112], rbx
+mov QWORD[rbp-112], STRING_CONSTANT_1
 jmp _LIFELSE_0x1e
 _LIFPOST_0x1d:
 _LIFELSE_0x1e:
@@ -2166,11 +2161,9 @@ _LWHILECMP_0xf:
 mov rbx, QWORD[rbp-16]
 and r10, 0xff
 mov r10b, byte[rbx]
-mov rbx, 0
-mov r11, r10
-cmp r11, rbx
-setne r11b
-mov rax, r11
+test r10, r10
+setnz r10b
+mov rax, r10
 and al, 1
 jnz _LWHILESTART_0xe
 _LWHILEEND_0x10:
@@ -2524,9 +2517,8 @@ sub rsp, 8
 ;[[ id : rand_next]]
 xor rax, rax
 call _int_rdrand_p
-mov rbx, rax
+mov [rand_next], rax
 ;[[ fn(x) : [ function int rdrand( [] ) ] ]]
-mov [rand_next], rbx
 ___void_srand_p__return:
 leave
 ret
@@ -2823,17 +2815,15 @@ mov r10, rbx
 mov rbx, QWORD[rbp-24]
 mov qword[r10], rbx
 ;[[ id : c], [ != : !=], [ int : 0], [ && : &&], [ id : c], [ != : !=], [ char : 32]]
-xor rbx, rbx
-mov r10, QWORD[rbp-48]
-mov r11, r10
-cmp r11, rbx
-setne r11b
-mov r10, 32
 mov rbx, QWORD[rbp-48]
-cmp rbx, r10
-setne bl
-and r11, rbx
-mov rax, r11
+test rbx, rbx
+setnz bl
+mov r11, 32
+mov r10, QWORD[rbp-48]
+cmp r10, r11
+setne r10b
+and rbx, r10
+mov rax, rbx
 and al, 1
 jz _LIFPOST_0x2f
 ;[[ int : 0]]
@@ -3527,9 +3517,8 @@ mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rax, 0
 call _void._realloc_pvoid.size_t
-mov rbx, rax
+mov QWORD[rbp-24], rax
 ;[[ fn(x) : [ function void. realloc( [[ Variable: void. og @ 8], [ Variable: size_t newsize @ 16]] ) ] ]]
-mov QWORD[rbp-24], rbx
 jmp _LIFELSE_0x43
 _LIFPOST_0x42:
 _LIFELSE_0x43:
@@ -3651,8 +3640,7 @@ jz _LIFPOST_0x47
 ;[[ $ : bool], [ int : 1]]
 mov r10, 1
 and r11, 0xff
-mov rbx, r10
-mov QWORD[rbp-40], rbx
+mov QWORD[rbp-40], r10
 ;[[ id : str]]
 ;[[ id : str]]
 ;[[ int : 1]]
@@ -3700,23 +3688,21 @@ mov r11b, byte[r10]
 mov QWORD[rbp-24], r11
 _LWHILECMP_0x4a:
 ;[[ id : c], [ != : !=], [ int : 0], [ && : &&], [ id : c], [ != : !=], [ int : 10], [ && : &&], [ id : c], [ != : !=], [ char : 32]]
-xor rbx, rbx
-mov r10, QWORD[rbp-24]
-mov r11, r10
-cmp r11, rbx
-setne r11b
-mov rbx, 10
-mov r10, QWORD[rbp-24]
-mov r12, r10
-cmp r12, rbx
-setne r12b
-and r11, r12
-mov r10, 32
 mov rbx, QWORD[rbp-24]
-cmp rbx, r10
-setne bl
-and r11, rbx
-mov rax, r11
+test rbx, rbx
+setnz bl
+mov r10, 10
+mov r11, QWORD[rbp-24]
+mov r12, r11
+cmp r12, r10
+setne r12b
+and rbx, r12
+mov r11, 32
+mov r10, QWORD[rbp-24]
+cmp r10, r11
+setne r10b
+and rbx, r10
+mov rax, rbx
 and al, 1
 jnz _LWHILESTART_0x49
 _LWHILEEND_0x4b:
@@ -3888,9 +3874,8 @@ xor rdx, rdx
 mov rax, r10
 idiv rbx
 mov r10, rdx
-mov rbx, 0
-cmp r10, rbx
-sete r10b
+test r10, r10
+setz r10b
 mov rax, r10
 and al, 1
 jz _LIFPOST_0x4e
@@ -3906,9 +3891,8 @@ _LIFELSE_0x4f:
 cvtsi2sd xmm0, QWORD[rbp-8]
 xor rax, rax
 call _double_sqrt_pdouble
-movq rax, xmm0
+movq xmm7, xmm0
 ;[[ fn(x) : [ function double sqrt( [[ Variable: double a @ 8]] ) ] ]]
-movq xmm7, rax
 cvttsd2si rbx, xmm7
 mov QWORD[rbp-16], rbx
 ;[[ int : 3]]
@@ -3922,9 +3906,8 @@ xor rdx, rdx
 mov rax, r10
 idiv rbx
 mov r10, rdx
-mov rbx, 0
-cmp r10, rbx
-sete r10b
+test r10, r10
+setz r10b
 mov rax, r10
 and al, 1
 jz _LIFPOST_0x54

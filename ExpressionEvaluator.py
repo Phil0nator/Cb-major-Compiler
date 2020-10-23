@@ -132,17 +132,28 @@ class ExpressionEvaluator:
         newt = a.type.copy()
         return newinstr, newt, apendee
 
+    def test_optimization(self, a, b, op):
+
+        areg, breg, o, newinstr = optloadRegs(a, None, op, None)
+        cmp = "z" if op == "==" else "nz"
+        newinstr += f"test {areg}, {areg}\nset{cmp} {setSize(areg, 1)}\n"
+
+        return newinstr, BOOL.copy(), EC.ExpressionComponent(
+            areg, BOOL.copy(), token=a.token)
+
     def check_semiconstexpr_optimization(self, a, b, op):
         newinstr = None
         newt = None
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op not in ["/", "["] and op not in signed_comparisons):
+        if(b.accessor == 0 and op not in ["/", "[", ] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
 
+        # indexes of zero can be optimized out by
+        # replacing them with a memory_address flag
         elif(b.accessor == 0 and op == "[") and (isinstance(a.accessor, str)):
             a.memory_location = True
             newinstr = bringdown_memloc(a)
@@ -170,6 +181,15 @@ class ExpressionEvaluator:
 
             newinstr, newt, apendee = self.inc_dec_optimization(
                 a, b, op)
+
+        # comparisons with zero can be optimized through the
+        # test instruction, followed by the 'z' or 'nz' conditional
+        # arguments
+        if(op == "==" or op == "!=") and b.accessor == 0:
+
+            newinstr, newt, apendee = self.test_optimization(
+                a, b, op
+            )
 
         return newinstr, newt, apendee
 

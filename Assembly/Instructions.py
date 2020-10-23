@@ -43,9 +43,13 @@ class Peephole:
         self.instructions = ""
 
     def opl3(self):
-        return self.opl2()
+        while self.opl2() > 0:
+            pass
 
     def opl2(self):
+
+        optims = 0
+
         lines = self.instructions.replace(
             "\n\n", "\n").replace(
             "\t", "").split("\n")
@@ -70,6 +74,8 @@ class Peephole:
                     dest != prev[1]) else None
                 lines[i] = None
 
+                optims += 1
+
             # excessive mov statements
             if (prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
                 if(prev[1] == source and "[" not in prev[2] and not isdigit(ord(prev[2][0]))):
@@ -78,9 +84,12 @@ class Peephole:
                     lines[pi] = Instruction(
                         op, [dest, prev[2]]) if dest != prev[2] else None
 
+                    optims += 1
+
             # zeroing-by-mov is less efficient than xor
             elif(op == "mov" and dest in REGISTERS and source == "0"):
                 lines[i] = Instruction("xor", [dest, dest])
+                optims += 1
 
             prev = (op, dest, source, flags)
             i += 1
@@ -88,6 +97,8 @@ class Peephole:
 
         lines = list(filter(None, lines))
         self.instructions = str.join("\n", lines)
+
+        return optims
 
     def get(self):
         if(self.optlvl == 1):
