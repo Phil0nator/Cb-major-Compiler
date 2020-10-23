@@ -8,7 +8,7 @@ function bool isPrime(unsigned int x){
 
     int maxsmall = sqrt(x);
 
-    for (int i = 3; i < maxsmall; i+=1){
+    for (int i = 3; i <= maxsmall; i+=2){
 
         if( x % i == 0 ){ return false; }
 
@@ -24,22 +24,16 @@ function int main(int argc, char** argv){
 
     char* fmt = "The int: %i , the double: %f, a string: %s, and a bool %b.";
 
-
-    /*
-    for (int num = 1; num < 100; num+=1){
-        bool q =  isPrime(num);
-        printf("Prime for %u = %b\n",num,q);
+    int max = 1000000;
+    for (int num = 1; num < max; num+=1){
+    bool q =  isPrime(num);
+    
+    
+    printf("Prime for %u / %u                                           \r",num,max);
+    
+    
+    
     }
-    */
-
-
-
-
-    int b = isPrime(1);
-
-
-
-    printf("%i\n", b);
     
 
 

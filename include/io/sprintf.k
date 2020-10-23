@@ -72,13 +72,13 @@ global int __sprintf(char* str, char* fmt, void* args){
     int og = $int str;
 
 
-
     if(str == 0 || fmt == 0){
         return 0;
     }
 
 
     while( @fmt != 0 ){
+
 
         
         if(@fmt != FORMAT_START){

@@ -45,8 +45,8 @@ def optloadRegs(a, b, op, o):
 
         if(needLoadB):
             instr += loadToReg(breg, b.accessor)
-        if(needLoadA):
-            instr += loadToReg(areg, a.accessor)
+    if(needLoadA):
+        instr += loadToReg(areg, a.accessor)
     return areg, breg, o, instr
 
 
@@ -74,6 +74,7 @@ def bringdown_memlocs(a, b):
 class ExpressionEvaluator:
     def __init__(self, fn):
         self.fn = fn
+        self.resultflags = None
 
     def mult_div_optimization(self, a, b, op):
         newinstr = None
@@ -141,6 +142,13 @@ class ExpressionEvaluator:
             apendee = a
             newinstr = ""
             newt = a.type.copy()
+
+        elif(b.accessor == 0 and op == "[") and (isinstance(a.accessor, str)):
+            a.memory_location = True
+            newinstr = bringdown_memloc(a)
+            apendee = a
+            newt = a.type.copy()
+            a.type.ptrdepth -= 1
 
         # if can be optimized through bitshift
         # multiplication/division
@@ -282,6 +290,8 @@ class ExpressionEvaluator:
         # specified destination
 
         o = final.type.copy()
+
+        self.resultflags = final
 
         return instr, final
 
@@ -485,16 +495,21 @@ class RightSideEvaluator(ExpressionEvaluator):
             if(b.type.isflt()):
                 throw(UsingFloatAsIndex(b.token))
 
-            areg, breg, o, ninstr = optloadRegs(a, b, op, o)
-            instr += ninstr
-            if(a.type.size(1) in [1, 2, 4, 8]):
-                instr += f"lea {areg}, [{areg}+{breg}*{a.type.size(1)}]\n"
+            if(isinstance(b.accessor, int) and b.accessor == 0):
+                areg, breg, o, ninstr = optloadRegs(a, None, op, o)
+                instr += ninstr
+
             else:
-                if(canShiftmul(a.type.size(1))):
-                    instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
+                areg, breg, o, ninstr = optloadRegs(a, b, op, o)
+                instr += ninstr
+                if(a.type.size(1) in [1, 2, 4, 8]):
+                    instr += f"lea {areg}, [{areg}+{breg}*{a.type.size(1)}]\n"
                 else:
-                    instr += f"imul {breg}, {a.type.size(1)}\n"
-                instr += f"lea {areg}, [{areg}+{breg}]\n"
+                    if(canShiftmul(a.type.size(1))):
+                        instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
+                    else:
+                        instr += f"imul {breg}, {a.type.size(1)}\n"
+                    instr += f"lea {areg}, [{areg}+{breg}]\n"
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
             apendee.memory_location = True
@@ -521,15 +536,14 @@ class RightSideEvaluator(ExpressionEvaluator):
                 throw(TypeMismatch(a.token, a.type, b.type))
             newtype, toConvert = determinePrecedence(a.type, b.type, self.fn)
             o = newtype.copy()
-            
-            
-            #TODO:
-            #   The casting system will sometimes reverse the 
+
+            # TODO:
+            #   The casting system will sometimes reverse the
             #   order of operands!
             #
             #   \/\/\/\/\//\/\/\/\/\/\/\/\/\/\
-            
-            
+
+            reverse = False
             if(newtype.__eq__(a.type)):
                 # cast to a
                 castee = b
@@ -538,6 +552,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 # cast to b
                 castee = a
                 caster = b
+                reverse = True
 
             needLoadC = True
             needLoadCO = True
@@ -568,9 +583,14 @@ class RightSideEvaluator(ExpressionEvaluator):
                 rfree(newcoreg)
                 newcoreg = coreg
 
+            if(reverse):
+                tmp = creg
+                creg = newcoreg
+                newcoreg = tmp
+
             instr += doOperation(caster.type, creg,
                                  newcoreg, op, caster.type.signed)
-            
+
             # handle float comparison
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
 
@@ -746,17 +766,23 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             instr += bringdown_memlocs(a, b)
 
-            areg, breg, o, ninstr = optloadRegs(a, b, op, o)
-            instr += ninstr
+            if(isinstance(b.accessor, int) and b.accessor == 0):
+                areg, breg, o, ninstr = optloadRegs(a, None, op, o)
+                instr += ninstr
 
-            if(a.type.size(1) in [1, 2, 4, 8]):
-                instr += f"lea {areg}, [{areg}+{breg}*{a.type.size(1)}]\n"
             else:
-                if(canShiftmul(a.type.size(1))):
-                    instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
+                areg, breg, o, ninstr = optloadRegs(a, b, op, o)
+                instr += ninstr
+
+                if(a.type.size(1) in [1, 2, 4, 8]):
+                    instr += f"lea {areg}, [{areg}+{breg}*{a.type.size(1)}]\n"
                 else:
-                    instr += f"imul {breg}, {a.type.size(1)}\n"
-                instr += f"lea {areg}, [{areg}+{breg}]\n"
+                    if(canShiftmul(a.type.size(1))):
+                        instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
+                    else:
+                        instr += f"imul {breg}, {a.type.size(1)}\n"
+                    instr += f"lea {areg}, [{areg}+{breg}]\n"
+
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
             apendee.memory_location = True

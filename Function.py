@@ -549,9 +549,8 @@ class Function:
 
     def buildFunctionCall(self):
 
-        #TODO:
+        # TODO:
         # Nested functions can sometimes overwrite eachother's parameters;
-
 
         # function name
         fid = self.current_token.value
@@ -643,7 +642,7 @@ class Function:
         instructions.addline(Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
-        
+
         instructions.addline(fncall(fn))
         return instructions.get(), fn
 
@@ -919,7 +918,6 @@ class Function:
 
         inst = ""
 
-
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
 
@@ -939,11 +937,11 @@ class Function:
         ev = self.evaluateRightsideExpression(
             EC.ExpressionComponent(value, dest.type, token=dest.token))
 
-        inst+=(inst)
-        inst+=(ev)
+        inst += (inst)
+        inst += (ev)
 
         if(setter.tok == T_EQUALS):  # normal
-            inst+=(loadToPtr(dest, value))
+            inst += (loadToPtr(dest, value))
 
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
@@ -951,19 +949,19 @@ class Function:
             x = ralloc(dest.type.isflt())
             areg = ralloc(dest.type.isflt())
 
-            inst+=(loadToReg(areg, dest.accessor))
+            inst += (loadToReg(areg, dest.accessor))
 
             if(dest.type.isflt()):
-                inst+=(doFloatOperation(areg, value, op))
+                inst += (doFloatOperation(areg, value, op))
             else:
-                inst+=(
+                inst += (
                     doIntOperation(
                         areg,
                         value,
                         op,
                         dest.type.signed))
 
-            inst+=(loadToPtr(dest.accessor, areg))
+            inst += (loadToPtr(dest.accessor, areg))
 
             rfree(areg)
             rfree(x)

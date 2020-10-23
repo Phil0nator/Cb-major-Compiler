@@ -43,8 +43,4 @@ global void printf(char* fmt){
 }
 
 
-
-
-
-
 #endif
