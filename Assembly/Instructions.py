@@ -87,9 +87,12 @@ class Peephole:
                     optims += 1
 
             # zeroing-by-mov is less efficient than xor
-            elif(op == "mov" and dest in REGISTERS and source == "0"):
+            if(op == "mov" and dest in REGISTERS and source == "0"):
                 lines[i] = Instruction("xor", [dest, dest])
                 optims += 1
+
+
+
 
             prev = (op, dest, source, flags)
             i += 1

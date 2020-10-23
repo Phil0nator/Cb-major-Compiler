@@ -86,8 +86,8 @@ boolchar_version = {
     r13: r13b,
     r14: r14b,
     r15: r15b,
-    rdi: "DIL",
-    rsi: "SIL"
+    rdi: "dil",
+    rsi: "sil"
 
 
 }
@@ -296,6 +296,12 @@ def ralloc(flt, size=8):
                     out = small_version[out]
                 return out
 
+def reralloc(r):
+
+    if("xmm" in r):
+        sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = True
+    else:
+        norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = True
 
 def rfree(r):
     if(isinstance(r, Variable)):

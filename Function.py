@@ -28,6 +28,8 @@ import Assembly.AVX as AVX
 
 from globals import TsCompatible, INT, BOOL, CHAR, SHORT, SMALL, VOID, DOUBLE, isIntrinsic
 
+from Classes.Constexpr import determineConstexpr
+
 # multiply all items in an array
 
 
@@ -70,7 +72,10 @@ class Function:
         # extern is in reference to c-standard names vs .k names
         self.extern = False
 
-        self.destructor_text = ""
+        self.destructor_text = ""               # automatically called destructors
+
+
+        self.suffix = ""                        # used for read-only values generated during compiletime that can be stored in .text 
 
         self.peephole = Peephole()              # optimizer
 
@@ -498,6 +503,79 @@ class Function:
 
         self.checkTok(T_CLSSCOPE)
 
+
+
+
+
+    def buildSwitch(self):
+        self.advance()
+        o = VOID.copy()
+        retrace = self.ctidx
+        voider = self.evaluateRightsideExpression("AMB", o)        
+        self.ctidx = retrace-1
+        self.advance()
+
+        endlabel = getLogicLabel("SWITCHEND")
+
+        self.breaks.append(endlabel)
+
+        cmpvalue = ralloc(o.isflt())
+        loadinstr = self.evaluateRightsideExpression(EC.ExpressionComponent(cmpvalue, o,token=self.current_token))
+
+        reralloc(cmpvalue)
+
+        topmarker = f"##SWITCHTOP##{len(self.asm)}"
+        self.addline(topmarker)
+        logictable = []
+
+        self.checkTok(T_OPENSCOPE)
+
+        while self.current_token.tok != T_CLSSCOPE:
+
+            
+            if(self.current_token.tok == T_KEYWORD and self.current_token.value == "case"):
+                self.advance()
+                tkstart = self.ctidx
+                while self.current_token.tok != T_OPENSCOPE:
+                    self.advance()
+                tkend = self.ctidx
+
+                rval = determineConstexpr(0, self.tokens[tkstart:tkend],self)
+
+                if(not isinstance(rval.accessor, int)):
+                    throw(ExpectedToken(self.tokens[tkstart], "constexpr"))
+                
+                l = getLogicLabel("SWITCHCASE")
+                self.addline(f"{l}:")
+                self.checkTok(T_OPENSCOPE)
+                self.beginRecursiveCompile()
+                self.advance()
+
+                logictable.append((rval.accessor,l))
+
+
+
+
+
+
+
+            else:
+                throw(UnexpectedToken(self.current_token))
+
+
+        topinstr = loadinstr
+
+        for logic in logictable:
+            topinstr+=f"cmp {cmpvalue}, {logic[0]}\nje {logic[1]}\n"
+
+        topinstr += f"jmp {endlabel}\n"
+
+        self.asm = self.asm.replace(topmarker, topinstr)
+
+        self.addline(f"{endlabel}:")
+        self.advance()
+        self.breaks.pop()
+
     # build a statement that starts with a keyword
 
     def buildKeywordStatement(self):
@@ -544,8 +622,11 @@ class Function:
         elif(word == "__simd"):
             self.buildSIMD()
 
+        elif(word == "switch"):
+            self.buildSwitch()
+
         else:
-            self.advance()
+            throw(UnexpectedToken(self.current_token))
 
     def buildFunctionCall(self):
 
@@ -656,7 +737,7 @@ class Function:
 
         # The tokens: ; , = += -= *= /= etc... will mark the end of an
         # expression
-        while opens > 0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
+        while opens > 0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_OPENSCOPE and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
 
             # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):
@@ -1029,11 +1110,18 @@ class Function:
 
         self.beginRecursiveCompile()      # body
 
+
+
         # fill in allocator with real value
         self.asm = self.asm.replace(
             "/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
+
+
+
         # self.addline(self.destructor_text)
         self.createClosing()              # return, destructors, stack frame closing
+
+        self.asm += self.suffix           # readonly memory
 
     def __repr__(self):     # pretty print
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"

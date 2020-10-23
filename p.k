@@ -22,23 +22,20 @@ function bool isPrime(unsigned int x){
 
 function int main(int argc, char** argv){
 
-    char* fmt = "The int: %i , the double: %f, a string: %s, and a bool %b.";
+    switch( argc ){
 
-    int max = 1000000;
-    for (int num = 1; num < max; num+=1){
-    bool q =  isPrime(num);
-    
-    
-    printf("Prime for %u / %u                                           \r",num,max);
-    
-    
-    
+
+
+        case 1{
+            printf("6");
+            break;
+        }
+
     }
-    
 
 
 
 
 
-    return;
+    return 5;
 }

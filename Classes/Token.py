@@ -116,6 +116,8 @@ KEYWORDS = [
     "__mul4",
     "return",
     "typedef",
+    "switch",
+    "case",
 
     "extern",
     "cextern",

@@ -214,13 +214,6 @@ class PreProcessor:
         throw(FileNotFound(self.current_token))
 
 
-    def createMacro(self):
-        self.delmov()
-        self.checkToks([T_INT])
-        args = self.current_token.value
-
-        
-
 
     # main function
 
@@ -249,8 +242,7 @@ class PreProcessor:
                 elif(self.current_token.value == "link"):
                     self.addobject()
 
-                elif(self.current_token.value == "macro"):
-                    self.createMacro()
+
 
             elif(self.current_token.tok == T_ID):
                 self.checkDefn()

@@ -210,7 +210,7 @@ total_labelCounter = -1
 def getLogicLabel(inf):
     global total_labelCounter
     total_labelCounter += 1
-    return f"_L{inf}_{hex(total_labelCounter)}"
+    return f"_L{inf}_{hex(total_labelCounter)}" if config.DO_DEBUG else f".L{hex(total_labelCounter)}"
 
 
 def shiftInt(a, b, op, signed):
