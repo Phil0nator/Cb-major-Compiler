@@ -43,7 +43,7 @@ def throw(error):
 
 
 def warn(warning):
-    print(warning)
+    print(warning) if not config.__nowarn__ else None
 
 
 class FileNotFound(Error):
@@ -242,3 +242,32 @@ class ExpectedLValue(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Expected Rightside Expression: "
+
+class RegsiterStructure(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Cannot create structure in register: "
+
+
+
+
+
+
+class Warning:
+    def __init__(self, msg, tok):
+        self.msg = msg
+        self.tok = tok
+
+    def __repr__(self):
+
+        start = f"{Style.BRIGHT}{Fore.MAGENTA}Warning!:{Style.RESET_ALL}"
+
+        locline = f"{Style.BRIGHT} {self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+
+        return f"{start}{self.msg}{locline}"
+
+
+class RegisterDeclWarning(Warning):
+    def __init__(self, tok):
+        self.tok = tok
+        self.msg = "Too many register declarations at: "

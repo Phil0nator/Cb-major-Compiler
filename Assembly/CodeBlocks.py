@@ -152,8 +152,9 @@ def valueOf(x, dflt=False, exactSize=False):
             if(x.isStackarr):
                 offset += x.stackarrsize
             if(not exactSize):
-                return f"QWORD[rbp-{offset}]"
-            return f"{psizeoft(x.t)}[rbp-{offset}]"
+                return f"QWORD[rbp-{offset}]" if x.register is None else x.register
+            return f"{psizeoft(x.t)}[rbp-{offset}]" if x.register is None else setSize(
+                x.register, x.t.csize())
     elif (isinstance(x, int)):
         return (x)
 
@@ -195,7 +196,7 @@ def loadToReg(reg, value):
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
-
+# only for parameter loading
 def movRegToVar(od, reg):
     if("xmm" not in reg):
         return "mov [rbp-%s], %s" % ((od), reg)

@@ -49,6 +49,10 @@ parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
 parser.add_argument("-l", "--link", action="append", help="Link object files")
 
+parser.add_argument("-nw", "--nowarn", action="store_true", help="Suppress warnings",default=False)
+
+
+
 
 args = parser.parse_args()
 __fileinput__ = args.input
@@ -61,8 +65,7 @@ __profile__ = args.profile
 __oplevel__ = 1
 __executable__ = not args.object
 __linkables__ = args.link if args.link is not None else []
-
-
+__nowarn__ = args.nowarn
 
 __macros__ = []
 __macrotext__ = ""
@@ -76,8 +79,6 @@ if(args.optimize2):
 elif(args.optimize3):
     __oplevel__ = 3
 
-if(__oplevel__ > 1):
-    print(f"{Style.BRIGHT}{Fore.RED}Warning!{Style.RESET_ALL}: Oplvl != 0 ")
 GlobalCompiler = None
 
 compilepath = (sys.path[0])

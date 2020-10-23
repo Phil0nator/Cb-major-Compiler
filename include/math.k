@@ -146,8 +146,8 @@ global double abs(double x){
 
   __asm{"
   movsd xmm1, xmm0
-  mov rax, -1
-  cvtsi2sd xmm2, rax
+  mov rax, 1
+  movq xmm2, rax
   xorpd xmm1, xmm2
   andpd xmm0, xmm1
   "}

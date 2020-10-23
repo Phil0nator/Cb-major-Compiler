@@ -91,9 +91,6 @@ class Peephole:
                 lines[i] = Instruction("xor", [dest, dest])
                 optims += 1
 
-
-
-
             prev = (op, dest, source, flags)
             i += 1
             pi = i - 1

@@ -52,7 +52,9 @@ function int toStr(double val, char* buffer, int multiplier){
     int integral = val;
     int l = toStr(integral, buffer, 1);
     buffer+=l;
-    val = (abs(val)-integral)*multiplier;
+    val = abs(val);
+    val -= integral;
+    val *= multiplier;
     @buffer = '.';
     buffer+=1;
     l += toStr(round(val), buffer, 0);

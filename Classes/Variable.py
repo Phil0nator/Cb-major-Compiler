@@ -27,6 +27,7 @@ class Variable:
         # if it's a stack based array, what are the dimentions
         self.stackdims = isStackarr
         self.stacksizes = []            # ^ sizes
+        self.register = None            # register declaration
 
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and

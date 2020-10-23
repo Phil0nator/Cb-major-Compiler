@@ -213,8 +213,6 @@ class PreProcessor:
 
         throw(FileNotFound(self.current_token))
 
-
-
     # main function
 
     def process(self):
@@ -241,8 +239,6 @@ class PreProcessor:
 
                 elif(self.current_token.value == "link"):
                     self.addobject()
-
-
 
             elif(self.current_token.tok == T_ID):
                 self.checkDefn()

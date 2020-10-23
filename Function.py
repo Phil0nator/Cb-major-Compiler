@@ -74,10 +74,13 @@ class Function:
 
         self.destructor_text = ""               # automatically called destructors
 
-
-        self.suffix = ""                        # used for read-only values generated during compiletime that can be stored in .text 
+        # used for read-only values generated during compiletime that can be
+        # stored in .text
+        self.suffix = ""
 
         self.peephole = Peephole()              # optimizer
+
+        self.regdeclremain = 2                  # remaining available register declarations
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -503,18 +506,14 @@ class Function:
 
         self.checkTok(T_CLSSCOPE)
 
-
-
-
-
     def buildSwitch(self):
         self.advance()
         o = VOID.copy()
 
         # determine datatype
         retrace = self.ctidx
-        voider = self.evaluateRightsideExpression("AMB", o)        
-        self.ctidx = retrace-1
+        voider = self.evaluateRightsideExpression("AMB", o)
+        self.ctidx = retrace - 1
         self.advance()
 
         # create label marking end of structure
@@ -524,10 +523,10 @@ class Function:
 
         # evaluate the lvalue to compare
         cmpvalue = ralloc(o.isflt())
-        loadinstr = self.evaluateRightsideExpression(EC.ExpressionComponent(cmpvalue, o,token=self.current_token))
+        loadinstr = self.evaluateRightsideExpression(
+            EC.ExpressionComponent(cmpvalue, o, token=self.current_token))
         # ensure register hit
         reralloc(cmpvalue)
-
 
         # mark position for topcode
         topmarker = f"##SWITCHTOP##{len(self.asm)}"
@@ -542,19 +541,18 @@ class Function:
             # case
             if(self.current_token.tok == T_KEYWORD and self.current_token.value == "case"):
                 self.advance()
-                
+
                 # evaluate constexpr
                 tkstart = self.ctidx
                 while self.current_token.tok != T_OPENSCOPE:
                     self.advance()
                 tkend = self.ctidx
 
-                rval = determineConstexpr(0, self.tokens[tkstart:tkend],self)
+                rval = determineConstexpr(0, self.tokens[tkstart:tkend], self)
 
                 # non-constexpr
                 if(not isinstance(rval.accessor, int)):
                     throw(ExpectedToken(self.tokens[tkstart], "constexpr"))
-                
 
                 # fill logic table with (rvalue, jmp label)
                 l = getLogicLabel("SWITCHCASE")
@@ -563,13 +561,7 @@ class Function:
                 self.beginRecursiveCompile()
                 self.advance()
 
-                logictable.append((rval.accessor,l))
-
-
-
-
-
-
+                logictable.append((rval.accessor, l))
 
             else:
                 throw(UnexpectedToken(self.current_token))
@@ -579,7 +571,7 @@ class Function:
 
         # make comparisons
         for logic in logictable:
-            topinstr+=f"cmp {cmpvalue}, {logic[0]}\nje {logic[1]}\n"
+            topinstr += f"cmp {cmpvalue}, {logic[0]}\nje {logic[1]}\n"
 
         # else: jmp to end
         topinstr += f"jmp {endlabel}\n"
@@ -589,7 +581,6 @@ class Function:
             checker = Peephole()
             checker.addline(topinstr)
             topinstr = checker.get()
-
 
         # fill in new instructions
         self.asm = self.asm.replace(topmarker, topinstr)
@@ -619,6 +610,19 @@ class Function:
                 throw(InvalidSignSpecifier(s))
             v.signed = False
             v.t.signed = False
+
+        elif(word == "register"):
+
+            if(self.regdeclremain == 0):
+                warn(RegisterDeclWarning(self.current_token))
+
+            s = self.current_token
+            self.advance()
+            self.buildDeclaration(register=True)
+            if(self.regdeclremain == 0):
+                return
+
+            self.regdeclremain -= 1
 
         elif(word == "if"):
             self.buildIfStatement()
@@ -850,7 +854,6 @@ class Function:
         if(otyperef is not None):
             otyperef.load(ot)
 
-
         return instructions
 
     # evaluate the destination for a rightside expression.
@@ -889,9 +892,12 @@ class Function:
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
-    def buildDeclaration(self):                     # declare new var
+    def buildDeclaration(self, register=False):                     # declare new var
 
         t = self.checkForType()
+
+        if(not isIntrinsic(t.name) and register):
+            throw(RegsiterStructure(self.current_token))
 
         name = self.checkForId()
 
@@ -909,6 +915,9 @@ class Function:
         # which is set by self.addVariable
         var = self.variables[-1]
         var.isptr = t.ptrdepth > 0
+        
+        # set the variable's register if one is given
+        var.register = ralloc(t.isflt()) if register!=False else None
 
         # if the variable is a stack-based structure,
         #   add its member variables too.
@@ -1133,18 +1142,18 @@ class Function:
 
         self.beginRecursiveCompile()      # body
 
-
-
         # fill in allocator with real value
         self.asm = self.asm.replace(
             "/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
-
-
 
         # self.addline(self.destructor_text)
         self.createClosing()              # return, destructors, stack frame closing
 
         self.asm += self.suffix           # readonly memory
+
+        if self.regdeclremain != 2:
+            for v in self.variables:
+                rfree(v.register)
 
     def __repr__(self):     # pretty print
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"

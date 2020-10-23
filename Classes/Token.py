@@ -118,6 +118,7 @@ KEYWORDS = [
     "typedef",
     "switch",
     "case",
+    "register",
 
     "extern",
     "cextern",

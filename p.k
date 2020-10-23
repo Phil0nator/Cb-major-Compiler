@@ -20,14 +20,19 @@ function bool isPrime(unsigned int x){
 }
 
 
+
 function int main(int argc, char** argv){
+
+    register int a = 26;
+
+    register float b = 5.335745;
 
     switch( argc ){
 
 
 
         case 1{
-            printf("6");
+            printf("%d\n",b);
             break;
         }
 

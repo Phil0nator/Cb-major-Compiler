@@ -296,12 +296,14 @@ def ralloc(flt, size=8):
                     out = small_version[out]
                 return out
 
+
 def reralloc(r):
 
     if("xmm" in r):
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = True
     else:
         norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = True
+
 
 def rfree(r):
     if(isinstance(r, Variable)):

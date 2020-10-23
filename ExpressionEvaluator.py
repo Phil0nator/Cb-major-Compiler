@@ -401,6 +401,9 @@ class RightSideEvaluator(ExpressionEvaluator):
 
         elif(isinstance(a.accessor, Variable)):
 
+            if(a.accessor.register is not None):
+                throw(AddressOfConstant(a.token))
+
             result = ralloc(False)
             if(a.accessor.isStackarr or a.accessor.t.members is not None):
                 instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
@@ -874,6 +877,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
         elif(isinstance(a.accessor, Variable)):
 
+            if(a.accessor.register is not None):
+                throw(AddressOfConstant(a.token))
             result = ralloc(False)
             if(a.accessor.isStackarr):
                 instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
