@@ -78,7 +78,7 @@ class Peephole:
 
             # excessive mov statements
             if (prev[0] in ["mov", "movq"] and op in ["mov", "movq"]):
-                if(prev[1] == source and "[" not in prev[2] and not isdigit(ord(prev[2][0]))):
+                if(prev[1] == source and ("[" in prev[2]) ^ ("[" in dest) and not isdigit(ord(prev[2][0]))):
 
                     lines[i] = None
                     lines[pi] = Instruction(

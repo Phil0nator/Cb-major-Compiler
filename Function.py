@@ -570,6 +570,11 @@ class Function:
 
         topinstr += f"jmp {endlabel}\n"
 
+        if(config.__oplevel__ > 1):
+            checker = Peephole()
+            checker.addline(topinstr)
+            topinstr = checker.get()
+
         self.asm = self.asm.replace(topmarker, topinstr)
 
         self.addline(f"{endlabel}:")
