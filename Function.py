@@ -510,31 +510,40 @@ class Function:
     def buildSwitch(self):
         self.advance()
         o = VOID.copy()
+
+        # determine datatype
         retrace = self.ctidx
         voider = self.evaluateRightsideExpression("AMB", o)        
         self.ctidx = retrace-1
         self.advance()
 
+        # create label marking end of structure
         endlabel = getLogicLabel("SWITCHEND")
 
         self.breaks.append(endlabel)
 
+        # evaluate the lvalue to compare
         cmpvalue = ralloc(o.isflt())
         loadinstr = self.evaluateRightsideExpression(EC.ExpressionComponent(cmpvalue, o,token=self.current_token))
-
+        # ensure register hit
         reralloc(cmpvalue)
 
+
+        # mark position for topcode
         topmarker = f"##SWITCHTOP##{len(self.asm)}"
         self.addline(topmarker)
         logictable = []
 
         self.checkTok(T_OPENSCOPE)
 
+        # body of switch
         while self.current_token.tok != T_CLSSCOPE:
 
-            
+            # case
             if(self.current_token.tok == T_KEYWORD and self.current_token.value == "case"):
                 self.advance()
+                
+                # evaluate constexpr
                 tkstart = self.ctidx
                 while self.current_token.tok != T_OPENSCOPE:
                     self.advance()
@@ -542,9 +551,12 @@ class Function:
 
                 rval = determineConstexpr(0, self.tokens[tkstart:tkend],self)
 
+                # non-constexpr
                 if(not isinstance(rval.accessor, int)):
                     throw(ExpectedToken(self.tokens[tkstart], "constexpr"))
                 
+
+                # fill logic table with (rvalue, jmp label)
                 l = getLogicLabel("SWITCHCASE")
                 self.addline(f"{l}:")
                 self.checkTok(T_OPENSCOPE)
@@ -562,24 +574,31 @@ class Function:
             else:
                 throw(UnexpectedToken(self.current_token))
 
-
+        # first load lvalue
         topinstr = loadinstr
 
+        # make comparisons
         for logic in logictable:
             topinstr+=f"cmp {cmpvalue}, {logic[0]}\nje {logic[1]}\n"
 
+        # else: jmp to end
         topinstr += f"jmp {endlabel}\n"
 
+        # expensive optimizations
         if(config.__oplevel__ > 1):
             checker = Peephole()
             checker.addline(topinstr)
             topinstr = checker.get()
 
+
+        # fill in new instructions
         self.asm = self.asm.replace(topmarker, topinstr)
 
         self.addline(f"{endlabel}:")
         self.advance()
         self.breaks.pop()
+
+        rfree(cmpvalue)
 
     # build a statement that starts with a keyword
 
@@ -831,7 +850,6 @@ class Function:
         if(otyperef is not None):
             otyperef.load(ot)
 
-        rfreeAll()
 
         return instructions
 

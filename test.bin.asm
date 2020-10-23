@@ -1515,21 +1515,21 @@ mov r11, rdx
 mov r12, r11
 and r13, 0xff
 mov r13, r12
-mov r12, 48
-add r13, r12
+mov r11, 48
+add r13, r11
 mov rbx, r13
 mov byte[r10], bl
 mov rbx, 10
-mov r10, QWORD[rbp-8]
+mov r11, QWORD[rbp-8]
 xor rdx, rdx
-mov rax,r10
+mov rax,r11
 idiv rbx
 mov QWORD[rbp-8], rax
 .L0xa:
 mov rbx, 1
-mov r10, QWORD[rbp-48]
-add r10, rbx
-mov QWORD[rbp-48], r10
+mov r11, QWORD[rbp-48]
+add r11, rbx
+mov QWORD[rbp-48], r11
 .L0x9:
 mov r10, QWORD[rbp-40]
 mov rbx, QWORD[rbp-48]
@@ -1570,18 +1570,19 @@ mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
-movsd xmm7, QWORD[rbp-8]
-movsd xmm0, xmm7
+movsd xmm8, QWORD[rbp-8]
+movsd xmm0, xmm8
 mov rax, 1
 call _double_abs_pdouble
 movq rax, xmm0
-movq xmm7, rax
+movq xmm8, rax
 mov rbx, QWORD[rbp-32]
-cvtsi2sd xmm8, rbx
-subsd xmm7, xmm8
+cvtsi2sd xmm9, rbx
+subsd xmm8, xmm9
 mov rbx, QWORD[rbp-24]
-cvtsi2sd xmm8, rbx
-mulsd xmm7, xmm8
+cvtsi2sd xmm9, rbx
+mulsd xmm8, xmm9
+movsd xmm7, xmm8
 movsd QWORD[rbp-8], xmm7
 mov r10, QWORD[rbp-16]
 mov rbx, QWORD[rbp-16]
@@ -1598,16 +1599,16 @@ mov rax, 1
 call _int_round_pdouble
 mov rdi, rax
 mov rsi, QWORD[rbp-16]
-mov rbx, 0
-mov dl, bl
+mov r10, 0
+mov dl, r10b
 and rdx, 0xff
 mov rax, 0
 call _int_toStr_pintchar.bool
 push rax
 pop rbx
-mov r10, QWORD[rbp-40]
-add r10, rbx
-mov QWORD[rbp-40], r10
+mov r11, QWORD[rbp-40]
+add r11, rbx
+mov QWORD[rbp-40], r11
 mov rbx, QWORD[rbp-40]
 dec rbx
 mov rax, rbx
@@ -1872,9 +1873,9 @@ jmp .L0x22
 .L0x16:
 .L0x14:
 mov rbx, 1
-mov r10, QWORD[rbp-32]
-add r10, rbx
-mov QWORD[rbp-32], r10
+mov r11, QWORD[rbp-32]
+add r11, rbx
+mov QWORD[rbp-32], r11
 .L0x12:
 mov rbx, 1
 mov r10, QWORD[rbp-16]
@@ -3012,10 +3013,10 @@ mov rbx, 0
 shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu ymm0, [rbx]
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-16]
-vmovdqu ymm1, [rbx]
+mov r10, 0
+shl r10, 3
+add r10, [rbp-16]
+vmovdqu ymm1, [r10]
 vaddpd ymm0, ymm1, ymm0
 mov rbx, 0
 shl rbx, 3
@@ -3034,10 +3035,10 @@ mov rbx, 0
 shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu ymm0, [rbx]
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-16]
-vmovdqu ymm1, [rbx]
+mov r10, 0
+shl r10, 3
+add r10, [rbp-16]
+vmovdqu ymm1, [r10]
 vsubpd ymm0, ymm1, ymm0
 mov rbx, 0
 shl rbx, 3
@@ -3056,10 +3057,10 @@ mov rbx, 0
 shl rbx, 3
 add rbx, [rbp-8]
 vmovdqu ymm0, [rbx]
-mov rbx, 0
-shl rbx, 3
-add rbx, [rbp-16]
-vmovdqu ymm1, [rbx]
+mov r10, 0
+shl r10, 3
+add r10, [rbp-16]
+vmovdqu ymm1, [r10]
 vmulpd ymm0, ymm1, ymm0
 mov rbx, 0
 shl rbx, 3
@@ -3123,9 +3124,9 @@ jmp .L0x55
 .L0x55:
 .L0x52:
 mov rbx, 2
-mov r10, QWORD[rbp-24]
-add r10, rbx
-mov QWORD[rbp-24], r10
+mov r11, QWORD[rbp-24]
+add r11, rbx
+mov QWORD[rbp-24], r11
 .L0x51:
 mov r10, QWORD[rbp-16]
 mov rbx, QWORD[rbp-24]
@@ -3154,8 +3155,8 @@ cmp rbx, 1
 je .L0x57
 jmp .L0x56
 .L0x57:
-mov rbx, STRING_CONSTANT_3
-mov rdi, rbx
+mov r10, STRING_CONSTANT_3
+mov rdi, r10
 xor rax, rax
 call _void_printf_pchar.
 jmp .L0x56

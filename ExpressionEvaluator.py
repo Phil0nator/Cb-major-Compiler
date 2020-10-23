@@ -491,6 +491,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             instr += loadToReg(aval, a.accessor)
             instr += cst
             rfree(aval)
+            rfree(a.accessor)
             return instr, o, EC.ExpressionComponent(
                 result, t.copy(), token=a.token)
         else:
@@ -935,6 +936,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr += loadToReg(aval, a.accessor)
             instr += cst
             rfree(aval)
+            rfree(a.accessor)
             appendee = EC.ExpressionComponent(result, t.copy(), token=a.token)
         else:
             rfree(aval)
