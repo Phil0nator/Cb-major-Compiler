@@ -23,3 +23,18 @@ optional arguments:
   -l LINK, --link LINK  Link object files
 ```
 
+## Hello World
+
+The following is a basic hello world program to get started.
+
+```C
+#include "std.k"
+
+function int main(int argc, char** argv){
+  
+  printf("Hello World!");
+
+  return 0;
+}
+
+```
