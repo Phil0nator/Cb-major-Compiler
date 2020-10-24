@@ -102,11 +102,7 @@ global double pow(double base, int exp){
   "}
 
 }
-global double pow(double base, double exponent){
 
-  
-
-}
 
 
 global int round(double x){

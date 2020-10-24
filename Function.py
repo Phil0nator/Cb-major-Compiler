@@ -87,6 +87,11 @@ class Function:
         # ExpressionComponents to keep track of register declarations
         self.regdecls = []
 
+        # monitoring:
+
+        self.hasReturned = False
+        self.recursive_depth = 0
+
     def advance(self):                              # advance token
         self.ctidx += 1
         self.current_token = self.tokens[self.ctidx]
@@ -135,7 +140,7 @@ class Function:
 
     def addline(self, l):                           # add a line of assembly to raw
         # self.asm+=l+"\n"
-        if(config.__oplevel__ >1):
+        if(config.__oplevel__ > 1):
             self.peephole.addline(l)
             self.asm = f"{self.asm}{self.peephole.get()}\n"
             self.peephole.flush()
@@ -248,6 +253,8 @@ class Function:
             self.addline(instr)
         self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]]))
         self.checkSemi()
+        if self.recursive_depth == 1:
+            self.hasReturned = True
 
     def buildIfStatement(self):
         self.advance()
@@ -512,6 +519,8 @@ class Function:
         self.advance()
 
         self.checkTok(T_CLSSCOPE)
+        if self.recursive_depth == 1:
+            self.hasReturned = True
 
     def buildSwitch(self):
         self.advance()
@@ -614,7 +623,7 @@ class Function:
             self.regdecls.append(
                 EC.ExpressionComponent(
                     v.register, v.t, token=s))
-            
+
             if(v.t.isflt()):
                 self.regdeclremain_sse -= 1
             else:
@@ -680,17 +689,20 @@ class Function:
             self.advance()
             vname = self.checkTok(T_ID)
             v = self.getVariable(vname)
-            if(v == None): throw(UnkownIdentifier(self.tokens[self.ctidx-1]))
-            if(v.glob): throw(GlobalDeletion(self.tokens[self.ctidx-2]))
-            if(v.register is None): throw(NonRegisterDeletion(self.tokens[self.ctidx-2]))
+            if(v is None):
+                throw(UnkownIdentifier(self.tokens[self.ctidx - 1]))
+            if(v.glob):
+                throw(GlobalDeletion(self.tokens[self.ctidx - 2]))
+            if(v.register is None):
+                throw(NonRegisterDeletion(self.tokens[self.ctidx - 2]))
 
             self.variables.remove(v)
             rfree(v.register)
 
             if("xmm" in v.register):
-                self.regdeclremain_sse-=1
+                self.regdeclremain_sse -= 1
             else:
-                self.regdeclremain_norm-=1
+                self.regdeclremain_norm -= 1
             self.advance()
 
         else:
@@ -705,6 +717,7 @@ class Function:
         return out
     # restore all register declarations after function call
     # to preserve their state.
+
     def restoreregs(self):
         out = ""
         for r in reversed(self.regdecls):
@@ -763,7 +776,6 @@ class Function:
         normused = 0
 
         instructions.addline(self.pushregs())
-
 
         # for each parameter
         for i in range(pcount):
@@ -956,7 +968,6 @@ class Function:
             self.buildRegdecl()
             return
 
-
         t = self.checkForType()
 
         if(not isIntrinsic(t.name) and register):
@@ -1102,8 +1113,9 @@ class Function:
 
         # check for early eol before rightside
         if(self.current_token.tok not in SETTERS):
-            
-            if(self.current_token.tok == T_ENDL): self.advance()
+
+            if(self.current_token.tok == T_ENDL):
+                self.advance()
             self.addline(inst)
             rfree(dest.accessor)
             return
@@ -1179,6 +1191,7 @@ class Function:
 
     def beginRecursiveCompile(self):            # recursive main
         opens = 1  # maintain track of open and close scopes ("{, }")
+        self.recursive_depth += 1
         while opens > 0 and self.current_token.tok != T_EOF:
 
             if(self.current_token.tok == T_CLSSCOPE):
@@ -1200,6 +1213,8 @@ class Function:
                 throw(UnexpectedToken(self.current_token))
                 self.advance()
 
+        self.recursive_depth -= 1
+
     def compile(self):      # main
         if(self.current_token is None):
             return
@@ -1213,18 +1228,14 @@ class Function:
         # fill in allocator with real value
         self.asm = self.asm.replace(
             "/*ALLOCATOR*/", function_allocator(self.stackCounter))
-        
-
 
         # self.addline(self.destructor_text)
         self.createClosing()              # return, destructors, stack frame closing
 
         self.asm += self.suffix           # readonly memory
 
-        
-
-
-
+        if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned):
+            warn(NoReturnStatement(self.tokens[0], self))
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:

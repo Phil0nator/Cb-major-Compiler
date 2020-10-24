@@ -36,6 +36,6 @@ class Variable:
 
     def __repr__(self):  # pretty print
         if(self.isStackarr):
-            return f"[Variable: {self.t} {self.name}[{self.stackarrsize}] @ {self.offset} -> {self.offset+self.stackarrsize}]]"
+            return f"[{self.t} {self.name}[{self.stackarrsize}] @ {self.offset} -> {self.offset+self.stackarrsize}]]"
         else:
-            return f"[ Variable: {self.t} {self.name} @ {(self.offset)}]"
+            return f"[{self.t} {self.name} @ {(self.offset)}]" if self.register is None else f"[{self.t} {self.name} @ {self.register}]"

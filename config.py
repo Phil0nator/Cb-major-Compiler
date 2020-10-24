@@ -82,6 +82,7 @@ if(args.optimize2):
 elif(args.optimize3):
     __oplevel__ = 3
 
+
 GlobalCompiler = None
 
 compilepath = (sys.path[0])

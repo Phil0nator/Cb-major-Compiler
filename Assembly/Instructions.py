@@ -64,7 +64,7 @@ class Peephole:
                 continue
 
             op, dest, source, flags = self.parseLine(l)
-            
+
             # redundant push and pop instructions
             if(prev[0] == "push" and op == "pop"):
 

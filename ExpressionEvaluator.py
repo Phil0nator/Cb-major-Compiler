@@ -119,14 +119,14 @@ class ExpressionEvaluator:
         newinstr = ""
         newinstr += bringdown_memloc(a)
         if(a.isRegister()):
-            areg =a.accessor
+            areg = a.accessor
         else:
             areg = ralloc(False)
             newinstr += loadToReg(areg, a.accessor)
 
         cmd = "inc" if op == '+' else "dec"
 
-        newinstr += Instruction(cmd, [setSize(areg,a.type.csize())])
+        newinstr += Instruction(cmd, [setSize(areg, a.type.csize())])
         a.accessor = areg
         apendee = a
         newt = a.type.copy()
@@ -145,9 +145,9 @@ class ExpressionEvaluator:
 
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
         cmd = "add" if op == "+" else "sub"
-        newinstr+=f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
-        return newinstr, a.type.copy(), EC.ExpressionComponent(areg, a.type.copy(),token=a.token)
-
+        newinstr += f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
+        return newinstr, a.type.copy(), EC.ExpressionComponent(
+            areg, a.type.copy(), token=a.token)
 
     def check_semiconstexpr_optimization(self, a, b, op):
         newinstr = None
@@ -192,7 +192,7 @@ class ExpressionEvaluator:
 
         # can be optimized through reduced register loading
         elif(op in ["+", "-"]):
-            newinstr, newt, apendee = self.noloadOp(a,b,op)
+            newinstr, newt, apendee = self.noloadOp(a, b, op)
 
         # comparisons with zero can be optimized through the
         # test instruction, followed by the 'z' or 'nz' conditional

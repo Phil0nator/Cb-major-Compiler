@@ -249,14 +249,14 @@ def shiftInt(a, b, op, signed):
 
 
 def doIntOperation(areg, breg, op, signed, size=8):
-    
+
     if(op == "+"):
         return f"add {areg}, {breg}\n"
     elif(op == "-"):
         return f"sub {areg}, {breg}\n"
     elif(op == "*" and signed):
 
-        return f"imul {areg}, {breg}\n"
+        return f"imul {areg}, {breg}\n" if size != 1 else f"imul {setSize(areg, 2)}, {setSize(breg,2)}\n"
     elif(op == "*"):
         return f"mov {rax},{areg}\nmul {breg}\nmov {areg}, {rax}\n"
     elif(op == "/"):
@@ -361,8 +361,8 @@ def doOperation(t, areg, breg, op, signed=False):
         return doFloatOperation(areg, breg, op)
     elif("xmm" not in areg and "xmm" not in breg):
 
-
-        return doIntOperation(setSize(areg, t.csize()), setSize(breg, t.csize()), op, signed, size=t.size(0))
+        return doIntOperation(setSize(areg, t.csize()), setSize(
+            breg, t.csize()), op, signed, size=t.size(0))
     else:
         print("fatal type mismatch: unkown.")
         exit(1)

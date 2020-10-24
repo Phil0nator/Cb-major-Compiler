@@ -35,6 +35,7 @@ function char getchar(){
 
 function int getHex(char* msg){
     /*TODO*/
+    return 0;
 }
 function void getString(char* buffer, int maxlen, char* msg){
     

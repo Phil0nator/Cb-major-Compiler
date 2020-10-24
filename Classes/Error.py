@@ -249,10 +249,12 @@ class RegsiterStructure(Error):
         self.tok = tok
         self.message = f"Cannot create structure in register: "
 
+
 class GlobalDeletion(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Cannot delete global variable: "
+
 
 class NonRegisterDeletion(Error):
     def __init__(self, tok):
@@ -281,6 +283,6 @@ class RegisterDeclWarning(Warning):
 
 
 class NoReturnStatement(Warning):
-    def __init__(self, tok):
+    def __init__(self, tok, fn):
         self.tok = tok
-        self.msg = "No return statement in non-void function: "
+        self.msg = f"No return statement in non-void function '{fn.returntype} {fn.name} {fn.parameters}' : "

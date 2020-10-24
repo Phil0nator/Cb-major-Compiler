@@ -36,9 +36,6 @@ struct timezone_t{
 #define ITIMER_PROF     2
 
 
-function int adjtime(timeval_t *t1, timeval_t t2){
-
-}
 function int getitimer(int which, itimerval_t* value){
     __asm{
         "
