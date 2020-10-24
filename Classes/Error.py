@@ -278,3 +278,9 @@ class RegisterDeclWarning(Warning):
     def __init__(self, tok):
         self.tok = tok
         self.msg = "Too many register declarations at: "
+
+
+class NoReturnStatement(Warning):
+    def __init__(self, tok):
+        self.tok = tok
+        self.msg = "No return statement in non-void function: "

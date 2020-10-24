@@ -36,11 +36,7 @@ def functionlabel(fn):
 
 def function_allocator(amt):
 
-    return """
-push rbp
-mov rbp, rsp
-sub rsp, %s
-""" % ((amt))
+    return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % ((amt))
 
 
 def zeroize(reg):

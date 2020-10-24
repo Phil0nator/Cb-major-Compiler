@@ -135,7 +135,7 @@ class Function:
 
     def addline(self, l):                           # add a line of assembly to raw
         # self.asm+=l+"\n"
-        if(config.__oplevel__ >= 2):
+        if(config.__oplevel__ >1):
             self.peephole.addline(l)
             self.asm = f"{self.asm}{self.peephole.get()}\n"
             self.peephole.flush()
@@ -1101,9 +1101,9 @@ class Function:
         inst += (insters)
 
         # check for early eol before rightside
-        if(self.current_token.tok == T_ENDL):
+        if(self.current_token.tok not in SETTERS):
             
-            self.advance()
+            if(self.current_token.tok == T_ENDL): self.advance()
             self.addline(inst)
             rfree(dest.accessor)
             return
@@ -1205,19 +1205,26 @@ class Function:
             return
         self.addline(functionlabel(self))  # label
         # stack allocator (size undetermined at this point)
-        self.addline("/*%%ALLOCATOR%%*/")
+        self.addline("/*ALLOCATOR*/")
         self.loadParameters()             # parameters
 
         self.beginRecursiveCompile()      # body
 
         # fill in allocator with real value
         self.asm = self.asm.replace(
-            "/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
+            "/*ALLOCATOR*/", function_allocator(self.stackCounter))
+        
+
 
         # self.addline(self.destructor_text)
         self.createClosing()              # return, destructors, stack frame closing
 
         self.asm += self.suffix           # readonly memory
+
+        
+
+
+
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:

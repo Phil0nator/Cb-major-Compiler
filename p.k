@@ -8,14 +8,15 @@ function int main(int argc, char** argv){
 
 
     
-    int a = 0;
+    for(register int i = 0; i < 255; i++){
 
-    a++;
+        for(register short j = 0; j < 255; j++){
 
-    char c = 'g';
+            printf("%i, %i     \r", i, j);
 
+        }
 
-    printf("%c\n%i\n", c, a);
+    }
 
 
     return 5;

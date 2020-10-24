@@ -778,19 +778,12 @@ class LeftSideEvaluator(ExpressionEvaluator):
         needload = True
         instr = ""
         instr += bringdown_memloc(a)
-        if(a.isRegister()):
-            areg = a.accessor
-            needload = False
-        else:
-            areg = ralloc(False)
-        if(needload):
-            instr += loadToReg(areg, a.accessor)
 
         cmd = "inc" if op == "++" else "dec"
 
-        instr += Instruction(cmd, [areg])
+        instr += Instruction(cmd, [valueOf(a.accessor, exactSize=True)])
         o = a.type.copy()
-        return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
+        return instr, o, a
 
     # Do an operation with a op b -> o:DType
 

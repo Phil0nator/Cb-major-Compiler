@@ -64,7 +64,7 @@ class Peephole:
                 continue
 
             op, dest, source, flags = self.parseLine(l)
-
+            
             # redundant push and pop instructions
             if(prev[0] == "push" and op == "pop"):
 
@@ -78,7 +78,7 @@ class Peephole:
 
             # excessive mov statements
             if (prev[0] in ["mov", "movq", "movsd"] and op == prev[0]):
-                if(prev[1] == source and ("[" in prev[2]) ^ ("[" in dest) and not isdigit(ord(prev[2][0]))):
+                if(prev[1] == source and not ("[" in prev[2]) and ("[" in dest) and not isdigit(ord(prev[2][0]))):
 
                     lines[i] = None
                     lines[pi] = Instruction(
