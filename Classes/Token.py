@@ -119,6 +119,7 @@ KEYWORDS = [
     "switch",
     "case",
     "register",
+    "del",
 
     "extern",
     "cextern",

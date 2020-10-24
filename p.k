@@ -6,10 +6,16 @@
 
 function int main(int argc, char** argv){
 
-    int a = 36;
+
+    
+    int a = 0;
+
+    a++;
+
+    char c = 'g';
 
 
-    printf("%i\n", a);
+    printf("%c\n%i\n", c, a);
 
 
     return 5;

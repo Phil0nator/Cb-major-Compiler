@@ -105,7 +105,9 @@ class Function:
     def checkTok(self, tok):                        # check current token for given token
         if(self.current_token.tok != tok):
             throw(ExpectedToken(self.current_token, tok))
+        out = self.current_token.value
         self.advance()
+        return out
 
     # get raw asm label used to denote the end of this function
     def getClosingLabel(self):
@@ -612,7 +614,6 @@ class Function:
             self.regdecls.append(
                 EC.ExpressionComponent(
                     v.register, v.t, token=s))
-            print(self.regdecls)
             
             if(v.t.isflt()):
                 self.regdeclremain_sse -= 1
@@ -629,6 +630,8 @@ class Function:
             self.buildASMBlock()
         elif(word == "return"):
             self.buildReturnStatement()
+
+        # wrapper for declaration with unsigned type
         elif(word == "unsigned"):
             s = self.current_token
             self.advance()
@@ -639,6 +642,7 @@ class Function:
             v.signed = False
             v.t.signed = False
 
+        # register declaration
         elif(word == "register"):
 
             self.buildRegdecl()
@@ -672,15 +676,35 @@ class Function:
         elif(word == "switch"):
             self.buildSwitch()
 
+        elif(word == "del"):
+            self.advance()
+            vname = self.checkTok(T_ID)
+            v = self.getVariable(vname)
+            if(v == None): throw(UnkownIdentifier(self.tokens[self.ctidx-1]))
+            if(v.glob): throw(GlobalDeletion(self.tokens[self.ctidx-2]))
+            if(v.register is None): throw(NonRegisterDeletion(self.tokens[self.ctidx-2]))
+
+            self.variables.remove(v)
+            rfree(v.register)
+
+            if("xmm" in v.register):
+                self.regdeclremain_sse-=1
+            else:
+                self.regdeclremain_norm-=1
+            self.advance()
+
         else:
             throw(UnexpectedToken(self.current_token))
 
+    # push all register declarations before function call
+    # to preserve their state.
     def pushregs(self):
         out = ""
         for r in self.regdecls:
             out += spush(r)
         return out
-
+    # restore all register declarations after function call
+    # to preserve their state.
     def restoreregs(self):
         out = ""
         for r in reversed(self.regdecls):
@@ -1078,7 +1102,11 @@ class Function:
 
         # check for early eol before rightside
         if(self.current_token.tok == T_ENDL):
-            throw(ExpectedLValue(self.current_token))
+            
+            self.advance()
+            self.addline(inst)
+            rfree(dest.accessor)
+            return
 
         setter = self.current_token
         self.advance()
@@ -1109,8 +1137,8 @@ class Function:
             else:
                 inst += (
                     doIntOperation(
-                        areg,
-                        value,
+                        setSize(areg, dest.type.csize()),
+                        setSize(value, dest.type.csize()),
                         op,
                         dest.type.signed))
 

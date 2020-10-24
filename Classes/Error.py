@@ -249,6 +249,16 @@ class RegsiterStructure(Error):
         self.tok = tok
         self.message = f"Cannot create structure in register: "
 
+class GlobalDeletion(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Cannot delete global variable: "
+
+class NonRegisterDeletion(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Could not delete non-register variable: "
+
 
 class Warning:
     def __init__(self, msg, tok):

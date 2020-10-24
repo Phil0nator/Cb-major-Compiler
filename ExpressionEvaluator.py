@@ -89,7 +89,7 @@ class ExpressionEvaluator:
                 areg = ralloc(False)
                 newinstr += loadToReg(areg, a.accessor)
             shiftdir = "<<" if op == "*" else ">>"
-            newinstr += shiftInt(valueOf(areg),
+            newinstr += shiftInt(setSize(areg, a.type.csize()),
                                  shiftmul(b.accessor),
                                  shiftdir,
                                  a.type.signed)
@@ -108,7 +108,7 @@ class ExpressionEvaluator:
             areg = ralloc(False)
             newinstr += loadToReg(areg, a.accessor)
 
-        newinstr += shiftInt(areg,
+        newinstr += shiftInt(setSize(areg, a.type.csize()),
                              b.accessor, op, a.type.signed)
         a.accessor = areg
         apendee = a
@@ -119,14 +119,14 @@ class ExpressionEvaluator:
         newinstr = ""
         newinstr += bringdown_memloc(a)
         if(a.isRegister()):
-            areg = a.accessor
+            areg =a.accessor
         else:
             areg = ralloc(False)
             newinstr += loadToReg(areg, a.accessor)
 
         cmd = "inc" if op == '+' else "dec"
 
-        newinstr += Instruction(cmd, [areg])
+        newinstr += Instruction(cmd, [setSize(areg,a.type.csize())])
         a.accessor = areg
         apendee = a
         newt = a.type.copy()
@@ -136,7 +136,7 @@ class ExpressionEvaluator:
 
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
         cmp = "z" if op == "==" else "nz"
-        newinstr += f"test {areg}, {areg}\nset{cmp} {setSize(areg, 1)}\n"
+        newinstr += f"test {setSize(areg, a.type.csize())}, {setSize(areg, a.type.csize())}\nset{cmp} {setSize(areg, 1)}\n"
 
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
@@ -145,7 +145,7 @@ class ExpressionEvaluator:
 
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
         cmd = "add" if op == "+" else "sub"
-        newinstr+=f"{cmd} {areg}, {b.accessor}\n"
+        newinstr+=f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
         return newinstr, a.type.copy(), EC.ExpressionComponent(areg, a.type.copy(),token=a.token)
 
 
