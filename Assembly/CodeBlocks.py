@@ -253,7 +253,7 @@ def shiftInt(a, b, op, signed):
 
 
 def doIntOperation(areg, breg, op, signed, size=8):
-
+    
     if(op == "+"):
         return f"add {areg}, {breg}\n"
     elif(op == "-"):
@@ -269,14 +269,14 @@ def doIntOperation(areg, breg, op, signed, size=8):
         else:
             asmop = "div"
 
-        return f"xor rdx, rdx\nmov {rax},{areg}\n{asmop} {breg}\nmov {areg}, {rax}\n"
+        return f"xor rdx, rdx\nmov {rax},{setSize(areg,8)}\n{asmop} {breg}\nmov {setSize(areg,8)}, {rax}\n"
     elif(op == "%"):
         if(signed):
             asmop = "idiv"
         else:
             asmop = "div"
 
-        out = f"xor rdx, rdx\nmov {rax}, {areg}\n{asmop} {breg}\nmov {areg}, {rdx}\n"
+        out = f"xor rdx, rdx\nmov {rax}, {setSize(areg,8)}\n{asmop} {breg}\nmov {setSize(areg,8)}, {rdx}\n"
         return out
     elif(op in [">>", "<<"]):
         return shiftInt(areg, breg, op, signed)
@@ -293,7 +293,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
 def cmpI(areg, breg, signed, op):
 
     comparator = getComparater(signed, op)
-    return f"\ncmp {areg}, {breg}\nset{comparator} {boolchar_version[areg]}\n"
+    return f"\ncmp {areg}, {breg}\nset{comparator} {setSize(areg, 1)}\n"
 
 
 def cmpF(areg, breg, op):
@@ -364,7 +364,9 @@ def doOperation(t, areg, breg, op, signed=False):
     if("xmm" in areg and "xmm" in breg):
         return doFloatOperation(areg, breg, op)
     elif("xmm" not in areg and "xmm" not in breg):
-        return doIntOperation(areg, breg, op, signed, size=t.size(0))
+
+
+        return doIntOperation(setSize(areg, t.csize()), setSize(breg, t.csize()), op, signed, size=t.size(0))
     else:
         print("fatal type mismatch: unkown.")
         exit(1)

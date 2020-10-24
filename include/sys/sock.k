@@ -9,8 +9,8 @@ typedef unsigned int32 in_addr;
 
 struct sockaddr_in
 {
-    small               sin_family; // e.g. AF_INET
-    unsigned small      sin_port;   // e.g. htons(3490)
+    int                 sin_family; // e.g. AF_INET
+    unsigned int        sin_port;   // e.g. htons(3490)
     in_addr             sin_addr;   //
     int                 sin_zero;   // 
 

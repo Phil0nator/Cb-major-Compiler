@@ -29,9 +29,9 @@ fileTemplate = "%s\n\n%s" % (io64, stub)
 
 # primitive types:
 
-INT = DType("int", 8, signed=True)
-SHORT = DType("short", 4, signed=True)
-SMALL = DType("small", 2, signed=True)
+SHORT = DType("long", 8, signed=True)
+INT = DType("int", 4, signed=True)
+SMALL = DType("short", 2, signed=True)
 CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
 VOID = DType("void", 8, signed=True)

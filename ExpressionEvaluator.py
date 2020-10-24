@@ -390,6 +390,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         return instr, o, EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
 
+    # evaluate bitwise not (~ operator)
     def evalANOT(self, a):
         needload = True
         instr = ""
@@ -405,6 +406,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         o = a.type.copy()
         return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
 
+    # take a reference of a variable
     def refrize(self, a):
         instr = ""
         if(a.isconstint()):
@@ -421,7 +423,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
-                instr += f"lea {result}, [rbp-{a.accessor.offset}]\n"
+                instr += f"lea {result}, [rbp-{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
