@@ -62,6 +62,11 @@ class DType:
         out.ptrdepth -= 1
         return out
 
+    def up(self):
+        out = self.copy()
+        out.ptrdepth+=1
+        return out
+
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
             return (self.name == other.name or config.GlobalCompiler.Tequals(

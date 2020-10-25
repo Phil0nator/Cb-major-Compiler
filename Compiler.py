@@ -87,7 +87,15 @@ class Compiler:
         return q in self.possible_members
 
     def getGlob(self, q):               # get global variable of name q
-        return next((g for g in self.globals if g.name == q), None)
+        out = next((g for g in self.globals if g.name == q), None)
+        if(out is not None):
+            return out
+        
+        fn = self.getFunction(q)
+        if(fn is None): return None
+
+        return self.getGlob(fn.getCallingLabel())
+
 
     def getFunction(self, q):           # get first function of name q
         return next((f for f in self.functions if f.name == q), None)
@@ -247,11 +255,13 @@ class Compiler:
             self.advance()
 
             f = Function(name, parameters, rettype, self, [])
-            self.globals.append(
-                Variable(
-                    f.returntype.copy(),
-                    f.name,
-                    glob=True))
+            self.globals.append(Variable(f.returntype.up(), f.getCallingLabel(), glob=True, isptr=True,mutable=False,signed=f.returntype.signed))
+
+            #self.globals.append(
+            #    Variable(
+            #        f.returntype.copy(),
+            #        f.name,
+            #        glob=True))
 
             self.functions.append(f)
 
@@ -277,7 +287,7 @@ class Compiler:
                      self.currentTokens[start:self.ctidx])
         self.functions.append(f)
         # add as a variable for fn pointers
-        self.globals.append(Variable(f.returntype.copy(), f.name, glob=True))
+        self.globals.append(Variable(f.returntype.up(), f.getCallingLabel(), glob=True, isptr=True,mutable=False,signed=f.returntype.signed))
 
     def buildStruct(self):                  # isolate and build a structure
         self.advance()
@@ -506,6 +516,8 @@ class Compiler:
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-2] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "cextern"):
                     self.advance()
@@ -514,6 +526,8 @@ class Compiler:
                     fn.extern = True
                     config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-2] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "__cdecl"):
                     self.advance()
@@ -522,6 +536,8 @@ class Compiler:
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-2] + "\n"
                     fn.extern = True
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "global"):
                     self.advance()
@@ -529,6 +545,8 @@ class Compiler:
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-2] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()

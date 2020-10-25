@@ -724,6 +724,11 @@ class Function:
             out += spop(r)
         return out
 
+
+    def buildAmbiguousFunctionCall(self, fid, types):
+        pass
+
+
     def buildFunctionCall(self):
 
         # TODO:
@@ -759,9 +764,15 @@ class Function:
         self.ctidx = start - 1
         self.advance()
         if(fn is None):
-            throw(UnkownFunction(fnstartt, fid, types))
-        pcount = len(fn.parameters)
-
+            pcount = len(types)
+            var = self.getVariable(fid)
+            if(var is None): throw(UnkownIdentifier(fnstartt))
+            params = [Variable(t,"parameter") for t in types]
+            fn = Function(fid, params, var.t, self.compiler, [])
+            varcall = True
+        else:
+            pcount = len(fn.parameters)
+            varcall = False
         # build actual parameter-loading instructions using exact datatypes
         sseused = 0
 
@@ -827,7 +838,7 @@ class Function:
 
         # actual 'call' instruction
 
-        instructions+=(fncall(fn))
+        instructions+=(fncall(fn)) if not varcall else (Instruction("call", [valueOf(var)]))
         instructions+=(self.restoreregs())
         return instructions, fn
 
@@ -1180,19 +1191,19 @@ class Function:
         if (self.compiler.isType(id)
                 and self.tokens[self.ctidx + 1].tok != T_OPENP):
             self.buildDeclaration()  # declaration
-        elif (self.getVariable(id) is not None):
+        else:
             # assignment or blank call
-
+            """ 
             if (self.compiler.getFunction(id) is not None):
                 # fn call
                 self.buildBlankfnCall()
 
-            else:
+            else: """
 
-                self.buildAssignment()
+            self.buildAssignment()
 
-        else:
-            throw(UnkownIdentifier(self.current_token))
+        #else:
+        # #   throw(UnkownIdentifier(self.current_token))
 
     def beginRecursiveCompile(self):            # recursive main
         opens = 1  # maintain track of open and close scopes ("{, }")
