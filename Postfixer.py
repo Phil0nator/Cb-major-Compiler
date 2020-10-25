@@ -1,7 +1,7 @@
 from Classes.Variable import *
 from Classes.Token import *
 from Classes.Error import *
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE, operatorISO, OPERATORS, PRIORITY, isIntrinsic
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SHORT, LONG, DOUBLE, operatorISO, OPERATORS, PRIORITY, isIntrinsic
 import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import valueOf
 

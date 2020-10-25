@@ -90,8 +90,10 @@ type_precedence = {
     "unsigned short": 5,
     "int": 6,
     "unsigned int": 10,
-    "double": 11,
-    "void": 7
+    "long": 11,
+    "unsigned long": 12,
+    "double": 13,
+    "void": 12
 
 
 }

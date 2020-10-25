@@ -4,7 +4,7 @@ from Classes.DType import *
 import Classes.ExpressionComponent as EC
 from Assembly.Registers import ralloc, rfree, rfreeAll
 from Classes.Variable import Variable
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE, operatorISO, typematch, canShiftmul
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, LONG, SHORT, DOUBLE, operatorISO, typematch, canShiftmul
 from Assembly.CodeBlocks import loadToReg, castABD, doOperation
 from Assembly.CodeBlocks import valueOf, shiftInt, maskset
 from Assembly.CodeBlocks import shiftmul, getComparater, boolmath

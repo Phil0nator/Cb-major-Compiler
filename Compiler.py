@@ -11,7 +11,7 @@ from Lexer import Lexer
 from Classes.Error import *
 import config
 
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, LONG, SHORT, DOUBLE
 
 from Assembly.Registers import sse_parameter_registers
 from Assembly.Registers import norm_scratch_registers

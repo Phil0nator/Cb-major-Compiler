@@ -26,7 +26,7 @@ from Assembly.AVX import avx_ralloc, avx_rfree, avx_correctSize
 from Assembly.AVX import avx_loadToReg, avx_dropToAddress, avx_doToReg
 import Assembly.AVX as AVX
 
-from globals import TsCompatible, INT, BOOL, CHAR, SHORT, SMALL, VOID, DOUBLE, isIntrinsic
+from globals import TsCompatible, INT, BOOL, CHAR, SHORT, LONG, VOID, DOUBLE, isIntrinsic
 
 from Classes.Constexpr import determineConstexpr
 

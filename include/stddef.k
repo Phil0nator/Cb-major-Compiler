@@ -28,7 +28,9 @@ typedef int clock_t; /* unit for system accounting */
 
 
 typedef char i8_t; /* 8 bit signed type */
-
+typedef short i16_t; /* 16 bit signed type */
+typedef long int64_t; /* 64 bit signed type */
+typedef unsigned long uint64_t; /* unsigned 64 bit type */
 
 /*
   * Default boolean values;

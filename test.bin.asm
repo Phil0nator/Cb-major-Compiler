@@ -1018,9 +1018,6 @@ FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_0: db `False`, 0
 STRING_CONSTANT_1: db `True`, 0
 STRING_CONSTANT_2: db `%s`, 0
-STRING_CONSTANT_3: db `This is a string`, 0
-STRING_CONSTANT_4: db `%i\n`, 0
-STRING_CONSTANT_5: db `%c\n`, 0
 nullptr: DQ 0
 null: DQ 0
 nullterm: DQ 0
@@ -3212,68 +3209,9 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 132
+sub rsp, 24
 mov [rbp-8], rdi
 mov [rbp-16], rsi
-mov QWORD[rbp-24], STRING_CONSTANT_3
-mov rbx, QWORD[rbp-24]
-mov QWORD[rbp-32], rbx
-mov rbx, QWORD[rbp-32]
-mov QWORD[rbp-40], rbx
-mov QWORD[rbp-124], 0
-jmp .L0x4f
-.L0x4e:
-mov r10, QWORD[rbp-124]
-lea rbx, [rbp-116]
-lea rbx, [rbx+r10*8]
-mov r10, QWORD[rbp-124]
-lea rbx, [rbp-116]
-lea rbx, [rbx+r10*8]
-mov r10, QWORD[rbp-124]
-mov qword[rbx], r10
-mov r10, QWORD[rbp-124]
-lea rbx, [rbp-68]
-lea rbx, [rbx+r10*4]
-mov r10, QWORD[rbp-124]
-lea rbx, [rbp-68]
-lea rbx, [rbx+r10*4]
-mov r12, QWORD[rbp-124]
-lea r11, [rbp-116]
-lea r11, [r11+r12*8]
-mov r11, qword[r11]
-mov r10, r11
-mov dword[rbx], r10d
-mov rbx, STRING_CONSTANT_4
-mov rdi, rbx
-mov r10, QWORD[rbp-124]
-lea rbx, [rbp-68]
-lea rbx, [rbx+r10*4]
-mov ebx, dword[rbx]
-and rbx, 0xffffffff
-mov rsi, rbx
-xor rax, rax
-call printf
-.L0x50:
-inc dword[rbp-124]
-.L0x4f:
-mov r10, 5
-mov rbx, QWORD[rbp-124]
-cmp ebx, r10d
-setl bl
-mov rax, rbx
-and al, 1
-jnz .L0x4e
-.L0x51:
-mov rbx, STRING_CONSTANT_5
-mov rdi, rbx
-mov r10, 1
-mov rbx, QWORD[rbp-40]
-lea rbx, [rbx+r10*1]
-mov bl, byte[rbx]
-and rbx, 0xff
-mov rsi, rbx
-xor rax, rax
-call printf
 mov rax, 5
 jmp __main__return
 __main__return:
