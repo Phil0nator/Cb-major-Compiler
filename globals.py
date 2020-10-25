@@ -175,7 +175,7 @@ def typematch(a, b):
 
         if(config.GlobalCompiler.Tequals(a.name, "void") or config.GlobalCompiler.Tequals(b.name, "void")):
             return True
-        if(a.__eq__(INT.copy()) and b.ptrdepth > 0):
+        if(a.__eq__(VOID.copy()) and b.ptrdepth > 0):
             return True
         if(a.__eq__(b)):
             return True

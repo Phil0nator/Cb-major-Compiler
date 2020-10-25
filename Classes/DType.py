@@ -106,7 +106,7 @@ def determinePrecedence(a, b, fn):
     if(type_precedence[a.name] > type_precedence[b.name] and a.ptrdepth == b.ptrdepth):
 
         return a, b
-    elif(a.ptrdepth > 0 and b.__eq__(DType("int", 8))) or (a.ptrdepth > 0 and b.__eq__(DType("int", 8, signed=False))):
+    elif(a.ptrdepth > 0 and b.__eq__(DType("void", 8, ptrdepth=1))) or (a.ptrdepth > 0 and b.__eq__(DType("void", 8, signed=False, ptrdepth=1))):
 
         return a, b
 
