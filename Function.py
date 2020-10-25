@@ -735,7 +735,7 @@ class Function:
         fnstartt = self.current_token
         # placeholder
         fn = None
-        instructions = Peephole()
+        instructions = ""
 
         self.advance()
         self.checkTok(T_OPENP)
@@ -775,7 +775,11 @@ class Function:
         sseused = 0
         normused = 0
 
-        instructions.addline(self.pushregs())
+        instructions+=(self.pushregs())
+
+
+        paraminst = ""
+
 
         # for each parameter
         for i in range(pcount):
@@ -783,7 +787,7 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                instructions.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(
+                inst=(self.evaluateRightsideExpression(EC.ExpressionComponent(
                     sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
                 )
                 sseused += 1
@@ -797,16 +801,17 @@ class Function:
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
-                instructions.addline(self.evaluateRightsideExpression(ec))
+                inst=f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
-                    instructions.addline(Instruction("mov", [setSize(norm_parameter_registers[normused],
-                                                                     fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
 
-                    instructions.addline(maskset(
-                        norm_parameter_registers[normused], fn.parameters[i].t.csize()))
+                    inst+=(Instruction("mov", [setSize(norm_parameter_registers[normused],
+                                                                     fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
+                    #instructions.addline(maskset(
+                    #    norm_parameter_registers[normused], fn.parameters[i].t.csize()))
                     rfree(result)
                 normused += 1
+            paraminst = f"{inst}{paraminst}"
 
             if(self.current_token.tok == ","):
                 self.advance()
@@ -815,16 +820,16 @@ class Function:
             # self.advance()
             pass
 
+        instructions+=paraminst
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
-
-        instructions.addline(Instruction("mov", [rax, ssevarsforrax]))
+        instructions+=(Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
 
-        instructions.addline(fncall(fn))
-        instructions.addline(self.restoreregs())
-        return instructions.get(), fn
+        instructions+=(fncall(fn))
+        instructions+=(self.restoreregs())
+        return instructions, fn
 
     # construct expression components from tokens
 
