@@ -817,7 +817,7 @@ class Function:
 
                     inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
                                                          fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
-                    # instructions.addline(maskset(
+                    #inst+=(maskset(
                     # norm_parameter_registers[normused],
                     # fn.parameters[i].t.csize()))
                     rfree(result)
