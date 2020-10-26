@@ -1019,6 +1019,7 @@ FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_0: db `False`, 0
 STRING_CONSTANT_1: db `True`, 0
 STRING_CONSTANT_2: db `%s`, 0
+STRING_CONSTANT_3: db `%i\n`, 0
 nullterm: DQ 0
 INLINE_SYSCALL: DQ __inline__syscall
 head: DQ 0
@@ -4513,6 +4514,15 @@ sub rsp, 24
 mov [rbp-8], rdi
 ;Load Parameter: [char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ ( : (], [ int : -32768], [ ) : )]]
+mov rsi, -32768
+;[[ id : STRING_CONSTANT_3]]
+mov rbx, STRING_CONSTANT_3
+mov rdi, rbx
+xor rax, rax
+call printf
+push rax
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
 ;[[ int : 5]]
 mov rax, 5
 jmp __main__return
