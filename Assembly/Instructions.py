@@ -42,6 +42,20 @@ class Peephole:
     def flush(self):
         self.instructions = ""
 
+    ####################################
+    #   TODO:
+    #       - optimize for branch prediction
+    #       - optimize for U / V pipe alignment
+    #           (reorder instructions requiring same address)
+    #       - optimize for instruction pairing
+    #           (reorder / adjust)
+    #       - optimize LEA instruction for AGI stalls
+    #           (effective address set in prev. instruction)
+    #           (pg 43)
+    #   (https://www.agner.org/optimize/microarchitecture.pdf)
+    #
+    ####################################
+
     def opl3(self):
         while self.opl2() > 0:
             pass
