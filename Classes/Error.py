@@ -285,4 +285,4 @@ class RegisterDeclWarning(Warning):
 class NoReturnStatement(Warning):
     def __init__(self, tok, fn):
         self.tok = tok
-        self.msg = f"No return statement in non-void function '{fn.returntype} {fn.name} {fn.parameters}' : "
+        self.msg = f"No guaranteed return statement in non-void function '{fn.returntype} {fn.name} {fn.parameters}' : "

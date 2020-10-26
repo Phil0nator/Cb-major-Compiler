@@ -90,12 +90,12 @@ class Compiler:
         out = next((g for g in self.globals if g.name == q), None)
         if(out is not None):
             return out
-        
+
         fn = self.getFunction(q)
-        if(fn is None): return None
+        if(fn is None):
+            return None
 
         return self.getGlob(fn.getCallingLabel())
-
 
     def getFunction(self, q):           # get first function of name q
         return next((f for f in self.functions if f.name == q), None)
@@ -193,6 +193,10 @@ class Compiler:
         value = determineConstexpr(intr.isflt(), exprtokens, Function(
             "CMAININIT", [], VOID.copy(), self, exprtokens))
 
+        if(isinstance(value.accessor, Variable)):
+            value.accessor = value.accessor.name
+        
+
         self.globals.append(Variable(value.type.copy(), name,
                                      glob=True, initializer=value.accessor))
 
@@ -255,9 +259,16 @@ class Compiler:
             self.advance()
 
             f = Function(name, parameters, rettype, self, [])
-            self.globals.append(Variable(f.returntype.up(), f.getCallingLabel(), glob=True, isptr=True,mutable=False,signed=f.returntype.signed))
+            self.globals.append(
+                Variable(
+                    f.returntype.up(),
+                    f.getCallingLabel(),
+                    glob=True,
+                    isptr=True,
+                    mutable=False,
+                    signed=f.returntype.signed))
 
-            #self.globals.append(
+            # self.globals.append(
             #    Variable(
             #        f.returntype.copy(),
             #        f.name,
@@ -287,7 +298,14 @@ class Compiler:
                      self.currentTokens[start:self.ctidx])
         self.functions.append(f)
         # add as a variable for fn pointers
-        self.globals.append(Variable(f.returntype.up(), f.getCallingLabel(), glob=True, isptr=True,mutable=False,signed=f.returntype.signed))
+        self.globals.append(
+            Variable(
+                f.returntype.up(),
+                f.getCallingLabel(),
+                glob=True,
+                isptr=True,
+                mutable=False,
+                signed=f.returntype.signed))
 
     def buildStruct(self):                  # isolate and build a structure
         self.advance()
@@ -311,7 +329,7 @@ class Compiler:
 
         destructor = None
         constructor = None
-
+        nested = False
         # find properties:
         #   -members
         #   -member functions
@@ -326,6 +344,7 @@ class Compiler:
                 t = self.checkType()
                 if(self.current_token.tok != T_ID):
                     throw(ExpectedIdentifier(self.current_token))
+                if(t.name == id): nested = True
                 name = self.current_token.value
                 var = Variable(t, name, glob=False, offset=size,
                                isptr=t.ptrdepth > 0, signed=t.signed)
@@ -413,9 +432,20 @@ class Compiler:
         # fill in new info
         actualType = DType(id, size, members, 0, True,
                            destructor=destructor, constructor=constructor)
+        
+        # ensure correct type-propogation
+        if(nested):
+            for t in range(len(actualType.members)):
+                for i in range(len(actualType.members)):
+                    if self.Tequals(id, actualType.members[i].t.name):
+                        actualType.members[i].t.members = actualType.members.copy()
+            
+
         actualTypeptr = DType(id, size)
         actualTypeptr.load(actualType)
         actualTypeptr.ptrdepth += 1
+
+
         if(destructor is not None):
             actualType.destructor.parameters[0].t.load(actualTypeptr)
         if(constructor is not None):
@@ -428,6 +458,7 @@ class Compiler:
         if(self.current_token.tok != T_ENDL):
             throw(ExpectedToken(self.current_token, T_ENDL))
         self.advance()
+
 
     def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentTokens = ftup

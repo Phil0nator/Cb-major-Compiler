@@ -59,7 +59,7 @@ class Function:
 
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.variables = []                     # all local variables
-
+        self.inline = False                     # inline functions behave like macros, and are not called
         # stack containing labels to jump to if the "continue" keyword is used
         self.continues = []
         # stack containing labels to jump to if the "break" keyword is used
@@ -91,6 +91,8 @@ class Function:
 
         self.hasReturned = False
         self.recursive_depth = 0
+
+        self.canbeInline = True
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -724,10 +726,8 @@ class Function:
             out += spop(r)
         return out
 
-
     def buildAmbiguousFunctionCall(self, fid, types):
         pass
-
 
     def buildFunctionCall(self):
 
@@ -766,8 +766,9 @@ class Function:
         if(fn is None):
             pcount = len(types)
             var = self.getVariable(fid)
-            if(var is None): throw(UnkownIdentifier(fnstartt))
-            params = [Variable(t,"parameter") for t in types]
+            if(var is None):
+                throw(UnkownIdentifier(fnstartt))
+            params = [Variable(t, "parameter") for t in types]
             fn = Function(fid, params, var.t, self.compiler, [])
             varcall = True
         else:
@@ -786,11 +787,9 @@ class Function:
         sseused = 0
         normused = 0
 
-        instructions+=(self.pushregs())
-
+        instructions += (self.pushregs())
 
         paraminst = ""
-
 
         # for each parameter
         for i in range(pcount):
@@ -798,7 +797,7 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                inst=(self.evaluateRightsideExpression(EC.ExpressionComponent(
+                inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
                     sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
                 )
                 sseused += 1
@@ -812,14 +811,15 @@ class Function:
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
-                inst=f"{self.evaluateRightsideExpression(ec)}"
+                inst = f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
                 if(fn.parameters[i].t.csize() != 8):
 
-                    inst+=(Instruction("mov", [setSize(norm_parameter_registers[normused],
-                                                                     fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
-                    #instructions.addline(maskset(
-                    #    norm_parameter_registers[normused], fn.parameters[i].t.csize()))
+                    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
+                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
+                    # instructions.addline(maskset(
+                    # norm_parameter_registers[normused],
+                    # fn.parameters[i].t.csize()))
                     rfree(result)
                 normused += 1
             paraminst = f"{inst}{paraminst}"
@@ -831,15 +831,16 @@ class Function:
             # self.advance()
             pass
 
-        instructions+=paraminst
+        instructions += paraminst
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
-        instructions+=(Instruction("mov", [rax, ssevarsforrax]))
+        instructions += (Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
 
-        instructions+=(fncall(fn)) if not varcall else (Instruction("call", [valueOf(var)]))
-        instructions+=(self.restoreregs())
+        instructions += (fncall(fn)
+                         ) if not varcall else (Instruction("call", [valueOf(var)]))
+        instructions += (self.restoreregs())
         return instructions, fn
 
     # construct expression components from tokens
@@ -1193,7 +1194,7 @@ class Function:
             self.buildDeclaration()  # declaration
         else:
             # assignment or blank call
-            """ 
+            """
             if (self.compiler.getFunction(id) is not None):
                 # fn call
                 self.buildBlankfnCall()
@@ -1202,7 +1203,7 @@ class Function:
 
             self.buildAssignment()
 
-        #else:
+        # else:
         # #   throw(UnkownIdentifier(self.current_token))
 
     def beginRecursiveCompile(self):            # recursive main

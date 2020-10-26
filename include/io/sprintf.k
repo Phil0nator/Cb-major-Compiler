@@ -13,14 +13,14 @@
 #define FORMAT_START '%'
 #define FORMAT_FLOAT 'f'
 #define FORMAT_HEX 'h'
-#define DOUBLE_PRECISION_MULTIPLIER 100000000000000
-#define FLOAT_PRECISION_MULTIPLIER 10000000
+
 #include "math.k"
 #include "string.k"
+#include "bits.k"
 
 
 
-function int toStr(int val, char* buffer, bool signed){
+function long toStr(long val, char* buffer, bool signed){
 
     int signspace = 0;
     if(val < 0 && signed){
@@ -29,7 +29,7 @@ function int toStr(int val, char* buffer, bool signed){
         val = 0-val;
         signspace=1;
     }
-    int l = log(val)+1;
+    long l = log(val)+1;
     buffer+=l;
     for(int i = 0 ; i < l;i+=1){
 
@@ -47,16 +47,19 @@ function int toStr(int val, char* buffer, bool signed){
 
 
 
-function int toStr(double val, char* buffer, int multiplier){
+function long toStr(double val, char* buffer, long multiplier){
 
-    int integral = val;
-    int l = toStr(integral, buffer, 1);
+    long integral = val;
+    long l = toStr(integral, buffer, 1);
     buffer+=l;
+    
     val = abs(val);
     val -= integral;
     val *= multiplier;
+
+
     @buffer = '.';
-    buffer+=1;
+    buffer++;
     l += toStr(round(val), buffer, 0);
     return l-1;
 
@@ -71,7 +74,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
     int argc = 0;
 
-    int og = $int str;
+    void og = str;
 
 
     if(str == 0 || fmt == 0){
@@ -97,9 +100,9 @@ global int __sprintf(char* str, char* fmt, void* args){
 
             if(c == FORMAT_INT64){
                 
-                int num = (args[argc]);
+                long num = (args[argc]);
 
-                int size = toStr(num, str, 1);
+                long size = toStr(num, str, 1);
                 str+=size-1;
 
             }else if (c == FORMAT_CHAR){
@@ -108,7 +111,7 @@ global int __sprintf(char* str, char* fmt, void* args){
             }
             else if (c == FORMAT_UINT64){
 
-                int unum = (args[argc]);
+                long unum = (args[argc]);
                 int usize = toStr(unum, str, 0);
                 str+=usize-1;
 
@@ -155,7 +158,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
     }
 
-    return ($int str)-og;
+    return ($long str)-og;
 
 
 

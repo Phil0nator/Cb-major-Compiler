@@ -648,6 +648,9 @@ class RightSideEvaluator(ExpressionEvaluator):
     def memberAccess(self, a, b):
         instr = ""
         member = b.accessor
+        if(isinstance(member, Variable)):
+            member = member.name
+
         memv = a.type.getMember(member)
         if(memv is None):
             throw(UnkownIdentifier(b.token))
@@ -827,8 +830,12 @@ class LeftSideEvaluator(ExpressionEvaluator):
     def memberAccess(self, a, b):
         instr = ""
         member = b.accessor
+        if(isinstance(member, Variable)):
+            member = member.name
         memv = a.type.getMember(member)
         if(memv is None):
+            print(a,b, member, a.type.members)
+
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()
 

@@ -42,11 +42,11 @@ class DType:
         return None
 
     def load(self, other):  # accept properties of another DType object
-        self.__init__(other.name, other.s, other.members, other.ptrdepth,
+        self.__init__(other.name, other.s, other.members.copy() if other.members is not None else None, other.ptrdepth,
                       other.signed, other.destructor, other.constructor)
 
     def copy(self):  # duplicate
-        return DType(self.name, self.s, members=self.members, ptrdepth=self.ptrdepth,
+        return DType(self.name, self.s, members=(self.members.copy()) if self.members is not None else None, ptrdepth=self.ptrdepth,
                      signed=self.signed, constructor=self.constructor, destructor=self.destructor)
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
@@ -64,7 +64,7 @@ class DType:
 
     def up(self):
         out = self.copy()
-        out.ptrdepth+=1
+        out.ptrdepth += 1
         return out
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)

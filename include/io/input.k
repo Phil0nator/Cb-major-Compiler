@@ -6,6 +6,7 @@
 #include "memory.k"
 #include "filesystem.k"
 #include "sprintf.k"
+#include "sscanf.k"
 
 #define MAX_INT64LEN 40
 function int getInt(char* msg){
@@ -100,6 +101,16 @@ function int toInteger(char* str, bool signed){
 
 
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
