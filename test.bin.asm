@@ -994,6 +994,7 @@ extern _int_chdir_pchar.
 extern _int_lseek_pfd_tintint
 global _void._mmap_pvoid.size_tintintintoff_t
 global _void._mlc_psize_t
+global _void_fr_pvoid.
 global _double_sqrt_pdouble
 global _double_sqrt_pint
 global _long_sqrt_plong
@@ -1019,14 +1020,16 @@ global _void_printf_pchar.
 section .data
 STRING_CONSTANT_0: db `/dev/zero`, 0
 STRING_CONSTANT_1: db `r+`, 0
+STRING_CONSTANT_2: db `HERE: %u\n`, 0
 FLT_CONSTANT_0: dq 0x0.0p+0
-STRING_CONSTANT_2: db `False`, 0
-STRING_CONSTANT_3: db `True`, 0
-STRING_CONSTANT_4: db `%s`, 0
-STRING_CONSTANT_5: db `THINGS`, 0
+STRING_CONSTANT_3: db `False`, 0
+STRING_CONSTANT_4: db `True`, 0
+STRING_CONSTANT_5: db `%s`, 0
+STRING_CONSTANT_6: db `THINGS\n`, 0
 nullterm: DQ 0
 INLINE_SYSCALL: DQ __inline__syscall
-head: DQ 0
+free_memory: DQ 0
+zerofd: DQ 0
 M_MINZERO_MEM: DQ 0
 rand_next: DQ 1
 section .bss
@@ -1203,8 +1206,7 @@ mov r11, r10
 xor rdx, rdx
 mov rax, rbx
 idiv r11
-mov rbx, rdx
-mov QWORD[rbp-32], rbx
+mov QWORD[rbp-32], rdx
 mov rbx, QWORD[rbp-24]
 mov r10, QWORD[rbp-32]
 mov r11, r10
@@ -1227,8 +1229,7 @@ vmovdqu [rbx], ymm0
 .L0x2:
 mov r10, QWORD[rbp-48]
 add r10d, 4
-mov rbx, r10
-mov QWORD[rbp-48], rbx
+mov QWORD[rbp-48], r10
 .L0x1:
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-48]
@@ -1254,7 +1255,7 @@ mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov rdi, r10
-mov rax, 0
+xor rax, rax
 call _void_memcpy_pvoid.void.size_t
 push rax
 jmp .L0x5
@@ -1371,10 +1372,8 @@ mov rbx, r10
 mov esi, ebx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _fd_t_open_pchar.intmode_t
-push rax
-pop rax
 mov QWORD[rbp-48], rax
 mov r10, 140
 mov rbx, QWORD[rbp-24]
@@ -1390,12 +1389,12 @@ and al, 1
 jz .L0x10
 mov rbx, 2
 mov edx, ebx
-mov rbx, 0
+xor rbx, rbx
 mov esi, ebx
 mov r10, QWORD[rbp-48]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _int_lseek_pfd_tintint
 push rax
 jmp .L0x11
@@ -1414,10 +1413,8 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _size_t_strlen_pchar.
-push rax
-pop rax
 mov QWORD[rbp-24], rax
 mov rdx, QWORD[rbp-24]
 mov rbx, QWORD[rbp-16]
@@ -1425,10 +1422,8 @@ mov rsi, rbx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _ssize_t_write_pfd_tchar.size_t
-push rax
-pop rax
 mov QWORD[rbp-32], rax
 mov rbx, 1
 mov edx, ebx
@@ -1438,7 +1433,7 @@ mov esi, ebx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _int_lseek_pfd_tintint
 push rax
 mov rbx, QWORD[rbp-32]
@@ -1461,11 +1456,10 @@ mov rsi, rbx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _ssize_t_read_pfd_tchar.size_t
-push rax
-pop rbx
-mov r10, 0
+mov rbx, rax
+xor r10, r10
 mov r11, r10
 cmp rbx, r11
 setg bl
@@ -1477,7 +1471,7 @@ mov esi, ebx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _int_lseek_pfd_tintint
 push rax
 mov rax, QWORD[rbp-32]
@@ -1492,34 +1486,30 @@ sub rsp, 40
 mov [rbp-8], rdi
 mov rbx, 2
 mov edx, ebx
-mov rbx, 0
+xor rbx, rbx
 mov esi, ebx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _int_lseek_pfd_tintint
-push rax
-pop rax
 mov QWORD[rbp-16], rax
 mov rbx, 2
 mov edx, ebx
 mov r11, QWORD[rbp-16]
-mov r10, 0
+xor r10, r10
 sub r10d, r11d
 mov rbx, r10
 mov esi, ebx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _int_lseek_pfd_tintint
 push rax
 mov rdi, QWORD[rbp-16]
-mov rax, 0
+xor rax, rax
 call _void._malloc_psize_t
-push rax
-pop rax
 mov QWORD[rbp-24], rax
 mov rdx, QWORD[rbp-16]
 mov rbx, QWORD[rbp-24]
@@ -1527,11 +1517,10 @@ mov rsi, rbx
 mov r10, QWORD[rbp-8]
 mov rbx, r10
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _ssize_t_read_pfd_tchar.size_t
-push rax
-pop rbx
-mov r10, 0
+mov rbx, rax
+xor r10, r10
 mov r11, r10
 cmp rbx, r11
 setl bl
@@ -1565,18 +1554,167 @@ mov rax, 9
 ___void._mmap_pvoid.size_tintintintoff_t__return:
 leave
 ret
-_void._add_page_p:
+_void_remove_page_pblock_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+mov [rbp-8], rdi
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+16]
+mov r10, rbx
+lea r10, [r10+8]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+16]
+mov r10, rbx
+lea r10, [r10+8]
+mov r11, QWORD[rbp-8]
+lea r11, [r11+8]
+mov r11, qword[r11]
+mov qword[r10], r11
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov r10, rbx
+lea r10, [r10+16]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov r10, rbx
+lea r10, [r10+16]
+mov r11, QWORD[rbp-8]
+lea r11, [r11+16]
+mov r11, qword[r11]
+mov qword[r10], r11
+___void_remove_page_pblock_t.__return:
+leave
+ret
+_void_add_page_pblock_t.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+mov [rbp-8], rdi
+mov rbx, [free_memory]
+test ebx, ebx
+setz bl
+mov rax, rbx
+and al, 1
+jz .L0x14
+mov rbx, QWORD[rbp-8]
+mov [free_memory], rbx
+jmp ___void_add_page_pblock_t.__return
+jmp .L0x15
+.L0x14:
+.L0x15:
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov r10, [free_memory]
+mov qword[rbx], r10
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov r10, rbx
+lea r10, [r10+16]
+mov rbx, QWORD[rbp-8]
+lea rbx, [rbx+8]
+mov r10, rbx
+lea r10, [r10+16]
+mov r11, QWORD[rbp-8]
+mov qword[r10], r11
+mov rbx, QWORD[rbp-8]
+mov [free_memory], rbx
+___void_add_page_pblock_t.__return:
+leave
+ret
+_void_populate_zerofd_p:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-___void._add_page_p__return:
+mov r10, STRING_CONSTANT_1
+mov rsi, r10
+mov r10, STRING_CONSTANT_0
+mov rdi, r10
+xor rax, rax
+call _FILE_fopen_pchar.char.
+mov [zerofd], rax
+___void_populate_zerofd_p__return:
+leave
+ret
+_void.__scan_psize_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+mov [rbp-8], rdi
+mov rbx, [free_memory]
+test ebx, ebx
+setz bl
+mov rax, rbx
+and al, 1
+jz .L0x16
+mov rax, 0
+jmp ___void.__scan_psize_t__return
+jmp .L0x17
+.L0x16:
+.L0x17:
+mov rbx, [free_memory]
+mov QWORD[rbp-16], rbx
+jmp .L0x19
+.L0x18:
+mov rbx, QWORD[rbp-16]
+lea rbx, [rbx+0]
+mov rbx, qword[rbx]
+mov rsi, rbx
+mov rbx, STRING_CONSTANT_2
+mov rdi, rbx
+xor rax, rax
+call printf
+push rax
+mov rbx, QWORD[rbp-16]
+lea rbx, [rbx+0]
+mov rbx, qword[rbx]
+mov r10, QWORD[rbp-8]
+cmp rbx, r10
+setge bl
+mov rax, rbx
+and al, 1
+jz .L0x1b
+mov rbx, QWORD[rbp-16]
+mov rdi, rbx
+xor rax, rax
+call _void_remove_page_pblock_t.
+push rax
+mov rbx, QWORD[rbp-16]
+add rbx, 24
+mov rax, rbx
+jmp ___void.__scan_psize_t__return
+jmp .L0x1c
+.L0x1b:
+.L0x1c:
+mov r10, QWORD[rbp-16]
+lea r10, [r10+8]
+mov r10, qword[r10]
+mov QWORD[rbp-16], r10
+.L0x19:
+mov rbx, QWORD[rbp-16]
+lea rbx, [rbx+8]
+test rbx, rbx
+setnz bl
+mov rax, rbx
+and al, 1
+jnz .L0x18
+.L0x1a:
+mov rax, 0
+jmp ___void.__scan_psize_t__return
+___void.__scan_psize_t__return:
 leave
 ret
 _void._mlc_psize_t:
 push rbp
 mov rbp, rsp
-sub rsp, 80
+sub rsp, 72
 mov [rbp-8], rdi
+mov rbx, 24
+mov r10, QWORD[rbp-8]
+add r10, rbx
+mov QWORD[rbp-8], r10
 mov rbx, QWORD[rbp-8]
 mov r10, 12288
 mov r11, r10
@@ -1584,11 +1722,11 @@ cmp rbx, r11
 setl bl
 mov rax, rbx
 and al, 1
-jz .L0x14
+jz .L0x1d
 mov rbx, 12288
 mov QWORD[rbp-16], rbx
-jmp .L0x15
-.L0x14:
+jmp .L0x1e
+.L0x1d:
 mov r10, QWORD[rbp-8]
 mov r11, 4096
 mov r12, r11
@@ -1598,78 +1736,90 @@ idiv r12
 mov r10, rdx
 mov r11, QWORD[rbp-8]
 add r11, r10
-mov rbx, r11
-mov QWORD[rbp-16], rbx
-.L0x15:
-mov rbx, [head]
-test ebx, ebx
+mov QWORD[rbp-16], r11
+.L0x1e:
+mov rbx, QWORD[rbp-16]
+mov rdi, rbx
+xor rax, rax
+call _void.__scan_psize_t
+mov QWORD[rbp-24], rax
+mov rbx, QWORD[rbp-24]
+test rbx, rbx
 setz bl
 mov rax, rbx
 and al, 1
-jz .L0x16
-mov rbx, STRING_CONSTANT_1
-mov rsi, rbx
-mov rbx, STRING_CONSTANT_0
-mov rdi, rbx
+jz .L0x1f
+mov rbx, [zerofd]
+cmp rbx, 0
+sete bl
+mov rax, rbx
+and al, 1
+jz .L0x21
 mov rax, 0
-call _FILE_fopen_pchar.char.
+call _void_populate_zerofd_p
 push rax
-pop rax
-mov QWORD[rbp-32], rax
-mov rbx, QWORD[rbp-16]
-mov QWORD[rbp-40], rbx
+jmp .L0x22
+.L0x21:
+.L0x22:
+mov rbx, QWORD[rbp-8]
+mov QWORD[rbp-32], rbx
 mov r10, 0
 mov r9d, r10d
-mov r11, QWORD[rbp-32]
+mov r11, [zerofd]
 mov r10, r11
 mov r8d, r10d
 mov r10, 34
 mov ecx, r10d
 mov r10, 3
 mov edx, r10d
-mov rsi, QWORD[rbp-40]
-mov rdi, 0
-mov rax, 0
+mov rsi, QWORD[rbp-32]
+xor rdi, rdi
+xor rax, rax
 call _void._mmap_pvoid.size_tintintintoff_t
-push rax
-pop rbx
-mov QWORD[rbp-24], rbx
-mov r10, QWORD[rbp-32]
-mov rbx, r10
-mov edi, ebx
-mov rax, 0
-call _int_close_pfd_t
-push rax
-mov QWORD[rbp-72], 0
+mov QWORD[rbp-24], rax
 mov QWORD[rbp-64], 0
 mov QWORD[rbp-56], 0
-mov r10, QWORD[rbp-16]
-mov rbx, r10
-mov QWORD[rbp-72], rbx
-mov rbx, 0
-mov QWORD[rbp-64], rbx
+mov QWORD[rbp-48], 0
+mov r10, QWORD[rbp-8]
+mov QWORD[rbp-64], r10
 mov rbx, 0
 mov QWORD[rbp-56], rbx
+mov rbx, 0
+mov QWORD[rbp-48], rbx
 mov rdx, 24
-lea rbx, [rbp-72]
+lea rbx, [rbp-64]
 mov rsi, rbx
 mov rbx, QWORD[rbp-24]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_memcpy_pvoid.void.size_t
 push rax
-mov rbx, QWORD[rbp-24]
-mov [head], rbx
 mov rbx, 24
 mov r10, QWORD[rbp-24]
 add r10, rbx
 mov QWORD[rbp-24], r10
+jmp .L0x20
+.L0x1f:
+.L0x20:
 mov rax, QWORD[rbp-24]
 jmp ___void._mlc_psize_t__return
-jmp .L0x17
-.L0x16:
-.L0x17:
 ___void._mlc_psize_t__return:
+leave
+ret
+_void_fr_pvoid.:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+mov [rbp-8], rdi
+mov rbx, 24
+mov r10, QWORD[rbp-8]
+sub r10, rbx
+mov QWORD[rbp-8], r10
+mov rdi, QWORD[rbp-8]
+xor rax, rax
+call _void_add_page_pblock_t.
+push rax
+___void_fr_pvoid.__return:
 leave
 ret
 _double_sqrt_pdouble:
@@ -1729,7 +1879,7 @@ mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _long_pow_plonglong
 push rax
 cvtsi2sd xmm0, rax
@@ -1868,7 +2018,7 @@ mov [rbp-16], rsi
 mov [rbp-24], rdx
 mov QWORD[rbp-32], 0
 mov rbx, QWORD[rbp-8]
-mov r10, 0
+xor r10, r10
 mov r11, r10
 cmp rbx, r11
 setl bl
@@ -1876,7 +2026,7 @@ mov r10, QWORD[rbp-24]
 and bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x18
+jz .L0x23
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
 mov rbx, QWORD[rbp-16]
@@ -1888,22 +2038,20 @@ mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
 mov r10, QWORD[rbp-8]
-mov r11, 0
+xor r11, r11
 mov r12, r11
 sub r12, r10
-mov rbx, r12
-mov QWORD[rbp-8], rbx
+mov QWORD[rbp-8], r12
 mov rbx, 1
 mov QWORD[rbp-32], rbx
-jmp .L0x19
-.L0x18:
-.L0x19:
+jmp .L0x24
+.L0x23:
+.L0x24:
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _long_log_plong
-push rax
-pop rbx
+mov rbx, rax
 inc rbx
 mov QWORD[rbp-40], rbx
 mov rbx, QWORD[rbp-40]
@@ -1911,8 +2059,8 @@ mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
 mov QWORD[rbp-48], 0
-jmp .L0x1b
-.L0x1a:
+jmp .L0x26
+.L0x25:
 mov rbx, 1
 mov r10, QWORD[rbp-16]
 sub r10, rbx
@@ -1938,14 +2086,13 @@ mov r10, QWORD[rbp-8]
 xor rdx, rdx
 mov rax,r10
 idiv rbx
-mov r10, rax
-mov QWORD[rbp-8], r10
-.L0x1c:
+mov QWORD[rbp-8], rax
+.L0x27:
 mov rbx, 1
 mov r11, QWORD[rbp-48]
 add r11d, ebx
 mov QWORD[rbp-48], r11
-.L0x1b:
+.L0x26:
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-48]
 mov r11, r10
@@ -1953,8 +2100,8 @@ cmp r11, rbx
 setl r11b
 mov rax, r11
 and al, 1
-jnz .L0x1a
-.L0x1d:
+jnz .L0x25
+.L0x28:
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-32]
 mov r11, r10
@@ -1979,10 +2126,8 @@ mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rbx, QWORD[rbp-32]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _long_toStr_plongchar.bool
-push rax
-pop rax
 mov QWORD[rbp-40], rax
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-16]
@@ -1993,8 +2138,6 @@ movsd xmm0, xmm8
 mov rax, 1
 call _double_abs_pdouble
 movq rax, xmm0
-push rax
-pop rax
 movq xmm7, rax
 movsd QWORD[rbp-8], xmm7
 cvtsi2sd xmm7, QWORD[rbp-32]
@@ -2020,12 +2163,10 @@ movsd xmm7, QWORD[rbp-8]
 movsd xmm0, xmm7
 mov rax, 1
 call _long_round_pdouble
-push rax
-pop rdi
-mov rax, 0
+mov rdi, rax
+xor rax, rax
 call _long_toStr_plongchar.bool
-push rax
-pop rbx
+mov rbx, rax
 mov r11, QWORD[rbp-40]
 add r11, rbx
 mov QWORD[rbp-40], r11
@@ -2055,14 +2196,14 @@ setz r10b
 or bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x1e
+jz .L0x29
 mov rax, 0
 jmp ___int___sprintf_pchar.char.void.__return
-jmp .L0x1f
-.L0x1e:
-.L0x1f:
-jmp .L0x21
-.L0x20:
+jmp .L0x2a
+.L0x29:
+.L0x2a:
+jmp .L0x2c
+.L0x2b:
 mov rbx, QWORD[rbp-16]
 and r10, 0xff
 mov r10b, byte[rbx]
@@ -2071,7 +2212,7 @@ cmp r10b, bl
 setne r10b
 mov rax, r10
 and al, 1
-jz .L0x23
+jz .L0x2e
 mov rbx, QWORD[rbp-8]
 mov r10, rbx
 mov rbx, QWORD[rbp-8]
@@ -2081,8 +2222,8 @@ and r12, 0xff
 mov r12b, byte[r11]
 mov rbx, r12
 mov byte[r10], bl
-jmp .L0x24
-.L0x23:
+jmp .L0x2f
+.L0x2e:
 mov rbx, 1
 mov r10, QWORD[rbp-16]
 add r10, rbx
@@ -2097,7 +2238,7 @@ cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x25
+jz .L0x30
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
@@ -2109,10 +2250,8 @@ mov rbx, QWORD[rbp-8]
 mov rsi, rbx
 mov rbx, QWORD[rbp-56]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _long_toStr_plongchar.bool
-push rax
-pop rax
 mov QWORD[rbp-64], rax
 mov r10, QWORD[rbp-64]
 dec r10
@@ -2120,22 +2259,20 @@ mov rbx, r10
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-jmp .L0x26
-.L0x25:
+jmp .L0x31
+.L0x30:
 mov r10, 99
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x27
+jz .L0x32
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
 mov rbx, qword[rbx]
-mov r10, rbx
-mov r11, r10
-mov QWORD[rbp-72], r11
+mov QWORD[rbp-72], rbx
 mov rbx, QWORD[rbp-8]
 mov r10, rbx
 mov rbx, QWORD[rbp-8]
@@ -2143,15 +2280,15 @@ mov r10, rbx
 mov r11, QWORD[rbp-72]
 mov rbx, r11
 mov byte[r10], bl
-jmp .L0x28
-.L0x27:
+jmp .L0x33
+.L0x32:
 mov r10, 117
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x29
+jz .L0x34
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
@@ -2163,10 +2300,8 @@ mov rbx, QWORD[rbp-8]
 mov rsi, rbx
 mov rbx, QWORD[rbp-80]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _long_toStr_plongchar.bool
-push rax
-pop rax
 mov QWORD[rbp-88], rax
 mov r10, QWORD[rbp-88]
 dec r10d
@@ -2174,15 +2309,15 @@ mov rbx, r10
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-jmp .L0x2a
-.L0x29:
+jmp .L0x35
+.L0x34:
 mov r10, 115
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x2b
+jz .L0x36
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
@@ -2190,10 +2325,8 @@ mov rbx, qword[rbx]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_strcpy_pchar.char.
-push rax
-pop rax
 mov QWORD[rbp-96], rax
 mov r10, QWORD[rbp-96]
 dec r10d
@@ -2201,54 +2334,49 @@ mov rbx, r10
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-jmp .L0x2c
-.L0x2b:
+jmp .L0x37
+.L0x36:
 mov r10, 98
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x2d
+jz .L0x38
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
 mov rbx, qword[rbx]
 mov QWORD[rbp-104], rbx
-mov rbx, STRING_CONSTANT_2
-mov QWORD[rbp-112], rbx
+mov QWORD[rbp-112], STRING_CONSTANT_3
 mov rbx, QWORD[rbp-104]
 mov rax, rbx
 and al, 1
-jz .L0x2f
-mov r10, STRING_CONSTANT_3
-mov rbx, r10
-mov QWORD[rbp-112], rbx
-jmp .L0x30
-.L0x2f:
-.L0x30:
+jz .L0x3a
+mov QWORD[rbp-112], STRING_CONSTANT_4
+jmp .L0x3b
+.L0x3a:
+.L0x3b:
 mov rbx, QWORD[rbp-112]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_strcpy_pchar.char.
-push rax
-pop rax
 mov QWORD[rbp-120], rax
 mov rbx, QWORD[rbp-120]
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-jmp .L0x2e
-.L0x2d:
+jmp .L0x39
+.L0x38:
 mov r10, 100
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x31
+jz .L0x3c
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
@@ -2262,8 +2390,6 @@ movsd xmm7, QWORD[rbp-128]
 movsd xmm0, xmm7
 mov rax, 1
 call _long_toStr_pdoublechar.long
-push rax
-pop rax
 mov QWORD[rbp-136], rax
 mov r10, QWORD[rbp-136]
 dec r10d
@@ -2271,15 +2397,15 @@ mov rbx, r10
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-jmp .L0x32
-.L0x31:
+jmp .L0x3d
+.L0x3c:
 mov r10, 102
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x33
+jz .L0x3e
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
@@ -2293,8 +2419,6 @@ movsd xmm7, QWORD[rbp-144]
 movsd xmm0, xmm7
 mov rax, 1
 call _long_toStr_pdoublechar.long
-push rax
-pop rax
 mov QWORD[rbp-152], rax
 mov r10, QWORD[rbp-152]
 dec r10d
@@ -2302,20 +2426,20 @@ mov rbx, r10
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-jmp .L0x34
+jmp .L0x3f
+.L0x3e:
+.L0x3f:
+.L0x3d:
+.L0x39:
+.L0x37:
+.L0x35:
 .L0x33:
-.L0x34:
-.L0x32:
-.L0x2e:
-.L0x2c:
-.L0x2a:
-.L0x28:
-.L0x26:
+.L0x31:
 mov rbx, 1
 mov r11, QWORD[rbp-32]
 add r11d, ebx
 mov QWORD[rbp-32], r11
-.L0x24:
+.L0x2f:
 mov rbx, 1
 mov r10, QWORD[rbp-16]
 add r10, rbx
@@ -2324,7 +2448,7 @@ mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-.L0x21:
+.L0x2c:
 mov rbx, QWORD[rbp-16]
 and r10, 0xff
 mov r10b, byte[rbx]
@@ -2332,8 +2456,8 @@ test r10b, r10b
 setnz r10b
 mov rax, r10
 and al, 1
-jnz .L0x20
-.L0x22:
+jnz .L0x2b
+.L0x2d:
 mov rbx, QWORD[rbp-40]
 mov r10, QWORD[rbp-8]
 sub r10, rbx
@@ -2353,16 +2477,13 @@ mov [rbp-32], rcx
 mov [rbp-40], r8
 mov [rbp-48], r9
 mov rdi, 32
-mov rax, 0
+xor rax, rax
 call _void._malloc_psize_t
-push rax
-pop rax
 mov QWORD[rbp-56], rax
 mov rbx, QWORD[rbp-56]
 mov rbx, QWORD[rbp-56]
 mov r11, QWORD[rbp-24]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 1
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2370,8 +2491,7 @@ mov r10, 1
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-32]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 2
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2379,8 +2499,7 @@ mov r10, 2
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-40]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 3
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2388,22 +2507,19 @@ mov r10, 3
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-48]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov rbx, QWORD[rbp-56]
 mov rdx, rbx
 mov rbx, QWORD[rbp-16]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int___sprintf_pchar.char.void.
-push rax
-pop rax
 mov QWORD[rbp-64], rax
 mov rbx, QWORD[rbp-56]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_free_pvoid.
 push rax
 mov rbx, QWORD[rbp-64]
@@ -2419,30 +2535,28 @@ sub rsp, 100040
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov r10, 100000
-lea rbx, [rbp-100024]
+lea rbx, [rbp-25]
 lea rbx, [rbx+r10*1]
 mov r10, 100000
-lea rbx, [rbp-100024]
+lea rbx, [rbp-25]
 lea rbx, [rbx+r10*1]
-mov r10, 0
+xor r10, r10
 mov byte[rbx], r10b
 mov rbx, QWORD[rbp-16]
 mov rdx, rbx
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
-lea rbx, [rbp-100024]
+lea rbx, [rbp-25]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int___sprintf_pchar.char.void.
-push rax
-pop rax
 mov QWORD[rbp-100032], rax
 mov rdx, QWORD[rbp-100032]
-lea rbx, [rbp-100024]
+lea rbx, [rbp-25]
 mov rsi, rbx
 mov rbx, 1
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _ssize_t_write_pfd_tchar.size_t
 push rax
 ___void___printf_pchar.void.__return:
@@ -2459,16 +2573,13 @@ mov [rbp-32], rcx
 mov [rbp-40], r8
 mov [rbp-48], r9
 mov rdi, 48
-mov rax, 0
+xor rax, rax
 call _void._malloc_psize_t
-push rax
-pop rax
 mov QWORD[rbp-56], rax
 mov rbx, QWORD[rbp-56]
 mov rbx, QWORD[rbp-56]
 mov r11, QWORD[rbp-16]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 1
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2476,8 +2587,7 @@ mov r10, 1
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-24]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 2
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2485,8 +2595,7 @@ mov r10, 2
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-32]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 3
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2494,8 +2603,7 @@ mov r10, 3
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-40]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov r10, 4
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
@@ -2503,18 +2611,17 @@ mov r10, 4
 mov rbx, QWORD[rbp-56]
 lea rbx, [rbx+r10*8]
 mov r11, QWORD[rbp-48]
-mov r10, r11
-mov qword[rbx], r10
+mov qword[rbx], r11
 mov rbx, QWORD[rbp-56]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void___printf_pchar.void.
 push rax
 mov rbx, QWORD[rbp-56]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_free_pvoid.
 push rax
 __printf__return:
@@ -2530,7 +2637,7 @@ mov rbx, QWORD[rbp-8]
 mov rsi, rbx
 mov rbx, 1
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _int_fputs_pfd_tchar.
 push rax
 ___void_printf_pchar.__return:
@@ -2552,20 +2659,17 @@ mov r10, [rand_next]
 sal r10d, 13
 mov r11, [rand_next]
 xor r11d, r10d
-mov rbx, r11
-mov [rand_next], rbx
+mov [rand_next], r11
 mov r10, [rand_next]
 sar r10d, 17
 mov r11, [rand_next]
 xor r11d, r10d
-mov rbx, r11
-mov [rand_next], rbx
+mov [rand_next], r11
 mov r10, [rand_next]
 sal r10d, 5
 mov r11, [rand_next]
 xor r11d, r10d
-mov rbx, r11
-mov [rand_next], rbx
+mov [rand_next], r11
 mov rbx, [rand_next]
 mov rax, rbx
 jmp ___int_rand_p__return
@@ -2578,9 +2682,7 @@ mov rbp, rsp
 sub rsp, 8
 mov rax, 0
 call _int_rdrand_p
-push rax
-pop rbx
-mov [rand_next], rbx
+mov [rand_next], rax
 ___void_srand_p__return:
 leave
 ret
@@ -2677,35 +2779,32 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov QWORD[rbp-32], 10
 mov rdx, 4
-mov rbx, 0
+xor rbx, rbx
 mov sil, bl
-lea rbx, [rbp-72]
+lea rbx, [rbp-60]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_memset_pvoid.ucharsize_t
 push rax
-lea rbx, [rbp-72]
+lea rbx, [rbp-60]
 mov QWORD[rbp-80], rbx
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-48], rbx
-jmp .L0x36
-.L0x35:
+mov QWORD[rbp-48], r11
+jmp .L0x41
+.L0x40:
 mov rbx, 0
 mov QWORD[rbp-24], rbx
-jmp .L0x39
-.L0x38:
+jmp .L0x44
+.L0x43:
 mov r10, QWORD[rbp-48]
 mov rbx, r10
 mov dil, bl
-mov rax, 0
+xor rax, rax
 call _bool_isdigit_pchar
-push rax
-pop rax
 and al, 1
-jz .L0x3b
+jz .L0x46
 mov r10, QWORD[rbp-32]
 mov r11, QWORD[rbp-24]
 mov r12, r11
@@ -2714,8 +2813,7 @@ mov r10, QWORD[rbp-48]
 sub r10b, 48
 mov r11, r10
 add r12d, r11d
-mov rbx, r12
-mov QWORD[rbp-24], rbx
+mov QWORD[rbp-24], r12
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
@@ -2723,27 +2821,26 @@ mov QWORD[rbp-8], r10
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-48], rbx
-jmp .L0x3c
-.L0x3b:
-jmp .L0x3a
-.L0x3c:
-.L0x39:
+mov QWORD[rbp-48], r11
+jmp .L0x47
+.L0x46:
+jmp .L0x45
+.L0x47:
+.L0x44:
 mov rbx, 1
 mov r10, rbx
 mov rax, r10
 and al, 1
-jnz .L0x38
-.L0x3a:
+jnz .L0x43
+.L0x45:
 mov r10, 46
 mov rbx, QWORD[rbp-48]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x3d
-lea rbx, [rbp-72]
+jz .L0x48
+lea rbx, [rbp-60]
 add ebx, 16
 mov r10, QWORD[rbp-80]
 mov r11, r10
@@ -2751,12 +2848,12 @@ cmp r11d, ebx
 seta r11b
 mov rax, r11
 and al, 1
-jz .L0x3f
+jz .L0x4a
 mov rax, 0
 jmp ___int_inet_aton_pchar.in_addr.__return
-jmp .L0x40
-.L0x3f:
-.L0x40:
+jmp .L0x4b
+.L0x4a:
+.L0x4b:
 mov rbx, QWORD[rbp-80]
 mov r10, rbx
 mov rbx, QWORD[rbp-80]
@@ -2774,19 +2871,18 @@ mov QWORD[rbp-8], r10
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-48], rbx
-jmp .L0x3e
-.L0x3d:
-jmp .L0x37
-.L0x3e:
-.L0x36:
+mov QWORD[rbp-48], r11
+jmp .L0x49
+.L0x48:
+jmp .L0x42
+.L0x49:
+.L0x41:
 mov rbx, 1
 mov r10, rbx
 mov rax, r10
 and al, 1
-jnz .L0x35
-.L0x37:
+jnz .L0x40
+.L0x42:
 mov rbx, QWORD[rbp-80]
 mov r10, rbx
 mov rbx, QWORD[rbp-80]
@@ -2803,13 +2899,13 @@ setne r10b
 and bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x41
+jz .L0x4c
 mov rax, 0
 jmp ___int_inet_aton_pchar.in_addr.__return
-jmp .L0x42
-.L0x41:
-.L0x42:
-lea r10, [rbp-72]
+jmp .L0x4d
+.L0x4c:
+.L0x4d:
+lea r10, [rbp-60]
 mov r10d, dword[r10]
 and r10, 0xffffffff
 shl r10d, 24
@@ -2817,21 +2913,20 @@ mov r11, QWORD[rbp-24]
 mov r12, r11
 or r12d, r10d
 mov r11, 1
-lea r10, [rbp-72]
+lea r10, [rbp-60]
 lea r10, [r10+r11*4]
 mov r10d, dword[r10]
 and r10, 0xffffffff
 shl r10d, 16
 or r12d, r10d
 mov r11, 2
-lea r10, [rbp-72]
+lea r10, [rbp-60]
 lea r10, [r10+r11*4]
 mov r10d, dword[r10]
 and r10, 0xffffffff
 shl r10d, 8
 or r12d, r10d
-mov rbx, r12
-mov QWORD[rbp-24], rbx
+mov QWORD[rbp-24], r12
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
 mov rbx, QWORD[rbp-16]
@@ -2927,8 +3022,7 @@ and r10, 0xff
 mov r10b, byte[rbx]
 mov QWORD[rbp-40], r10
 mov rbx, 0
-mov r10, rbx
-mov QWORD[rbp-48], r10
+mov QWORD[rbp-48], rbx
 mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-56], rbx
 mov r10, 45
@@ -2939,11 +3033,9 @@ mov r10, QWORD[rbp-24]
 and bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x43
+jz .L0x4e
 mov r10, 1
-mov r11, r10
-mov rbx, r11
-mov QWORD[rbp-48], rbx
+mov QWORD[rbp-48], r10
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
@@ -2951,13 +3043,12 @@ mov QWORD[rbp-8], r10
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-40], rbx
-jmp .L0x44
-.L0x43:
-.L0x44:
-jmp .L0x46
-.L0x45:
+mov QWORD[rbp-40], r11
+jmp .L0x4f
+.L0x4e:
+.L0x4f:
+jmp .L0x51
+.L0x50:
 mov r10, QWORD[rbp-32]
 mov r11, 10
 mov r12, r11
@@ -2966,8 +3057,7 @@ mov r11, QWORD[rbp-40]
 sub r11b, 48
 mov r12, r11
 add r10, r12
-mov rbx, r10
-mov QWORD[rbp-32], rbx
+mov QWORD[rbp-32], r10
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
@@ -2975,9 +3065,8 @@ mov QWORD[rbp-8], r10
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-40], rbx
-.L0x46:
+mov QWORD[rbp-40], r11
+.L0x51:
 mov r10, 57
 mov rbx, QWORD[rbp-40]
 cmp bl, r10b
@@ -2989,34 +3078,32 @@ setge r10b
 and bl, r10b
 mov rax, rbx
 and al, 1
-jnz .L0x45
-.L0x47:
+jnz .L0x50
+.L0x52:
 mov rbx, QWORD[rbp-48]
 cmp rbx, 0
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x48
+jz .L0x53
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
 mov r11, QWORD[rbp-32]
-mov rbx, r11
-mov qword[r10], rbx
-jmp .L0x49
-.L0x48:
+mov qword[r10], r11
+jmp .L0x54
+.L0x53:
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
 mov rbx, QWORD[rbp-16]
 mov r10, rbx
 mov r11, QWORD[rbp-32]
-mov r12, 0
+xor r12, r12
 mov r13, r12
 sub r13, r11
-mov rbx, r13
-mov qword[r10], rbx
-.L0x49:
+mov qword[r10], r13
+.L0x54:
 mov r10, QWORD[rbp-56]
 mov rbx, QWORD[rbp-8]
 sub rbx, r10
@@ -3034,8 +3121,8 @@ mov [rbp-16], rsi
 mov [rbp-24], rdx
 mov rbx, QWORD[rbp-8]
 mov QWORD[rbp-32], rbx
-jmp .L0x4b
-.L0x4a:
+jmp .L0x56
+.L0x55:
 mov rbx, QWORD[rbp-24]
 mov r10, rbx
 mov rbx, QWORD[rbp-24]
@@ -3047,7 +3134,7 @@ mov rbx, r12
 mov byte[r10], bl
 inc qword[rbp-8]
 inc qword[rbp-24]
-.L0x4b:
+.L0x56:
 mov rbx, QWORD[rbp-8]
 and r10, 0xff
 mov r10b, byte[rbx]
@@ -3056,8 +3143,8 @@ cmp r10b, bl
 setne r10b
 mov rax, r10
 and al, 1
-jnz .L0x4a
-.L0x4c:
+jnz .L0x55
+.L0x57:
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-8]
 sub rbx, r10
@@ -3081,10 +3168,8 @@ lea rbx, [rbp-32]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_scanint_pchar.long.bool
-push rax
-pop rax
 mov QWORD[rbp-48], rax
 mov rbx, QWORD[rbp-48]
 mov r10, QWORD[rbp-8]
@@ -3098,7 +3183,7 @@ cmp r10b, bl
 setne r10b
 mov rax, r10
 and al, 1
-jz .L0x4d
+jz .L0x58
 mov rbx, QWORD[rbp-24]
 mov r10, rbx
 mov rbx, QWORD[rbp-24]
@@ -3107,9 +3192,9 @@ cvtsi2sd xmm7, QWORD[rbp-32]
 movq qword[r10], xmm7
 mov rax, QWORD[rbp-48]
 jmp ___int_scansd_pchar.booldouble.__return
-jmp .L0x4e
-.L0x4d:
-.L0x4e:
+jmp .L0x59
+.L0x58:
+.L0x59:
 inc qword[rbp-8]
 mov r10, 0
 mov r11, r10
@@ -3119,18 +3204,14 @@ lea rbx, [rbp-40]
 mov rsi, rbx
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_scanint_pchar.long.bool
-push rax
-pop rax
 mov QWORD[rbp-56], rax
 mov rbx, QWORD[rbp-56]
 mov rsi, rbx
 mov rdi, 10
-mov rax, 0
+xor rax, rax
 call _long_pow_plonglong
-push rax
-pop rax
 mov QWORD[rbp-64], rax
 mov rbx, QWORD[rbp-64]
 mov r10, QWORD[rbp-32]
@@ -3176,14 +3257,14 @@ setz r10b
 or bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x4f
+jz .L0x5a
 mov rax, 0
 jmp ___int___SSCANF_pchar.char.void..__return
-jmp .L0x50
-.L0x4f:
-.L0x50:
-jmp .L0x52
-.L0x51:
+jmp .L0x5b
+.L0x5a:
+.L0x5b:
+jmp .L0x5d
+.L0x5c:
 mov rbx, QWORD[rbp-8]
 and r10, 0xff
 mov r10b, byte[rbx]
@@ -3192,11 +3273,11 @@ cmp r10b, bl
 setne r10b
 mov rax, r10
 and al, 1
-jz .L0x54
+jz .L0x5f
 inc qword[rbp-8]
 inc qword[rbp-16]
-jmp .L0x55
-.L0x54:
+jmp .L0x60
+.L0x5f:
 inc qword[rbp-8]
 mov rbx, QWORD[rbp-8]
 and r10, 0xff
@@ -3208,7 +3289,7 @@ cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x56
+jz .L0x61
 mov r11, 1
 mov r12, r11
 mov r10, r12
@@ -3220,25 +3301,23 @@ mov r10, qword[r10]
 mov rsi, r10
 mov r10, QWORD[rbp-16]
 mov rdi, r10
-mov rax, 0
+xor rax, rax
 call _int_scanint_pchar.long.bool
-push rax
-pop rbx
-mov QWORD[rbp-48], rbx
+mov QWORD[rbp-48], rax
 mov rbx, QWORD[rbp-48]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
 inc qword[rbp-8]
-jmp .L0x57
-.L0x56:
+jmp .L0x62
+.L0x61:
 mov r10, 117
 mov rbx, QWORD[rbp-40]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x58
+jz .L0x63
 mov r11, 0
 mov r12, r11
 mov r10, r12
@@ -3250,25 +3329,23 @@ mov r10, qword[r10]
 mov rsi, r10
 mov r10, QWORD[rbp-16]
 mov rdi, r10
-mov rax, 0
+xor rax, rax
 call _int_scanint_pchar.long.bool
-push rax
-pop rbx
-mov QWORD[rbp-48], rbx
+mov QWORD[rbp-48], rax
 mov rbx, QWORD[rbp-48]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
 inc qword[rbp-8]
-jmp .L0x59
-.L0x58:
+jmp .L0x64
+.L0x63:
 mov r10, 99
 mov rbx, QWORD[rbp-40]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x5a
+jz .L0x65
 mov r10, QWORD[rbp-32]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
@@ -3285,15 +3362,15 @@ mov rbx, r12
 mov byte[r10], bl
 inc qword[rbp-16]
 inc qword[rbp-8]
-jmp .L0x5b
-.L0x5a:
+jmp .L0x66
+.L0x65:
 mov r10, 115
 mov rbx, QWORD[rbp-40]
 cmp bl, r10b
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x5c
+jz .L0x67
 inc qword[rbp-8]
 mov r11, QWORD[rbp-32]
 mov r10, QWORD[rbp-24]
@@ -3307,17 +3384,15 @@ mov r10, r12
 mov sil, r10b
 mov r10, QWORD[rbp-16]
 mov rdi, r10
-mov rax, 0
+xor rax, rax
 call _int_scanstr_pchar.charchar.
-push rax
-pop rbx
-mov QWORD[rbp-48], rbx
+mov QWORD[rbp-48], rax
 mov rbx, QWORD[rbp-48]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
-jmp .L0x5d
-.L0x5c:
+jmp .L0x68
+.L0x67:
 mov r10, 102
 mov rbx, QWORD[rbp-40]
 cmp bl, r10b
@@ -3329,38 +3404,36 @@ sete r10b
 or bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x5e
+jz .L0x69
 mov r11, QWORD[rbp-32]
 mov r10, QWORD[rbp-24]
 lea r10, [r10+r11*8]
 mov r10, qword[r10]
 mov rdx, r10
-mov r11, 0
+xor r11, r11
 mov r12, r11
 mov r10, r12
 mov sil, r10b
 mov r10, QWORD[rbp-16]
 mov rdi, r10
-mov rax, 0
+xor rax, rax
 call _int_scansd_pchar.booldouble.
-push rax
-pop rbx
-mov QWORD[rbp-48], rbx
+mov QWORD[rbp-48], rax
 mov rbx, QWORD[rbp-48]
 mov r10, QWORD[rbp-16]
 add r10, rbx
 mov QWORD[rbp-16], r10
 inc qword[rbp-8]
-jmp .L0x5f
-.L0x5e:
-.L0x5f:
-.L0x5d:
-.L0x5b:
-.L0x59:
-.L0x57:
+jmp .L0x6a
+.L0x69:
+.L0x6a:
+.L0x68:
+.L0x66:
+.L0x64:
+.L0x62:
 inc dword[rbp-32]
-.L0x55:
-.L0x52:
+.L0x60:
+.L0x5d:
 mov rbx, QWORD[rbp-8]
 and r10, 0xff
 mov r10b, byte[rbx]
@@ -3368,8 +3441,8 @@ test r10b, r10b
 setnz r10b
 mov rax, r10
 and al, 1
-jnz .L0x51
-.L0x53:
+jnz .L0x5c
+.L0x5e:
 mov rbx, QWORD[rbp-32]
 mov rax, rbx
 jmp ___int___SSCANF_pchar.char.void..__return
@@ -3383,35 +3456,33 @@ sub rsp, 64
 mov [rbp-8], rdi
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_printf_pchar.
 push rax
 mov rdx, 40
-mov rbx, 0
+xor rbx, rbx
 mov sil, bl
-lea rbx, [rbp-56]
+lea rbx, [rbp-17]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_memset_pvoid.ucharsize_t
 push rax
 mov rdx, 40
-lea rbx, [rbp-56]
+lea rbx, [rbp-17]
 mov rsi, rbx
-mov rbx, 0
+xor rbx, rbx
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 mov r10, 1
 mov r11, r10
 mov rbx, r11
 mov sil, bl
-lea rbx, [rbp-56]
+lea rbx, [rbp-17]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_toInteger_pchar.bool
-push rax
-pop rax
 jmp ___int_getInt_pchar.__return
 ___int_getInt_pchar.__return:
 leave
@@ -3423,35 +3494,33 @@ sub rsp, 64
 mov [rbp-8], rdi
 mov rbx, QWORD[rbp-8]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_printf_pchar.
 push rax
 mov rdx, 40
-mov rbx, 0
+xor rbx, rbx
 mov sil, bl
-lea rbx, [rbp-56]
+lea rbx, [rbp-17]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_memset_pvoid.ucharsize_t
 push rax
 mov rdx, 40
-lea rbx, [rbp-56]
+lea rbx, [rbp-17]
 mov rsi, rbx
-mov rbx, 0
+xor rbx, rbx
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 mov r10, 1
 mov r11, r10
 mov rbx, r11
 mov sil, bl
-lea rbx, [rbp-56]
+lea rbx, [rbp-17]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_toInteger_pchar.bool
-push rax
-pop rax
 jmp ___uint_getUint_pchar.__return
 ___uint_getUint_pchar.__return:
 leave
@@ -3463,9 +3532,9 @@ sub rsp, 16
 mov rdx, 1
 lea rbx, [rbp-8]
 mov rsi, rbx
-mov rbx, 0
+xor rbx, rbx
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 mov rax, QWORD[rbp-8]
@@ -3492,15 +3561,15 @@ mov [rbp-16], rsi
 mov [rbp-24], rdx
 mov rbx, QWORD[rbp-24]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void_printf_pchar.
 push rax
 mov rdx, QWORD[rbp-16]
 mov rbx, QWORD[rbp-8]
 mov rsi, rbx
-mov rbx, 0
+xor rbx, rbx
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 ___void_getString_pchar.intchar.__return:
@@ -3514,50 +3583,45 @@ mov [rbp-8], rdi
 mov QWORD[rbp-16], 80
 mov rbx, QWORD[rbp-16]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _void._malloc_psize_t
-push rax
-pop rax
 mov QWORD[rbp-24], rax
 mov QWORD[rbp-40], 0
 mov rsi, QWORD[rbp-8]
-mov rbx, STRING_CONSTANT_4
+mov rbx, STRING_CONSTANT_5
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call printf
 push rax
 mov rdx, 1
 lea rbx, [rbp-32]
 mov rsi, rbx
-mov rbx, 0
+xor rbx, rbx
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
-jmp .L0x61
-.L0x60:
+jmp .L0x6c
+.L0x6b:
 mov r10, QWORD[rbp-16]
 mov rbx, QWORD[rbp-40]
 cmp rbx, r10
 sete bl
 mov rax, rbx
 and al, 1
-jz .L0x63
+jz .L0x6e
 mov r10, QWORD[rbp-16]
 sal r10, 1
-mov rbx, r10
-mov QWORD[rbp-16], rbx
+mov QWORD[rbp-16], r10
 mov r10, QWORD[rbp-16]
 mov rsi, r10
 mov rdi, QWORD[rbp-24]
-mov rax, 0
+xor rax, rax
 call _void._realloc_pvoid.size_t
-push rax
-pop rbx
-mov QWORD[rbp-24], rbx
-jmp .L0x64
-.L0x63:
-.L0x64:
+mov QWORD[rbp-24], rax
+jmp .L0x6f
+.L0x6e:
+.L0x6f:
 mov r10, QWORD[rbp-40]
 mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*1]
@@ -3569,24 +3633,23 @@ mov byte[rbx], r10b
 mov rdx, 1
 lea rbx, [rbp-32]
 mov rsi, rbx
-mov rbx, 0
+xor rbx, rbx
 mov edi, ebx
-mov rax, 0
+xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 mov r10, QWORD[rbp-40]
 inc r10
-mov rbx, r10
-mov QWORD[rbp-40], rbx
-.L0x61:
+mov QWORD[rbp-40], r10
+.L0x6c:
 mov r10, 10
 mov rbx, QWORD[rbp-32]
 cmp ebx, r10d
 setne bl
 mov rax, rbx
 and al, 1
-jnz .L0x60
-.L0x62:
+jnz .L0x6b
+.L0x6d:
 mov rbx, QWORD[rbp-40]
 inc rbx
 mov r10, QWORD[rbp-24]
@@ -3595,15 +3658,13 @@ mov rbx, QWORD[rbp-40]
 inc rbx
 mov r10, QWORD[rbp-24]
 lea r10, [r10+rbx*1]
-mov rbx, 0
+xor rbx, rbx
 mov byte[r10], bl
 mov rbx, QWORD[rbp-40]
 mov rsi, rbx
 mov rdi, QWORD[rbp-24]
-mov rax, 0
+xor rax, rax
 call _void._realloc_pvoid.size_t
-push rax
-pop rax
 jmp ___char._getString_pchar.__return
 ___char._getString_pchar.__return:
 leave
@@ -3614,13 +3675,13 @@ mov rbp, rsp
 sub rsp, 48
 mov [rbp-8], rdi
 mov [rbp-16], rsi
-jmp .L0x66
-.L0x65:
+jmp .L0x71
+.L0x70:
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
 mov QWORD[rbp-8], r10
-.L0x66:
+.L0x71:
 mov rbx, QWORD[rbp-8]
 and r10, 0xff
 mov r10b, byte[rbx]
@@ -3629,16 +3690,15 @@ cmp r10b, bl
 sete r10b
 mov rax, r10
 and al, 1
-jnz .L0x65
-.L0x67:
+jnz .L0x70
+.L0x72:
 mov rbx, QWORD[rbp-8]
 and r10, 0xff
 mov r10b, byte[rbx]
 mov QWORD[rbp-24], r10
 mov QWORD[rbp-32], 0
 mov rbx, 0
-mov r10, rbx
-mov QWORD[rbp-40], r10
+mov QWORD[rbp-40], rbx
 mov r10, 45
 mov rbx, QWORD[rbp-24]
 cmp bl, r10b
@@ -3647,11 +3707,9 @@ mov r10, QWORD[rbp-16]
 and bl, r10b
 mov rax, rbx
 and al, 1
-jz .L0x68
+jz .L0x73
 mov r10, 1
-mov r11, r10
-mov rbx, r11
-mov QWORD[rbp-40], rbx
+mov QWORD[rbp-40], r10
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
@@ -3659,13 +3717,12 @@ mov QWORD[rbp-8], r10
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-24], rbx
-jmp .L0x69
-.L0x68:
-.L0x69:
-jmp .L0x6b
-.L0x6a:
+mov QWORD[rbp-24], r11
+jmp .L0x74
+.L0x73:
+.L0x74:
+jmp .L0x76
+.L0x75:
 mov r11, 10
 mov r10, QWORD[rbp-32]
 imul r10d, r11d
@@ -3673,8 +3730,7 @@ mov r11, QWORD[rbp-24]
 sub r11b, 48
 mov r12, r11
 add r10d, r12d
-mov rbx, r10
-mov QWORD[rbp-32], rbx
+mov QWORD[rbp-32], r10
 mov rbx, 1
 mov r10, QWORD[rbp-8]
 add r10, rbx
@@ -3682,9 +3738,8 @@ mov QWORD[rbp-8], r10
 mov r10, QWORD[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
-mov rbx, r11
-mov QWORD[rbp-24], rbx
-.L0x6b:
+mov QWORD[rbp-24], r11
+.L0x76:
 mov rbx, QWORD[rbp-24]
 test bl, bl
 setnz bl
@@ -3701,20 +3756,20 @@ setne r10b
 and bl, r10b
 mov rax, rbx
 and al, 1
-jnz .L0x6a
-.L0x6c:
+jnz .L0x75
+.L0x77:
 mov rbx, QWORD[rbp-40]
 mov rax, rbx
 and al, 1
-jz .L0x6d
+jz .L0x78
 mov r10, QWORD[rbp-32]
-mov rbx, 0
+xor rbx, rbx
 sub ebx, r10d
 mov rax, rbx
 jmp ___int_toInteger_pchar.bool__return
-jmp .L0x6e
-.L0x6d:
-.L0x6e:
+jmp .L0x79
+.L0x78:
+.L0x79:
 mov rbx, QWORD[rbp-32]
 mov rax, rbx
 jmp ___int_toInteger_pchar.bool__return
@@ -3820,25 +3875,36 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 32
+sub rsp, 40
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rdi, 100
-mov rax, 0
+xor rax, rax
 call _void._mlc_psize_t
-push rax
-pop rax
 mov QWORD[rbp-24], rax
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_6
 mov rsi, rbx
 mov rbx, QWORD[rbp-24]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
 call _int_strcpy_pchar.char.
 push rax
 mov rbx, QWORD[rbp-24]
 mov rdi, rbx
-mov rax, 0
+xor rax, rax
+call _void_printf_pchar.
+push rax
+mov rdi, QWORD[rbp-24]
+xor rax, rax
+call _void_fr_pvoid.
+push rax
+mov rdi, 100
+xor rax, rax
+call _void._mlc_psize_t
+mov QWORD[rbp-32], rax
+mov rbx, QWORD[rbp-32]
+mov rdi, rbx
+xor rax, rax
 call _void_printf_pchar.
 push rax
 mov rax, 5

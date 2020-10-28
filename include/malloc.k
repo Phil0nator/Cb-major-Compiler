@@ -37,42 +37,111 @@ struct block_t{
     block_t* prev;
 
 };
-block_t* head = NULL;
+block_t* free_memory = nullptr;
 
-function void* add_page(){}
+fd_t zerofd = NULL;
+
+
+function void remove_page(block_t* block){
+
+    block->prev->next = block->next;
+    block->next->prev = block->prev;
+
+}
+
+function void add_page(block_t* page){
+
+    if(free_memory ==  nullptr){
+        free_memory = page;
+        return;
+    }
+
+    
+    page->next=free_memory;
+    page->next->prev=page;
+    free_memory=page;
+
+    
+    
+
+}
+
+
+function void populate_zerofd(){
+    zerofd = fopen("/dev/zero", "r+");
+}
+
+
+function void* _scan(size_t size){
+
+    if(free_memory == nullptr){return nullptr;}
+    block_t* ptr = free_memory;
+
+    while(ptr->next != nullptr){
+        
+        if(ptr->size >= size){
+            remove_page(ptr);
+            return ptr+block_t;
+
+        }
+        
+        
+        ptr = ptr->next;
+        
+    }
+
+
+    return nullptr;
+
+
+}
 
 
 global void* mlc(size_t size){
     
 
 
-    
+    size+=block_t;
     size_t allocsize;
     if (size < ALLOC_UNIT){
         allocsize = ALLOC_UNIT;
     }else{
         allocsize = size + (size % _SC_PAGESIZE);
     }
+    void* ptr = _scan(allocsize);
 
-    void* ptr;
-    if(head == NULL){
-        fd_t fd = fopen("/dev/zero", "r+");
-        int s = allocsize;
-        ptr = mmap(0, s, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, fd, 0);
-        close(fd);
-        block_t newhead;
-
-        newhead.size = allocsize;
-        newhead.next=0;
-        newhead.prev=0;
-
-        memcpy(ptr, &newhead, block_t);
-        head = ptr;
-        ptr+=block_t;
-        return ptr;
+    if(ptr == nullptr){
         
+        if(!zerofd){
+            populate_zerofd();
+        }
 
+        int s = size;
+        ptr = mmap(0, s, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, zerofd, 0);
+        block_t header;
+        header.size = size;
+        header.next=0;
+        header.prev=0;
+
+        memcpy(ptr, &header, block_t);
+
+        ptr+=block_t;
     }
+
+
+
+    return ptr;
+    
+
+}
+
+
+global void fr(void* ptr){
+
+
+    ptr-=block_t;
+    add_page(ptr);
+
 
 }
 

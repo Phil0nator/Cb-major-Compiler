@@ -89,7 +89,7 @@ class Compiler:
     def getGlob(self, q):               # get global variable of name q
         out = next((g for g in self.globals if g.name == q), None)
         if(out is not None):
-            return out
+            return out.copy()
 
         fn = self.getFunction(q)
         if(fn is None):
