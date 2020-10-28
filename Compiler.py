@@ -195,7 +195,6 @@ class Compiler:
 
         if(isinstance(value.accessor, Variable)):
             value.accessor = value.accessor.name
-        
 
         self.globals.append(Variable(value.type.copy(), name,
                                      glob=True, initializer=value.accessor))
@@ -344,7 +343,8 @@ class Compiler:
                 t = self.checkType()
                 if(self.current_token.tok != T_ID):
                     throw(ExpectedIdentifier(self.current_token))
-                if(t.name == id): nested = True
+                if(t.name == id):
+                    nested = True
                 name = self.current_token.value
                 var = Variable(t, name, glob=False, offset=size,
                                isptr=t.ptrdepth > 0, signed=t.signed)
@@ -432,19 +432,18 @@ class Compiler:
         # fill in new info
         actualType = DType(id, size, members, 0, True,
                            destructor=destructor, constructor=constructor)
-        
+
         # ensure correct type-propogation
         if(nested):
             for t in range(len(actualType.members)):
                 for i in range(len(actualType.members)):
                     if self.Tequals(id, actualType.members[i].t.name):
-                        actualType.members[i].t.members = actualType.members.copy()
-            
+                        actualType.members[i].t.members = actualType.members.copy(
+                        )
 
         actualTypeptr = DType(id, size)
         actualTypeptr.load(actualType)
         actualTypeptr.ptrdepth += 1
-
 
         if(destructor is not None):
             actualType.destructor.parameters[0].t.load(actualTypeptr)
@@ -458,7 +457,6 @@ class Compiler:
         if(self.current_token.tok != T_ENDL):
             throw(ExpectedToken(self.current_token, T_ENDL))
         self.advance()
-
 
     def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentTokens = ftup

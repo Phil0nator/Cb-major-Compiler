@@ -111,19 +111,16 @@ def determinePrecedence(a, b, fn):
     if(a.name not in type_precedence and a.ptrdepth == 0) ^ (b.name not in type_precedence and b.ptrdepth == 0):
         throw(TypeMismatch(fn.current_token, a, b))
 
-    if(a.name not in type_precedence): 
-        a=a.copy()
+    if(a.name not in type_precedence):
+        a = a.copy()
         a.name = "void"
     if(b.name not in type_precedence):
-        b=b.copy()
-        b.name="void"
-
+        b = b.copy()
+        b.name = "void"
 
     if(a.ptrdepth > 0 and b.__eq__(DType("void", 8, ptrdepth=1))) or (a.ptrdepth > 0 and b.__eq__(DType("void", 8, signed=False, ptrdepth=1))):
 
         return a, b
-
-    
 
     elif(type_precedence[a.name] > type_precedence[b.name] and a.ptrdepth == b.ptrdepth):
 

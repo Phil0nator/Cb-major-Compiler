@@ -1020,12 +1020,10 @@ global _void_printf_pchar.
 section .data
 STRING_CONSTANT_0: db `/dev/zero`, 0
 STRING_CONSTANT_1: db `r+`, 0
-STRING_CONSTANT_2: db `HERE: %u\n`, 0
 FLT_CONSTANT_0: dq 0x0.0p+0
-STRING_CONSTANT_3: db `False`, 0
-STRING_CONSTANT_4: db `True`, 0
-STRING_CONSTANT_5: db `%s`, 0
-STRING_CONSTANT_6: db `THINGS\n`, 0
+STRING_CONSTANT_2: db `False`, 0
+STRING_CONSTANT_3: db `True`, 0
+STRING_CONSTANT_4: db `%s`, 0
 nullterm: DQ 0
 INLINE_SYSCALL: DQ __inline__syscall
 free_memory: DQ 0
@@ -1658,15 +1656,6 @@ mov rbx, [free_memory]
 mov QWORD[rbp-16], rbx
 jmp .L0x19
 .L0x18:
-mov rbx, QWORD[rbp-16]
-lea rbx, [rbx+0]
-mov rbx, qword[rbx]
-mov rsi, rbx
-mov rbx, STRING_CONSTANT_2
-mov rdi, rbx
-xor rax, rax
-call printf
-push rax
 mov rbx, QWORD[rbp-16]
 lea rbx, [rbx+0]
 mov rbx, qword[rbx]
@@ -2348,12 +2337,12 @@ mov rbx, QWORD[rbp-24]
 lea rbx, [rbx+r10*8]
 mov rbx, qword[rbx]
 mov QWORD[rbp-104], rbx
-mov QWORD[rbp-112], STRING_CONSTANT_3
+mov QWORD[rbp-112], STRING_CONSTANT_2
 mov rbx, QWORD[rbp-104]
 mov rax, rbx
 and al, 1
 jz .L0x3a
-mov QWORD[rbp-112], STRING_CONSTANT_4
+mov QWORD[rbp-112], STRING_CONSTANT_3
 jmp .L0x3b
 .L0x3a:
 .L0x3b:
@@ -3588,7 +3577,7 @@ call _void._malloc_psize_t
 mov QWORD[rbp-24], rax
 mov QWORD[rbp-40], 0
 mov rsi, QWORD[rbp-8]
-mov rbx, STRING_CONSTANT_5
+mov rbx, STRING_CONSTANT_4
 mov rdi, rbx
 xor rax, rax
 call printf
@@ -3875,38 +3864,9 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 40
+sub rsp, 24
 mov [rbp-8], rdi
 mov [rbp-16], rsi
-mov rdi, 100
-xor rax, rax
-call _void._mlc_psize_t
-mov QWORD[rbp-24], rax
-mov rbx, STRING_CONSTANT_6
-mov rsi, rbx
-mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-xor rax, rax
-call _int_strcpy_pchar.char.
-push rax
-mov rbx, QWORD[rbp-24]
-mov rdi, rbx
-xor rax, rax
-call _void_printf_pchar.
-push rax
-mov rdi, QWORD[rbp-24]
-xor rax, rax
-call _void_fr_pvoid.
-push rax
-mov rdi, 100
-xor rax, rax
-call _void._mlc_psize_t
-mov QWORD[rbp-32], rax
-mov rbx, QWORD[rbp-32]
-mov rdi, rbx
-xor rax, rax
-call _void_printf_pchar.
-push rax
 mov rax, 5
 jmp __main__return
 __main__return:
