@@ -40,9 +40,9 @@ class ExpressionComponent:
         else:
             return f"[ EC: {self.accessor} ]"
 
+
     def copy(self):
-        return ExpressionComponent(self.accessor if not isinstance(self.accessor, Variable) else self.accessor.copy(
-        ), self.type.copy(), self.isoperation, self.constint, self.token)
+        return ExpressionComponent(self.accessor if not isinstance(self.accessor, Variable) else self.accessor.copy() ,self.type.copy(),self.isoperation,self.constint,self.token) 
 
     def valueOf(self):  # getter
         return self.accessor

@@ -221,12 +221,18 @@ class ExpressionEvaluator:
                     a = stack.pop()              # first operand
                     op = e.accessor              #
 
+
                     # ensure variables are not overwritten by implicit casting
                     if(isinstance(a.accessor, Variable)):
                         a.accessor = a.accessor.copy()
 
                     if(isinstance(b.accessor, Variable)):
                         b.accessor = b.accessor.copy()
+
+
+
+
+
 
                     if(a.isconstint() and b.isconstint()):  # optimize for constant expressions
                         stack.append(calculateConstant(a, b, op))
@@ -271,11 +277,14 @@ class ExpressionEvaluator:
                     if(len(stack) < 1):
                         throw(HangingOperator(pfix[-1].token))
                     a = stack.pop()  # operand
-
+                    
+                    
                     # ensure variables are not overwritten by implicit casting
                     if(isinstance(a.accessor, Variable)):
                         a.accessor = a.accessor.copy()
-
+                    
+                    
+                    
                     # op == !
                     if(e.accessor == T_NOT):
 
@@ -334,9 +343,10 @@ class ExpressionEvaluator:
 
         o = final.type.copy()
         # ensure variables are not overwritten by implicit casting
-
+        
         if(isinstance(final.accessor, Variable)):
             final.accessor = final.accessor.copy()
+
 
         self.resultflags = final
 
@@ -848,7 +858,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             member = member.name
         memv = a.type.getMember(member)
         if(memv is None):
-            print(a, b, member, a.type.members)
+            print(a,b, member, a.type.members)
 
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()

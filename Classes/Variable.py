@@ -35,16 +35,7 @@ class Variable:
         return self.t.isflt()
 
     def copy(self):
-        out = Variable(
-            self.t.copy(),
-            self.name,
-            self.glob,
-            self.offset,
-            self.initializer,
-            self.isptr,
-            self.mutable,
-            self.signed,
-            self.isStackarr)
+        out = Variable(self.t.copy(),self.name,self.glob,self.offset,self.initializer,self.isptr,self.mutable,self.signed,self.isStackarr)
         out.stackdims = self.stackdims
         out.register = self.register
         out.stacksizes = self.stacksizes

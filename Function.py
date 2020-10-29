@@ -59,8 +59,7 @@ class Function:
 
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.variables = []                     # all local variables
-        # inline functions behave like macros, and are not called
-        self.inline = False
+        self.inline = False                     # inline functions behave like macros, and are not called
         # stack containing labels to jump to if the "continue" keyword is used
         self.continues = []
         # stack containing labels to jump to if the "break" keyword is used
@@ -818,7 +817,7 @@ class Function:
 
                     inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
                                                          fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
-                    # inst+=(maskset(
+                    #inst+=(maskset(
                     # norm_parameter_registers[normused],
                     # fn.parameters[i].t.csize()))
                     rfree(result)
