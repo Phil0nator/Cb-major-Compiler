@@ -221,19 +221,6 @@ class ExpressionEvaluator:
                     a = stack.pop()              # first operand
                     op = e.accessor              #
 
-
-                    # ensure variables are not overwritten by implicit casting
-                    if(isinstance(a.accessor, Variable)):
-                        a.accessor = a.accessor.copy()
-
-                    if(isinstance(b.accessor, Variable)):
-                        b.accessor = b.accessor.copy()
-
-
-
-
-
-
                     if(a.isconstint() and b.isconstint()):  # optimize for constant expressions
                         stack.append(calculateConstant(a, b, op))
 
@@ -277,14 +264,7 @@ class ExpressionEvaluator:
                     if(len(stack) < 1):
                         throw(HangingOperator(pfix[-1].token))
                     a = stack.pop()  # operand
-                    
-                    
-                    # ensure variables are not overwritten by implicit casting
-                    if(isinstance(a.accessor, Variable)):
-                        a.accessor = a.accessor.copy()
-                    
-                    
-                    
+
                     # op == !
                     if(e.accessor == T_NOT):
 
@@ -342,11 +322,6 @@ class ExpressionEvaluator:
         # specified destination
 
         o = final.type.copy()
-        # ensure variables are not overwritten by implicit casting
-        
-        if(isinstance(final.accessor, Variable)):
-            final.accessor = final.accessor.copy()
-
 
         self.resultflags = final
 
@@ -605,15 +580,16 @@ class RightSideEvaluator(ExpressionEvaluator):
             #   order of operands!
             #
             #   \/\/\/\/\//\/\/\/\/\/\/\/\/\/\
+
             reverse = False
             if(newtype.__eq__(a.type)):
                 # cast to a
-                castee = b.copy()
-                caster = a.copy()
+                castee = b
+                caster = a
             else:
                 # cast to b
-                castee = a.copy()
-                caster = b.copy()
+                castee = a
+                caster = b
                 reverse = True
 
             needLoadC = True

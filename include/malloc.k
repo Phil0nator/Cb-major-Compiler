@@ -37,111 +37,42 @@ struct block_t{
     block_t* prev;
 
 };
-block_t* free_memory = nullptr;
+block_t* head = NULL;
 
-fd_t zerofd = NULL;
-
-
-function void remove_page(block_t* block){
-
-    block->prev->next = block->next;
-    block->next->prev = block->prev;
-
-}
-
-function void add_page(block_t* page){
-
-    if(free_memory ==  nullptr){
-        free_memory = page;
-        return;
-    }
-
-    
-    page->next=free_memory;
-    page->next->prev=page;
-    free_memory=page;
-
-    
-    
-
-}
-
-
-function void populate_zerofd(){
-    zerofd = fopen("/dev/zero", "r+");
-}
-
-
-function void* _scan(size_t size){
-
-    if(free_memory == nullptr){return nullptr;}
-    block_t* ptr = free_memory;
-
-    while(ptr->next != nullptr){
-        
-        if(ptr->size >= size){
-            remove_page(ptr);
-            return ptr+block_t;
-
-        }
-        
-        
-        ptr = ptr->next;
-        
-    }
-
-
-    return nullptr;
-
-
-}
+function void* add_page(){}
 
 
 global void* mlc(size_t size){
     
 
 
-    size+=block_t;
+    
     size_t allocsize;
     if (size < ALLOC_UNIT){
         allocsize = ALLOC_UNIT;
     }else{
         allocsize = size + (size % _SC_PAGESIZE);
     }
-    void* ptr = _scan(allocsize);
 
-    if(ptr == nullptr){
-        
-        if(!zerofd){
-            populate_zerofd();
-        }
+    void* ptr;
+    if(head == NULL){
+        fd_t fd = fopen("/dev/zero", "r+");
+        int s = allocsize;
+        ptr = mmap(0, s, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, fd, 0);
+        close(fd);
+        block_t newhead;
 
-        int s = size;
-        ptr = mmap(0, s, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, zerofd, 0);
-        block_t header;
-        header.size = size;
-        header.next=0;
-        header.prev=0;
+        newhead.size = allocsize;
+        newhead.next=0;
+        newhead.prev=0;
 
-        memcpy(ptr, &header, block_t);
-
+        memcpy(ptr, &newhead, block_t);
+        head = ptr;
         ptr+=block_t;
+        return ptr;
+        
+
     }
-
-
-
-    return ptr;
-    
-
-}
-
-
-global void fr(void* ptr){
-
-
-    ptr-=block_t;
-    add_page(ptr);
-
 
 }
 
