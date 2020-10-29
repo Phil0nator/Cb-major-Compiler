@@ -834,7 +834,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             member = member.name
         memv = a.type.getMember(member)
         if(memv is None):
-            print(a,b, member, a.type.members)
+            print(a, b, member, a.type.members)
 
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()

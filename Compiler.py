@@ -3,6 +3,7 @@ from Function import Function
 from Classes.DType import DType
 from Classes.DType import type_precedence
 import Classes.DType as Type
+from Structure import Structure
 from Classes.Token import Token
 from Classes.Token import *
 from Classes.Location import Location
@@ -195,7 +196,6 @@ class Compiler:
 
         if(isinstance(value.accessor, Variable)):
             value.accessor = value.accessor.name
-        
 
         self.globals.append(Variable(value.type.copy(), name,
                                      glob=True, initializer=value.accessor))
@@ -308,157 +308,8 @@ class Compiler:
                 signed=f.returntype.signed))
 
     def buildStruct(self):                  # isolate and build a structure
-        self.advance()
-        if(self.current_token.tok != T_ID):
-            throw(ExpectedIdentifier(self.current_token))
-
-        # get name
-        id = self.current_token.value
-        self.advance()
-        if(self.current_token.tok != T_OPENSCOPE):
-            throw(ExpectedToken(self.current_token, "{"))
-
-        # build prototype DType as placeholder
-        prototypeType = DType(id, 8, [], 0, True)
-        self.types.append(prototypeType)
-
-        size = 0
-        members = []
-
-        postadders = []
-
-        destructor = None
-        constructor = None
-        nested = False
-        # find properties:
-        #   -members
-        #   -member functions
-        #   -constructor
-        #   -destructor
-        while(self.current_token.tok != T_CLSSCOPE):
-            self.advance()
-
-            # member variable
-            if(self.current_token.tok == T_ID):
-
-                t = self.checkType()
-                if(self.current_token.tok != T_ID):
-                    throw(ExpectedIdentifier(self.current_token))
-                if(t.name == id): nested = True
-                name = self.current_token.value
-                var = Variable(t, name, glob=False, offset=size,
-                               isptr=t.ptrdepth > 0, signed=t.signed)
-                members.append(var)
-                self.possible_members.append(name)
-                size += t.csize()
-                self.advance()
-                if(self.current_token.tok != T_ENDL):
-                    throw(ExpectedSemicolon(self.current_token))
-
-            # either member function, constructor or destructor
-            elif(self.current_token.tok == T_KEYWORD):
-
-                # member function
-                if(self.current_token.value == "function"):
-                    self.advance()
-                    self.createFunction()
-                    f = self.functions.pop()
-                    gv = self.globals.pop()
-                    members.append(f)
-                    gv.name = f"{id}_{gv.name}"
-                    #f.name = f"{id}_{gv.name}"
-                    # self.globals.append(gv)
-                    # self.functions.append(f)
-
-                # destructor
-                elif(self.current_token.value == "destructor"):
-                    self.advance()
-                    if(self.current_token.tok != "{"):
-                        throw(ExpectedToken(self.current_token, "{"))
-                    self.advance()
-                    name = f"x{id}"
-                    parameters = [Variable(prototypeType, "this", isptr=True)]
-                    fntks = []
-                    while(self.current_token.tok != "}"):
-                        fntks.append(self.current_token)
-                        self.advance()
-                    fntks.append(self.current_token)
-                    fn = Function(name, parameters, VOID.copy(), self, fntks)
-                    destructor = fn
-                    self.advance()
-                    self.functions.append(fn)
-                    self.globals.append(Variable(VOID.copy(), name, glob=True))
-                    if(self.current_token.tok != T_ENDL):
-                        throw(ExpectedToken(self.current_token, T_ENDL))
-
-                # constructor
-                elif(self.current_token.value == "constructor"):
-                    self.advance()
-                    if(self.current_token.tok != "("):
-                        throw(ExpectedToken(self.current_token, "("))
-                    name = f"i{id}"
-                    parameters = [Variable(prototypeType, "this", isptr=True)]
-                    fntks = []
-                    while self.current_token.tok != ")":
-                        self.advance()
-                        t = self.checkType()
-                        if(t is None):
-                            throw(UnkownType(self.current_token))
-                        if(self.current_token.tok != T_ID):
-                            throw(ExpectedIdentifier(self.current_token))
-                        pname = self.current_token.value
-                        parameters.append(Variable(t, pname))
-                        self.advance()
-                    self.advance()
-                    if(self.current_token.tok != "{"):
-                        throw(ExpectedToken(self.current_token, "{"))
-                    self.advance()
-                    while(self.current_token.tok != "}"):
-                        fntks.append(self.current_token)
-                        self.advance()
-                    fntks.append(self.current_token)
-
-                    fn = Function(name, parameters, VOID.copy(), self, fntks)
-                    constructor = fn
-                    self.functions.append(fn)
-                    self.globals.append(Variable(VOID.copy(), name, glob=True))
-                    self.advance()
-                    if(self.current_token.tok != T_ENDL):
-                        throw(ExpectedToken(self.current_token, T_ENDL))
-
-        # remove prototype to apply actual properties
-        self.types.remove(prototypeType)
-
-        # fill in new info
-        actualType = DType(id, size, members, 0, True,
-                           destructor=destructor, constructor=constructor)
-        
-        # ensure correct type-propogation
-        if(nested):
-            for t in range(len(actualType.members)):
-                for i in range(len(actualType.members)):
-                    if self.Tequals(id, actualType.members[i].t.name):
-                        actualType.members[i].t.members = actualType.members.copy()
-            
-
-        actualTypeptr = DType(id, size)
-        actualTypeptr.load(actualType)
-        actualTypeptr.ptrdepth += 1
-
-
-        if(destructor is not None):
-            actualType.destructor.parameters[0].t.load(actualTypeptr)
-        if(constructor is not None):
-            actualType.constructor.parameters[0].t.load(actualTypeptr)
-
-        # finalize
-        self.types.append(actualType)
-
-        self.advance()
-        if(self.current_token.tok != T_ENDL):
-            throw(ExpectedToken(self.current_token, T_ENDL))
-        self.advance()
-
+        parser = Structure(self)
+        parser.construct()
 
     def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentTokens = ftup
