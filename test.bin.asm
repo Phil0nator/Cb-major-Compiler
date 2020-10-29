@@ -1019,7 +1019,9 @@ FLT_CONSTANT_0: dq 0x0.0p+0
 STRING_CONSTANT_0: db `False`, 0
 STRING_CONSTANT_1: db `True`, 0
 STRING_CONSTANT_2: db `%s`, 0
-STRING_CONSTANT_3: db `test %i, %i\n`, 0
+STRING_CONSTANT_3: db `%i\n`, 0
+STRING_CONSTANT_4: db `%i\n`, 0
+STRING_CONSTANT_5: db `%i\n`, 0
 nullterm: DQ 0
 INLINE_SYSCALL: DQ __inline__syscall
 M_MINZERO_MEM: DQ 0
@@ -4376,25 +4378,93 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 32
 ;Load Parameter: [int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ id : argc], [ * : *], [ int : 5]]
-mov r10, 5
-mov rbx, QWORD[rbp-8]
-imul ebx, r10d
-mov rdx, rbx
-;[[ id : argc]]
-mov rsi, QWORD[rbp-8]
+mov QWORD[rbp-32], 0
+mov QWORD[rbp-28], 0
+;[[ id : test.a]]
+;[[ id : test.a]]
+;[[ int : 26]]
+mov rbx, 26
+mov QWORD[rbp-32], rbx
+;[[ id : test.a]]
+mov rsi, QWORD[rbp-32]
 ;[[ id : STRING_CONSTANT_3]]
 mov rbx, STRING_CONSTANT_3
 mov rdi, rbx
 xor rax, rax
 call printf
 push rax
-;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0], [void arg2 @ 0]] ) ] ]]
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+;[[ id : test.o]]
+;[[ id : test.o]]
+;[[ id : Test]]
+mov rdi, 8
+xor rax, rax
+call _void._malloc_psize_t
+mov QWORD[rbp-28], rax
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 8]] ) ] ]]
+;[[ id : test.o], [ -> : ->], [ id : a]]
+mov rbx, QWORD[rbp-28]
+;[[ id : test.o], [ -> : ->], [ id : a]]
+mov rbx, QWORD[rbp-28]
+;[[ int : 28]]
+mov r10, 28
+mov dword[rbx], r10d
+;[[ id : test.o], [ -> : ->], [ id : a]]
+mov rbx, QWORD[rbp-28]
+lea rbx, [rbx+0]
+mov ebx, dword[rbx]
+and rbx, 0xffffffff
+mov rsi, rbx
+;[[ id : STRING_CONSTANT_4]]
+mov rbx, STRING_CONSTANT_4
+mov rdi, rbx
+xor rax, rax
+call printf
+push rax
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+;[[ id : test.o], [ -> : ->], [ id : o]]
+mov rbx, QWORD[rbp-28]
+lea rbx, [rbx+4]
+;[[ id : test.o], [ -> : ->], [ id : o]]
+mov rbx, QWORD[rbp-28]
+lea rbx, [rbx+4]
+;[[ id : Test]]
+mov rdi, 8
+xor rax, rax
+call _void._malloc_psize_t
+mov qword[rbx], rax
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 8]] ) ] ]]
+;[[ id : test.o], [ -> : ->], [ id : o], [ -> : ->], [ id : a]]
+mov rbx, QWORD[rbp-28]
+lea rbx, [rbx+4]
+mov r10, rbx
+;[[ id : test.o], [ -> : ->], [ id : o], [ -> : ->], [ id : a]]
+mov rbx, QWORD[rbp-28]
+lea rbx, [rbx+4]
+mov r10, rbx
+;[[ int : 30]]
+mov rbx, 30
+mov dword[r10], ebx
+;[[ id : test.o], [ -> : ->], [ id : o], [ -> : ->], [ id : a]]
+mov rbx, QWORD[rbp-28]
+lea rbx, [rbx+4]
+mov r10, rbx
+lea r10, [r10+0]
+mov r10d, dword[r10]
+and r10, 0xffffffff
+mov rsi, r10
+;[[ id : STRING_CONSTANT_5]]
+mov rbx, STRING_CONSTANT_5
+mov rdi, rbx
+xor rax, rax
+call printf
+push rax
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
 ;[[ int : 5]]
 mov rax, 5
 jmp __main__return
