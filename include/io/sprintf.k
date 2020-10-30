@@ -13,6 +13,7 @@
 #define FORMAT_START '%'
 #define FORMAT_FLOAT 'f'
 #define FORMAT_HEX 'x'
+#define FORMAT_OCTAL 'o'
 
 #include "math.k"
 #include "string.k"
@@ -134,59 +135,69 @@ global int __sprintf(char* str, char* fmt, void* args){
             fmt+=1;
             char c = @fmt;
 
-            if(c == FORMAT_INT64){
-                
-                long num = (args[argc]);
 
-                long size = toStr(num, str, 1, 10);
-                str+=size-1;
+            switch(c){
+                case FORMAT_INT64 {
+                    long num = (args[argc]);
 
-            }else if (c == FORMAT_CHAR){
-                char cf = $char args[argc];
-                @str = cf;
-            }
-            else if (c == FORMAT_HEX){
-                long numx = (args[argc]);
-                long sx = toStr(numx, str, 0, 16);
-                str+=sx-1;
-            }
-
-            else if (c == FORMAT_UINT64){
-
-                long unum = (args[argc]);
-                int usize = toStr(unum, str, 0, 10);
-                str+=usize-1;
-
-            }else if (c == FORMAT_STRING){
-
-                int ssize = strcpy(str,args[argc]);
-                str+=ssize-1;
-
-            }else if (c == FORMAT_BOOL){
-
-
-                bool b = args[argc];
-                char* boolean_string = "False";
-                if(b){
-                    boolean_string = "True";
+                    long size = toStr(num, str, 1, 10);
+                    str+=size-1;
+                    break;
                 }
-                int bsize = strcpy(str, boolean_string);
-                
-                str+=bsize;
-            }
+                case FORMAT_CHAR {
+                    char cf = $char args[argc];
+                    @str = cf;
+                    break;
 
-            else if (c == FORMAT_DOUBLE){
+                }
+                case FORMAT_HEX {
+                    long numx = (args[argc]);
+                    long sx = toStr(numx, str, 0, 16);
+                    str+=sx-1;
+                    break;
+                }
+                case FORMAT_OCTAL {
 
-                double d = args[argc];
-                int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
-                str += dsize-1;
+                    long numo = (args[argc]);
+                    long so = toStr(numo, str, 0, 8);
+                    str+=so-1;
+                    break;
+                }
+                case FORMAT_UINT64 {
+                    long unum = (args[argc]);
+                    int usize = toStr(unum, str, 0, 10);
+                    str+=usize-1;
+                    break;
+                }
+                case FORMAT_STRING {
+                    int ssize = strcpy(str,args[argc]);
+                    str+=ssize-1;
+                    break;
+                }
+                case FORMAT_BOOL {
+                    bool b = args[argc];
+                    char* boolean_string = "False";
+                    if(b){
+                        boolean_string = "True";
+                    }
+                    int bsize = strcpy(str, boolean_string);
+                    
+                    str+=bsize;
+                    break;
+                }
+                case FORMAT_DOUBLE {
+                    double d = args[argc];
+                    int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
+                    str += dsize-1;
+                    break;
+                }
 
-            } else if (c == FORMAT_FLOAT){
-
-                double f = args[argc];
-                int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
-                str += fsize-1;
-
+                case FORMAT_FLOAT{
+                    double f = args[argc];
+                    int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
+                    str += fsize-1;
+                    break;
+                }
             }
 
 

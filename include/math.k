@@ -175,6 +175,27 @@ global long log(long x){
 
 }
 
+global long log(long n, long b){
+  __asm{"
+  
+  xor rbx, rbx
+  mov rax, rdi
+  _int_log_pintint_flp:
+  xor rdx, rdx
+  div rsi
+  test rax, rax
+  jnz _int_log_pintint_inc
+  jmp _int_log_pintint_end
+  _int_log_pintint_inc:
+  inc rbx
+  jmp _int_log_pintint_flp
+  _int_log_pintint_end:
+  mov rax, rbx
+  
+  
+  "}
+}
+
 
 global long divmod(long dividend, long divisor, long* modulus ){
 

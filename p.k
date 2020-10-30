@@ -1,24 +1,16 @@
 
 #include "std.k"
 
-struct Test{
-
-    int a = -1;
-    char* name = "EMPTY";
-    Test* o;
-
-};
 
 
 
 function int main(int argc, char** argv){
 
+    printf("Hello WOrld!\n");
 
-    Test test;
+    printf("I: %i, H: 0x%x, S: %s", 26,255,"Hello World!\n");
 
-    printf("%x\n",  test.a);
 
-    printf(@(&test.name));
 
     return 5;
 }
