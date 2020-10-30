@@ -523,7 +523,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             else:
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 instr += ninstr
-                instr += maskset(setSize(breg,8), sizeOf(breg))
+                instr += maskset(setSize(breg, 8), sizeOf(breg))
                 areg = setSize(areg, 8)
                 if(a.type.size(1) in [1, 2, 4, 8]):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
@@ -784,7 +784,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             else:
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 instr += ninstr
-                instr += maskset(setSize(breg,8), sizeOf(breg))
+                instr += maskset(setSize(breg, 8), sizeOf(breg))
                 areg = setSize(areg, 8)
                 if(a.type.size(1) in [1, 2, 4, 8]):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"

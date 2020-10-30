@@ -1095,7 +1095,6 @@ class Function:
             sizes.append(size)
             self.advance()
             self.checkTok(T_CLSIDX)
-            
 
         if(isarr):
             totalsize = product(sizes) * t.size(0)
@@ -1263,19 +1262,13 @@ class Function:
 
         self.asm += self.suffix           # readonly memory
 
-
-
         # warning checking:
         if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned):
             warn(NoReturnStatement(self.tokens[0], self))
 
         for v in self.variables:
             if(not v.referenced):
-                warn(UnusedVariable(v.dtok, v,self))
-
-
-
-
+                warn(UnusedVariable(v.dtok, v, self))
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:

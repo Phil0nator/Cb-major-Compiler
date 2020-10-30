@@ -22,14 +22,16 @@ class Structure:
         self.compiler = compiler
         self.current_token = self.compiler.current_token
 
-    #wrapper function
+    # wrapper function
     def advance(self):
         self.compiler.advance()
         self.current_token = self.compiler.current_token
     # wrapper function
+
     def update(self):
         self.current_token = self.compiler.current_token
     # main function
+
     def construct(self):
         self.advance()
         if(self.current_token.tok != T_ID):
@@ -66,7 +68,7 @@ class Structure:
                 self.update()
                 if(self.current_token.tok != T_ID):
                     throw(ExpectedIdentifier(self.current_token))
-                
+
                 # if member of the same type as this struct, it must be a pointer,
                 # otherwise it is an incomplete type.
                 if(t.name == id):
@@ -91,7 +93,6 @@ class Structure:
 
                 if(exists):
                     throw(VariableRedeclaration(self.current_token, var))
-
 
                 # finalize data
                 var.ptrhint = ptrhint
@@ -123,7 +124,6 @@ class Structure:
                     t.isflt(), self.compiler.currentTokens[st:end], emptyfn)
 
                 var.initializer = value.accessor
-
 
         # finalize
         self.compiler.types.pop()

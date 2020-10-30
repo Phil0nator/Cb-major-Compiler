@@ -269,7 +269,6 @@ class Warning:
 
     def __repr__(self):
 
-        
         start = f"{Style.BRIGHT}{Fore.MAGENTA}Warning! :{Style.RESET_ALL}"
 
         locline = f"{Style.BRIGHT}{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"

@@ -181,12 +181,16 @@ class Compiler:
 
         if (self.current_token.tok != T_EQUALS):
             if(self.current_token.tok == T_ENDL):
-                self.globals.append(Variable(intr.copy(), name, glob=True,initializer=0))
+                self.globals.append(
+                    Variable(
+                        intr.copy(),
+                        name,
+                        glob=True,
+                        initializer=0))
                 self.heap += f"{name}: resb {intr.csize()}\n"
                 return
             else:
                 throw(ExpectedValue(self.current_token))
-
 
         self.advance()
 

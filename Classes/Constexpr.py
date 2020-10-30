@@ -70,7 +70,7 @@ def calculateConstant(a, b, op):
             int(a.accessor ^ b.accessor), INT.copy(), constint=True)
 
 
-def calculateCfloat(a,b,op):
+def calculateCfloat(a, b, op):
     if(op == "*"):
         return EC.ExpressionComponent(
             float(a.accessor * b.accessor), DOUBLE.copy(), constint=True)
@@ -127,8 +127,6 @@ def calculateCfloat(a,b,op):
             float(a.accessor ^ b.accessor), DOUBLE.copy(), constint=True)
 
 
-
-
 # get result of a op b while taking initializer value for a and b if they
 # are vars.
 def evaluate(a, b, op):
@@ -136,7 +134,8 @@ def evaluate(a, b, op):
         a.accessor = a.accessor.initializer
     if(b is not None and isinstance(b.accessor, Variable)):
         b.accessor = b.accessor.initializer
-    return calculateConstant(a, b, op) if isinstance(a.accessor, int) and isinstance(b.accessor, int) else calculateCfloat(a,b,op) 
+    return calculateConstant(a, b, op) if isinstance(
+        a.accessor, int) and isinstance(b.accessor, int) else calculateCfloat(a, b, op)
 
 
 # standard postfix evaluation, using 'evaluate(a,b,op)'
