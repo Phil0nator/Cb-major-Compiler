@@ -1022,7 +1022,7 @@ STRING_CONSTANT_1: db `False`, 0
 STRING_CONSTANT_2: db `True`, 0
 STRING_CONSTANT_3: db `%s`, 0
 STRING_CONSTANT_4: db `EMPTY`, 0
-STRING_CONSTANT_5: db `%i\n`, 0
+STRING_CONSTANT_5: db `%x\n`, 0
 nullterm: DQ 0
 INLINE_SYSCALL: DQ __inline__syscall
 M_MINZERO_MEM: DQ 0
@@ -4405,7 +4405,7 @@ sub rsp, 56
 mov [rbp-8], rdi
 ;Load Parameter: [char.. argv @ 16]
 mov [rbp-16], rsi
-mov dword[rbp-48], 65416
+mov dword[rbp-48], -1
 mov qword[rbp-44], STRING_CONSTANT_4
 mov qword[rbp-36], 0
 ;[[ id : test.a]]

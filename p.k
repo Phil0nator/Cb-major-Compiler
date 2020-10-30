@@ -3,7 +3,7 @@
 
 struct Test{
 
-    int a = 65416;
+    int a = -1;
     char* name = "EMPTY";
     Test* o;
 
@@ -16,7 +16,7 @@ function int main(int argc, char** argv){
 
     Test test;
 
-    printf("%i\n",  test.a);
+    printf("%x\n",  test.a);
 
     printf(@(&test.name));
 
