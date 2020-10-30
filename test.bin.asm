@@ -1022,14 +1022,17 @@ STRING_CONSTANT_0: db `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU
 STRING_CONSTANT_1: db `False`, 0
 STRING_CONSTANT_2: db `True`, 0
 STRING_CONSTANT_3: db `%s`, 0
+FLT_CONSTANT_1: dq 0x1.a4ccccccccccdp+4
+FLT_CONSTANT_2: dq 0x1.a333333333333p+4
 STRING_CONSTANT_4: db `Hello WOrld!\n`, 0
 STRING_CONSTANT_5: db `I: %i, H: 0x%x, S: %s`, 0
 STRING_CONSTANT_6: db `Hello World!\n`, 0
-nullterm: DQ 0
+nullterm: DB 0
 INLINE_SYSCALL: DQ __inline__syscall
-M_MINZERO_MEM: DQ 0
+M_MINZERO_MEM: dq 0x0.0p+0
 __format_numchars: DQ STRING_CONSTANT_0
 rand_next: DQ 1
+tester: dq 0x1.a400000000000p+5
 section .bss
 align 16
 __heap_padding__: resz 1

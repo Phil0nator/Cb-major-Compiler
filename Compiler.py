@@ -180,7 +180,13 @@ class Compiler:
         self.advance()
 
         if (self.current_token.tok != T_EQUALS):
-            throw(ExpectedValue(self.current_token))
+            if(self.current_token.tok == T_ENDL):
+                self.globals.append(Variable(intr.copy(), name, glob=True,initializer=0))
+                self.heap += f"{name}: resb {intr.csize()}\n"
+                return
+            else:
+                throw(ExpectedValue(self.current_token))
+
 
         self.advance()
 
@@ -196,8 +202,7 @@ class Compiler:
 
         if(isinstance(value.accessor, Variable)):
             value.accessor = value.accessor.name
-
-        self.globals.append(Variable(value.type.copy(), name,
+        self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor))
 
         # add .data instructions to self.constants
