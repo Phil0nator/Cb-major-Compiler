@@ -28,6 +28,8 @@ class Variable:
         self.stackdims = isStackarr
         self.stacksizes = []            # ^ sizes
         self.register = None            # register declaration
+        self.referenced = False         # for warnings
+        self.dtok = None
 
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and

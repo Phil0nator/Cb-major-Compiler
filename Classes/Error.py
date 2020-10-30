@@ -269,6 +269,7 @@ class Warning:
 
     def __repr__(self):
 
+        
         start = f"{Style.BRIGHT}{Fore.MAGENTA}Warning!:{Style.RESET_ALL}"
 
         locline = f"{Style.BRIGHT} {self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
@@ -286,3 +287,9 @@ class NoReturnStatement(Warning):
     def __init__(self, tok, fn):
         self.tok = tok
         self.msg = f"No guaranteed return statement in non-void function '{fn.returntype} {fn.name} {fn.parameters}' : "
+
+
+class UnusedVariable(Warning):
+    def __init__(self, tok, var, fn):
+        self.tok = tok if tok is not None else fn.tokens[0]
+        self.msg = f"Unused variable (' {var} ') in function {fn}: "

@@ -176,4 +176,17 @@ global long log(long x){
 }
 
 
+global long divmod(long dividend, long divisor, long* modulus ){
+
+  __asm{"
+  mov rbx, rdx
+  xor rdx, rdx
+  mov rax, rdi
+  div rsi
+  mov [rbx], rdx
+  "}
+
+}
+
+
 #endif

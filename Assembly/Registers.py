@@ -288,12 +288,11 @@ def ralloc(flt, size=8):
                 out = norm_scratch_registers[i]
                 norm_scratch_registers_inuse[i] = True
 
-                
                 return setSize(out, size)
 
 
 def reralloc(r):
-
+    r = normal_size[r]
     if("xmm" in r):
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = True
     else:
@@ -301,7 +300,7 @@ def reralloc(r):
 
 
 def rfree(r):
-    if(not isinstance(r, str) or r in ["pop",""]):
+    if(not isinstance(r, str) or r in ["pop", ""]):
         return
     r = normal_size[r] if not r.startswith("xmm") else r
     if r in sse_scratch_registers:
@@ -328,6 +327,7 @@ def setSize(reg, size):
         return dword_version[reg]
 
     return reg
+
 
 def sizeOf(reg):
     if("xmm" in reg):

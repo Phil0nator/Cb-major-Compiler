@@ -12,15 +12,15 @@
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
 #define FORMAT_FLOAT 'f'
-#define FORMAT_HEX 'h'
+#define FORMAT_HEX 'x'
 
 #include "math.k"
 #include "string.k"
 #include "bits.k"
 
 
-
-function long toStr(long val, char* buffer, bool signed){
+/* 
+function long toStr(long val, char* buffer, bool signed, short base){
 
     int signspace = 0;
     if(val < 0 && signed){
@@ -34,12 +34,48 @@ function long toStr(long val, char* buffer, bool signed){
     for(int i = 0 ; i < l;i+=1){
 
         buffer-=1;
-        @buffer = $char (val%10) +'0';
+        char mod = val%base;
+        @buffer = $char (mod) +'0' + ('a'-'0')*(mod > 9);
         
-        val/=10;
+        val/=base;
 
     }
     return l+signspace;
+
+} */
+
+char* __format_numchars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function long toStr(long val, char* buffer, bool signed, short base){
+
+    char signspace = 0;
+    if(val < 0 && signed){
+        @buffer = '-';
+        buffer+=1;
+        val = 0-val;
+        signspace=1;
+    }
+    char tmpbuf[64];
+    memset(&tmpbuf, 0, 64);
+    int len = 1;
+    while(val != 0){
+
+        char mod;
+        val = divmod(val, base, &mod);
+        tmpbuf[len-1] = __format_numchars[mod];
+        len+=1;
+
+    }
+    for(int i = len;i>=0;i--){
+        buffer[i]=tmpbuf[len-i];
+    }
+
+
+
+
+
+    return len+1+signspace;
+
 
 }
 
@@ -50,7 +86,7 @@ function long toStr(long val, char* buffer, bool signed){
 function long toStr(double val, char* buffer, long multiplier){
 
     long integral = val;
-    long l = toStr(integral, buffer, 1);
+    long l = toStr(integral, buffer, 1, 10);
     buffer+=l;
     
     val = abs(val);
@@ -60,7 +96,7 @@ function long toStr(double val, char* buffer, long multiplier){
 
     @buffer = '.';
     buffer++;
-    l += toStr(round(val), buffer, 0);
+    l += toStr(round(val), buffer, 0, 10);
     return l-1;
 
 
@@ -102,17 +138,23 @@ global int __sprintf(char* str, char* fmt, void* args){
                 
                 long num = (args[argc]);
 
-                long size = toStr(num, str, 1);
+                long size = toStr(num, str, 1, 10);
                 str+=size-1;
 
             }else if (c == FORMAT_CHAR){
                 char cf = $char args[argc];
                 @str = cf;
             }
+            else if (c == FORMAT_HEX){
+                long numx = (args[argc]);
+                long sx = toStr(numx, str, 0, 16);
+                str+=sx-1;
+            }
+
             else if (c == FORMAT_UINT64){
 
                 long unum = (args[argc]);
-                int usize = toStr(unum, str, 0);
+                int usize = toStr(unum, str, 0, 10);
                 str+=usize-1;
 
             }else if (c == FORMAT_STRING){

@@ -54,7 +54,7 @@ class Postfixer:
                             v.size(0), INT.copy(), constint=True, token=t)
                         ec.memory_location = valueOf(v)
                 else:
-
+                    v.referenced = True
                     ec = EC.ExpressionComponent(v, v.t)
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop", t.fn.returntype)

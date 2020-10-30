@@ -133,6 +133,7 @@ class Function:
     def addVariable(self, v):
 
         v.offset = self.stackCounter
+        v.dtok = self.current_token
         # self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8:
             self.stackCounter += 8
@@ -226,6 +227,7 @@ class Function:
         counts = 0
         for p in self.parameters:
             self.addVariable(p)
+            p.referenced = True
             if(config.DO_DEBUG):
                 self.addcomment(f"Load Parameter: {p}")
             if(p.isflt()):
@@ -248,8 +250,14 @@ class Function:
         self.advance()
         if(self.current_token.tok != T_ENDL):
 
-            instr = self.evaluateRightsideExpression(EC.ExpressionComponent( sse_return_register if self.returntype.isflt() else setSize(norm_return_register, self.returntype.csize()), self.returntype,token=self.current_token ))
-            
+            instr = self.evaluateRightsideExpression(
+                EC.ExpressionComponent(
+                    sse_return_register if self.returntype.isflt() else setSize(
+                        norm_return_register,
+                        self.returntype.csize()),
+                    self.returntype,
+                    token=self.current_token))
+
             self.addline(instr)
         self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]]))
         self.checkSemi()
@@ -802,23 +810,24 @@ class Function:
             # else, load to normal register of the correct size
             else:
                 # determine size:
-                
-                result = setSize(norm_parameter_registers[normused], types[i].csize())
+
+                result = setSize(
+                    norm_parameter_registers[normused],
+                    types[i].csize())
 
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
                 inst = f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
-                
-                
-                #if(fn.parameters[i].t.csize() != 8):
+
+                # if(fn.parameters[i].t.csize() != 8):
 
                 #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
 #                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
-                    # inst+=(maskset(
-                    # norm_parameter_registers[normused],
-                    # fn.parameters[i].t.csize()))
+                # inst+=(maskset(
+                # norm_parameter_registers[normused],
+                # fn.parameters[i].t.csize()))
                 #    rfree(result)
                 normused += 1
             paraminst = f"{inst}{paraminst}"
@@ -1021,7 +1030,7 @@ class Function:
                     # initialize to null
 
                     self.addline(Instruction(
-                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer,exactSize=True)]))
+                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
 
                 else:
                     print("Non-Variable member error")
@@ -1086,8 +1095,7 @@ class Function:
             sizes.append(size)
             self.advance()
             self.checkTok(T_CLSIDX)
-            var.t.ptrdepth = 1
-
+            
 
         if(isarr):
             totalsize = product(sizes) * t.size(0)
@@ -1255,8 +1263,19 @@ class Function:
 
         self.asm += self.suffix           # readonly memory
 
+
+
+        # warning checking:
         if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned):
             warn(NoReturnStatement(self.tokens[0], self))
+
+        for v in self.variables:
+            if(not v.referenced):
+                warn(UnusedVariable(v.dtok, v,self))
+
+
+
+
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:

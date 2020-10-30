@@ -15,11 +15,11 @@ from globals import VOID
 #
 #####################################
 
+
 class Structure:
     def __init__(self, compiler):
         self.compiler = compiler
         self.current_token = self.compiler.current_token
-
 
     def advance(self):
         self.compiler.advance()
@@ -27,7 +27,6 @@ class Structure:
 
     def update(self):
         self.current_token = self.compiler.current_token
-
 
     def construct(self):
         self.advance()
@@ -43,8 +42,8 @@ class Structure:
         prototypeType = DType(id, 0, [], 0, True)
 
         self.compiler.types.append(prototypeType)
-        
-        emptyfn = Function("empty",[],VOID.copy(),self.compiler,[])
+
+        emptyfn = Function("empty", [], VOID.copy(), self.compiler, [])
 
         size = 0
         members = []
@@ -54,8 +53,6 @@ class Structure:
         destructor = None
         constructor = None
         nested = False
-
-
 
         # find properties:
         #   -members
@@ -74,7 +71,8 @@ class Structure:
                     throw(ExpectedIdentifier(self.current_token))
                 if(t.name == id):
                     nested = True
-                    if(t.ptrdepth == 0): throw(UseOfIncompleteType(self.current_token,t))
+                    if(t.ptrdepth == 0):
+                        throw(UseOfIncompleteType(self.current_token, t))
                     ptrhint = t.ptrdepth
                     t = prototypeType
                 else:
@@ -82,12 +80,15 @@ class Structure:
 
                 name = self.current_token.value
 
-                exists = next((v for v in prototypeType.members if v.name == name), None) is not None
+                exists = next(
+                    (v for v in prototypeType.members if v.name == name),
+                    None) is not None
 
                 var = Variable(t, name, glob=False, offset=size,
                                isptr=t.ptrdepth > 0, signed=t.signed)
 
-                if(exists): throw(VariableRedeclaration(self.current_token,var))
+                if(exists):
+                    throw(VariableRedeclaration(self.current_token, var))
 
                 var.ptrhint = ptrhint
                 prototypeType.members.append(var)
@@ -98,7 +99,7 @@ class Structure:
 
                 if(self.current_token.tok == T_ENDL):
                     continue
-                
+
                 if(self.current_token.tok != T_EQUALS):
                     throw(ExpectedToken(self.current_token, '; or ='))
 
@@ -106,20 +107,18 @@ class Structure:
                 st = self.compiler.ctidx
                 while(self.current_token.tok != T_ENDL):
                     self.advance()
-                
+
                 end = self.compiler.ctidx
 
-                value = determineConstexpr(t.isflt(), self.compiler.currentTokens[st:end], emptyfn)
+                value = determineConstexpr(
+                    t.isflt(), self.compiler.currentTokens[st:end], emptyfn)
 
                 var.initializer = value.accessor
 
-                
-
         # remove prototype to apply actual properties
-        #self.types.remove(prototypeType)
+        # self.types.remove(prototypeType)
 
         # fill in new info
-        
 
         # finalize
         self.compiler.types.pop()
@@ -129,7 +128,3 @@ class Structure:
         if(self.current_token.tok != T_ENDL):
             throw(ExpectedToken(self.current_token, T_ENDL))
         self.advance()
-
-
-
-    

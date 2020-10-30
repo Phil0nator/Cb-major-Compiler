@@ -103,11 +103,11 @@ def loadToPtr(dest, source):
         if(isinstance(dest.accessor, Variable)):
             return loadToReg(dest.accessor, setSize(source, size))
         return loadToReg(
-            f'{psizeoft(dest.type)}[{dest.accessor}]', setSize(source, size))
+            f'{psizeoft(dest.type)}[{setSize(dest.accessor,8)}]', setSize(source, size))
 
     if(isinstance(dest, Variable)):
         return loadToReg(dest, source)
-    return loadToReg(f"[{dest}]", source)
+    return loadToReg(f"[{setSize(dest,8)}]", source)
 
 
 def spush(v: EC.ExpressionComponent):
@@ -147,12 +147,14 @@ def valueOf(x, dflt=False, exactSize=True):
     if (isinstance(x, str)):
         return x
     elif (isinstance(x, Variable)):
+        x.referenced = True
         if(x.glob):
             if(x.isptr):
                 return f"{x.name}"
             return f"[{x.name}]"
         else:
             offset = x.offset
+
             if(x.isStackarr):
                 offset += x.stackarrsize
             if(not exactSize):
@@ -187,19 +189,19 @@ def loadToReg(reg, value):
                 return f"movsd {reg}, {value}\n"
             else:
                 return f"mov {reg}, {valueOf(value)} ;<-\n"
-        
+
         if(isinstance(value, Variable) and value.isStackarr):
-            return f"lea {reg}, [rbp-{value.offset+value.stackarrsize}] \n"
-        
+            return f"lea {setSize(reg,8)}, [rbp-{value.offset+value.stackarrsize}] \n"
+
         if(isfloat(value)):
             return f"movq {reg}, {valueOf(value)}\n"
-        
+
         if(reg in normal_size):
             if(isinstance(value, Variable)):
                 reg = setSize(reg, value.t.csize())
             if(isinstance(value, str) and value in normal_size):
                 reg = setSize(reg, sizeOf(value))
-        
+
         return f"mov {reg}, {valueOf(value)}\n"
 
     elif(isinstance(reg, Variable)):
@@ -264,8 +266,10 @@ def shiftInt(a, b, op, signed):
 def loadToRax(areg):
     return Instruction("mov", [setSize(rax, sizeOf(areg)), areg])
 
+
 def getFromRax(areg):
     return Instruction("mov", [areg, setSize(rax, sizeOf(areg))])
+
 
 def getFromRdx(areg):
     return Instruction("mov", [areg, setSize(rdx, sizeOf(areg))])
@@ -399,7 +403,7 @@ def castABD(a, b, areg, breg, newbreg):
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
             out = maskset(newbreg, a.type.csize())
-            
+
             out += f"mov {newbreg}, {setSize( breg, sizeOf(newbreg) ) }\n"
             return out
         return False

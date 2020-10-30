@@ -9,7 +9,7 @@
 #define SSCANF_FORMAT_FLOAT 'f'
 #define SSCANF_FORMAT_DOUBLE 'd'
 #define SSCANF_FORMAT_STRING 's'
-
+#define SSCANF_FORMAT_HEX 'x'
 #define SSCANF_FORMAT_SPECIFIER '%'
 
 
