@@ -11,7 +11,7 @@
 #
 ###################################
 class Variable:
-    def __init__(self, t, name, glob=False, offset=0, initializer=None,
+    def __init__(self, t, name, glob=False, offset=0, initializer=0,
                  isptr=False, mutable=True, signed=True, isStackarr=False):
         self.t = t                      # data type
         self.name = name                  # str: name

@@ -247,12 +247,9 @@ class Function:
     def buildReturnStatement(self):             # build a return statement
         self.advance()
         if(self.current_token.tok != T_ENDL):
-            if(self.returntype.isflt()):
-                instr = self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    sse_return_register, DOUBLE.copy(), token=self.current_token))
-            else:
-                instr = self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    norm_return_register, INT.copy(), token=self.current_token))
+
+            instr = self.evaluateRightsideExpression(EC.ExpressionComponent( sse_return_register if self.returntype.isflt() else setSize(norm_return_register, self.returntype.csize()), self.returntype,token=self.current_token ))
+            
             self.addline(instr)
         self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]]))
         self.checkSemi()
@@ -436,7 +433,7 @@ class Function:
 
         # build instructions to evaluate for the first given index
         determine_index1 = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, INT.copy(), token=self.current_token))
+            EC.ExpressionComponent(idx1, VOID.copy(), token=self.current_token))
 
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
@@ -470,7 +467,7 @@ class Function:
             # build evaluation for the index
             idxn = ralloc(False)
             determine_idxn = self.evaluateRightsideExpression(
-                EC.ExpressionComponent(idxn, INT.copy(), token=self.current_token))
+                EC.ExpressionComponent(idxn, VOID.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
 
@@ -494,7 +491,7 @@ class Function:
 
         # evaluate destination index
         determineidxf = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, INT.copy(), token=self.current_token))
+            EC.ExpressionComponent(idx1, VOID.copy(), token=self.current_token))
         self.checkTok(T_CLSP)
 
         self.checkSemi()
@@ -541,7 +538,7 @@ class Function:
         self.breaks.append(endlabel)
 
         # evaluate the lvalue to compare
-        cmpvalue = ralloc(o.isflt())
+        cmpvalue = ralloc(o.isflt(), o.csize())
         loadinstr = self.evaluateRightsideExpression(
             EC.ExpressionComponent(cmpvalue, o, token=self.current_token))
         # ensure register hit
@@ -805,23 +802,24 @@ class Function:
             # else, load to normal register of the correct size
             else:
                 # determine size:
-                if(fn.parameters[i].t.csize() != 8):
-                    result = ralloc(False)
-                else:
-                    result = norm_parameter_registers[normused]
+                
+                result = setSize(norm_parameter_registers[normused], types[i].csize())
+
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
                 inst = f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
-                if(fn.parameters[i].t.csize() != 8):
+                
+                
+                #if(fn.parameters[i].t.csize() != 8):
 
-                    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
-                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
+                #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
+#                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
                     # inst+=(maskset(
                     # norm_parameter_registers[normused],
                     # fn.parameters[i].t.csize()))
-                    rfree(result)
+                #    rfree(result)
                 normused += 1
             paraminst = f"{inst}{paraminst}"
 
@@ -1023,7 +1021,11 @@ class Function:
                     # initialize to null
 
                     self.addline(Instruction(
-                        "mov", [valueOf(self.variables[-1]), 0]))
+                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer,exactSize=True)]))
+
+                else:
+                    print("Non-Variable member error")
+                    exit(1)
 
             # if the declaration includes a constructor, call it with the
             # correct parameters
@@ -1084,6 +1086,8 @@ class Function:
             sizes.append(size)
             self.advance()
             self.checkTok(T_CLSIDX)
+            var.t.ptrdepth = 1
+
 
         if(isarr):
             totalsize = product(sizes) * t.size(0)
@@ -1126,7 +1130,6 @@ class Function:
 
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
-
         inst += (insters)
 
         # check for early eol before rightside
@@ -1142,7 +1145,7 @@ class Function:
         self.advance()
 
         # register to hold assignment value
-        value = ralloc(dest.type.isflt())
+        value = ralloc(dest.type.isflt(), dest.type.csize())
 
         # evaluate assignment value into 'value' register
         ev = self.evaluateRightsideExpression(
@@ -1157,8 +1160,8 @@ class Function:
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
             op = setter.tok[:-1]
-            x = ralloc(dest.type.isflt())
-            areg = ralloc(dest.type.isflt())
+            x = ralloc(dest.type.isflt(), dest.type.csize())
+            areg = ralloc(dest.type.isflt(), dest.type.csize())
 
             inst += (loadToReg(areg, dest.accessor))
 

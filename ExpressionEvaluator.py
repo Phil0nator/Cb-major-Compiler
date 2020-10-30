@@ -35,18 +35,23 @@ def optloadRegs(a, b, op, o):
         areg = a.accessor
         needLoadA = False
     else:
-        areg = ralloc(a.type.isflt())
+        areg = ralloc(a.type.isflt(), size=a.type.csize())
+        
+    
     if(b is not None):
         if(b.isRegister()):
             breg = b.accessor
             needLoadB = False
         else:
-            breg = ralloc(a.type.isflt())
+
+            breg = ralloc(b.type.isflt(), size=b.type.csize())
 
         if(needLoadB):
             instr += loadToReg(breg, b.accessor)
+
     if(needLoadA):
         instr += loadToReg(areg, a.accessor)
+
     return areg, breg, o, instr
 
 
@@ -83,11 +88,10 @@ class ExpressionEvaluator:
         if(canShiftmul(b.accessor)):
             newinstr = ""
             newinstr += bringdown_memloc(a)
-            if(a.isRegister()):
-                areg = a.accessor
-            else:
-                areg = ralloc(False)
-                newinstr += loadToReg(areg, a.accessor)
+            
+            areg, ___, _, i = optloadRegs(a,None,op,VOID.copy())
+            newinstr += i
+            
             shiftdir = "<<" if op == "*" else ">>"
             newinstr += shiftInt(setSize(areg, a.type.csize()),
                                  shiftmul(b.accessor),
@@ -102,11 +106,10 @@ class ExpressionEvaluator:
     def const_shift_optimization(self, a, b, op):
         newinstr = ""
         newinstr += bringdown_memloc(a)
-        if(a.isRegister()):
-            areg = a.accessor
-        else:
-            areg = ralloc(False)
-            newinstr += loadToReg(areg, a.accessor)
+        
+        
+        areg, ___, _, i = optloadRegs(a,None,op,VOID.copy())
+        newinstr+=i
 
         newinstr += shiftInt(setSize(areg, a.type.csize()),
                              b.accessor, op, a.type.signed)
@@ -118,11 +121,10 @@ class ExpressionEvaluator:
     def inc_dec_optimization(self, a, b, op):
         newinstr = ""
         newinstr += bringdown_memloc(a)
-        if(a.isRegister()):
-            areg = a.accessor
-        else:
-            areg = ralloc(False)
-            newinstr += loadToReg(areg, a.accessor)
+        
+        
+        areg, ___, _, i = optloadRegs(a,None,op,VOID.copy())
+        newinstr += i
 
         cmd = "inc" if op == '+' else "dec"
 
@@ -351,13 +353,8 @@ class RightSideEvaluator(ExpressionEvaluator):
         needload = True
         instr = ""
         instr += bringdown_memloc(a)
-        if(a.isRegister()):
-            areg = a.accessor
-            needload = False
-        else:
-            areg = ralloc(False)
-        if(needload):
-            instr += loadToReg(areg, a.accessor)
+        areg, ___, _, i = optloadRegs(a,None,op,VOID.copy())
+        instr += i
 
         cmd = "inc" if op == "++" else "dec"
 
@@ -375,14 +372,8 @@ class RightSideEvaluator(ExpressionEvaluator):
         instr += bringdown_memloc(a)
 
         # load to register if necessary
-        needload = True
-        if(a.isRegister()):
-            areg = a.accessor
-            needload = False
-        else:
-            areg = ralloc(False)
-        if(needload):
-            instr += loadToReg(areg, a.accessor)
+        areg, ___, _, i = optloadRegs(a,None,"op",VOID.copy())
+        instr += i
 
         # do not
         instr += boolmath(areg, None, T_NOT)
@@ -395,13 +386,8 @@ class RightSideEvaluator(ExpressionEvaluator):
         needload = True
         instr = ""
         instr += bringdown_memloc(a)
-        if(a.isRegister()):
-            areg = a.accessor
-            needload = False
-        else:
-            areg = ralloc(False)
-        if(needload):
-            instr += loadToReg(areg, a.accessor)
+        areg, ___, _, i = optloadRegs(a,None,"op",VOID.copy())
+        instr += i
         instr += doOperation(a.type, areg, areg, T_ANOT, a.type.signed)
         o = a.type.copy()
         return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
@@ -447,13 +433,13 @@ class RightSideEvaluator(ExpressionEvaluator):
 
         elif(isinstance(a.accessor, Variable)):
 
-            tmp = ralloc(False)
+            tmp = ralloc(False, a.accessor.t.csize())
             instr += f"mov {tmp}, {valueOf(a.accessor)}\n"
             if(a.accessor.t.isflt()):
-                oreg = ralloc(True)
+                oreg = ralloc(True,  a.accessor.t.csize())
                 instr += f"movsd {oreg}, [{tmp}]\n"
             else:
-                oreg = ralloc(False)
+                oreg = ralloc(False,  a.accessor.t.csize())
                 instr += maskset(oreg, a.type.size(1))
                 instr += f"mov {setSize( oreg, a.type.size(1))}, {psizeoft(a.type, 1)}[{tmp}]\n"
             o = a.accessor.t.copy()
@@ -462,7 +448,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             return instr, o, EC.ExpressionComponent(
                 oreg, o.copy(), token=a.token)
         elif(a.isRegister()):
-            result = ralloc(a.type.isflt())
+            result = ralloc(a.type.isflt(), a.type.csize())
             if(a.type.isflt()):
                 instr += f"movsd {result}, [{a.accessor}]\n"
             else:
@@ -475,10 +461,10 @@ class RightSideEvaluator(ExpressionEvaluator):
                 result, o.copy(), token=a.token)
 
         elif(a.accessor == "pop"):
-            result = ralloc(False)
+            result = ralloc(False,  a.type.csize())
             instr += loadToReg(result, a.accessor)
             a.accessor = result
-            areg = ralloc(a.type.isflt())
+            areg = ralloc(a.type.isflt(),  a.type.csize())
 
             if(a.type.isflt()):
                 instr += f"movsd {areg}, [{a.accessor}]\n"
@@ -499,8 +485,8 @@ class RightSideEvaluator(ExpressionEvaluator):
         t = self.fn.compiler.getType(tid)
         if(t is None):
             throw(UnkownType(e.token))
-        aval = ralloc(a.type.isflt())
-        result = ralloc(t.isflt())
+        aval = ralloc(a.type.isflt(), a.type.csize())
+        result = ralloc(t.isflt(), t.csize())
         instr += bringdown_memloc(a)
         cst = castABD(EC.ExpressionComponent("", t),
                       EC.ExpressionComponent("", a.type), "", aval, result)
@@ -541,13 +527,13 @@ class RightSideEvaluator(ExpressionEvaluator):
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 instr += ninstr
                 if(a.type.size(1) in [1, 2, 4, 8]):
-                    instr += f"lea {areg}, [{areg}+{breg}*{a.type.size(1)}]\n"
+                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
                 else:
                     if(canShiftmul(a.type.size(1))):
                         instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
                     else:
                         instr += f"imul {breg}, {a.type.size(1)}\n"
-                    instr += f"lea {areg}, [{areg}+{breg}]\n"
+                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
             apendee.memory_location = True
@@ -592,6 +578,9 @@ class RightSideEvaluator(ExpressionEvaluator):
                 caster = b
                 reverse = True
 
+            creg, coreg, __, loadinstr = optloadRegs(caster, castee,"op",o)
+            instr+=loadinstr
+            """ 
             needLoadC = True
             needLoadCO = True
 
@@ -599,20 +588,21 @@ class RightSideEvaluator(ExpressionEvaluator):
                 creg = caster.accessor
                 needLoadC = False
             else:
-                creg = ralloc(caster.type.isflt())
+                creg = ralloc(caster.type.isflt(), caster.type.csize())
 
             if(castee.isRegister()):
                 coreg = castee.accessor
                 needLoadCO = False
             else:
-                coreg = ralloc(castee.type.isflt())
+                coreg = ralloc(castee.type.isflt(), caster.type.csize())
 
-            newcoreg = ralloc(caster.type.isflt())
 
             if(needLoadC):
                 instr += loadToReg(creg, caster.accessor)
             if(needLoadCO):
-                instr += loadToReg(coreg, castee.accessor)
+                instr += loadToReg(coreg, castee.accessor) 
+            """
+            newcoreg = ralloc(caster.type.isflt(), caster.type.csize())
             cst = castABD(caster, castee, creg, coreg, newcoreg)
             # cst represents if actual extra instructions are needed to cast
             if(cst != False):
@@ -670,15 +660,24 @@ class RightSideEvaluator(ExpressionEvaluator):
     def depositFinal(self, final, o, dest):
         instr = ""
         instr += bringdown_memloc(final)
+
+
         if(dest == "AMB"):
             if(final.isRegister()):
                 rfree(final.accessor)
             return instr, o
 
+        if(isinstance(final.accessor, str) and final.accessor != "pop"):
+            final.accessor = setSize(final.accessor, (dest.type.csize()))
+        
+        if(isinstance(dest.accessor, str)):
+            dest.accessor = setSize(dest.accessor, final.type.csize())
+
         if(final.type.__eq__(dest.type)):
 
+
             if(isinstance(final.accessor, Variable)):
-                tmp = ralloc(final.type.isflt())
+                tmp = ralloc(final.type.isflt(), final.type.csize())
                 instr += loadToReg(tmp, final.accessor)
 
                 final.accessor = tmp
@@ -695,7 +694,8 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             twoStep = False
             if(isinstance(dest.accessor, Variable)):
-                castdest = ralloc(dest.type.isflt())
+                
+                castdest = ralloc(dest.type.isflt(), dest.type.csize())
                 twoStep = True
             else:
                 castdest = dest.accessor
@@ -703,10 +703,10 @@ class RightSideEvaluator(ExpressionEvaluator):
             if(dest.type.isflt() and not final.type.isflt()):
                 if(isinstance(final.accessor, int)):
                     instr += f"mov {rax}, {final.accessor}\n"
-                    final.accessor = "rax"
+                    final.accessor = setSize("rax", final.type.csize())
                 elif(final.accessor == "pop"):
                     instr += f"pop {rax}\n"
-                    final.accessor = "rax"
+                    final.accessor = setSize("rax", final.type.csize())
                 if(config.GlobalCompiler.Tequals(final.type.name, "void")):
 
                     cmd = "movq" if(
@@ -809,13 +809,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 instr += ninstr
 
                 if(a.type.size(1) in [1, 2, 4, 8]):
-                    instr += f"lea {areg}, [{areg}+{breg}*{a.type.size(1)}]\n"
+                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
                 else:
                     if(canShiftmul(a.type.size(1))):
                         instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
                     else:
                         instr += f"imul {breg}, {a.type.size(1)}\n"
-                    instr += f"lea {areg}, [{areg}+{breg}]\n"
+                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
 
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
@@ -855,15 +855,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
         if(not typematch(BOOL, a.type) and not a.isconstint()):
             throw(TypeMismatch(a.token, BOOL, a.type))
 
-        needload = True
-        if(a.isRegister()):
-            areg = a.accessor
-            needload = False
-        else:
-            areg = ralloc(False)
-        if(needload):
-            instr += loadToReg(areg, a.accessor)
-
+        areg, ___, _, i = optloadRegs(a,None,"op",VOID.copy())
+        instr += i
         instr += boolmath(areg, None, T_NOT)
         o = BOOL.copy()
         return instr, o, EC.ExpressionComponent(
@@ -872,13 +865,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
     def evalANOT(self, a):
         instr = ""
         needload = True
-        if(a.isRegister()):
-            areg = a.accessor
-            needload = False
-        else:
-            areg = ralloc(False)
-        if(needload):
-            instr += loadToReg(areg, a.accessor)
+        areg, ___, _, i = optloadRegs(a,None,"op",VOID.copy())
+        instr+=i
         instr += doOperation(a.type, areg, areg, T_ANOT, a.type.signed)
         o = a.type.copy()
         return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
@@ -915,13 +903,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
         elif(isinstance(a.accessor, Variable)):
 
-            tmp = ralloc(False)
+            tmp = ralloc(False, a.accessor.t.csize())
             instr += f"mov {tmp}, {valueOf(a.accessor)}\n"
             if(a.accessor.t.isflt()):
                 oreg = ralloc(True)
                 instr += f"movsd {oreg}, {tmp}\n"
             else:
-                oreg = ralloc(False)
+                oreg = ralloc(False, a.accessor.t.csize())
                 instr += f"mov {oreg}, {tmp}\n"
             o = a.accessor.t.copy()
             o.ptrdepth -= 1
@@ -930,7 +918,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 oreg, o.copy(), token=a.token)
 
         elif(a.isRegister()):
-            result = ralloc(a.type.isflt())
+            result = ralloc(a.type.isflt(), a.type.csize())
             if(a.type.isflt()):
                 instr += f"movsd {result}, {a.accessor}\n"
             else:
@@ -947,8 +935,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
         t = self.fn.compiler.getType(tid)
         if(t is None):
             throw(UnkownType(e.token))
-        aval = ralloc(a.type.isflt())
-        result = ralloc(t.isflt())
+        aval = ralloc(a.type.isflt(), a.type.csize())
+        result = ralloc(t.isflt(), t.csize())
         cst = castABD(EC.ExpressionComponent("", t),
                       EC.ExpressionComponent("", a.type), "", aval, result)
         if(cst != False):

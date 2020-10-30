@@ -101,7 +101,7 @@ def loadToPtr(dest, source):
 
         size = dest.type.size(1)
         if(isinstance(dest.accessor, Variable)):
-            return loadToReg(dest.accessor, source)
+            return loadToReg(dest.accessor, setSize(source, size))
         return loadToReg(
             f'{psizeoft(dest.type)}[{dest.accessor}]', setSize(source, size))
 
@@ -143,7 +143,7 @@ def movVarToReg(reg, var):
             return f"mov {reg},  {valueOf(var)}\n"
 
 
-def valueOf(x, dflt=False, exactSize=False):
+def valueOf(x, dflt=False, exactSize=True):
     if (isinstance(x, str)):
         return x
     elif (isinstance(x, Variable)):
@@ -175,7 +175,7 @@ def loadToReg(reg, value):
             return f"pop {normal_size[ reg]}\n"
         elif(isinstance(reg, Variable)):
 
-            return f"pop {rax}\nmov {valueOf(reg)}, {rax}\n"
+            return f"pop {rax}\nmov {valueOf(reg)}, {setSize(rax, reg.t.csize())}\n"
 
     if(isinstance(reg, str)):
         if("xmm" in reg):
@@ -187,10 +187,19 @@ def loadToReg(reg, value):
                 return f"movsd {reg}, {value}\n"
             else:
                 return f"mov {reg}, {valueOf(value)} ;<-\n"
+        
         if(isinstance(value, Variable) and value.isStackarr):
-            return f"lea {reg}, [rbp-{value.offset+value.stackarrsize}]\n"
+            return f"lea {reg}, [rbp-{value.offset+value.stackarrsize}] \n"
+        
         if(isfloat(value)):
             return f"movq {reg}, {valueOf(value)}\n"
+        
+        if(reg in normal_size):
+            if(isinstance(value, Variable)):
+                reg = setSize(reg, value.t.csize())
+            if(isinstance(value, str) and value in normal_size):
+                reg = setSize(reg, sizeOf(value))
+        
         return f"mov {reg}, {valueOf(value)}\n"
 
     elif(isinstance(reg, Variable)):
@@ -198,6 +207,10 @@ def loadToReg(reg, value):
         if(reg.t.isflt()):
 
             return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+
+        if (isinstance(value, str) and value in normal_size):
+            value = setSize(value, reg.t.csize())
+
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
 # only for parameter loading
@@ -248,6 +261,16 @@ def shiftInt(a, b, op, signed):
             return f"mov {tmp}, rcx\nmov cl, {boolchar_version[b]}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
 
 
+def loadToRax(areg):
+    return Instruction("mov", [setSize(rax, sizeOf(areg)), areg])
+
+def getFromRax(areg):
+    return Instruction("mov", [areg, setSize(rax, sizeOf(areg))])
+
+def getFromRdx(areg):
+    return Instruction("mov", [areg, setSize(rdx, sizeOf(areg))])
+
+
 def doIntOperation(areg, breg, op, signed, size=8):
 
     if(op == "+"):
@@ -258,21 +281,21 @@ def doIntOperation(areg, breg, op, signed, size=8):
 
         return f"imul {areg}, {breg}\n" if size != 1 else f"imul {setSize(areg, 2)}, {setSize(breg,2)}\n"
     elif(op == "*"):
-        return f"mov {rax},{areg}\nmul {breg}\nmov {areg}, {rax}\n"
+        return f"{loadToRax(areg)}\nmul {breg}\n{getFromRax(areg)}\n"
     elif(op == "/"):
         if(signed):
             asmop = "idiv"
         else:
             asmop = "div"
 
-        return f"xor rdx, rdx\nmov {rax},{setSize(areg,8)}\n{asmop} {breg}\nmov {setSize(areg,8)}, {rax}\n"
+        return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
     elif(op == "%"):
         if(signed):
             asmop = "idiv"
         else:
             asmop = "div"
 
-        out = f"xor rdx, rdx\nmov {rax}, {setSize(areg,8)}\n{asmop} {breg}\nmov {setSize(areg,8)}, {rdx}\n"
+        out = f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRdx(areg)}\n"
         return out
     elif(op in [">>", "<<"]):
         return shiftInt(areg, breg, op, signed)
@@ -375,8 +398,9 @@ def castABD(a, b, areg, breg, newbreg):
 
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
-            #out = maskset(newbreg, a.type.csize())
-            out = f"mov {newbreg}, {breg}\n"
+            out = maskset(newbreg, a.type.csize())
+            
+            out += f"mov {newbreg}, {setSize( breg, sizeOf(newbreg) ) }\n"
             return out
         return False
     if(a.type.isflt() and not b.type.isflt()):

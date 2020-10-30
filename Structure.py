@@ -4,6 +4,7 @@ from Classes.Constexpr import determineConstexpr
 from Classes.Error import *
 from Classes.Token import *
 from Function import Function
+from globals import VOID
 
 ####################################
 #
@@ -42,6 +43,8 @@ class Structure:
         prototypeType = DType(id, 0, [], 0, True)
 
         self.compiler.types.append(prototypeType)
+        
+        emptyfn = Function("empty",[],VOID.copy(),self.compiler,[])
 
         size = 0
         members = []
@@ -92,8 +95,25 @@ class Structure:
                 self.compiler.possible_members.append(name)
                 size += t.csize()
                 self.advance()
-                if(self.current_token.tok != T_ENDL):
-                    throw(ExpectedSemicolon(self.current_token))
+
+                if(self.current_token.tok == T_ENDL):
+                    continue
+                
+                if(self.current_token.tok != T_EQUALS):
+                    throw(ExpectedToken(self.current_token, '; or ='))
+
+                self.advance()
+                st = self.compiler.ctidx
+                while(self.current_token.tok != T_ENDL):
+                    self.advance()
+                
+                end = self.compiler.ctidx
+
+                value = determineConstexpr(t.isflt(), self.compiler.currentTokens[st:end], emptyfn)
+
+                var.initializer = value.accessor
+
+                
 
         # remove prototype to apply actual properties
         #self.types.remove(prototypeType)
