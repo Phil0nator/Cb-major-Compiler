@@ -1144,6 +1144,8 @@ class Function:
 
             if(self.current_token.tok == T_ENDL):
                 self.advance()
+            if(dest.accessor == "pop"):
+                inst += ("pop rax\n")
             self.addline(inst)
             rfree(dest.accessor)
             return

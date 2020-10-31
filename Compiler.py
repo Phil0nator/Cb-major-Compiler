@@ -7,7 +7,7 @@ from Structure import Structure
 from Classes.Token import Token
 from Classes.Token import *
 from Classes.Location import Location
-from Classes.Constexpr import determineConstexpr
+from Classes.Constexpr import determineConstexpr, buildConstantSet
 from Lexer import Lexer
 from Classes.Error import *
 import config
@@ -195,6 +195,9 @@ class Compiler:
         self.advance()
 
         exprtokens = []
+        isSet = False
+        if(self.current_token.tok == T_OPENSCOPE):
+            isSet = True
 
         while(self.current_token.tok != T_ENDL):
             exprtokens.append(self.current_token)
@@ -202,12 +205,13 @@ class Compiler:
 
         # use the constexpr evaluator to find the value for the global
         value = determineConstexpr(intr.isflt(), exprtokens, Function(
-            "CMAININIT", [], VOID.copy(), self, exprtokens))
+            "CMAININIT", [], VOID.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
+                "CMAININIT", [], VOID.copy(), self, exprtokens))
 
         if(isinstance(value.accessor, Variable)):
             value.accessor = value.accessor.name
         self.globals.append(Variable(intr.copy(), name,
-                                     glob=True, initializer=value.accessor))
+                                     glob=True, initializer=value.accessor, isptr = intr.ptrdepth > 0))
 
         # add .data instructions to self.constants
         self.constants += createIntrinsicConstant(self.globals[-1])
@@ -406,7 +410,7 @@ class Compiler:
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "extern " + \
-                        functionlabel(fn)[:-2] + "\n"
+                        functionlabel(fn)[:-1] + "\n"
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
 
@@ -416,7 +420,7 @@ class Compiler:
                     fn = self.functions[-1]
                     fn.extern = True
                     config.__CEXTERNS__ += "extern " + \
-                        functionlabel(fn)[:-2] + "\n"
+                        functionlabel(fn)[:-1] + "\n"
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
 
@@ -425,7 +429,7 @@ class Compiler:
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
-                        functionlabel(fn)[:-2] + "\n"
+                        functionlabel(fn)[:-1] + "\n"
                     fn.extern = True
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
@@ -435,7 +439,7 @@ class Compiler:
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
-                        functionlabel(fn)[:-2] + "\n"
+                        functionlabel(fn)[:-1] + "\n"
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
 

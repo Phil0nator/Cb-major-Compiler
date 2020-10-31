@@ -138,6 +138,25 @@ def evaluate(a, b, op):
         a.accessor, int) and isinstance(b.accessor, int) else calculateCfloat(a, b, op)
 
 
+def buildConstantSet(flt, tokens, fn):
+
+    values = []
+    subeq = []
+    for token in tokens:
+        if(token.tok == "{" or token.tok == "," or token.tok == "}"):
+            values.append(
+                determineConstexpr(
+                    flt,
+                    subeq,
+                    fn)) if len(subeq) > 0 else None
+            subeq = []
+            continue
+        else:
+            subeq.append(token)
+
+    return EC.ExpressionComponent(values, set, token=tokens[0])
+
+
 # standard postfix evaluation, using 'evaluate(a,b,op)'
 # \see ExpressionEvaluator
 def determineConstexpr(flt, tokens, fn):

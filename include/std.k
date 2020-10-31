@@ -1,7 +1,7 @@
 #ifndef __STD
 #define __STD 1
 
-
+#include "sys/errlist.k"
 #include "bits.k"
 #include "limits.k"
 #include "stddef.k"

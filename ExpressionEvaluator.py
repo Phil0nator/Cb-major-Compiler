@@ -931,7 +931,9 @@ class LeftSideEvaluator(ExpressionEvaluator):
         return instr, o, appendee
 
     def depositFinal(self, final, o, dest):
+        print(final)
         return "", final.type
 
     def evaluate(self, pfix):
-        return self.evaluatePostfix(pfix, self)
+        out = self.evaluatePostfix(pfix, self)
+        return out

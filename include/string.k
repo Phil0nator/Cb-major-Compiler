@@ -101,7 +101,9 @@ function char* strchr(char* str, char c){
 
 function int strcmp(char* str1, char str2);
 function size_t strcspn(char* str1, char* str2);
-function char* strerror(int errnum); //https://code.woboq.org/userspace/glibc/sysdeps/gnu/errlist.c.html#_sys_errlist_internal
+function char* strerror(int errnum){
+    return get_errstr(errnum);
+}
 
 function char* strpbrk(char* str1, char* str2);
 function char* strrchr(char* str, char c);

@@ -45,6 +45,8 @@ function long toStr(long val, char* buffer, bool signed, short base){
 
 } */
 
+
+
 char* __format_numchars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function long toStr(long val, char* buffer, bool signed, short base){
@@ -139,7 +141,6 @@ global int __sprintf(char* str, char* fmt, void* args){
             switch(c){
                 case FORMAT_INT64 {
                     long num = (args[argc]);
-
                     long size = toStr(num, str, 1, 10);
                     str+=size-1;
                     break;
@@ -151,6 +152,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
                 }
                 case FORMAT_HEX {
+
                     long numx = (args[argc]);
                     long sx = toStr(numx, str, 0, 16);
                     str+=sx-1;

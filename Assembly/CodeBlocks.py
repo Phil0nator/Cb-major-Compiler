@@ -55,7 +55,26 @@ ret
 """ % (name, destructions)
 
 
+def setValueOf(val, flt, ptr):
+    if(isinstance(val.accessor, (str, int, float))):
+        return str(val.accessor) if not flt else val.accessor.hex()
+    if(isinstance(val.accessor, Variable)):
+
+        if(ptr):
+            return val.accessor.name
+        else:
+            return setValueOf(val.accessor.initializer, flt, False)
+
+
 def createIntrinsicConstant(variable):
+
+    if(isinstance(variable.initializer, list)):
+        if(variable.t.isflt()):
+
+            out = f"{variable.name}: dq {str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))}\n"
+        else:
+            out = f"{variable.name}: {getConstantReserver(variable.t.down())} { str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))  }\n"
+        return out
 
     if((variable.t.isflt())):
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
