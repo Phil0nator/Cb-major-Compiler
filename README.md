@@ -106,6 +106,8 @@ function int main(int argc, char** argv){
 
 ```>> , <<``` bitwize shift
 
+```$type``` Cast to type
+
 
 ## Precompiler Directives
 
@@ -180,8 +182,23 @@ getValue(&a);
 printf("%i\n", a);
 ```
 
+## Control Structures
 
+(The majority of control structures will look exactly like C family languages.)
 
+### If statement
+
+Example:
+
+```
+if (condition) {
+  printf("Condition is true");
+}else if (other_condition){
+  printf("Condition is not true, but other condition is true");
+}else {
+  printf("Neither is true");
+}
+```
 
 
 
