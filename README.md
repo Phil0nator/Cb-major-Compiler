@@ -69,7 +69,29 @@ function int main(int argc, char** argv){
 
 ```bool``` Synonymous to ```char```, with implied usage for true or false
 
-```double``` 64bit signed double precision floating point value
+```double``` 64 bit signed double precision floating point value
 
+## Precompiler Directives
 
+```#include``` (like C) copy the contents of another file for compilation
+EX: ```#include "myfolder/myfile.k"```
 
+```#define``` Define a macro value. Can be any series of tokens, as long as they will not be undefined at the point of usage
+EX: ```#define MYMACRO 32```
+
+```#ifdef``` Everything between this directive and its respective ```endif``` directive will only be compiled if the specified macro is defined
+EX: ```#ifdef MYMACRO
+...
+#endif```
+
+```#ifndef``` The opposite of ```ifdef```.
+EX: ```#ifndef MYMACRO
+...
+#endif```
+
+```#endif``` End a precompile if structure
+
+```#link``` Specify a path to an object file to link
+EX: ```#link "path/to/my/objectfile/lib.o"```
+
+## Control Structures
