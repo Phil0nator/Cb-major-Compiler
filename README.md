@@ -89,6 +89,16 @@ double`
 ```
 64 bit signed double precision floating point value
 
+## Type Qualifiers
+
+Type Qualifiers apply extra properties to a variable.
+
+```unsigned``` Makes a type unsigned, cannot be used for floating point types
+
+```register``` Suggests to the compiler that a variable should be stored only in a register
+
+
+
 
 ## Operators
 
