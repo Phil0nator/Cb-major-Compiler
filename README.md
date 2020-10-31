@@ -40,7 +40,7 @@ function int main(int argc, char** argv){
 ```
 
 
-## Keywords
+## Unscoped Keywords
 
 ```function``` Declare a basic function 
 
@@ -55,5 +55,21 @@ function int main(int argc, char** argv){
 
 
 ```cextern``` Declare a function defined in an object file from gcc
+
+
+## Primitive Types
+
+```long``` A 64 bit integer value (can be signed or unsigned)
+
+```int``` A 32 bit integer value (can be signed or unsigned)
+
+```short``` A 16 bit integer value (can be signed or unsigned)
+
+```char``` An 8 bit integer value (can be signed or unsigned)
+
+```bool``` Synonymous to ```char```, with implied usage for true or false
+
+```double``` 64bit signed double precision floating point value
+
 
 
