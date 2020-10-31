@@ -168,7 +168,7 @@ Pointers can be indexed like arrays
 
 Example:
 
-```
+```C
 char** args;
 printf(args[0]);
 printf(args[1]);
@@ -185,7 +185,9 @@ This is the same as taking the 0th index.
 
 Example:
 
-```printf("%i\n", @myarr);```
+```C
+printf("%i\n", @myarr);
+```
 
 
 ### Referencing
@@ -194,7 +196,7 @@ You can take a pointer to a variable using the ```&``` operator
 
 Example:
 
-```
+```C
 int a;
 getValue(&a);
 printf("%i\n", a);
@@ -208,7 +210,7 @@ printf("%i\n", a);
 
 Example:
 
-```
+```C
 if (condition) {
   printf("Condition is true");
 }else if (other_condition){
@@ -217,6 +219,58 @@ if (condition) {
   printf("Neither is true");
 }
 ```
+
+### While loop
+
+Example: 
+
+```C
+while(condition){
+
+  printf("condition is true");
+
+}
+```
+
+### For loop
+
+Example:
+
+```C
+for (int i = 0; i < 10; i++){
+
+  printf("i is: %i\n", i);
+
+}
+```
+
+### Switch statement
+
+Example:
+
+```
+switch(expression){
+
+  case constexpr{
+    
+    printf("expression = constexpr");
+    break;
+  
+  }
+  
+  case constexpr2{
+    
+    printf("expression = constexpr2");
+    break;
+  
+  }
+
+}
+```
+
+
+
+
 
 
 
