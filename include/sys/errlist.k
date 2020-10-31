@@ -4,6 +4,9 @@
 
 char** __linux_errstrlist = {
 
+"Success",
+#define ESUCCESS 0
+
 "Operation not permitted",
 #define EPERM 1
 
@@ -124,6 +127,9 @@ char** __linux_errstrlist = {
 "Too many symbolic links encountered",
 #define ELOOP 40
 
+"Operation would block",
+#define EWOULDBLOCK 41
+
 "No message of desired type",
 #define ENOMSG 42
 
@@ -171,6 +177,9 @@ char** __linux_errstrlist = {
 
 "Invalid slot",
 #define EBADSLT 57
+
+"EDEADLK",
+#define EDEADLOCK 58
 
 "Bad font file format",
 #define EBFONT 59
@@ -398,7 +407,7 @@ char** __linux_errstrlist = {
 
 global char* get_errstr(int err){
 
-    if(err < MAX_ERR && err > 0){
+    if(err < MAX_ERR && err >= 0){
         return __linux_errstrlist[err];
     }
     return "Unkown Error Code.";

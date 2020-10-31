@@ -6,7 +6,7 @@
 
 function int main(int argc, char** argv){
 
-    printf(strerror(3));
+    printf(strerror(100));
 
 
     return 5;
