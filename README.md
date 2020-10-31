@@ -71,6 +71,42 @@ function int main(int argc, char** argv){
 
 ```double``` 64 bit signed double precision floating point value
 
+
+## Operators
+
+```+, -, *, /``` Addition, Subtraction, Multiplication Division
+
+```.``` Stack-based member access
+
+```->``` Pointer-based member access
+
+```!``` bitwize logical not
+
+```~``` bitwize not
+
+```&&``` bitwise and
+
+```||``` bitwize or
+
+```@``` dereference
+
+```&``` reference
+
+```()``` call
+
+```[]``` index
+
+```(op)=x``` modify value by x with operation op
+
+```++, --``` increment, decrement
+
+``` <, >, >=, <=, !=, == ``` Comparison
+
+```%``` modulo (non-floating point only)
+
+```>> , <<``` bitwize shift
+
+
 ## Precompiler Directives
 
 ```#include``` (like C) copy the contents of another file for compilation
@@ -141,7 +177,6 @@ Example:
 getValue(&a);
 printf("%i\n", a);
 ```
-
 
 
 
