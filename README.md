@@ -94,4 +94,57 @@ EX: ```#ifndef MYMACRO
 ```#link``` Specify a path to an object file to link
 EX: ```#link "path/to/my/objectfile/lib.o"```
 
-## Control Structures
+## Pointers
+
+The pointer depth of a variable can be specified by adding ```*```'s after the typename.
+
+Example:
+
+```int** a;```
+
+This would produce variable a: a pointer to a pointer to an integer value.
+
+Pointer depth has no upper limit.
+
+### Pointer indexing
+
+Pointers can be indexed like arrays
+
+Example:
+
+```char** args;
+printf(args[0]);
+printf(args[1]);
+```
+
+A pointer's matrix dimention is its depth.
+
+
+### Dereferencing
+
+You can dereference a pointer with the ```@``` operator.
+
+This is the same as taking the 0th index.
+
+Example:
+
+```printf("%i\n", @myarr);```
+
+
+### Referencing
+
+You can take a pointer to a variable using the ```&``` operator
+
+Example:
+
+```int a;
+getValue(&a);
+printf("%i\n", a);
+```
+
+
+
+
+
+
+
