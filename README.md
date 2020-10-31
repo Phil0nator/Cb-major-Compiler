@@ -148,7 +148,8 @@ Pointers can be indexed like arrays
 
 Example:
 
-```char** args;
+```
+char** args;
 printf(args[0]);
 printf(args[1]);
 ```
@@ -173,7 +174,8 @@ You can take a pointer to a variable using the ```&``` operator
 
 Example:
 
-```int a;
+```
+int a;
 getValue(&a);
 printf("%i\n", a);
 ```
