@@ -60,22 +60,34 @@ function int main(int argc, char** argv){
 ## Primitive Types
 
 ```C
-long``` A 64 bit integer value (can be signed or unsigned)
+long
+```
+A 64 bit integer value (can be signed or unsigned)
 
 ```C
-int``` A 32 bit integer value (can be signed or unsigned)
+int
+```
+A 32 bit integer value (can be signed or unsigned)
 
 ```C
-short``` A 16 bit integer value (can be signed or unsigned)
+short
+```
+A 16 bit integer value (can be signed or unsigned)
 
 ```C
-char``` An 8 bit integer value (can be signed or unsigned)
+char
+``` 
+An 8 bit integer value (can be signed or unsigned)
 
 ```C
-bool``` Synonymous to ```char```, with implied usage for true or false
+bool
+```
+Synonymous to ```char```, with implied usage for true or false
 
 ```C
-double``` 64 bit signed double precision floating point value
+double`
+```
+64 bit signed double precision floating point value
 
 
 ## Operators
