@@ -29,12 +29,9 @@ section .text
     extern %1
 %endmacro
 %define CMAIN main
-CEXTERN printf
 CEXTERN scanf
 CEXTERN putchar
-CEXTERN fgets
 CEXTERN puts
-CEXTERN fputs
 CEXTERN fflush
 CEXTERN sscanf
 CEXTERN getchar
@@ -45,13 +42,6 @@ CEXTERN strcat
 CEXTERN realloc
 CEXTERN calloc
 CEXTERN free
-CEXTERN fabsf
-CEXTERN atoi
-CEXTERN thrd_create
-CEXTERN thrd_equal
-CEXTERN thrd_detach
-CEXTERN thrd_join
-
 ; Make stack be 16 bytes aligned
 %macro ALIGN_STACK 0.nolist
     enter 0, 0
@@ -1015,6 +1005,19 @@ extern print
 extern print
 extern print
 global _void_printf_pchar.
+global _int___SSCANF_pchar.char.void..
+global _int_sscanf_pchar.char.void.void.void.void.
+extern sscan
+extern sscan
+extern sscan
+extern sscan
+global _int___scanf_pchar.void..
+global _int_scanf_pchar.void.void.void.void.void.
+extern scan
+extern scan
+extern scan
+extern scan
+extern scan
 
 section .data
 FLT_CONSTANT_0: dq 0x0.0p+0
@@ -1025,7 +1028,10 @@ STRING_CONSTANT_3: db `%s`, 0
 STRING_CONSTANT_4: db `Hello WOrld!\n`, 0
 STRING_CONSTANT_5: db `I: %i, H: 0x%x, S: %s`, 0
 STRING_CONSTANT_6: db `Hello World!\n`, 0
-STRING_CONSTANT_7: db `This is a string`, 0
+STRING_CONSTANT_7: db `This is a string\n`, 0
+STRING_CONSTANT_8: db `Enter name: `, 0
+STRING_CONSTANT_9: db `%s`, 0
+STRING_CONSTANT_10: db `\n%s\n`, 0
 nullterm: DB 0
 INLINE_SYSCALL: DQ __inline__syscall
 M_MINZERO_MEM: dq 0x0.0p+0
@@ -1670,7 +1676,6 @@ jnz .L0x1a
 mov ebx, dword[rbp-120]
 inc ebx
 mov r10b, byte[rbp-40]
-and r11d, 0xffffffff
 mov r11d, r10d
 add ebx, r11d
 mov rax, rbx
@@ -1849,7 +1854,6 @@ and r11, 0xffffffff
 lea r10, [r10+r11*8]
 mov r10, qword[r10]
 mov r11, r10
-and r12b, 0xff
 mov byte[rbp-72], r11b
 mov r10, qword[rbp-8]
 mov r11, r10
@@ -2408,12 +2412,10 @@ and al, 1
 jz .L0x37
 mov r11w, word[rbp-24]
 mov r10d, dword[rbp-32]
-and r12d, 0xffffffff
 mov r12d, r11d
 imul r12d, r10d
 mov r10b, byte[rbp-40]
 sub r10b, 48
-and r11d, 0xffffffff
 mov r11d, r10d
 add r12d, r11d
 mov word[rbp-24], r12w
@@ -2431,7 +2433,6 @@ jmp .L0x36
 .L0x38:
 .L0x35:
 mov ebx, 1
-and r10b, 0xff
 mov r10b, bl
 mov al, r10b
 and al, 1
@@ -2447,7 +2448,6 @@ jz .L0x39
 lea rbx, [rbp-64] 
 add ebx, 16
 mov r10, qword[rbp-72]
-and r11d, 0xffffffff
 mov r11d, r10d
 cmp r11d, ebx
 seta r11b
@@ -2483,7 +2483,6 @@ jmp .L0x33
 .L0x3a:
 .L0x32:
 mov ebx, 1
-and r10b, 0xff
 mov r10b, bl
 mov al, r10b
 and al, 1
@@ -2516,7 +2515,6 @@ mov r10d, dword[r10d]
 and r10d, 0xffffffff
 shl r10d, 24
 mov r11w, word[rbp-24]
-and r12d, 0xffffffff
 mov r12d, r11d
 or r12d, r10d
 mov r11d, 1
@@ -2874,7 +2872,6 @@ and r10, 0xff
 mov r10b, byte[rbx]
 mov byte[rbp-40], r10b
 mov ebx, 0
-and r10b, 0xff
 mov byte[rbp-48], bl
 mov rbx, qword[rbp-8]
 mov qword[rbp-56], rbx
@@ -2888,7 +2885,6 @@ mov al, bl
 and al, 1
 jz .L0x4d
 mov r10d, 1
-and r11b, 0xff
 mov byte[rbp-48], r10b
 mov ebx, 1
 mov r10, qword[rbp-8]
@@ -3014,7 +3010,6 @@ mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
 mov ebx, 1
-and r10b, 0xff
 mov r10b, bl
 mov dl, r10b
 lea rbx, [rbp-32]
@@ -3050,7 +3045,6 @@ jmp .L0x58
 .L0x58:
 inc qword[rbp-8]
 mov ebx, 0
-and r10b, 0xff
 mov r10b, bl
 mov dl, r10b
 lea rbx, [rbp-40]
@@ -3144,7 +3138,6 @@ mov al, bl
 and al, 1
 jz .L0x60
 mov r10d, 1
-and r11b, 0xff
 mov r11b, r10b
 mov dl, r11b
 mov r11d, dword[rbp-32]
@@ -3173,7 +3166,6 @@ mov al, bl
 and al, 1
 jz .L0x62
 mov r10d, 0
-and r11b, 0xff
 mov r11b, r10b
 mov dl, r11b
 mov r11d, dword[rbp-32]
@@ -3267,7 +3259,6 @@ lea r10, [r10+r11*8]
 mov r10, qword[r10]
 mov rdx, r10
 xor r10d, r10d
-and r11b, 0xff
 mov r11b, r10b
 mov sil, r11b
 mov r10, qword[rbp-16]
@@ -3305,6 +3296,63 @@ jmp ___int___SSCANF_pchar.char.void..__return
 ___int___SSCANF_pchar.char.void..__return:
 leave
 ret
+sscanf:
+push rbp
+mov rbp, rsp
+sub rsp, 96
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+mov [rbp-24], rdx
+mov [rbp-32], rcx
+mov [rbp-40], r8
+mov [rbp-48], r9
+lea rbx, [rbp-88] 
+lea rbx, [rbp-88] 
+mov r10, qword[rbp-24]
+mov qword[rbx], r10
+mov r10d, 1
+lea rbx, [rbp-88] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 1
+lea rbx, [rbp-88] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-32]
+mov qword[rbx], r10
+mov r10d, 2
+lea rbx, [rbp-88] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 2
+lea rbx, [rbp-88] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-40]
+mov qword[rbx], r10
+mov r10d, 3
+lea rbx, [rbp-88] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 3
+lea rbx, [rbp-88] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-48]
+mov qword[rbx], r10
+lea rbx, [rbp-88]
+mov rdx, rbx
+mov rbx, qword[rbp-16]
+mov rsi, rbx
+mov rbx, qword[rbp-8]
+mov rdi, rbx
+xor rax, rax
+call _int___SSCANF_pchar.char.void..
+jmp __sscanf__return
+__sscanf__return:
+leave
+ret
+
 _int_getInt_pchar.:
 push rbp
 mov rbp, rsp
@@ -3330,7 +3378,6 @@ xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 mov ebx, 1
-and r10b, 0xff
 mov r10b, bl
 mov sil, r10b
 lea rbx, [rbp-56]
@@ -3366,7 +3413,6 @@ xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 push rax
 mov ebx, 1
-and r10b, 0xff
 mov r10b, bl
 mov sil, r10b
 lea rbx, [rbp-56]
@@ -3547,7 +3593,6 @@ mov r10b, byte[rbx]
 mov byte[rbp-24], r10b
 mov dword[rbp-32], 0
 mov ebx, 0
-and r10b, 0xff
 mov byte[rbp-40], bl
 mov r10b, 45
 mov bl, byte[rbp-24]
@@ -3559,7 +3604,6 @@ mov al, bl
 and al, 1
 jz .L0x72
 mov r10d, 1
-and r11b, 0xff
 mov byte[rbp-40], r10b
 mov ebx, 1
 mov r10, qword[rbp-8]
@@ -3579,7 +3623,6 @@ mov r10d, dword[rbp-32]
 imul r10d, r11d
 mov r11b, byte[rbp-24]
 sub r11b, 48
-and r12d, 0xffffffff
 mov r12d, r11d
 add r10d, r12d
 mov dword[rbp-32], r10d
@@ -3597,7 +3640,6 @@ test bl, bl
 setnz bl
 mov r11b, byte[rbp-24]
 mov r10d, 10
-and r12d, 0xffffffff
 mov r12d, r11d
 cmp r12d, r10d
 setne r12b
@@ -3629,10 +3671,110 @@ jmp ___int_toInteger_pchar.bool__return
 ___int_toInteger_pchar.bool__return:
 leave
 ret
+__scanf:
+push rbp
+mov rbp, rsp
+sub rsp, 40
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+mov edi, 0
+xor rax, rax
+call _void._floads_pfd_t
+mov rbx, rax
+push rbx
+mov r11, qword[rbp-16]
+mov rdx, r11
+mov r11, rbx
+mov rsi, r11
+mov r11, qword[rbp-8]
+mov rdi, r11
+xor rax, rax
+call _int___SSCANF_pchar.char.void..
+pop rbx
+mov r10d, eax
+push rbx
+push r10
+mov rdi, rbx
+xor rax, rax
+call _void_free_pvoid.
+pop r10
+pop rbx
+push rax
+mov r11d, r10d
+mov eax, r11d
+jmp ____scanf__return
+____scanf__return:
+leave
+ret
+scanf:
+push rbp
+mov rbp, rsp
+sub rsp, 104
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+mov [rbp-24], rdx
+mov [rbp-32], rcx
+mov [rbp-40], r8
+mov [rbp-48], r9
+lea rbx, [rbp-96] 
+lea rbx, [rbp-96] 
+mov r10, qword[rbp-16]
+mov qword[rbx], r10
+mov r10d, 1
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 1
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-24]
+mov qword[rbx], r10
+mov r10d, 2
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 2
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-32]
+mov qword[rbx], r10
+mov r10d, 3
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 3
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-40]
+mov qword[rbx], r10
+mov r10d, 4
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10d, 4
+lea rbx, [rbp-96] 
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+mov r10, qword[rbp-48]
+mov qword[rbx], r10
+lea rbx, [rbp-96]
+mov rsi, rbx
+mov rbx, qword[rbp-8]
+mov rdi, rbx
+xor rax, rax
+call __scanf
+jmp __scanf__return
+__scanf__return:
+leave
+ret
+
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 140
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, STRING_CONSTANT_4
@@ -3656,6 +3798,25 @@ call _char._strchr_pchar.char
 mov rdi, rax
 xor rax, rax
 call _void_printf_pchar.
+push rax
+mov rbx, STRING_CONSTANT_8
+mov rdi, rbx
+xor rax, rax
+call _void_printf_pchar.
+push rax
+lea rbx, [rbp-124]
+mov rsi, rbx
+mov rbx, STRING_CONSTANT_9
+mov rdi, rbx
+xor rax, rax
+call scanf
+mov dword[rbp-132], eax
+lea rbx, [rbp-124]
+mov rsi, rbx
+mov rbx, STRING_CONSTANT_10
+mov rdi, rbx
+xor rax, rax
+call printf
 push rax
 mov eax, 5
 jmp __main__return

@@ -79,7 +79,7 @@ function int scansd(char* str, bool double, double* dest){
 
 }
 
-function int __SSCANF(char* format, char* input, void** args){
+global int __SSCANF(char* format, char* input, void** args){
 
     int argc = 0;
     
@@ -145,6 +145,21 @@ function int __SSCANF(char* format, char* input, void** args){
 }
 
 
+__cdecl int sscanf(char* fmt, char* input, void* a, void* b, void* c, void* d){
+
+    void args[4];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+
+    return __SSCANF(fmt, input, &args);
+
+}
+cextern int sscanf(char* fmt, char* input, void* a, void* b, void* c);
+cextern int sscanf(char* fmt, char* input, void* a, void* b);
+cextern int sscanf(char* fmt, char* input, void* a);
+cextern int sscanf(char* fmt, char* input);
 
 
 

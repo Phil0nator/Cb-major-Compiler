@@ -41,6 +41,11 @@ TODO:
 Impliment cstring functions
 #https://www.tutorialspoint.com/c_standard_library/string_h.htm
 */
+
+/*
+* Find the first instance of char c in string str within
+*       n bytes.
+*/
 function char* memchr(char* str, char c, size_t n){
     register size_t finalptr = str+n;
     while(str < finalptr){
@@ -51,6 +56,10 @@ function char* memchr(char* str, char c, size_t n){
     }
     return nullptr;   
 }
+/*
+*   Compare str1 to str2 within n bytes
+*
+*/
 function int memcmp(char* str1, char* str2, size_t n){
     
     register int value = 0;
@@ -73,6 +82,11 @@ function int memcmp(char* str1, char* str2, size_t n){
 function char* strcat(char* dest, char* source);
 
 function char* strncat(char* dest, char* source, size_t n);
+
+/*
+*   Find the first instance of char c in string str
+*
+*/
 function char* strchr(char* str, char c){
 
     while(@str != 0){

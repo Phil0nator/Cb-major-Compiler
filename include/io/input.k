@@ -103,7 +103,27 @@ function int toInteger(char* str, bool signed){
 }
 
 
+__cdecl int __scanf(char* format, void** args){
+    register char* inp = floads(STDIN);
+    register int retval = __SSCANF(format, inp, args);
+    free(inp);
+    return retval;
+}
 
+__cdecl int scanf(char* format, void* a, void* b, void* c, void* d, void* e){
+    void* args[5];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    args[4]=e;
+    return __scanf(format, &args);
+}
+cextern int scanf(char* format, void* a, void* b, void* c, void*d);
+cextern int scanf(char* format, void* a, void* b, void* c);
+cextern int scanf(char* format, void* a, void* b);
+cextern int scanf(char* format, void* a);
+cextern int scanf(char* format);
 
 
 
