@@ -7,7 +7,7 @@
 #       to the ExpressionEvaluators, in that it will only call the
 #       "calculateConstant" function of globals.py for the evaluation.
 #####################################################
-from globals import INT, operatorISO
+from globals import INT, operatorISO, DOUBLE
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
@@ -70,6 +70,63 @@ def calculateConstant(a, b, op):
             int(a.accessor ^ b.accessor), INT.copy(), constint=True)
 
 
+def calculateCfloat(a, b, op):
+    if(op == "*"):
+        return EC.ExpressionComponent(
+            float(a.accessor * b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "/"):
+        return EC.ExpressionComponent(
+            float(a.accessor / b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "+"):
+        return EC.ExpressionComponent(
+            float(a.accessor + b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "-"):
+        return EC.ExpressionComponent(
+            float(a.accessor - b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "=="):
+        return EC.ExpressionComponent(
+            float(a.accessor == b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "!="):
+        return EC.ExpressionComponent(
+            float(a.accessor != b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "<="):
+        return EC.ExpressionComponent(
+            float(a.accessor <= b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == ">="):
+        return EC.ExpressionComponent(
+            float(a.accessor >= b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == ">"):
+        return EC.ExpressionComponent(
+            float(a.accessor > b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "<"):
+        return EC.ExpressionComponent(
+            float(a.accessor < b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "%"):
+        return EC.ExpressionComponent(
+            float(a.accessor % b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == ">>"):
+        return EC.ExpressionComponent(
+            float(a.accessor >> b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "<<"):
+        return EC.ExpressionComponent(
+            float(a.accessor << b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "||"):
+        return EC.ExpressionComponent(
+            float(a.accessor or b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "&&"):
+        return EC.ExpressionComponent(
+            float(a.accessor and b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "&"):
+        return EC.ExpressionComponent(
+            float(a.accessor & b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "|"):
+        return EC.ExpressionComponent(
+            float(a.accessor | b.accessor), DOUBLE.copy(), constint=True)
+    elif(op == "^"):
+        return EC.ExpressionComponent(
+            float(a.accessor ^ b.accessor), DOUBLE.copy(), constint=True)
+
+
 # get result of a op b while taking initializer value for a and b if they
 # are vars.
 def evaluate(a, b, op):
@@ -77,7 +134,8 @@ def evaluate(a, b, op):
         a.accessor = a.accessor.initializer
     if(b is not None and isinstance(b.accessor, Variable)):
         b.accessor = b.accessor.initializer
-    return calculateConstant(a, b, op)
+    return calculateConstant(a, b, op) if isinstance(
+        a.accessor, int) and isinstance(b.accessor, int) else calculateCfloat(a, b, op)
 
 
 # standard postfix evaluation, using 'evaluate(a,b,op)'

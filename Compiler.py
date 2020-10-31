@@ -3,6 +3,7 @@ from Function import Function
 from Classes.DType import DType
 from Classes.DType import type_precedence
 import Classes.DType as Type
+from Structure import Structure
 from Classes.Token import Token
 from Classes.Token import *
 from Classes.Location import Location
@@ -11,7 +12,7 @@ from Lexer import Lexer
 from Classes.Error import *
 import config
 
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, LONG, SHORT, DOUBLE
 
 from Assembly.Registers import sse_parameter_registers
 from Assembly.Registers import norm_scratch_registers
@@ -87,7 +88,15 @@ class Compiler:
         return q in self.possible_members
 
     def getGlob(self, q):               # get global variable of name q
-        return next((g for g in self.globals if g.name == q), None)
+        out = next((g for g in self.globals if g.name == q), None)
+        if(out is not None):
+            return out
+
+        fn = self.getFunction(q)
+        if(fn is None):
+            return None
+
+        return self.getGlob(fn.getCallingLabel())
 
     def getFunction(self, q):           # get first function of name q
         return next((f for f in self.functions if f.name == q), None)
@@ -171,7 +180,17 @@ class Compiler:
         self.advance()
 
         if (self.current_token.tok != T_EQUALS):
-            throw(ExpectedValue(self.current_token))
+            if(self.current_token.tok == T_ENDL):
+                self.globals.append(
+                    Variable(
+                        intr.copy(),
+                        name,
+                        glob=True,
+                        initializer=0))
+                self.heap += f"{name}: resb {intr.csize()}\n"
+                return
+            else:
+                throw(ExpectedValue(self.current_token))
 
         self.advance()
 
@@ -185,7 +204,9 @@ class Compiler:
         value = determineConstexpr(intr.isflt(), exprtokens, Function(
             "CMAININIT", [], VOID.copy(), self, exprtokens))
 
-        self.globals.append(Variable(value.type.copy(), name,
+        if(isinstance(value.accessor, Variable)):
+            value.accessor = value.accessor.name
+        self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor))
 
         # add .data instructions to self.constants
@@ -249,9 +270,18 @@ class Compiler:
             f = Function(name, parameters, rettype, self, [])
             self.globals.append(
                 Variable(
-                    f.returntype.copy(),
-                    f.name,
-                    glob=True))
+                    f.returntype.up(),
+                    f.getCallingLabel(),
+                    glob=True,
+                    isptr=True,
+                    mutable=False,
+                    signed=f.returntype.signed))
+
+            # self.globals.append(
+            #    Variable(
+            #        f.returntype.copy(),
+            #        f.name,
+            #        glob=True))
 
             self.functions.append(f)
 
@@ -277,147 +307,18 @@ class Compiler:
                      self.currentTokens[start:self.ctidx])
         self.functions.append(f)
         # add as a variable for fn pointers
-        self.globals.append(Variable(f.returntype.copy(), f.name, glob=True))
+        self.globals.append(
+            Variable(
+                f.returntype.up(),
+                f.getCallingLabel(),
+                glob=True,
+                isptr=True,
+                mutable=False,
+                signed=f.returntype.signed))
 
     def buildStruct(self):                  # isolate and build a structure
-        self.advance()
-        if(self.current_token.tok != T_ID):
-            throw(ExpectedIdentifier(self.current_token))
-
-        # get name
-        id = self.current_token.value
-        self.advance()
-        if(self.current_token.tok != T_OPENSCOPE):
-            throw(ExpectedToken(self.current_token, "{"))
-
-        # build prototype DType as placeholder
-        prototypeType = DType(id, 8, [], 0, True)
-        self.types.append(prototypeType)
-
-        size = 0
-        members = []
-
-        postadders = []
-
-        destructor = None
-        constructor = None
-
-        # find properties:
-        #   -members
-        #   -member functions
-        #   -constructor
-        #   -destructor
-        while(self.current_token.tok != T_CLSSCOPE):
-            self.advance()
-
-            # member variable
-            if(self.current_token.tok == T_ID):
-
-                t = self.checkType()
-                if(self.current_token.tok != T_ID):
-                    throw(ExpectedIdentifier(self.current_token))
-                name = self.current_token.value
-                var = Variable(t, name, glob=False, offset=size,
-                               isptr=t.ptrdepth > 0, signed=t.signed)
-                members.append(var)
-                self.possible_members.append(name)
-                size += t.csize()
-                self.advance()
-                if(self.current_token.tok != T_ENDL):
-                    throw(ExpectedSemicolon(self.current_token))
-
-            # either member function, constructor or destructor
-            elif(self.current_token.tok == T_KEYWORD):
-
-                # member function
-                if(self.current_token.value == "function"):
-                    self.advance()
-                    self.createFunction()
-                    f = self.functions.pop()
-                    gv = self.globals.pop()
-                    members.append(f)
-                    gv.name = f"{id}_{gv.name}"
-                    #f.name = f"{id}_{gv.name}"
-                    # self.globals.append(gv)
-                    # self.functions.append(f)
-
-                # destructor
-                elif(self.current_token.value == "destructor"):
-                    self.advance()
-                    if(self.current_token.tok != "{"):
-                        throw(ExpectedToken(self.current_token, "{"))
-                    self.advance()
-                    name = f"x{id}"
-                    parameters = [Variable(prototypeType, "this", isptr=True)]
-                    fntks = []
-                    while(self.current_token.tok != "}"):
-                        fntks.append(self.current_token)
-                        self.advance()
-                    fntks.append(self.current_token)
-                    fn = Function(name, parameters, VOID.copy(), self, fntks)
-                    destructor = fn
-                    self.advance()
-                    self.functions.append(fn)
-                    self.globals.append(Variable(VOID.copy(), name, glob=True))
-                    if(self.current_token.tok != T_ENDL):
-                        throw(ExpectedToken(self.current_token, T_ENDL))
-
-                # constructor
-                elif(self.current_token.value == "constructor"):
-                    self.advance()
-                    if(self.current_token.tok != "("):
-                        throw(ExpectedToken(self.current_token, "("))
-                    name = f"i{id}"
-                    parameters = [Variable(prototypeType, "this", isptr=True)]
-                    fntks = []
-                    while self.current_token.tok != ")":
-                        self.advance()
-                        t = self.checkType()
-                        if(t is None):
-                            throw(UnkownType(self.current_token))
-                        if(self.current_token.tok != T_ID):
-                            throw(ExpectedIdentifier(self.current_token))
-                        pname = self.current_token.value
-                        parameters.append(Variable(t, pname))
-                        self.advance()
-                    self.advance()
-                    if(self.current_token.tok != "{"):
-                        throw(ExpectedToken(self.current_token, "{"))
-                    self.advance()
-                    while(self.current_token.tok != "}"):
-                        fntks.append(self.current_token)
-                        self.advance()
-                    fntks.append(self.current_token)
-
-                    fn = Function(name, parameters, VOID.copy(), self, fntks)
-                    constructor = fn
-                    self.functions.append(fn)
-                    self.globals.append(Variable(VOID.copy(), name, glob=True))
-                    self.advance()
-                    if(self.current_token.tok != T_ENDL):
-                        throw(ExpectedToken(self.current_token, T_ENDL))
-
-        # remove prototype to apply actual properties
-        self.types.remove(prototypeType)
-
-        # fill in new info
-        actualType = DType(id, size, members, 0, True,
-                           destructor=destructor, constructor=constructor)
-        actualTypeptr = DType(id, size)
-        actualTypeptr.load(actualType)
-        actualTypeptr.ptrdepth += 1
-        if(destructor is not None):
-            actualType.destructor.parameters[0].t.load(actualTypeptr)
-        if(constructor is not None):
-            actualType.constructor.parameters[0].t.load(actualTypeptr)
-
-        # finalize
-        self.types.append(actualType)
-
-        self.advance()
-        if(self.current_token.tok != T_ENDL):
-            throw(ExpectedToken(self.current_token, T_ENDL))
-        self.advance()
+        parser = Structure(self)
+        parser.construct()
 
     def compile(self, ftup):            # main function to perform Compiler tasks
         self.currentTokens = ftup
@@ -506,6 +407,8 @@ class Compiler:
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-2] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "cextern"):
                     self.advance()
@@ -514,6 +417,8 @@ class Compiler:
                     fn.extern = True
                     config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-2] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "__cdecl"):
                     self.advance()
@@ -522,6 +427,8 @@ class Compiler:
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-2] + "\n"
                     fn.extern = True
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "global"):
                     self.advance()
@@ -529,6 +436,8 @@ class Compiler:
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-2] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()

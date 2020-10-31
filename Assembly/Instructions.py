@@ -42,6 +42,20 @@ class Peephole:
     def flush(self):
         self.instructions = ""
 
+    ####################################
+    #   TODO:
+    #       - optimize for branch prediction
+    #       - optimize for U / V pipe alignment
+    #           (reorder instructions requiring same address)
+    #       - optimize for instruction pairing
+    #           (reorder / adjust)
+    #       - optimize LEA instruction for AGI stalls
+    #           (effective address set in prev. instruction)
+    #           (pg 43)
+    #   (https://www.agner.org/optimize/microarchitecture.pdf)
+    #
+    ####################################
+
     def opl3(self):
         while self.opl2() > 0:
             pass
@@ -78,7 +92,7 @@ class Peephole:
 
             # excessive mov statements
             if (prev[0] in ["mov", "movq", "movsd"] and op == prev[0]):
-                if(prev[1] == source and ("[" in prev[2]) ^ ("[" in dest) and not isdigit(ord(prev[2][0]))):
+                if(prev[1] == source and not ("[" in prev[2]) and ("[" in dest) and not isdigit(ord(prev[2][0]))):
 
                     lines[i] = None
                     lines[pi] = Instruction(

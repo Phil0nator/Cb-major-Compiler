@@ -49,7 +49,7 @@ global double sqrt(int a){
 
 }
 
-global int sqrt(int a){
+global long sqrt(long a){
 
   __asm{"
   
@@ -65,29 +65,30 @@ global int sqrt(int a){
 
 
 
-global int pow(int base, int exp){
+global long pow(long base, long exp){
 
   __asm{"
   
   mov rax, rdi
   dec rsi
+  jz _int_pow_pintint_end
   _int_pow_pintint_flp:
   mul rdi
   dec rsi
   jnz _int_pow_pintint_flp
-
+  _int_pow_pintint_end:
   "}
 
 
 }
 
-global double pow(int base, int exp){
+global double pow(long base, long exp){
 
   pow(base, exp);
   __asm{"cvtsi2sd xmm0, rax"}
 
 }
-global double pow(double base, int exp){
+global double pow(double base, long exp){
 
   __asm{"
   
@@ -102,19 +103,15 @@ global double pow(double base, int exp){
   "}
 
 }
-global double pow(double base, double exponent){
-
-  
-
-}
 
 
-global int round(double x){
+
+global long round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
 
 
-global int ceil(double x){
+global long ceil(double x){
   __asm{"
   cvttsd2si rax, xmm0
   inc rax
@@ -122,13 +119,13 @@ global int ceil(double x){
 }
 
 
-global int floor(double x){
+global long floor(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
 
 
-global int abs(int x){
+global long abs(long x){
 
   __asm{"
   
@@ -156,7 +153,7 @@ global double abs(double x){
 
 
 
-global int log(int x){
+global long log(long x){
   __asm{"
   xor rbx, rbx
   mov rax, rdi
@@ -174,6 +171,40 @@ global int log(int x){
   _int_log_pint_end:
   mov rax, rbx
 
+  "}
+
+}
+
+global long log(long n, long b){
+  __asm{"
+  
+  xor rbx, rbx
+  mov rax, rdi
+  _int_log_pintint_flp:
+  xor rdx, rdx
+  div rsi
+  test rax, rax
+  jnz _int_log_pintint_inc
+  jmp _int_log_pintint_end
+  _int_log_pintint_inc:
+  inc rbx
+  jmp _int_log_pintint_flp
+  _int_log_pintint_end:
+  mov rax, rbx
+  
+  
+  "}
+}
+
+
+global long divmod(long dividend, long divisor, long* modulus ){
+
+  __asm{"
+  mov rbx, rdx
+  xor rdx, rdx
+  mov rax, rdi
+  div rsi
+  mov [rbx], rdx
   "}
 
 }

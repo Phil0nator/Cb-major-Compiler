@@ -7,28 +7,30 @@
 #define __STDDEF 1
 
 
-void* nullptr = 0;
+#define nullptr 0
 
-void null = 0;
+#define NULL 0
 
 char nullterm = 0;
 
 /* The type size_t holds all results of the sizeof operator. */
 
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 
-typedef unsigned int time_t; /* time in sec since 1 Jan 1970 0000 GMT */
+typedef unsigned long time_t; /* time in sec since 1 Jan 1970 0000 GMT */
 
-typedef int ssize_t; /* The type ssize_t holds all signed results of the sizeof operator. */
+typedef long ssize_t; /* The type ssize_t holds all signed results of the sizeof operator. */
 
 typedef int ptrdiff_t;
 
-typedef int clock_t; /* unit for system accounting */
+typedef long clock_t; /* unit for system accounting */
 
 
 
 typedef char i8_t; /* 8 bit signed type */
-
+typedef short i16_t; /* 16 bit signed type */
+typedef long int64_t; /* 64 bit signed type */
+typedef unsigned long uint64_t; /* unsigned 64 bit type */
 
 /*
   * Default boolean values;
@@ -49,8 +51,8 @@ typedef short int32;
 #define MAX_INT 9223372036854775807
 #define MAX_UINT 18446744073709551615
 
-
-
+__cdecl long __inline__syscall(long call){__asm{"syscall"}}
+long* INLINE_SYSCALL = __inline__syscall;
 
 
 #endif

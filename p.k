@@ -3,13 +3,14 @@
 
 
 
-
 function int main(int argc, char** argv){
 
-    int a = 36;
+    printf("Hello WOrld!\n");
 
+    printf("I: %i, H: 0x%x, S: %s", 26,255,"Hello World!\n");
 
-    printf("%i\n", a);
+    printf(strchr("This is a string\n", 's'));
+
 
 
     return 5;

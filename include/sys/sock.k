@@ -79,7 +79,6 @@ function int inet_aton(char* cp, in_addr *addr){
 
     in_addr val;
     int base = 10;
-    int n;
     char c;
     unsigned int parts[4];
     memset(&parts, 0, 4);

@@ -250,6 +250,18 @@ class RegsiterStructure(Error):
         self.message = f"Cannot create structure in register: "
 
 
+class GlobalDeletion(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Cannot delete global variable: "
+
+
+class NonRegisterDeletion(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Could not delete non-register variable: "
+
+
 class Warning:
     def __init__(self, msg, tok):
         self.msg = msg
@@ -257,9 +269,9 @@ class Warning:
 
     def __repr__(self):
 
-        start = f"{Style.BRIGHT}{Fore.MAGENTA}Warning!:{Style.RESET_ALL}"
+        start = f"{Style.BRIGHT}{Fore.MAGENTA}Warning! :{Style.RESET_ALL}"
 
-        locline = f"{Style.BRIGHT} {self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+        locline = f"{Style.BRIGHT}{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
 
         return f"{start}{self.msg}{locline}"
 
@@ -268,3 +280,15 @@ class RegisterDeclWarning(Warning):
     def __init__(self, tok):
         self.tok = tok
         self.msg = "Too many register declarations at: "
+
+
+class NoReturnStatement(Warning):
+    def __init__(self, tok, fn):
+        self.tok = tok
+        self.msg = f"No guaranteed return statement in non-void function '{fn.returntype} {fn.name} {fn.parameters}' : "
+
+
+class UnusedVariable(Warning):
+    def __init__(self, tok, var, fn):
+        self.tok = tok if tok is not None else fn.tokens[0]
+        self.msg = f"Unused variable (' {var} ') in function {fn}: "

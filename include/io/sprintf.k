@@ -12,15 +12,16 @@
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
 #define FORMAT_FLOAT 'f'
-#define FORMAT_HEX 'h'
-#define DOUBLE_PRECISION_MULTIPLIER 100000000000000
-#define FLOAT_PRECISION_MULTIPLIER 10000000
+#define FORMAT_HEX 'x'
+#define FORMAT_OCTAL 'o'
+
 #include "math.k"
 #include "string.k"
+#include "bits.k"
 
 
-
-function int toStr(int val, char* buffer, bool signed){
+/* 
+function long toStr(long val, char* buffer, bool signed, short base){
 
     int signspace = 0;
     if(val < 0 && signed){
@@ -29,17 +30,53 @@ function int toStr(int val, char* buffer, bool signed){
         val = 0-val;
         signspace=1;
     }
-    int l = log(val)+1;
+    long l = log(val)+1;
     buffer+=l;
     for(int i = 0 ; i < l;i+=1){
 
         buffer-=1;
-        @buffer = $char (val%10) +'0';
+        char mod = val%base;
+        @buffer = $char (mod) +'0' + ('a'-'0')*(mod > 9);
         
-        val/=10;
+        val/=base;
 
     }
     return l+signspace;
+
+} */
+
+char* __format_numchars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function long toStr(long val, char* buffer, bool signed, short base){
+
+    char signspace = 0;
+    if(val < 0 && signed){
+        @buffer = '-';
+        buffer+=1;
+        val = 0-val;
+        signspace=1;
+    }
+    char tmpbuf[64];
+    memset(&tmpbuf, 0, 64);
+    int len = 1;
+    while(val != 0){
+
+        char mod;
+        val = divmod(val, base, &mod);
+        tmpbuf[len-1] = __format_numchars[mod];
+        len+=1;
+
+    }
+    for(int i = len;i>=0;i--){
+        buffer[i]=tmpbuf[len-i];
+    }
+
+
+
+
+
+    return len+1+signspace;
+
 
 }
 
@@ -47,17 +84,20 @@ function int toStr(int val, char* buffer, bool signed){
 
 
 
-function int toStr(double val, char* buffer, int multiplier){
+function long toStr(double val, char* buffer, long multiplier){
 
-    int integral = val;
-    int l = toStr(integral, buffer, 1);
+    long integral = val;
+    long l = toStr(integral, buffer, 1, 10);
     buffer+=l;
+    
     val = abs(val);
     val -= integral;
     val *= multiplier;
+
+
     @buffer = '.';
-    buffer+=1;
-    l += toStr(round(val), buffer, 0);
+    buffer++;
+    l += toStr(round(val), buffer, 0, 10);
     return l-1;
 
 
@@ -71,7 +111,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
     int argc = 0;
 
-    int og = $int str;
+    void og = str;
 
 
     if(str == 0 || fmt == 0){
@@ -95,53 +135,69 @@ global int __sprintf(char* str, char* fmt, void* args){
             fmt+=1;
             char c = @fmt;
 
-            if(c == FORMAT_INT64){
-                
-                int num = (args[argc]);
 
-                int size = toStr(num, str, 1);
-                str+=size-1;
+            switch(c){
+                case FORMAT_INT64 {
+                    long num = (args[argc]);
 
-            }else if (c == FORMAT_CHAR){
-                char cf = $char args[argc];
-                @str = cf;
-            }
-            else if (c == FORMAT_UINT64){
-
-                int unum = (args[argc]);
-                int usize = toStr(unum, str, 0);
-                str+=usize-1;
-
-            }else if (c == FORMAT_STRING){
-
-                int ssize = strcpy(str,args[argc]);
-                str+=ssize-1;
-
-            }else if (c == FORMAT_BOOL){
-
-
-                bool b = args[argc];
-                char* boolean_string = "False";
-                if(b){
-                    boolean_string = "True";
+                    long size = toStr(num, str, 1, 10);
+                    str+=size-1;
+                    break;
                 }
-                int bsize = strcpy(str, boolean_string);
-                
-                str+=bsize;
-            }
+                case FORMAT_CHAR {
+                    char cf = $char args[argc];
+                    @str = cf;
+                    break;
 
-            else if (c == FORMAT_DOUBLE){
+                }
+                case FORMAT_HEX {
+                    long numx = (args[argc]);
+                    long sx = toStr(numx, str, 0, 16);
+                    str+=sx-1;
+                    break;
+                }
+                case FORMAT_OCTAL {
 
-                double d = args[argc];
-                int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
-                str += dsize-1;
+                    long numo = (args[argc]);
+                    long so = toStr(numo, str, 0, 8);
+                    str+=so-1;
+                    break;
+                }
+                case FORMAT_UINT64 {
+                    long unum = (args[argc]);
+                    int usize = toStr(unum, str, 0, 10);
+                    str+=usize-1;
+                    break;
+                }
+                case FORMAT_STRING {
+                    int ssize = strcpy(str,args[argc]);
+                    str+=ssize-1;
+                    break;
+                }
+                case FORMAT_BOOL {
+                    bool b = args[argc];
+                    char* boolean_string = "False";
+                    if(b){
+                        boolean_string = "True";
+                    }
+                    int bsize = strcpy(str, boolean_string);
+                    
+                    str+=bsize;
+                    break;
+                }
+                case FORMAT_DOUBLE {
+                    double d = args[argc];
+                    int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
+                    str += dsize-1;
+                    break;
+                }
 
-            } else if (c == FORMAT_FLOAT){
-
-                double f = args[argc];
-                int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
-                str += fsize-1;
-
+                case FORMAT_FLOAT{
+                    double f = args[argc];
+                    int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
+                    str += fsize-1;
+                    break;
+                }
             }
 
 
@@ -155,7 +211,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
     }
 
-    return ($int str)-og;
+    return ($long str)-og;
 
 
 

@@ -33,12 +33,9 @@ section .text
 %endmacro
 %define CMAIN main
 
-CEXTERN printf
 CEXTERN scanf
 CEXTERN putchar
-CEXTERN fgets
 CEXTERN puts
-CEXTERN fputs
 CEXTERN fflush
 CEXTERN sscanf
 
@@ -53,16 +50,6 @@ CEXTERN strcat
 CEXTERN realloc
 CEXTERN calloc
 CEXTERN free
-
-CEXTERN fabsf
-CEXTERN atoi
-
-
-CEXTERN thrd_create
-CEXTERN thrd_equal
-CEXTERN thrd_detach
-CEXTERN thrd_join
-
 
 
 

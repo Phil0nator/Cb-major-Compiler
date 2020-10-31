@@ -6,6 +6,7 @@
 #include "memory.k"
 #include "filesystem.k"
 #include "sprintf.k"
+#include "sscanf.k"
 
 #define MAX_INT64LEN 40
 function int getInt(char* msg){
@@ -35,6 +36,7 @@ function char getchar(){
 
 function int getHex(char* msg){
     /*TODO*/
+    return 0;
 }
 function void getString(char* buffer, int maxlen, char* msg){
     
@@ -99,6 +101,36 @@ function int toInteger(char* str, bool signed){
 
 
 }
+
+
+__cdecl int __scanf(char* format, void** args){
+    register char* inp = floads(STDIN);
+    register int retval = __SSCANF(format, inp, args);
+    free(inp);
+    return retval;
+}
+
+__cdecl int scanf(char* format, void* a, void* b, void* c, void* d, void* e){
+    void* args[5];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    args[4]=e;
+    return __scanf(format, &args);
+}
+cextern int scanf(char* format, void* a, void* b, void* c, void*d);
+cextern int scanf(char* format, void* a, void* b, void* c);
+cextern int scanf(char* format, void* a, void* b);
+cextern int scanf(char* format, void* a);
+cextern int scanf(char* format);
+
+
+
+
+
+
+
 
 
 

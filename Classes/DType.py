@@ -42,11 +42,11 @@ class DType:
         return None
 
     def load(self, other):  # accept properties of another DType object
-        self.__init__(other.name, other.s, other.members, other.ptrdepth,
+        self.__init__(other.name, other.s, other.members.copy() if other.members is not None else None, other.ptrdepth,
                       other.signed, other.destructor, other.constructor)
 
     def copy(self):  # duplicate
-        return DType(self.name, self.s, members=self.members, ptrdepth=self.ptrdepth,
+        return DType(self.name, self.s, members=(self.members.copy()) if self.members is not None else None, ptrdepth=self.ptrdepth,
                      signed=self.signed, constructor=self.constructor, destructor=self.destructor)
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
@@ -60,6 +60,11 @@ class DType:
     def down(self):
         out = self.copy()
         out.ptrdepth -= 1
+        return out
+
+    def up(self):
+        out = self.copy()
+        out.ptrdepth += 1
         return out
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
@@ -90,8 +95,10 @@ type_precedence = {
     "unsigned short": 5,
     "int": 6,
     "unsigned int": 10,
-    "double": 11,
-    "void": 7
+    "long": 11,
+    "unsigned long": 12,
+    "double": 13,
+    "void": 12
 
 
 }
@@ -106,7 +113,7 @@ def determinePrecedence(a, b, fn):
     if(type_precedence[a.name] > type_precedence[b.name] and a.ptrdepth == b.ptrdepth):
 
         return a, b
-    elif(a.ptrdepth > 0 and b.__eq__(DType("int", 8))) or (a.ptrdepth > 0 and b.__eq__(DType("int", 8, signed=False))):
+    elif(a.ptrdepth > 0 and b.__eq__(DType("void", 8, ptrdepth=1))) or (a.ptrdepth > 0 and b.__eq__(DType("void", 8, signed=False, ptrdepth=1))):
 
         return a, b
 

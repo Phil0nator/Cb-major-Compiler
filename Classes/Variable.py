@@ -11,7 +11,7 @@
 #
 ###################################
 class Variable:
-    def __init__(self, t, name, glob=False, offset=0, initializer=None,
+    def __init__(self, t, name, glob=False, offset=0, initializer=0,
                  isptr=False, mutable=True, signed=True, isStackarr=False):
         self.t = t                      # data type
         self.name = name                  # str: name
@@ -28,6 +28,8 @@ class Variable:
         self.stackdims = isStackarr
         self.stacksizes = []            # ^ sizes
         self.register = None            # register declaration
+        self.referenced = False         # for warnings
+        self.dtok = None
 
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and
@@ -36,6 +38,6 @@ class Variable:
 
     def __repr__(self):  # pretty print
         if(self.isStackarr):
-            return f"[Variable: {self.t} {self.name}[{self.stackarrsize}] @ {self.offset} -> {self.offset+self.stackarrsize}]]"
+            return f"[{self.t} {self.name}[{self.stackarrsize}] @ {self.offset} -> {self.offset+self.stackarrsize}]]"
         else:
-            return f"[ Variable: {self.t} {self.name} @ {(self.offset)}]"
+            return f"[{self.t} {self.name} @ {(self.offset)}]" if self.register is None else f"[{self.t} {self.name} @ {self.register}]"

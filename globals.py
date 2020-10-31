@@ -29,16 +29,16 @@ fileTemplate = "%s\n\n%s" % (io64, stub)
 
 # primitive types:
 
-SHORT = DType("long", 8, signed=True)
+LONG = DType("long", 8, signed=True)
 INT = DType("int", 4, signed=True)
-SMALL = DType("short", 2, signed=True)
+SHORT = DType("short", 2, signed=True)
 CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
 VOID = DType("void", 8, signed=True)
 BOOL = DType("bool", 1, signed=True)
 
 
-INTRINSICS = [INT, SHORT, BOOL, DOUBLE, CHAR, BOOL, VOID, SMALL]
+INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT]
 
 
 # Operator priority (complicated pemdas)
@@ -91,12 +91,12 @@ PRIORITY = {
     "@": 11,
     "~": 11,
     "!": 11,
-    "->": 11,
     "--": 11,
     "++": 11,
 
+    "->": 12,
 
-    "$": 12,
+    "$": 13,
 
 
 }
@@ -175,7 +175,7 @@ def typematch(a, b):
 
         if(config.GlobalCompiler.Tequals(a.name, "void") or config.GlobalCompiler.Tequals(b.name, "void")):
             return True
-        if(a.__eq__(INT.copy()) and b.ptrdepth > 0):
+        if(a.__eq__(VOID.copy()) and b.ptrdepth > 0):
             return True
         if(a.__eq__(b)):
             return True

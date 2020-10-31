@@ -26,7 +26,7 @@ from Assembly.AVX import avx_ralloc, avx_rfree, avx_correctSize
 from Assembly.AVX import avx_loadToReg, avx_dropToAddress, avx_doToReg
 import Assembly.AVX as AVX
 
-from globals import TsCompatible, INT, BOOL, CHAR, SHORT, SMALL, VOID, DOUBLE, isIntrinsic
+from globals import TsCompatible, INT, BOOL, CHAR, SHORT, LONG, VOID, DOUBLE, isIntrinsic
 
 from Classes.Constexpr import determineConstexpr
 
@@ -59,7 +59,8 @@ class Function:
 
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.variables = []                     # all local variables
-
+        # inline functions behave like macros, and are not called
+        self.inline = False
         # stack containing labels to jump to if the "continue" keyword is used
         self.continues = []
         # stack containing labels to jump to if the "break" keyword is used
@@ -87,6 +88,13 @@ class Function:
         # ExpressionComponents to keep track of register declarations
         self.regdecls = []
 
+        # monitoring:
+
+        self.hasReturned = False
+        self.recursive_depth = 0
+
+        self.canbeInline = True
+
     def advance(self):                              # advance token
         self.ctidx += 1
         self.current_token = self.tokens[self.ctidx]
@@ -105,7 +113,9 @@ class Function:
     def checkTok(self, tok):                        # check current token for given token
         if(self.current_token.tok != tok):
             throw(ExpectedToken(self.current_token, tok))
+        out = self.current_token.value
         self.advance()
+        return out
 
     # get raw asm label used to denote the end of this function
     def getClosingLabel(self):
@@ -123,6 +133,7 @@ class Function:
     def addVariable(self, v):
 
         v.offset = self.stackCounter
+        v.dtok = self.current_token
         # self.stackCounter += v.t.size(0)
         if v.t.size(0) <= 8:
             self.stackCounter += 8
@@ -133,7 +144,7 @@ class Function:
 
     def addline(self, l):                           # add a line of assembly to raw
         # self.asm+=l+"\n"
-        if(config.__oplevel__ >= 2):
+        if(config.__oplevel__ > 1):
             self.peephole.addline(l)
             self.asm = f"{self.asm}{self.peephole.get()}\n"
             self.peephole.flush()
@@ -216,6 +227,7 @@ class Function:
         counts = 0
         for p in self.parameters:
             self.addVariable(p)
+            p.referenced = True
             if(config.DO_DEBUG):
                 self.addcomment(f"Load Parameter: {p}")
             if(p.isflt()):
@@ -237,15 +249,20 @@ class Function:
     def buildReturnStatement(self):             # build a return statement
         self.advance()
         if(self.current_token.tok != T_ENDL):
-            if(self.returntype.isflt()):
-                instr = self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    sse_return_register, DOUBLE.copy(), token=self.current_token))
-            else:
-                instr = self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    norm_return_register, INT.copy(), token=self.current_token))
+
+            instr = self.evaluateRightsideExpression(
+                EC.ExpressionComponent(
+                    sse_return_register if self.returntype.isflt() else setSize(
+                        norm_return_register,
+                        self.returntype.csize()),
+                    self.returntype,
+                    token=self.current_token))
+
             self.addline(instr)
         self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]]))
         self.checkSemi()
+        if self.recursive_depth == 1:
+            self.hasReturned = True
 
     def buildIfStatement(self):
         self.advance()
@@ -424,7 +441,7 @@ class Function:
 
         # build instructions to evaluate for the first given index
         determine_index1 = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, INT.copy(), token=self.current_token))
+            EC.ExpressionComponent(idx1, VOID.copy(), token=self.current_token))
 
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
@@ -458,7 +475,7 @@ class Function:
             # build evaluation for the index
             idxn = ralloc(False)
             determine_idxn = self.evaluateRightsideExpression(
-                EC.ExpressionComponent(idxn, INT.copy(), token=self.current_token))
+                EC.ExpressionComponent(idxn, VOID.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
 
@@ -482,7 +499,7 @@ class Function:
 
         # evaluate destination index
         determineidxf = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, INT.copy(), token=self.current_token))
+            EC.ExpressionComponent(idx1, VOID.copy(), token=self.current_token))
         self.checkTok(T_CLSP)
 
         self.checkSemi()
@@ -510,6 +527,8 @@ class Function:
         self.advance()
 
         self.checkTok(T_CLSSCOPE)
+        if self.recursive_depth == 1:
+            self.hasReturned = True
 
     def buildSwitch(self):
         self.advance()
@@ -527,7 +546,7 @@ class Function:
         self.breaks.append(endlabel)
 
         # evaluate the lvalue to compare
-        cmpvalue = ralloc(o.isflt())
+        cmpvalue = ralloc(o.isflt(), o.csize())
         loadinstr = self.evaluateRightsideExpression(
             EC.ExpressionComponent(cmpvalue, o, token=self.current_token))
         # ensure register hit
@@ -612,8 +631,7 @@ class Function:
             self.regdecls.append(
                 EC.ExpressionComponent(
                     v.register, v.t, token=s))
-            print(self.regdecls)
-            
+
             if(v.t.isflt()):
                 self.regdeclremain_sse -= 1
             else:
@@ -629,6 +647,8 @@ class Function:
             self.buildASMBlock()
         elif(word == "return"):
             self.buildReturnStatement()
+
+        # wrapper for declaration with unsigned type
         elif(word == "unsigned"):
             s = self.current_token
             self.advance()
@@ -639,6 +659,7 @@ class Function:
             v.signed = False
             v.t.signed = False
 
+        # register declaration
         elif(word == "register"):
 
             self.buildRegdecl()
@@ -672,20 +693,47 @@ class Function:
         elif(word == "switch"):
             self.buildSwitch()
 
+        elif(word == "del"):
+            self.advance()
+            vname = self.checkTok(T_ID)
+            v = self.getVariable(vname)
+            if(v is None):
+                throw(UnkownIdentifier(self.tokens[self.ctidx - 1]))
+            if(v.glob):
+                throw(GlobalDeletion(self.tokens[self.ctidx - 2]))
+            if(v.register is None):
+                throw(NonRegisterDeletion(self.tokens[self.ctidx - 2]))
+
+            self.variables.remove(v)
+            rfree(v.register)
+
+            if("xmm" in v.register):
+                self.regdeclremain_sse -= 1
+            else:
+                self.regdeclremain_norm -= 1
+            self.advance()
+
         else:
             throw(UnexpectedToken(self.current_token))
 
+    # push all register declarations before function call
+    # to preserve their state.
     def pushregs(self):
         out = ""
         for r in self.regdecls:
             out += spush(r)
         return out
+    # restore all register declarations after function call
+    # to preserve their state.
 
     def restoreregs(self):
         out = ""
         for r in reversed(self.regdecls):
             out += spop(r)
         return out
+
+    def buildAmbiguousFunctionCall(self, fid, types):
+        pass
 
     def buildFunctionCall(self):
 
@@ -698,7 +746,7 @@ class Function:
         fnstartt = self.current_token
         # placeholder
         fn = None
-        instructions = Peephole()
+        instructions = ""
 
         self.advance()
         self.checkTok(T_OPENP)
@@ -722,9 +770,16 @@ class Function:
         self.ctidx = start - 1
         self.advance()
         if(fn is None):
-            throw(UnkownFunction(fnstartt, fid, types))
-        pcount = len(fn.parameters)
-
+            pcount = len(types)
+            var = self.getVariable(fid)
+            if(var is None):
+                throw(UnkownIdentifier(fnstartt))
+            params = [Variable(t, "parameter") for t in types]
+            fn = Function(fid, params, var.t, self.compiler, [])
+            varcall = True
+        else:
+            pcount = len(fn.parameters)
+            varcall = False
         # build actual parameter-loading instructions using exact datatypes
         sseused = 0
 
@@ -738,8 +793,9 @@ class Function:
         sseused = 0
         normused = 0
 
-        instructions.addline(self.pushregs())
+        instructions += (self.pushregs())
 
+        paraminst = ""
 
         # for each parameter
         for i in range(pcount):
@@ -747,30 +803,34 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                instructions.addline(self.evaluateRightsideExpression(EC.ExpressionComponent(
+                inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
                     sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
                 )
                 sseused += 1
             # else, load to normal register of the correct size
             else:
                 # determine size:
-                if(fn.parameters[i].t.csize() != 8):
-                    result = ralloc(False)
-                else:
-                    result = norm_parameter_registers[normused]
+
+                result = setSize(
+                    norm_parameter_registers[normused],
+                    types[i].csize())
+
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
-                instructions.addline(self.evaluateRightsideExpression(ec))
+                inst = f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
-                if(fn.parameters[i].t.csize() != 8):
-                    instructions.addline(Instruction("mov", [setSize(norm_parameter_registers[normused],
-                                                                     fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
 
-                    instructions.addline(maskset(
-                        norm_parameter_registers[normused], fn.parameters[i].t.csize()))
-                    rfree(result)
+                # if(fn.parameters[i].t.csize() != 8):
+
+                #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
+#                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
+                # inst+=(maskset(
+                # norm_parameter_registers[normused],
+                # fn.parameters[i].t.csize()))
+                #    rfree(result)
                 normused += 1
+            paraminst = f"{inst}{paraminst}"
 
             if(self.current_token.tok == ","):
                 self.advance()
@@ -779,16 +839,17 @@ class Function:
             # self.advance()
             pass
 
+        instructions += paraminst
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
-
-        instructions.addline(Instruction("mov", [rax, ssevarsforrax]))
+        instructions += (Instruction("mov", [rax, ssevarsforrax]))
 
         # actual 'call' instruction
 
-        instructions.addline(fncall(fn))
-        instructions.addline(self.restoreregs())
-        return instructions.get(), fn
+        instructions += (fncall(fn)
+                         ) if not varcall else (Instruction("call", [valueOf(var)]))
+        instructions += (self.restoreregs())
+        return instructions, fn
 
     # construct expression components from tokens
 
@@ -932,7 +993,6 @@ class Function:
             self.buildRegdecl()
             return
 
-
         t = self.checkForType()
 
         if(not isIntrinsic(t.name) and register):
@@ -970,7 +1030,11 @@ class Function:
                     # initialize to null
 
                     self.addline(Instruction(
-                        "mov", [valueOf(self.variables[-1]), 0]))
+                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
+
+                else:
+                    print("Non-Variable member error")
+                    exit(1)
 
             # if the declaration includes a constructor, call it with the
             # correct parameters
@@ -1073,18 +1137,22 @@ class Function:
 
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
-
         inst += (insters)
 
         # check for early eol before rightside
-        if(self.current_token.tok == T_ENDL):
-            throw(ExpectedLValue(self.current_token))
+        if(self.current_token.tok not in SETTERS):
+
+            if(self.current_token.tok == T_ENDL):
+                self.advance()
+            self.addline(inst)
+            rfree(dest.accessor)
+            return
 
         setter = self.current_token
         self.advance()
 
         # register to hold assignment value
-        value = ralloc(dest.type.isflt())
+        value = ralloc(dest.type.isflt(), dest.type.csize())
 
         # evaluate assignment value into 'value' register
         ev = self.evaluateRightsideExpression(
@@ -1099,8 +1167,8 @@ class Function:
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
         else:
             op = setter.tok[:-1]
-            x = ralloc(dest.type.isflt())
-            areg = ralloc(dest.type.isflt())
+            x = ralloc(dest.type.isflt(), dest.type.csize())
+            areg = ralloc(dest.type.isflt(), dest.type.csize())
 
             inst += (loadToReg(areg, dest.accessor))
 
@@ -1109,8 +1177,8 @@ class Function:
             else:
                 inst += (
                     doIntOperation(
-                        areg,
-                        value,
+                        setSize(areg, dest.type.csize()),
+                        setSize(value, dest.type.csize()),
                         op,
                         dest.type.signed))
 
@@ -1135,22 +1203,23 @@ class Function:
         if (self.compiler.isType(id)
                 and self.tokens[self.ctidx + 1].tok != T_OPENP):
             self.buildDeclaration()  # declaration
-        elif (self.getVariable(id) is not None):
+        else:
             # assignment or blank call
-
+            """
             if (self.compiler.getFunction(id) is not None):
                 # fn call
                 self.buildBlankfnCall()
 
-            else:
+            else: """
 
-                self.buildAssignment()
+            self.buildAssignment()
 
-        else:
-            throw(UnkownIdentifier(self.current_token))
+        # else:
+        # #   throw(UnkownIdentifier(self.current_token))
 
     def beginRecursiveCompile(self):            # recursive main
         opens = 1  # maintain track of open and close scopes ("{, }")
+        self.recursive_depth += 1
         while opens > 0 and self.current_token.tok != T_EOF:
 
             if(self.current_token.tok == T_CLSSCOPE):
@@ -1172,24 +1241,34 @@ class Function:
                 throw(UnexpectedToken(self.current_token))
                 self.advance()
 
+        self.recursive_depth -= 1
+
     def compile(self):      # main
         if(self.current_token is None):
             return
         self.addline(functionlabel(self))  # label
         # stack allocator (size undetermined at this point)
-        self.addline("/*%%ALLOCATOR%%*/")
+        self.addline("/*ALLOCATOR*/")
         self.loadParameters()             # parameters
 
         self.beginRecursiveCompile()      # body
 
         # fill in allocator with real value
         self.asm = self.asm.replace(
-            "/*%%ALLOCATOR%%*/", function_allocator(self.stackCounter))
+            "/*ALLOCATOR*/", function_allocator(self.stackCounter))
 
         # self.addline(self.destructor_text)
         self.createClosing()              # return, destructors, stack frame closing
 
         self.asm += self.suffix           # readonly memory
+
+        # warning checking:
+        if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned):
+            warn(NoReturnStatement(self.tokens[0], self))
+
+        for v in self.variables:
+            if(not v.referenced):
+                warn(UnusedVariable(v.dtok, v, self))
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:

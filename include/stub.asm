@@ -14,6 +14,7 @@ __heap_padding__: resz 1
 
 
 section .text
+align 8
 global CMAIN
 
 

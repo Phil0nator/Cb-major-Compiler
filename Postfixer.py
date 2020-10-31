@@ -1,7 +1,7 @@
 from Classes.Variable import *
 from Classes.Token import *
 from Classes.Error import *
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SMALL, SHORT, DOUBLE, operatorISO, OPERATORS, PRIORITY, isIntrinsic
+from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SHORT, LONG, DOUBLE, operatorISO, OPERATORS, PRIORITY, isIntrinsic
 import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import valueOf
 
@@ -54,7 +54,7 @@ class Postfixer:
                             v.size(0), INT.copy(), constint=True, token=t)
                         ec.memory_location = valueOf(v)
                 else:
-
+                    v.referenced = True
                     ec = EC.ExpressionComponent(v, v.t)
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop", t.fn.returntype)
