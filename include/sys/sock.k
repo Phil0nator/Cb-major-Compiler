@@ -5,14 +5,14 @@
 #include "printf.k" // sscanf
 #include "memory.k"  // malloc
 
-typedef unsigned int32 in_addr;
+typedef int in_addr;
 
 struct sockaddr_in
 {
-    int                 sin_family; // e.g. AF_INET
-    unsigned int        sin_port;   // e.g. htons(3490)
-    in_addr             sin_addr;   //
-    int                 sin_zero;   // 
+    short                   sin_family; // e.g. AF_INET
+    short                   sin_port;   // e.g. htons(3490)
+    in_addr                 sin_addr;   //
+    long                    sin_zero = 0;   // 
 
 };
 
@@ -75,52 +75,26 @@ function bool isdigit(char c){
     return c >= '0' && c <= '9';
 }
 
-function int inet_aton(char* cp, in_addr *addr){
 
-    in_addr val;
-    int base = 10;
-    char c;
-    unsigned int parts[4];
-    memset(&parts, 0, 4);
-    unsigned int *pp = &parts;
-    c = @cp;
+function int inet_aton(char* cp, in_addr* addr){
 
-    while(true){
-        val = 0;
-        while (true){
-            if(isdigit(c)){
-                val = (val*base)+(c-'0');
-                cp+=1;
-                c = @cp;
-            }else{
-                break;
-            }
-            
-        }
-        if(c == '.'){
-            if(pp > (parts+4*int)){
-                return 0;
-            }
-            @pp = val;
-            pp+=int;
-            cp+=1;
-            c = @cp;
-        }else{
-            break;
-        }
-    }
-    @pp = val;
+    char p[4];
 
-    if(c != 0 && c != ' '){
-        return 0;
-    }
+    int parts = sscanf("%i.%i.%i.%i",cp, &p, &p+1, &p+2, &p+3);
+    
+    int a = p[0]&&0xff;
+    int b = p[1]&&0xff;
+    int c = p[2]&&0xff;
+    int d = p[3]&&0xff;
+
 
 
     
-
-    val = val || ((parts[0] << 24) || (parts[1] << 16) || (parts[2] << 8));
-    @addr = val;
+    
+    @addr = hton32( (d)||((a << 24) || (b << 16) || (c << 8)));
+    
     return 1;
+
 
 }
 
@@ -163,6 +137,34 @@ function int shutdown(fd_t sockfd, int how){
     syscall
     "}
 }
+function int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
+    __asm{"
+    mov rax, 45
+    syscall
+    "}
+}
+
+function int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
+    __asm{"
+    mov rax, 44
+    syscall
+    "}
+}
+
+
+function int recv(fd_t sockfd, char* buff, size_t len, int flags){
+
+    return recvfrom(sockfd, buff, len, flags, NULL, NULL);
+
+}
+
+
+function int send(fd_t sockfd, char* buff, size_t len, int flags){
+
+    return sendto(sockfd, buff, len,flags, NULL, NULL);
+
+}
+
 
 
 #endif

@@ -58,6 +58,12 @@ function long toStr(long val, char* buffer, bool signed, short base){
         val = 0-val;
         signspace=1;
     }
+
+    if(val == 0){
+        @buffer = '0';
+        return 2;
+    }
+
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
     int len = 1;
@@ -93,8 +99,8 @@ function long toStr(double val, char* buffer, long multiplier){
     buffer+=l;
     
     val = abs(val);
+    val -= integral;
     val *= multiplier;
-    val -= integral*multiplier;
 
 
     @buffer = '.';

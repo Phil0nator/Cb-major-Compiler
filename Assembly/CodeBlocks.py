@@ -423,9 +423,9 @@ def castABD(a, b, areg, breg, newbreg):
 
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
-            #out = maskset(newbreg, a.type.csize())
+            out = maskset(newbreg, a.type.csize())
 
-            out = f"mov {newbreg}, {setSize( breg, sizeOf(newbreg) ) }\n"
+            out += f"mov {newbreg}, {setSize( breg, sizeOf(newbreg) ) }\n"
             return out
         return False
     if(a.type.isflt() and not b.type.isflt()):

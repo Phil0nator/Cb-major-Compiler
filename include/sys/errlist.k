@@ -405,6 +405,9 @@ char** __linux_errstrlist = {
 #define MAX_ERR 131
 
 
+int errno = 0;
+
+
 global char* get_errstr(int err){
 
     if(err < MAX_ERR && err >= 0){

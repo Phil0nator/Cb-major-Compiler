@@ -825,9 +825,9 @@ class Function:
 
                 #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
 #                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
-                # inst+=(maskset(
-                # norm_parameter_registers[normused],
-                # fn.parameters[i].t.csize()))
+                inst+=(maskset(
+                 norm_parameter_registers[normused],
+                 fn.parameters[i].t.csize()))
                 #    rfree(result)
                 normused += 1
             paraminst = f"{inst}{paraminst}"
