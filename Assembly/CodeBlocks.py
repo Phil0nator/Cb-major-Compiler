@@ -76,8 +76,10 @@ def createIntrinsicConstant(variable):
             out = f"{variable.name}: {getConstantReserver(variable.t.down())} { str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))  }\n"
         return out
 
+
     if((variable.t.isflt())):
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
+
 
     return "%s: %s %s\n" % (variable.name, getConstantReserver(
         variable.t), (variable.initializer))

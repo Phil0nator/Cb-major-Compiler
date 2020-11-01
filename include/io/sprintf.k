@@ -47,7 +47,7 @@ function long toStr(long val, char* buffer, bool signed, short base){
 
 
 
-char* __format_numchars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+char* __numbercharactersbase1016 = "0123456789abcdef";
 
 function long toStr(long val, char* buffer, bool signed, short base){
 
@@ -65,7 +65,7 @@ function long toStr(long val, char* buffer, bool signed, short base){
 
         char mod;
         val = divmod(val, base, &mod);
-        tmpbuf[len-1] = __format_numchars[mod];
+        tmpbuf[len-1] = __numbercharactersbase1016[mod];
         len+=1;
 
     }
@@ -93,8 +93,8 @@ function long toStr(double val, char* buffer, long multiplier){
     buffer+=l;
     
     val = abs(val);
-    val -= integral;
     val *= multiplier;
+    val -= integral*multiplier;
 
 
     @buffer = '.';

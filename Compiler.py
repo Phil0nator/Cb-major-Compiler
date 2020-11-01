@@ -188,6 +188,7 @@ class Compiler:
                         glob=True,
                         initializer=0))
                 self.heap += f"{name}: resb {intr.csize()}\n"
+                self.advance()
                 return
             else:
                 throw(ExpectedValue(self.current_token))
@@ -209,7 +210,10 @@ class Compiler:
                 "CMAININIT", [], VOID.copy(), self, exprtokens))
 
         if(isinstance(value.accessor, Variable)):
-            value.accessor = value.accessor.name
+        
+            value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth+1 else value.accessor.initializer
+        
+        
         self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor, isptr = intr.ptrdepth > 0))
 
@@ -343,7 +347,7 @@ class Compiler:
                     tp = CHAR.copy()
                     tp.ptrdepth = 1
                     v = Variable(tp, name, glob=True,
-                                 isptr=True, initializer=t.value)
+                                 isptr=True, initializer=f"\"{t.value}\"")
                     self.globals.append(v)
                     t.tok = T_ID
                     t.value = name
