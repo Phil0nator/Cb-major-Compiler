@@ -18,6 +18,7 @@
 import time
 import traceback
 import os
+import config
 import argparse as arg
 from globals import fileTemplate
 import cProfile
@@ -28,7 +29,6 @@ from Lexer import Lexer
 from PreParser import PreProcessor
 from Compiler import Compiler
 from Linker import *
-import config
 
 
 def main():

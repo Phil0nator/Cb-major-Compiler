@@ -8,7 +8,7 @@
 ########
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
-from colorama import Style, Fore
+
 import argparse as arg
 import sys
 import Classes.Error as E
@@ -26,7 +26,7 @@ if missing:
     subprocess.check_call(
         [python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
 ###################################
-
+from colorama import Style, Fore
 
 parser = arg.ArgumentParser(
     description='Compile, link, and debug .k programs.')
