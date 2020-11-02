@@ -267,6 +267,11 @@ class AssigningExternedValue(Error):
         self.tok = tok
         self.message = f"Cannot assign extern'd identifier: "
 
+class RecursiveInlineCall(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Inline functions cannot be recursive: "
+
 
 class Warning:
     def __init__(self, msg, tok):

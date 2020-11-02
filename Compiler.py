@@ -494,6 +494,11 @@ class Compiler:
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()
 
+                elif(self.current_token.value == "inline"):
+                    self.advance()
+                    self.createFunction()
+                    self.functions[-1].inline=True
+
                 elif (self.current_token.value == "function"):
                     self.advance()
                     self.createFunction()

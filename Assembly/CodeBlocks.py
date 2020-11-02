@@ -146,8 +146,20 @@ def spop(v: EC.ExpressionComponent):
 
 
 def fncall(fn):
-    return "call %s\n" % fn.getCallingLabel()
+    if(not fn.inline):
+        return "call %s\n" % fn.getCallingLabel()
+    else:
+        resetcfg = False
+        if(fn.isCompiled and not config.__nowarn__):
+            config.__nowarn__ = True
+            resetcfg = True
+        fn = fn.reset()
+        fn.compile()
 
+        if resetcfg:
+            config.__nowarn__ = False
+
+        return fn.asm
 
 def movVarToReg(reg, var):
     if isfloat(var):

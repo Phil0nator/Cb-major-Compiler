@@ -49,7 +49,7 @@ def product(arr):
 #
 #####################################################
 class Function:
-    def __init__(self, name, parameters, returntype, compiler, tokens):
+    def __init__(self, name, parameters, returntype, compiler, tokens, inline=False, extern=False):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -60,7 +60,7 @@ class Function:
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.variables = []                     # all local variables
         # inline functions behave like macros, and are not called
-        self.inline = False
+        self.inline = inline
         # stack containing labels to jump to if the "continue" keyword is used
         self.continues = []
         # stack containing labels to jump to if the "break" keyword is used
@@ -71,7 +71,7 @@ class Function:
         self.ctidx = 0                          # corrent token index
 
         # extern is in reference to c-standard names vs .k names
-        self.extern = False
+        self.extern = extern
 
         self.destructor_text = ""               # automatically called destructors
 
@@ -94,6 +94,10 @@ class Function:
         self.recursive_depth = 0
 
         self.canbeInline = True
+
+
+        self.isCompiled = False
+
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -226,19 +230,31 @@ class Function:
         countn = 0
         counts = 0
         for p in self.parameters:
+
+            if (self.inline):
+                if(p.isflt()):
+                    p.register = sse_parameter_registers[counts]
+                    counts+=1
+                else:
+                    p.register = norm_parameter_registers[countn]
+                    countn+=1
+                self.regdecls.append(p)
+
             self.addVariable(p)
             p.referenced = True
-            if(config.DO_DEBUG):
-                self.addcomment(f"Load Parameter: {p}")
-            if(p.isflt()):
-                self.addline(movRegToVar(
-                    p.offset, sse_parameter_registers[counts]))
+            
+            if (not self.inline):
+                if(config.DO_DEBUG):
+                    self.addcomment(f"Load Parameter: {p}")
+                if(p.isflt()):
+                    self.addline(movRegToVar(
+                        p.offset, sse_parameter_registers[counts]))
 
-                counts += 1
-            else:
-                self.addline(movRegToVar(
-                    p.offset, norm_parameter_registers[countn]))
-                countn += 1
+                    counts += 1
+                else:
+                    self.addline(movRegToVar(
+                        p.offset, norm_parameter_registers[countn]))
+                    countn += 1
 
     def createClosing(self):                    # create end of the function
         if(self.destructor_text != ""):
@@ -259,7 +275,7 @@ class Function:
                     token=self.current_token))
 
             self.addline(instr)
-        self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]]))
+        self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]])) if not self.inline else None
         self.checkSemi()
         if self.recursive_depth == 1:
             self.hasReturned = True
@@ -767,6 +783,10 @@ class Function:
         # using the fn name, and the parameter types find the actual function
         # object best suited for this call
         fn = self.getFunction(fid, types)
+
+        if(fn is self):
+            throw(RecursiveInlineCall(self.current_token))
+
         self.ctidx = start - 1
         self.advance()
         if(fn is None):
@@ -1249,9 +1269,15 @@ class Function:
     def compile(self):      # main
         if(self.current_token is None):
             return
-        self.addline(functionlabel(self))  # label
+
+        # inline functions have no label
+        if( not self.inline):
+            self.addline(functionlabel(self))  # label
+        
+        
         # stack allocator (size undetermined at this point)
         self.addline("/*ALLOCATOR*/")
+        
         self.loadParameters()             # parameters
 
         self.beginRecursiveCompile()      # body
@@ -1261,7 +1287,9 @@ class Function:
             "/*ALLOCATOR*/", function_allocator(self.stackCounter))
 
         # self.addline(self.destructor_text)
-        self.createClosing()              # return, destructors, stack frame closing
+        # return, destructors, stack frame closing
+        
+        self.createClosing() if not self.inline else self.addline("leave");              
 
         self.asm += self.suffix           # readonly memory
 
@@ -1277,5 +1305,11 @@ class Function:
             for v in self.variables:
                 rfree(v.register)
 
+        self.isCompiled = True
+
     def __repr__(self):     # pretty print
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"
+
+    def reset(self):
+        
+        return Function(self.name,self.parameters,self.returntype, self.compiler, self.tokens, extern=self.extern, inline=self.inline)
