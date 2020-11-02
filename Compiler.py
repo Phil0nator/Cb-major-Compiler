@@ -497,7 +497,8 @@ class Compiler:
                 elif(self.current_token.value == "inline"):
                     self.advance()
                     self.createFunction()
-                    self.functions[-1].inline=True
+                    self.functions[-1].inline = True
+                    self.globals.pop()
 
                 elif (self.current_token.value == "function"):
                     self.advance()
@@ -520,15 +521,18 @@ class Compiler:
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.
         for f in self.functions:
-            self.currentfunction = f
-            f.compile()
-            if(True in norm_scratch_registers_inuse or True in sse_scratch_registers_inuse):
-                print(
-                    f"Warning:\n\tRegister leak of degree {norm_scratch_registers_inuse.count(True)+sse_scratch_registers_inuse.count(True)} found in function:\n\t {f}\n\t called from: {config.LAST_RALLOC}\n")
-            rfreeAll()  # make sure there are no register leaks between functions
 
-            # add comment
-            if(config.DO_DEBUG):
-                f.asm = f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
+            if not f.inline:
 
-            self.text = f"{self.text}{f.asm}"
+                self.currentfunction = f
+                f.compile()
+                if(True in norm_scratch_registers_inuse or True in sse_scratch_registers_inuse):
+                    print(
+                        f"Warning:\n\tRegister leak of degree {norm_scratch_registers_inuse.count(True)+sse_scratch_registers_inuse.count(True)} found in function:\n\t {f}\n\t called from: {config.LAST_RALLOC}\n")
+                rfreeAll()  # make sure there are no register leaks between functions
+
+                # add comment
+                if(config.DO_DEBUG):
+                    f.asm = f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
+
+                self.text = f"{self.text}{f.asm}"

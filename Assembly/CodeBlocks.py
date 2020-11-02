@@ -170,6 +170,7 @@ def fncall(fn):
 
         return fn.asm
 
+
 def movVarToReg(reg, var):
     if isfloat(var):
         if isfloat(reg):

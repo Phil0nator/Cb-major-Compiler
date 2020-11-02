@@ -71,7 +71,7 @@ struct linger_t {
 #define NORMAL_SOCKET socket(AF_INET, SOCK_STREAM, 0)
 
 
-function bool isdigit(char c){
+inline bool isdigit(char c){
     return c >= '0' && c <= '9';
 }
 
@@ -101,50 +101,50 @@ function int inet_aton(char* cp, in_addr* addr){
 
 
 
-function fd_t socket(int family, int type, int protocol){
+inline fd_t socket(int family, int type, int protocol){
     __asm{"
     mov rax, 41
     syscall
     "}
 }
-function int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
+inline int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
     __asm{"
     mov rax, 42
     syscall
     "}
 }
-function int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
+inline int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
     __asm{"
     mov rax, 43
     syscall
     "}
 }
-function int bind(fd_t fd, sockaddr_in*umyaddr, int addrlen){
+inline int bind(fd_t fd, sockaddr_in*umyaddr, int addrlen){
     __asm{"
     mov rax, 49
     syscall
     "}
 }
-function int listen(fd_t fd, int backlog){
+inline int listen(fd_t fd, int backlog){
     __asm{"
     mov rax, 50
     syscall
     "}
 }
-function int shutdown(fd_t sockfd, int how){
+inline int shutdown(fd_t sockfd, int how){
     __asm{"
     mov rax, 48
     syscall
     "}
 }
-function int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
+inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
     __asm{"
     mov rax, 45
     syscall
     "}
 }
 
-function int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
+inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
     __asm{"
     mov rax, 44
     syscall

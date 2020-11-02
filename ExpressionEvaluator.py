@@ -689,7 +689,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                     cmd = "movq" if(
                         "[" not in valueOf(castdest) +
                         valueOf(
-                            final.accessor)) and "xmm" in valueOf(castdest)+valueOf(final.accessor) else "mov"
+                            final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
                     cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
                 else:
@@ -702,7 +702,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                     cmd = "movq" if(
                         "[" not in valueOf(castdest) +
                         valueOf(
-                            final.accessor)) and "xmm" in valueOf(castdest)+valueOf(final.accessor) else "mov"
+                            final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
                     cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
                 else:

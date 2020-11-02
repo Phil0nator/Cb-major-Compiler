@@ -27,7 +27,7 @@
 double M_MINZERO_MEM = M_MINZERO;
 
 
-global double sqrt(double a){
+inline double sqrt(double a){
 
     __asm{"
     
@@ -37,7 +37,7 @@ global double sqrt(double a){
 
 }
 
-global double sqrt(int a){
+inline double sqrt(int a){
 
   __asm{"
   
@@ -49,7 +49,7 @@ global double sqrt(int a){
 
 }
 
-global long sqrt(long a){
+inline long sqrt(long a){
 
   __asm{"
   
@@ -65,39 +65,39 @@ global long sqrt(long a){
 
 
 
-global long pow(long base, long exp){
+inline long pow(long base, long exp){
 
   __asm{"
   
   mov rax, rdi
   dec rsi
-  jz _int_pow_pintint_end
-  _int_pow_pintint_flp:
+  jz %L_int_pow_pintint_end
+  %L_int_pow_pintint_flp:
   mul rdi
   dec rsi
-  jnz _int_pow_pintint_flp
-  _int_pow_pintint_end:
+  jnz %L_int_pow_pintint_flp
+  %L_int_pow_pintint_end:
   "}
 
 
 }
 
-global double pow(long base, long exp){
+inline double pow(long base, long exp){
 
   pow(base, exp);
   __asm{"cvtsi2sd xmm0, rax"}
 
 }
-global double pow(double base, long exp){
+inline double pow(double base, long exp){
 
   __asm{"
   
     
     dec rdi
-    _double_pow_pdoubleint_flp:
+    %L_double_pow_pdoubleint_flp:
     mulsd xmm0, xmm0
     dec rdi
-    jnz _int_pow_pintint_flp
+    jnz %L_int_pow_pintint_flp
   
   
   "}
@@ -106,12 +106,12 @@ global double pow(double base, long exp){
 
 
 
-global long round(double x){
+inline long round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
 
 
-global long ceil(double x){
+inline long ceil(double x){
   __asm{"
   cvttsd2si rax, xmm0
   inc rax
@@ -119,13 +119,13 @@ global long ceil(double x){
 }
 
 
-global long floor(double x){
+inline long floor(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
 
 
-global long abs(long x){
+inline long abs(long x){
 
   __asm{"
   
@@ -139,7 +139,7 @@ global long abs(long x){
 }
 
 
-global double abs(double x){
+inline double abs(double x){
 
   __asm{"
   movsd xmm1, xmm0
@@ -153,64 +153,64 @@ global double abs(double x){
 
 
 
-global long log(long x){
+inline long log(long x){
   __asm{"
   xor rbx, rbx
   mov rax, rdi
   mov rcx, 10
-  _int_log_pint_flp:
+  %L_int_log_pint_flp:
   xor rdx, rdx
   div rcx
   test rax, rax
-  jnz _int_log_pint_inc
-  jmp _int_log_pint_end
-  _int_log_pint_inc:
+  jnz %L_int_log_pint_inc
+  jmp %L_int_log_pint_end
+  %L_int_log_pint_inc:
   inc rbx
-  jmp _int_log_pint_flp
+  jmp %L_int_log_pint_flp
   
-  _int_log_pint_end:
+  %L_int_log_pint_end:
   mov rax, rbx
 
   "}
 
 }
 
-global long log(long n, long b){
+inline long log(long n, long b){
   __asm{"
   
   xor rbx, rbx
   mov rax, rdi
-  _int_log_pintint_flp:
+  %L_int_log_pintint_flp:
   xor rdx, rdx
   div rsi
   test rax, rax
-  jnz _int_log_pintint_inc
-  jmp _int_log_pintint_end
-  _int_log_pintint_inc:
+  jnz %L_int_log_pintint_inc
+  jmp %L_int_log_pintint_end
+  %L_int_log_pintint_inc:
   inc rbx
-  jmp _int_log_pintint_flp
-  _int_log_pintint_end:
+  jmp %L_int_log_pintint_flp
+  %L_int_log_pintint_end:
   mov rax, rbx
   
   
   "}
 }
 
-global long log2(long n){
+inline long log2(long n){
   __asm{"
   
   xor rax, rax
-  _long_lop2_plong_flp:
+  %L_long_lop2_plong_flp:
   sar rdi, 1
   inc rax
   test rdi, rdi
-  jnz _long_lop2_plong_flp
+  jnz %L_long_lop2_plong_flp
   dec rax
   "}
 }
 
 
-global double log2(double n){
+inline double log2(double n){
 
   __asm{"
   movq rax, xmm0
@@ -227,7 +227,7 @@ global double log2(double n){
 }
 
 
-global long divmod(long dividend, long divisor, long* modulus ){
+inline long divmod(long dividend, long divisor, long* modulus ){
 
   __asm{"
   mov rbx, rdx

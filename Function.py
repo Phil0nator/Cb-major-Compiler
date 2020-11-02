@@ -49,7 +49,8 @@ def product(arr):
 #
 #####################################################
 class Function:
-    def __init__(self, name, parameters, returntype, compiler, tokens, inline=False, extern=False):
+    def __init__(self, name, parameters, returntype, compiler,
+                 tokens, inline=False, extern=False):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -95,10 +96,8 @@ class Function:
 
         self.canbeInline = True
 
-
         self.isCompiled = False
         self.closinglabel = self.getClosingLabel()
-
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -124,7 +123,8 @@ class Function:
 
     # get raw asm label used to denote the end of this function
     def getClosingLabel(self):
-        return function_closer(self.getCallingLabel(), None).split("\n")[0] if not self.inline else getLogicLabel("INLINERETURN")+":"
+        return function_closer(self.getCallingLabel(), None).split(
+            "\n")[0] if not self.inline else getLogicLabel("INLINERETURN") + ":"
 
     # get a variable of name q from first local then global scope if necessary
 
@@ -237,15 +237,17 @@ class Function:
             if (self.inline):
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
-                    counts+=1
+                    counts += 1
                 else:
                     p.register = norm_parameter_registers[countn]
-                    countn+=1
-                self.regdecls.append(EC.ExpressionComponent(p.register,p.t,token=self.tokens[0])) 
+                    countn += 1
+                self.regdecls.append(
+                    EC.ExpressionComponent(
+                        p.register, p.t, token=self.tokens[0]))
 
             self.addVariable(p)
             p.referenced = True
-            
+
             if (not self.inline):
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
@@ -538,8 +540,13 @@ class Function:
         if(self.current_token.tok != T_STRING):
             throw(ExpectedToken(self.current_token, "Assembly String"))
 
-        content = self.current_token.value
-        content = content.replace("\t", "").strip()
+        content = f"{self.current_token.value}" # copy value so as not to change it
+        content = content.replace("\t", "").replace("  ", " ").strip()
+
+        lnum = getLogicLabel("")
+        content = content.replace("%L", lnum)
+
+
 
         self.addline(content)
 
@@ -787,12 +794,12 @@ class Function:
         # object best suited for this call
         fn = self.getFunction(fid, types)
 
-        if(fn is self):
+        if(fn is self and self.inline):
             throw(RecursiveInlineCall(self.current_token))
 
         self.ctidx = start - 1
         self.advance()
-        if(fn is None):
+        if(fn is None and self.compiler.getFunction(fid) is None):
             pcount = len(types)
             var = self.getVariable(fid)
             if(var is None):
@@ -800,7 +807,11 @@ class Function:
             params = [Variable(t, "parameter") for t in types]
             fn = Function(fid, params, var.t, self.compiler, [])
             varcall = True
+        elif(fn is None):
+            throw(UnkownFunction(fnstartt,fid,types))
+
         else:
+            
             pcount = len(fn.parameters)
             varcall = False
         # build actual parameter-loading instructions using exact datatypes
@@ -1269,32 +1280,35 @@ class Function:
 
         self.recursive_depth -= 1
 
+    # initialize properties at the time when self.compile is called
+
+    def initializeProperties(self):
+        # inline functions have no label
+        if(not self.inline):
+            self.addline(functionlabel(self))  # label
+
+        else:
+            self.stackCounter = 0  # inline functions require no overhead
+
+        # closing label needs to be updated based on new properties
+        self.closinglabel = self.getClosingLabel()
+
+        # stack allocator (size undetermined at this point)
+        self.addline("/*ALLOCATOR*/")
+
     def compile(self):      # main
         if(self.current_token is None):
             return
 
-        # inline functions have no label
-        if( not self.inline):
-            self.addline(functionlabel(self))  # label
+        self.initializeProperties()
 
-        else:
-            self.stackCounter = 0 # inline functions require no overhead
-        
-        # closing label needs to be updated based on new properties
-        self.closinglabel = self.getClosingLabel()
-
-
-
-        # stack allocator (size undetermined at this point)
-        self.addline("/*ALLOCATOR*/")
-        
         self.loadParameters()             # parameters
 
         self.beginRecursiveCompile()      # body
 
         # fill in allocator with real value
         self.asm = self.asm.replace(
-            "/*ALLOCATOR*/", function_allocator(self.stackCounter)) if self.stackCounter > 0 else self.asm.replace("/*ALLOCATOR*/","")
+            "/*ALLOCATOR*/", function_allocator(self.stackCounter)) if self.stackCounter > 0 else self.asm.replace("/*ALLOCATOR*/", "")
 
         # self.addline(self.destructor_text)
         # return, destructors, stack frame closing
@@ -1303,7 +1317,7 @@ class Function:
             if(self.stackCounter):
                 self.addline("leave")
         elif not self.inline:
-            self.createClosing()        
+            self.createClosing()
 
         self.asm += self.suffix           # readonly memory
 
@@ -1325,5 +1339,6 @@ class Function:
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"
 
     def reset(self):
-        
-        return Function(self.name,self.parameters,self.returntype, self.compiler, self.tokens, extern=self.extern, inline=self.inline)
+
+        return Function(self.name, self.parameters, self.returntype,
+                        self.compiler, self.tokens, extern=self.extern, inline=self.inline)
