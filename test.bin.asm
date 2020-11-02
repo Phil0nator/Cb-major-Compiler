@@ -209,6 +209,11 @@ STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 STRING_CONSTANT_139: db `sudo`, 0
 STRING_CONSTANT_140: db `-c`, 0
 STRING_CONSTANT_141: db `%s`, 0
+STRING_CONSTANT_142: db `%i`, 0
+STRING_CONSTANT_143: db `position:%i\nvalue:%i`, 0
+STRING_CONSTANT_144: db `%i`, 0
+STRING_CONSTANT_145: db `%i\n`, 0
+STRING_CONSTANT_146: db `\n\n%i\n`, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -1081,8 +1086,8 @@ mov r10, rbx
 ;[[ char : 48]]
 mov bl, 48
 mov byte[r10], bl
-;[[ int : 2]]
-mov eax, 2
+;[[ int : 1]]
+mov eax, 1
 jmp ___long_toStr_plongchar.boolshort__return
 jmp _LIFELSE_0x1a
 _LIFPOST_0x19:
@@ -1900,41 +1905,34 @@ ret
 _void___printf_pchar.void.:
 push rbp
 mov rbp, rsp
-sub rsp, 100040
+sub rsp, 40
 ;Load Parameter: [char. fmt @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [void. args @ 16]
 mov [rbp-16], rsi
-;[[ id : normform], [ [ : [], [ int : 100000], [ ] : ]]]
-mov r10d, 100000
-lea rbx, [rbp-100024] 
-and r10, 0xffffffff
-lea rbx, [rbx+r10*1]
-;[[ id : normform], [ [ : [], [ int : 100000], [ ] : ]]]
-mov r10d, 100000
-lea rbx, [rbp-100024] 
-and r10, 0xffffffff
-lea rbx, [rbx+r10*1]
-;[[ int : 0]]
-xor r10d, r10d
-mov byte[rbx], r10b
+;[[ int : 100000]]
+mov edi, 100000
+xor rax, rax
+call malloc
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
+mov qword[rbp-24], rax
 ;[[ id : args]]
 mov rbx, qword[rbp-16]
 mov rdx, rbx
 ;[[ id : fmt]]
 mov rbx, qword[rbp-8]
 mov rsi, rbx
-;[[ & : &], [ id : normform]]
-lea rbx, [rbp-100024]
+;[[ id : normform]]
+mov rbx, qword[rbp-24]
 mov rdi, rbx
 xor rax, rax
 call _int___sprintf_pchar.char.void.
 ;[[ fn(x) : [ function int __sprintf( [[char. str @ 8], [char. fmt @ 16], [void. args @ 24]] ) ] ]]
-mov dword[rbp-100032], eax
+mov dword[rbp-32], eax
 ;[[ id : l]]
-mov edx, dword[rbp-100032]
-;[[ & : &], [ id : normform]]
-lea rbx, [rbp-100024]
+mov edx, dword[rbp-32]
+;[[ id : normform]]
+mov rbx, qword[rbp-24]
 mov rsi, rbx
 ;[[ int : 1]]
 mov edi, 1
@@ -1942,6 +1940,11 @@ and rdi, 0xffffffff
 xor rax, rax
 call _ssize_t_write_pfd_tchar.size_t
 ;[[ fn(x) : [ function ssize_t write( [[fd_t fd @ 0], [char. buf @ 0], [size_t count @ 0]] ) ] ]]
+;[[ id : normform]]
+mov rdi, qword[rbp-24]
+xor rax, rax
+call free
+;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
 ___void___printf_pchar.void.__return:
 leave
 ret
@@ -4401,16 +4404,145 @@ ret
 ;[ function int scanf( [[char. format @ 0]] ) ]
 
 
-;[ function int main( [[int argc @ 8], [char.. argv @ 16]] ) ]
+;[ function int isprime( [[ulong data @ 8]] ) ]
+
+_int_isprime_pulong:
+push rbp
+mov rbp, rsp
+sub rsp, 56
+;Load Parameter: [ulong data @ 8]
+mov [rbp-8], rdi
+;[[ id : data]]
+mov rsi, qword[rbp-8]
+;[[ id : STRING_CONSTANT_142]]
+mov rbx, STRING_CONSTANT_142
+mov rdi, rbx
+xor rax, rax
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+;[[ id : data], [ && : &&], [ int : 15]]
+mov r10d, 15
+mov rbx, qword[rbp-8]
+mov r11, r10
+and rbx, r11
+mov dword[rbp-16], ebx
+;[[ id : data], [ >> : >>], [ int : 4]]
+mov rbx, qword[rbp-8]
+shr rbx, 4
+mov qword[rbp-24], rbx
+;[[ id : test]]
+mov rdx, qword[rbp-24]
+;[[ id : position]]
+mov esi, dword[rbp-16]
+;[[ id : STRING_CONSTANT_143]]
+mov rbx, STRING_CONSTANT_143
+mov rdi, rbx
+xor rax, rax
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0], [void arg2 @ 0]] ) ] ]]
+;[[ int : 2]]
+mov qword[rbp-32], 2
+;[[ id : testn], [ + : +], [ int : 1]]
+mov rbx, qword[rbp-32]
+inc rbx
+mov qword[rbp-40], rbx
+jmp _LWHILECMP_0x74
+_LWHILESTART_0x73:
+;[[ id : divOut]]
+;[[ id : divOut]]
+;[[ id : test], [ / : /], [ id : testn]]
+mov r11, qword[rbp-24]
+mov r10, qword[rbp-32]
+xor rdx, rdx
+mov rax, r11
+idiv r10
+mov qword[rbp-40], rax
+;[[ id : divMod]]
+;[[ id : divMod]]
+;[[ id : test], [ % : %], [ id : testn]]
+mov r11, qword[rbp-24]
+mov r10, qword[rbp-32]
+xor rdx, rdx
+mov rax, r11
+idiv r10
+mov qword[rbp-48], rdx
+;[[ id : divMod], [ == : ==], [ int : 0]]
+mov rbx, qword[rbp-48]
+test rbx, rbx
+setz bl
+mov al, bl
+and al, 1
+jz _LIFPOST_0x76
+;[[ ( : (], [ int : 0], [ ) : )]]
+xor eax, eax
+jmp ___int_isprime_pulong__return
+jmp _LIFELSE_0x77
+_LIFPOST_0x76:
+_LIFELSE_0x77:
+;[[ id : testn], [ ++ : ++]]
+inc qword[rbp-32]
+_LWHILECMP_0x74:
+;[[ id : divOut], [ > : >], [ id : testn]]
+mov r10, qword[rbp-32]
+mov rbx, qword[rbp-40]
+cmp rbx, r10
+setg bl
+mov al, bl
+and al, 1
+jnz _LWHILESTART_0x73
+_LWHILEEND_0x75:
+;[[ id : test]]
+mov rsi, qword[rbp-24]
+;[[ id : STRING_CONSTANT_144]]
+mov rbx, STRING_CONSTANT_144
+mov rdi, rbx
+xor rax, rax
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+;[[ ( : (], [ int : 1], [ ) : )]]
+mov eax, 1
+jmp ___int_isprime_pulong__return
+___int_isprime_pulong__return:
+leave
+ret
+;[ function int main( [] ) ]
 
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 24
-;Load Parameter: [int argc @ 8]
-mov [rbp-8], rdi
-;Load Parameter: [char.. argv @ 16]
-mov [rbp-16], rsi
+sub rsp, 32
+;[[ int : 16]]
+mov qword[rbp-8], 16
+;[[ int : 2]]
+mov dword[rbp-16], 2
+;[[ ( : (], [ id : val], [ << : <<], [ int : 4], [ ) : )], [ + : +], [ id : position]]
+mov rbx, qword[rbp-8]
+shl rbx, 4
+mov r10d, dword[rbp-16]
+mov r11, r10
+add rbx, r11
+mov qword[rbp-24], rbx
+;[[ id : data]]
+mov rsi, qword[rbp-24]
+;[[ id : STRING_CONSTANT_145]]
+mov rbx, STRING_CONSTANT_145
+mov rdi, rbx
+xor rax, rax
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+;[[ id : data]]
+mov rbx, qword[rbp-24]
+mov rdi, rbx
+xor rax, rax
+call _int_isprime_pulong
+mov rsi, rax
+;[[ fn(x) : [ function int isprime( [[ulong data @ 8]] ) ] ]]
+;[[ id : STRING_CONSTANT_146]]
+mov rbx, STRING_CONSTANT_146
+mov rdi, rbx
+xor rax, rax
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
 __main__return:
 leave
 ret

@@ -12,10 +12,12 @@
 
 global void __printf(char* fmt, void* args){
 
-    char normform[__PRINTF_MAXNORMUSE];
-    normform[__PRINTF_MAXNORMUSE]=0;
-    int l = __sprintf(&normform,fmt,args);
-    write(STDOUT, &normform, l);
+    char *normform = malloc(__PRINTF_MAXNORMUSE);
+    
+    int l = __sprintf(normform,fmt,args);
+    write(STDOUT, normform, l);
+
+    free(normform);
 
 }
 

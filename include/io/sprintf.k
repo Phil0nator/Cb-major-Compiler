@@ -52,7 +52,7 @@ char* __numbercharactersbase1016 = "0123456789abcdef";
 function long toStr(long val, char* buffer, bool signed, short base){
     if(val == 0){
         @buffer = '0';
-        return 2;
+        return 1;
     }
     char signspace = 0;
     if(val < 0 && signed){
