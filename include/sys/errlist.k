@@ -1,7 +1,6 @@
 #ifndef __ERRLIST
 #define __ERRLIST 1
 
-
 char** __linux_errstrlist = {
 
 "Success",

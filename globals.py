@@ -22,7 +22,8 @@ with open(f"{config.includepath}stub.asm", "rb") as f:
     stub = f.read().decode()
 
 with open(f"{config.includepath}io64.inc", "rb") as f:
-    io64 = f.read().decode()
+    #io64 = f.read().decode()
+    io64 = ""
 
 fileTemplate = "%s\n\n%s" % (io64, stub)
 

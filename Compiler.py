@@ -170,7 +170,7 @@ class Compiler:
         self.globals.append(v)
 
     # create an arbitrary constant in self.constants
-    def createConstant(self):
+    def createConstant(self, extern=False):
         # dtype
         intr = self.checkType()
         if (self.current_token.tok != T_ID):
@@ -178,6 +178,15 @@ class Compiler:
         name = self.current_token.value
 
         self.advance()
+
+        if(extern):
+            if(self.current_token.tok == T_EQUALS):
+                throw(AssigningExternedValue(self.current_token))
+            self.globals.append(Variable(intr.copy(), name, glob=True))
+            if(self.current_token.tok != T_ENDL):
+                throw(ExpectedSemicolon(self.current_token))
+            self.advance()
+            return
 
         if (self.current_token.tok != T_EQUALS):
             if(self.current_token.tok == T_ENDL):
@@ -210,12 +219,12 @@ class Compiler:
                 "CMAININIT", [], VOID.copy(), self, exprtokens))
 
         if(isinstance(value.accessor, Variable)):
-        
-            value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth+1 else value.accessor.initializer
-        
-        
+
+            value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
+                1 else value.accessor.initializer
+
         self.globals.append(Variable(intr.copy(), name,
-                                     glob=True, initializer=value.accessor, isptr = intr.ptrdepth > 0))
+                                     glob=True, initializer=value.accessor, isptr=intr.ptrdepth > 0))
 
         # add .data instructions to self.constants
         self.constants += createIntrinsicConstant(self.globals[-1])
@@ -411,25 +420,59 @@ class Compiler:
 
                 elif(self.current_token.value == "extern"):
                     self.advance()
-                    self.createFunction()
-                    fn = self.functions[-1]
-                    config.__CEXTERNS__ += "extern " + \
-                        functionlabel(fn)[:-1] + "\n"
-                    glob = self.globals[-1]
-                    glob.name = fn.getCallingLabel()
+                    backto = self.ctidx - 1
+                    self.checkType()
+                    self.advance()
+
+                    fndp = self.current_token
+                    self.ctidx = backto
+                    self.advance()
+
+                    if(fndp.tok == "("):
+
+                        self.createFunction()
+                        fn = self.functions[-1]
+                        config.__CEXTERNS__ += "extern " + \
+                            functionlabel(fn)[:-1] + "\n"
+                        glob = self.globals[-1]
+                        glob.name = fn.getCallingLabel()
+
+                    else:
+
+                        self.createConstant(True)
+
+                        config.__CEXTERNS__ += "extern " + \
+                            self.globals[-1].name + "\n"
 
                 elif(self.current_token.value == "cextern"):
                     self.advance()
-                    self.createFunction()
-                    fn = self.functions[-1]
-                    fn.extern = True
-                    config.__CEXTERNS__ += "extern " + \
-                        functionlabel(fn)[:-1] + "\n"
-                    glob = self.globals[-1]
-                    glob.name = fn.getCallingLabel()
+                    backto = self.ctidx - 1
+                    self.checkType()
+                    self.advance()
+
+                    fndp = self.current_token
+                    self.ctidx = backto
+                    self.advance()
+
+                    if(fndp.tok == "("):
+
+                        self.createFunction()
+                        fn = self.functions[-1]
+                        fn.extern = True
+                        config.__CEXTERNS__ += "extern " + \
+                            functionlabel(fn)[:-1] + "\n"
+                        glob = self.globals[-1]
+                        glob.name = fn.getCallingLabel()
+
+                    else:
+
+                        self.createConstant(True)
+                        config.__CEXTERNS__ += "extern " + \
+                            self.globals[-1].name + "\n"
 
                 elif(self.current_token.value == "__cdecl"):
                     self.advance()
+
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
@@ -440,6 +483,7 @@ class Compiler:
 
                 elif(self.current_token.value == "global"):
                     self.advance()
+
                     self.createFunction()
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \

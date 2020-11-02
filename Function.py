@@ -824,10 +824,11 @@ class Function:
                 # if(fn.parameters[i].t.csize() != 8):
 
                 #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
-#                                                         fn.parameters[i].t.csize()), setSize(result, fn.parameters[i].t.csize())]))
-                inst+=(maskset(
-                 norm_parameter_registers[normused],
-                 fn.parameters[i].t.csize()))
+# fn.parameters[i].t.csize()), setSize(result,
+# fn.parameters[i].t.csize())]))
+                inst += (maskset(
+                    norm_parameter_registers[normused],
+                    fn.parameters[i].t.csize()))
                 #    rfree(result)
                 normused += 1
             paraminst = f"{inst}{paraminst}"

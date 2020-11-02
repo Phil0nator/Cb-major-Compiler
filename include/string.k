@@ -101,15 +101,20 @@ function char* strchr(char* str, char c){
 
 function int strcmp(char* str1, char str2);
 function size_t strcspn(char* str1, char* str2);
-function char* strerror(int errnum){
-    return get_errstr(errnum);
+function char* strerror(long errnum){
+    if(errnum >= 0){
+        return get_errstr(errnum);
+    }else{
+        return get_errstr(0-errnum);
+    }
+    return nullptr;
 }
 
 function char* strpbrk(char* str1, char* str2);
 function char* strrchr(char* str, char c);
 function size_t strspn(char* str1, char* str2);
 function char* strstr(char* haystack, char* needle);
-function char* strtok(char*str, char delim);
+function char** strtok(char*str, char delim);
 
 
 

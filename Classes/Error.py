@@ -262,6 +262,12 @@ class NonRegisterDeletion(Error):
         self.message = f"Could not delete non-register variable: "
 
 
+class AssigningExternedValue(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Cannot assign extern'd identifier: "
+
+
 class Warning:
     def __init__(self, msg, tok):
         self.msg = msg

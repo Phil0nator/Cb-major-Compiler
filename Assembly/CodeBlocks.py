@@ -76,10 +76,8 @@ def createIntrinsicConstant(variable):
             out = f"{variable.name}: {getConstantReserver(variable.t.down())} { str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))  }\n"
         return out
 
-
     if((variable.t.isflt())):
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
-
 
     return "%s: %s %s\n" % (variable.name, getConstantReserver(
         variable.t), (variable.initializer))
@@ -120,7 +118,7 @@ def loadToPtr(dest, source):
 
     if(isinstance(dest, EC.ExpressionComponent)):
 
-        size = dest.type.size(1)
+        size = dest.type.csize()
         if(isinstance(dest.accessor, Variable)):
             return loadToReg(dest.accessor, setSize(source, size))
         return loadToReg(

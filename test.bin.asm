@@ -1,982 +1,15 @@
-%ifndef IO_SYS
-%define IO_SYS
-%assign sasmMacroCount 0
-%macro sasmMacroFunc 0.nolist ;func for debug
-    %push sasmMacroFunc
-    call %$sasmMacro
-    jmp %$sasmMacroE
-    %$sasmMacro:
-    jmp %%after_data
-section .data
-    %$sasmRetAddr dq 0
-section .text
-    %%after_data:
-    push rbx
-    mov rbx, qword[rsp + 8]
-    mov qword[%$sasmRetAddr], rbx
-    mov rbx, qword[rsp]
-    mov qword[rsp + 8], rbx
-    pop rbx
-    pop rbx
-%endmacro
-%macro sasmMacroFuncE 0.nolist ;exit
-    push qword[%$sasmRetAddr]
-    ret
-    %$sasmMacroE:
-    %pop
-%endmacro
-%macro CEXTERN 1.nolist
-    extern %1
-%endmacro
-%define CMAIN main
-CEXTERN scanf
-CEXTERN putchar
-CEXTERN puts
-CEXTERN fflush
-CEXTERN sscanf
-CEXTERN getchar
-CEXTERN get_stdin
-CEXTERN get_stdout
-CEXTERN malloc
-CEXTERN strcat
-CEXTERN realloc
-CEXTERN calloc
-CEXTERN free
-; Make stack be 16 bytes aligned
-%macro ALIGN_STACK 0.nolist
-    enter 0, 0
-    and rsp, 0xfffffffffffffff0
-%endmacro
-%macro UNALIGN_STACK 0.nolist
-    leave
-%endmacro
-%macro FFLUSH_STDOUT 0.nolist
-    ALIGN_STACK
-    call get_stdout
-    mov rdi, rax
-    call fflush
-    UNALIGN_STACK
-%endmacro
-%macro IS_GPR 1.nolist
-    %push IS_GPR
-    %assign %$is_reg 0
-    %assign %$reg_size 1
-    %ifidni %1, ah
-        %assign %$is_reg 1
-    %elifidni %1, al
-        %assign %$is_reg 1
-    %elifidni %1, bl
-        %assign %$is_reg 1
-    %elifidni %1, bh
-        %assign %$is_reg 1
-    %elifidni %1, cl
-        %assign %$is_reg 1
-    %elifidni %1, ch
-        %assign %$is_reg 1
-    %elifidni %1, dl
-        %assign %$is_reg 1
-    %elifidni %1, dh
-        %assign %$is_reg 1
-    %elifidni %1, spl
-        %assign %$is_reg 1
-    %elifidni %1, bpl
-        %assign %$is_reg 1
-    %elifidni %1, dil
-        %assign %$is_reg 1
-    %elifidni %1, sil
-        %assign %$is_reg 1
-    %elifidni %1, ax
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, bx
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, cx
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, dx
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, sp
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, bp
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, si
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, di
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, eax
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, ebx
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, ecx
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, edx
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, esp
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, ebp
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, esi
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, edi
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, rax
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rbx
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rcx
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rdx
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rsp
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rbp
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rsi
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, rdi
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r8
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r9
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r10
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r11
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r12
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r13
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r14
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r15
-        %assign %$is_reg 1
-        %assign %$reg_size 8
-    %elifidni %1, r8d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r9d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r10d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r11d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r12d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r13d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r14d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r15d
-        %assign %$is_reg 1
-        %assign %$reg_size 4
-    %elifidni %1, r8w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r9w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r10w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r11w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r12w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r13w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r14w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r15w
-        %assign %$is_reg 1
-        %assign %$reg_size 2
-    %elifidni %1, r8b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r9b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r10b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r11b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r12b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r13b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r14b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %elifidni %1, r15b
-        %assign %$is_reg 1
-        %assign %$reg_size 1
-    %endif
-%endmacro
-%macro PRINT_STRING 1.nolist
-    sasmMacroFunc
-    IS_GPR %1
-    %if %$is_reg = 1
-        %error "Register as parameter is not supported"
-    %endif
-    %pop
-%ifid %1
-; variable
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    call get_stdout
-    mov rdi, %1
-    mov rsi, rax
-%elifstr %1
-; string literal
-    jmp %%after_str
-section .data
-    %%str db %1, 0
-section .text
-    %%after_str:
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    call get_stdout
-    mov rdi, %%str
-    mov rsi, rax
-%else
-; address expression
-    jmp %%after_data
-section .data
-    %%tmp dq 0
-section .text
-    %%after_data:
-    mov qword[%%tmp], rbx
-    lea rbx, %1
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    call get_stdout
-    mov rdi, rbx
-    mov rsi, rax
-    mov rbx, qword[%%tmp]
-%endif
-    call fputs
-    UNALIGN_STACK
-    FFLUSH_STDOUT
-    pop rdi
-    pop rsi
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdx
-    pop rcx
-    pop rax
-    popfq
-    sasmMacroFuncE
-%endmacro
-%macro NEWLINE 0.nolist
-    PRINT_STRING `\n`
-%endmacro
-; size baseformatletter ("d", "u", "x") varname (%%fmt)
-%macro ___MAKE_FORMAT_STR 3.nolist
-    jmp %%after_fmt
-    %if %1 = 1
-        %strcat fmts "%hh" %2
-    %elif %1 = 2
-        %strcat fmts "%h" %2
-    %elif %1 = 4
-        %strcat fmts "%" %2
-    %elif %1 = 8
-        %strcat fmts "%ll" %2
-    %else
-        %error "Expected numeric constant 1, 2, 4 or 8 as 1st argument"
-    %endif
-    %3 db fmts, 0
-    %%after_fmt:
-%endmacro
-; size data baseformatletter ("d", "u", "x") signextendinst (movzx, movsx)
-%macro ___PRINT_NUM_COMMON 4.nolist
-    ___MAKE_FORMAT_STR %1, %3, %%fmt
-    IS_GPR %2
-%if %$is_reg = 1
-; register
-    jmp %%after_data
-section .data
-    %%tmp dq 0
-section .text
-    %%after_data:
-    mov qword[%%tmp], rax    
-    %if %$reg_size = 1
-        %4 rax, %2
-    %elif %$reg_size = 2
-        %4 rax, %2
-    %elif %$reg_size = 4
-        movsx rax, %2
-        %ifidni %4, movzx
-            pushfq
-            shl rax, 32
-            shr rax, 32
-            popfq
-        %endif
-    %else ; %$reg_size = 8
-        mov rax, %2
-    %endif
-    pushfq
-    push qword[%%tmp] ;rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    mov rsi, rax
-%elifid %2
-; variable (hope so)
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    %if %1 = 1
-        %4 rax, byte [%2]
-    %elif %1 = 2
-        %4 rax, word [%2]
-    %elif %1 = 4
-        movsx rax, dword [%2]
-        %ifidni %4, movzx
-            pushfq
-            shl rax, 32
-            shr rax, 32
-            popfq
-        %endif
-    %else ; %1 = 8
-        mov rax, qword [%2]
-    %endif
-    mov rsi, rax
-    ALIGN_STACK
-%elifnum %2
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rsi, %2
-    ALIGN_STACK
-%elifstr %2
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rsi, %2
-    ALIGN_STACK
-%else
-; may be, address expression?
-jmp %%after_data
-section .data
-    %%tmp dq 0
-section .text
-    %%after_data:
-    mov qword[%%tmp], rax
-    %if %1 = 1
-        %4 rax, byte %2
-    %elif %1 = 2
-        %4 rax, word %2
-    %elif %1 = 4
-        movsx rax, dword %2
-        %ifidni %4, movzx
-            pushfq
-            shl rax, 32
-            shr rax, 32
-            popfq
-        %endif
-    %else ; %1 = 8
-        mov rax, qword %2
-    %endif
-    pushfq
-    push qword[%%tmp] ;rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    mov rsi, rax
-%endif
-    mov rdi, %%fmt
-    call printf
-    UNALIGN_STACK
-    FFLUSH_STDOUT
-    pop rdi
-    pop rsi
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdx
-    pop rcx
-    pop rax
-    popfq 
-    %pop ; IS_REG    
-%endmacro
-%macro PRINT_DEC 2.nolist
-    sasmMacroFunc
-    ___PRINT_NUM_COMMON %1, %2, "d", movsx
-    sasmMacroFuncE
-%endmacro
-%macro PRINT_UDEC 2.nolist
-    sasmMacroFunc
-    ___PRINT_NUM_COMMON %1, %2, "u", movzx
-    sasmMacroFuncE
-%endmacro
-%macro PRINT_HEX 2.nolist
-    sasmMacroFunc
-    ___PRINT_NUM_COMMON %1, %2, "x", movzx
-    sasmMacroFuncE
-%endmacro
-%macro PRINT_CHAR 1.nolist
-    sasmMacroFunc
-    IS_GPR %1
-%if %$is_reg = 1
-; register
-    jmp %%after_data
-section .data
-    %%tmp dq 0
-section .text
-    %%after_data:
-    mov qword[%%tmp], rax    
-    %if %$reg_size = 1
-        movzx rax, %1
-    %elif %$reg_size = 2
-        movzx rax, %1
-    %elif %$reg_size = 4
-        movsx rax, %1
-        pushfq
-        shl rax, 32
-        shr rax, 32
-        popfq
-    %else ; %$reg_size = 8
-        mov rax, %1
-    %endif
-    pushfq
-    push qword[%%tmp] ;rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    and rax, 0xff
-    mov rdi, rax
-    ALIGN_STACK
-%elifid %1
-; variable (hope so)
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    movzx rax, byte [%1]
-    mov rdi, rax
-    ALIGN_STACK
-%elifnum %1
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rdi, %1
-    and rdi, 0xff
-    ALIGN_STACK
-%elifstr %1
-; string select only 1st byte
-%substr tstr %1 1
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rdi, tstr
-    ALIGN_STACK
-%else
-; may be, address expression?
-    jmp %%after_data
-section .data
-    %%tmp dq 0
-section .text
-    %%after_data:
-    mov qword[%%tmp], rax
-    movzx rax, byte %1
-    pushfq
-    push qword[%%tmp] ;rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rdi, rax
-    ALIGN_STACK
-%endif
-    call putchar
-    UNALIGN_STACK
-    FFLUSH_STDOUT
-    pop rdi
-    pop rsi
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdx
-    pop rcx
-    pop rax
-    popfq
-    %pop ; IS_REG
-    sasmMacroFuncE
-%endmacro
-; size data baseformatletter ("d", "u", "x") signextendinst (movzx, movsx)
-%macro ___GET_NUM_COMMON 4.nolist
-    ___MAKE_FORMAT_STR %1, %3, %%fmt        
-    jmp %%after_data
-section .data
-    %%read_tmp dq 0
-    %%tmp dq 0
-section .text
-    %%after_data:
-    IS_GPR %2
-%if %$is_reg = 1
-; register
-    %ifidni %2, rsp
-        %error "Won't read to rsp!" 
-    %elifidni %2, esp
-        %error "Won't read to esp!" 
-    %elifidni %2, sp
-        %error "Won't read to sp!"
-    %elifidni %2, spl
-        %error "Won't read to sp!" 
-    %endif
-    %if %$reg_size < %1
-        %error "Too small register for requested data"
-    %endif
-; we will have to do postprocessing after scanf
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rsi, %%read_tmp
-    ALIGN_STACK
-%elifid %2
-; variable (hope so)
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rsi, %2
-    ALIGN_STACK
-%elifnum %2
-    %error "Incorrect parameter (number)"
-%elifstr %2
-    %error "Incorrect parameter (string)"
-%else
-; may be, address expression?
-    mov qword[%%tmp], rax
-    lea rax, %2
-    pushfq
-    push qword[%%tmp] ;rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    mov rsi, rax
-%endif
-    mov rdi, %%fmt
-    call scanf
-    UNALIGN_STACK
-    pop rdi
-    pop rsi
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdx
-    pop rcx
-    pop rax
-    popfq
-%if %$is_reg = 1
-    ; register postprocessing
-    %if %$reg_size = %1
-        mov %2, [%%read_tmp]
-    %else ; extend bytes 1 -> 2, 1 -> 4, 1 -> 8, 2 -> 4, 2 -> 8, 4 -> 8
-        %if %1 = 1
-            %4 %2, byte [%%read_tmp]
-        %elif %1 = 2
-            %4 %2, word [%%read_tmp]
-        %else ; 4
-            movsx %2, dword [%%read_tmp]
-            %ifidni %4, movzx
-                pushfq
-                shl %2, 32
-                shr %2, 32
-                popfq
-            %endif
-        %endif
-    %endif
-%endif
-    %pop ; IS_REG
-%endmacro
-%macro GET_HEX 2.nolist
-    sasmMacroFunc
-    ___GET_NUM_COMMON %1, %2, "x", movzx
-    sasmMacroFuncE
-%endmacro
-%macro GET_DEC 2.nolist
-    sasmMacroFunc
-    ___GET_NUM_COMMON %1, %2, "d", movsx
-    sasmMacroFuncE
-%endmacro
-%macro GET_UDEC 2.nolist
-    sasmMacroFunc
-    ___GET_NUM_COMMON %1, %2, "u", movzx
-    sasmMacroFuncE
-%endmacro
-%macro GET_CHAR 1.nolist
-    sasmMacroFunc
-    jmp %%after_data
-section .data
-    %%fmt db "%c", 0
-    %%read_tmp db 0
-    %%tmp dq 0
-section .text
-%%after_data:
-    IS_GPR %1
-%if %$is_reg = 1
-; register
-    %ifidni %1, rsp
-        %error "Won't read to rsp!" 
-    %elifidni %1, esp
-        %error "Won't read to esp!" 
-    %elifidni %1, sp
-        %error "Won't read to sp!" 
-    %elifidni %1, spl
-        %error "Won't read to spl!" 
-    %endif
-; we will have to do postprocessing after scanf
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rsi, %%read_tmp
-    ALIGN_STACK
-%elifid %1
-; variable (hope so)
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    mov rsi, %1
-    ALIGN_STACK    
-%elifnum %1
-    %error "Incorrect parameter (number)"
-%elifstr %1
-    %error "Incorrect parameter (string)"
-%else
-; may be, address expression?
-    mov qword[%%tmp], rax
-    lea rax, %1
-    pushfq
-    push qword[%%tmp] ;rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ALIGN_STACK
-    mov rsi, rax
-%endif
-    mov rdi, %%fmt
-    call scanf
-    UNALIGN_STACK
-    pop rdi
-    pop rsi
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdx
-    pop rcx
-    pop rax
-    popfq
-%if %$is_reg = 1
-    ; register postprocessing
-    %if %$reg_size = 1
-        mov %1, byte [%%read_tmp]
-    %else ; zero extend bytes 1 -> 2, 1 -> 4, 1 -> 8
-        movzx %1, byte [%%read_tmp]
-    %endif
-%endif
-    %pop ; IS_REG
-    sasmMacroFuncE
-%endmacro
-%macro GET_STRING 2.nolist
-    sasmMacroFunc
-    IS_GPR %1
-    %if %$is_reg = 1
-        %error "Incorrect 1st parameter (register)"
-    %endif    
-    %pop ;IS_GPR
-    IS_GPR %2    
-    %if %$is_reg = 1
-        ;
-    %elifnum %2
-        %if %2 <= 0
-            %error "Second parameter must be positive"
-        %endif
-    %else
-        %error "Second parameter must be numeric constant or register"
-    %endif
-    %pop ;IS_GPR
-%ifid %1
-; variable (hope so)
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ;count
-    IS_GPR %2
-    %if %$is_reg = 1 
-        %if %$reg_size = 1
-            movzx rsi, %2
-        %elif %$reg_size = 2
-            movzx rsi, %2
-        %elif %$reg_size = 4
-            movsx rsi, %2
-            pushfq
-            shl rsi, 32
-            shr rsi, 32
-            popfq
-        %else ; %$reg_size = 8
-            mov rsi, %2
-        %endif
-    %else
-        mov rsi, %2
-    %endif
-    %pop
-    mov rdi, %1
-    ALIGN_STACK
-    call get_stdin
-    mov rdx, rax
-%elifnum %1
-    %error "Incorrect 1st parameter (number)"
-%elifstr %1
-    %error "Incorrect 1st parameter (string)"
-%else
-; may be, address expression?
-    jmp %%after_data
-section .data
-    %%tmp dq 0
-section .text
-%%after_data:
-    mov qword[%%tmp], rbx
-    lea rbx, %1
-    pushfq
-    push rax
-    push rcx
-    push rdx
-    push r8
-    push r9
-    push r10
-    push r11
-    push rsi
-    push rdi
-    ;count
-    IS_GPR %2
-    %if %$is_reg = 1 
-        %if %$reg_size = 1
-            movzx rsi, %2
-        %elif %$reg_size = 2
-            movzx rsi, %2
-        %elif %$reg_size = 4
-            movsx rsi, %2
-            pushfq
-            shl rsi, 32
-            shr rsi, 32
-            popfq
-        %else ; %$reg_size = 8
-            mov rsi, %2
-        %endif
-    %else
-        mov rsi, %2
-    %endif
-    %pop
-    mov rdi, rbx
-    ALIGN_STACK
-    call get_stdin
-    mov rdx, rax
-    mov rbx, qword[%%tmp]
-%endif
-    call fgets
-    UNALIGN_STACK
-    pop rdi
-    pop rsi
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdx
-    pop rcx
-    pop rax
-    popfq
-    sasmMacroFuncE
-%endmacro
-%endif
+
 global _char._get_errstr_pint:
 global _long___inline__syscall_plong:
 global _long_hton64_plong:
 global _int_hton32_pint:
 global _short_hton16_pshort:
+extern malloc
+extern calloc
+extern realloc
+extern free
+global _void._mmap_pvoid.size_tintintintoff_t:
+global _void._munmap_pvoid.size_t:
 global _double_sqrt_pdouble:
 global _double_sqrt_pint:
 global _long_sqrt_plong:
@@ -1009,6 +42,13 @@ extern printf
 extern printf
 extern printf
 global _void_printf_pchar.:
+global _long_fork_p:
+global _long_vfork_p:
+global _long_execve_pchar.char..char..:
+global _long_pause_p:
+global _long_waitpid_ppid_tint.int:
+global _long_execl_pchar.char..:
+global _long_system_pchar.:
 global _int___SSCANF_pchar.char.void..:
 global _int_sscanf_pchar.char.void.void.void.void.:
 extern sscanf
@@ -1162,13 +202,13 @@ STRING_CONSTANT_133: db `0123456789abcdef`, 0
 STRING_CONSTANT_134: db `False`, 0
 STRING_CONSTANT_135: db `True`, 0
 STRING_CONSTANT_136: db `%i.%i.%i.%i`, 0
-STRING_CONSTANT_137: db `%s`, 0
-STRING_CONSTANT_138: db `sockfd: %i\n`, 0
-STRING_CONSTANT_139: db `68.123.14.86`, 0
-STRING_CONSTANT_140: db `addr: %x\n`, 0
-STRING_CONSTANT_141: db `sockarddr: %x, %x, %x, %x\n`, 0
-STRING_CONSTANT_142: db `This is my message to you.\n`, 0
-STRING_CONSTANT_143: db `sent\n`, 0
+STRING_CONSTANT_137: db `/bin/bash`, 0
+STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
+STRING_CONSTANT_139: db `sudo`, 0
+STRING_CONSTANT_140: db `-c`, 0
+STRING_CONSTANT_141: db `%s`, 0
+STRING_CONSTANT_142: db `python3 compile.py -i p.k -o test.bin -r -nasm -O3 -g`, 0
+STRING_CONSTANT_143: db `This is after because it is blocking`, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -1176,12 +216,15 @@ INLINE_SYSCALL: DQ 0
 M_MINZERO_MEM: dq 0x0.0p+0
 __numbercharactersbase1016: DQ "0123456789abcdef"
 rand_next: DQ 1
+__systembashpath: DQ "/bin/bash"
+__emptyenv: DQ STRING_CONSTANT_138, 0
+__systemcallargvconst: DQ STRING_CONSTANT_139, STRING_CONSTANT_140, 0
 section .bss
 align 16
 __heap_padding__: resz 1
 section .text
 align 8
-global CMAIN
+global main
 
 ;[ function char. get_errstr( [[int err @ 8]] ) ]
 
@@ -1276,64 +319,18 @@ xor rax, rax
 ___short_hton16_pshort__return:
 leave
 ret
-;[ function void. malloc( [[size_t size @ 8]] ) ]
+;[ function void. malloc( [[size_t size @ 0]] ) ]
 
-_void._malloc_psize_t:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [size_t size @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call malloc
-    UNALIGN_STACK
-___void._malloc_psize_t__return:
-leave
-ret
-;[ function void. calloc( [[size_t size @ 8]] ) ]
 
-_void._calloc_psize_t:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [size_t size @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call calloc
-    UNALIGN_STACK
-___void._calloc_psize_t__return:
-leave
-ret
-;[ function void. realloc( [[void. og @ 8], [size_t newsize @ 16]] ) ]
+;[ function void. calloc( [[size_t size @ 0]] ) ]
 
-_void._realloc_pvoid.size_t:
-push rbp
-mov rbp, rsp
-sub rsp, 24
-;Load Parameter: [void. og @ 8]
-mov [rbp-8], rdi
-;Load Parameter: [size_t newsize @ 16]
-mov [rbp-16], rsi
-ALIGN_STACK
-    call realloc
-    UNALIGN_STACK
-___void._realloc_pvoid.size_t__return:
-leave
-ret
-;[ function void free( [[void. ptr @ 8]] ) ]
 
-_void_free_pvoid.:
-push rbp
-mov rbp, rsp
-sub rsp, 16
-;Load Parameter: [void. ptr @ 8]
-mov [rbp-8], rdi
-ALIGN_STACK
-    call free
-    UNALIGN_STACK
-___void_free_pvoid.__return:
-leave
-ret
+;[ function void. realloc( [[void. og @ 0], [size_t newsize @ 0]] ) ]
+
+
+;[ function void free( [[void. ptr @ 0]] ) ]
+
+
 ;[ function void memcpy( [[void. dest @ 8], [void. source @ 16], [size_t bytes @ 24]] ) ]
 
 _void_memcpy_pvoid.void.size_t:
@@ -1463,6 +460,44 @@ _void_memset_pvoid.ucharsize_t_flp:
     mov [rdi+rdx], sil
     jnz _void_memset_pvoid.ucharsize_t_flp
 ___void_memset_pvoid.ucharsize_t__return:
+leave
+ret
+;[ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [int prot @ 24], [int flags @ 32], [int fd @ 40], [off_t offset @ 48]] ) ]
+
+_void._mmap_pvoid.size_tintintintoff_t:
+push rbp
+mov rbp, rsp
+sub rsp, 56
+;Load Parameter: [void. addr @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [size_t length @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [int prot @ 24]
+mov [rbp-24], rdx
+;Load Parameter: [int flags @ 32]
+mov [rbp-32], rcx
+;Load Parameter: [int fd @ 40]
+mov [rbp-40], r8
+;Load Parameter: [off_t offset @ 48]
+mov [rbp-48], r9
+mov rax, 9
+    syscall
+___void._mmap_pvoid.size_tintintintoff_t__return:
+leave
+ret
+;[ function void. munmap( [[void. addr @ 8], [size_t length @ 16]] ) ]
+
+_void._munmap_pvoid.size_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [void. addr @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [size_t length @ 16]
+mov [rbp-16], rsi
+mov rax, 11
+    syscall
+___void._munmap_pvoid.size_t__return:
 leave
 ret
 ;[ function double sqrt( [[double a @ 8]] ) ]
@@ -1921,23 +956,48 @@ ret
 ;[ function size_t strcspn( [[char. str1 @ 0], [char. str2 @ 0]] ) ]
 
 
-;[ function char. strerror( [[int errnum @ 8]] ) ]
+;[ function char. strerror( [[long errnum @ 8]] ) ]
 
-_char._strerror_pint:
+_char._strerror_plong:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-;Load Parameter: [int errnum @ 8]
+;Load Parameter: [long errnum @ 8]
 mov [rbp-8], rdi
+;[[ id : errnum], [ >= : >=], [ int : 0]]
+xor r10d, r10d
+mov rbx, qword[rbp-8]
+mov r11, r10
+cmp rbx, r11
+setge bl
+mov al, bl
+and al, 1
+jz _LIFPOST_0x17
 ;[[ id : errnum]]
-mov ebx, dword[rbp-8]
-mov edi, ebx
+mov rdi, qword[rbp-8]
 and rdi, 0xffffffff
 xor rax, rax
 call _char._get_errstr_pint
 ;[[ fn(x) : [ function char. get_errstr( [[int err @ 8]] ) ] ]]
-jmp ___char._strerror_pint__return
-___char._strerror_pint__return:
+jmp ___char._strerror_plong__return
+jmp _LIFELSE_0x18
+_LIFPOST_0x17:
+;[[ int : 0], [ - : -], [ id : errnum]]
+xor r10d, r10d
+mov rbx, qword[rbp-8]
+mov r11, r10
+sub r11, rbx
+mov edi, r11d
+and rdi, 0xffffffff
+xor rax, rax
+call _char._get_errstr_pint
+;[[ fn(x) : [ function char. get_errstr( [[int err @ 8]] ) ] ]]
+jmp ___char._strerror_plong__return
+_LIFELSE_0x18:
+;[[ int : 0]]
+xor eax, eax
+jmp ___char._strerror_plong__return
+___char._strerror_plong__return:
 leave
 ret
 ;[ function char. strpbrk( [[char. str1 @ 0], [char. str2 @ 0]] ) ]
@@ -1952,7 +1012,7 @@ ret
 ;[ function char. strstr( [[char. haystack @ 0], [char. needle @ 0]] ) ]
 
 
-;[ function char. strtok( [[char. str @ 0], [char delim @ 0]] ) ]
+;[ function char.. strtok( [[char. str @ 0], [char delim @ 0]] ) ]
 
 
 ;[ function long toStr( [[long val @ 8], [char. buffer @ 16], [bool signed @ 24], [short base @ 32]] ) ]
@@ -1981,7 +1041,7 @@ mov r10b, byte[rbp-24]
 and bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x17
+jz _LIFPOST_0x19
 ;[[ @ : @], [ id : buffer]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -2011,16 +1071,16 @@ mov qword[rbp-8], r12
 ;[[ int : 1]]
 mov ebx, 1
 mov byte[rbp-40], bl
-jmp _LIFELSE_0x18
-_LIFPOST_0x17:
-_LIFELSE_0x18:
+jmp _LIFELSE_0x1a
+_LIFPOST_0x19:
+_LIFELSE_0x1a:
 ;[[ id : val], [ == : ==], [ int : 0]]
 mov rbx, qword[rbp-8]
 test rbx, rbx
 setz bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x19
+jz _LIFPOST_0x1b
 ;[[ @ : @], [ id : buffer]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -2033,9 +1093,9 @@ mov byte[r10], bl
 ;[[ int : 2]]
 mov eax, 2
 jmp ___long_toStr_plongchar.boolshort__return
-jmp _LIFELSE_0x1a
-_LIFPOST_0x19:
-_LIFELSE_0x1a:
+jmp _LIFELSE_0x1c
+_LIFPOST_0x1b:
+_LIFELSE_0x1c:
 ;[[ int : 64]]
 mov edx, 64
 ;[[ int : 0]]
@@ -2049,8 +1109,8 @@ call _void_memset_pvoid.ucharsize_t
 ;[[ fn(x) : [ function void memset( [[void. dest @ 8], [uchar value @ 16], [size_t bytes @ 24]] ) ] ]]
 ;[[ int : 1]]
 mov dword[rbp-120], 1
-jmp _LWHILECMP_0x1c
-_LWHILESTART_0x1b:
+jmp _LWHILECMP_0x1e
+_LWHILESTART_0x1d:
 ;[[ id : val]]
 ;[[ id : val]]
 ;[[ & : &], [ id : mod]]
@@ -2092,20 +1152,20 @@ mov ebx, 1
 mov r11d, dword[rbp-120]
 add r11d, ebx
 mov dword[rbp-120], r11d
-_LWHILECMP_0x1c:
+_LWHILECMP_0x1e:
 ;[[ id : val], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-8]
 test rbx, rbx
 setnz bl
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0x1b
-_LWHILEEND_0x1d:
+jnz _LWHILESTART_0x1d
+_LWHILEEND_0x1f:
 ;[[ id : len]]
 mov ebx, dword[rbp-120]
 mov dword[rbp-136], ebx
-jmp _LFORCMP_0x1f
-_LFORTOP_0x1e:
+jmp _LFORCMP_0x21
+_LFORTOP_0x20:
 ;[[ id : buffer], [ [ : [], [ id : i], [ ] : ]]]
 mov r10d, dword[rbp-136]
 mov rbx, qword[rbp-16]
@@ -2126,10 +1186,10 @@ lea r12, [r12+r11*1]
 mov r12b, byte[r12]
 and r12, 0xff
 mov byte[rbx], r12b
-_LFORUPDATE_0x20:
+_LFORUPDATE_0x22:
 ;[[ id : i], [ -- : --]]
 dec dword[rbp-136]
-_LFORCMP_0x1f:
+_LFORCMP_0x21:
 ;[[ id : i], [ >= : >=], [ int : 0]]
 xor r10d, r10d
 mov ebx, dword[rbp-136]
@@ -2137,8 +1197,8 @@ cmp ebx, r10d
 setge bl
 mov al, bl
 and al, 1
-jnz _LFORTOP_0x1e
-_LFOREND_0x21:
+jnz _LFORTOP_0x20
+_LFOREND_0x23:
 ;[[ id : len], [ + : +], [ int : 1], [ + : +], [ id : signspace]]
 mov ebx, dword[rbp-120]
 inc ebx
@@ -2285,15 +1345,15 @@ setz r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x22
+jz _LIFPOST_0x24
 ;[[ int : 0]]
 xor eax, eax
 jmp ___int___sprintf_pchar.char.void.__return
-jmp _LIFELSE_0x23
-_LIFPOST_0x22:
-_LIFELSE_0x23:
-jmp _LWHILECMP_0x25
-_LWHILESTART_0x24:
+jmp _LIFELSE_0x25
+_LIFPOST_0x24:
+_LIFELSE_0x25:
+jmp _LWHILECMP_0x27
+_LWHILESTART_0x26:
 ;[[ @ : @], [ id : fmt], [ != : !=], [ char : 37]]
 mov rbx, qword[rbp-16]
 and r10, 0xff
@@ -2303,7 +1363,7 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x27
+jz _LIFPOST_0x29
 ;[[ @ : @], [ id : str]]
 mov rbx, qword[rbp-8]
 mov r10, rbx
@@ -2315,8 +1375,8 @@ mov r11, qword[rbp-16]
 and r12, 0xff
 mov r12b, byte[r11]
 mov byte[r10], r12b
-jmp _LIFELSE_0x28
-_LIFPOST_0x27:
+jmp _LIFELSE_0x2a
+_LIFPOST_0x29:
 ;[[ id : fmt]]
 ;[[ id : fmt]]
 ;[[ int : 1]]
@@ -2333,25 +1393,25 @@ mov byte[rbp-48], r10b
 mov r10b, byte[rbp-48]
 mov bl, r10b
 cmp bl, 105
-je _LSWITCHCASE_0x2a
-cmp bl, 99
-je _LSWITCHCASE_0x2b
-cmp bl, 120
 je _LSWITCHCASE_0x2c
-cmp bl, 111
+cmp bl, 99
 je _LSWITCHCASE_0x2d
-cmp bl, 117
+cmp bl, 120
 je _LSWITCHCASE_0x2e
-cmp bl, 115
+cmp bl, 111
 je _LSWITCHCASE_0x2f
-cmp bl, 98
+cmp bl, 117
 je _LSWITCHCASE_0x30
+cmp bl, 115
+je _LSWITCHCASE_0x31
+cmp bl, 98
+je _LSWITCHCASE_0x32
 cmp bl, 100
-je _LSWITCHCASE_0x33
+je _LSWITCHCASE_0x35
 cmp bl, 102
-je _LSWITCHCASE_0x34
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x2a:
+je _LSWITCHCASE_0x36
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x2c:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2384,8 +1444,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x2b:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x2d:
 ;[[ $ : char], [ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2404,8 +1464,8 @@ mov r11, r10
 ;[[ id : cf]]
 mov r12b, byte[rbp-72]
 mov byte[r11], r12b
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x2c:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x2e:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2438,8 +1498,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x2d:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x2f:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2472,8 +1532,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x2e:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x30:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2506,8 +1566,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x2f:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x31:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2531,8 +1591,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x30:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x32:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2546,14 +1606,14 @@ mov qword[rbp-144], STRING_CONSTANT_134
 mov r10b, byte[rbp-136]
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x31
+jz _LIFPOST_0x33
 ;[[ id : boolean_string]]
 ;[[ id : boolean_string]]
 ;[[ id : STRING_CONSTANT_135]]
 mov qword[rbp-144], STRING_CONSTANT_135
-jmp _LIFELSE_0x32
-_LIFPOST_0x31:
-_LIFELSE_0x32:
+jmp _LIFELSE_0x34
+_LIFPOST_0x33:
+_LIFELSE_0x34:
 ;[[ id : boolean_string]]
 mov r10, qword[rbp-144]
 mov rsi, r10
@@ -2571,8 +1631,8 @@ mov r10d, dword[rbp-152]
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x33:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x35:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2602,8 +1662,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHCASE_0x34:
+jmp _LSWITCHEND_0x2b
+_LSWITCHCASE_0x36:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -2633,8 +1693,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x29
-_LSWITCHEND_0x29:
+jmp _LSWITCHEND_0x2b
+_LSWITCHEND_0x2b:
 ;[[ id : argc]]
 ;[[ id : argc]]
 ;[[ int : 1]]
@@ -2642,7 +1702,7 @@ mov ebx, 1
 mov r11d, dword[rbp-32]
 add r11d, ebx
 mov dword[rbp-32], r11d
-_LIFELSE_0x28:
+_LIFELSE_0x2a:
 ;[[ id : fmt]]
 ;[[ id : fmt]]
 ;[[ int : 1]]
@@ -2657,7 +1717,7 @@ mov ebx, 1
 mov r10, qword[rbp-8]
 add r10, rbx
 mov qword[rbp-8], r10
-_LWHILECMP_0x25:
+_LWHILECMP_0x27:
 ;[[ @ : @], [ id : fmt], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-16]
 and r10, 0xff
@@ -2666,8 +1726,8 @@ test r10b, r10b
 setnz r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x24
-_LWHILEEND_0x26:
+jnz _LWHILESTART_0x26
+_LWHILEEND_0x28:
 ;[[ ( : (], [ $ : long], [ id : str], [ ) : )], [ - : -], [ id : og]]
 mov r10, qword[rbp-8]
 mov rbx, qword[rbp-40]
@@ -2698,8 +1758,8 @@ mov [rbp-48], r9
 ;[[ int : 4], [ * : *], [ id : void]]
 mov edi, 32
 xor rax, rax
-call _void._malloc_psize_t
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 8]] ) ] ]]
+call malloc
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
 mov qword[rbp-56], rax
 ;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
 mov rbx, qword[rbp-56]
@@ -2764,8 +1824,8 @@ mov dword[rbp-64], eax
 mov rbx, qword[rbp-56]
 mov rdi, rbx
 xor rax, rax
-call _void_free_pvoid.
-;[[ fn(x) : [ function void free( [[void. ptr @ 8]] ) ] ]]
+call free
+;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
 ;[[ id : l]]
 mov ebx, dword[rbp-64]
 mov eax, ebx
@@ -2871,8 +1931,8 @@ mov [rbp-48], r9
 ;[[ int : 6], [ * : *], [ id : void]]
 mov edi, 48
 xor rax, rax
-call _void._malloc_psize_t
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 8]] ) ] ]]
+call malloc
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
 mov qword[rbp-56], rax
 ;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
 mov rbx, qword[rbp-56]
@@ -2946,8 +2006,8 @@ call _void___printf_pchar.void.
 mov rbx, qword[rbp-56]
 mov rdi, rbx
 xor rax, rax
-call _void_free_pvoid.
-;[[ fn(x) : [ function void free( [[void. ptr @ 8]] ) ] ]]
+call free
+;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
 __printf__return:
 leave
 ret
@@ -3523,31 +2583,16 @@ cmp ebx, r10d
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x35
+jz _LIFPOST_0x37
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 0]]
 xor ebx, ebx
 mov dword[rbp-40], ebx
-jmp _LIFELSE_0x36
-_LIFPOST_0x35:
-;[[ id : modehash], [ == : ==], [ int : 119]]
-mov r10d, 119
-mov ebx, dword[rbp-24]
-cmp ebx, r10d
-sete bl
-mov al, bl
-and al, 1
-jz _LIFPOST_0x37
-;[[ id : f]]
-;[[ id : f]]
-;[[ int : 1]]
-mov ebx, 1
-mov dword[rbp-40], ebx
 jmp _LIFELSE_0x38
 _LIFPOST_0x37:
-;[[ id : modehash], [ == : ==], [ int : 97]]
-mov r10d, 97
+;[[ id : modehash], [ == : ==], [ int : 119]]
+mov r10d, 119
 mov ebx, dword[rbp-24]
 cmp ebx, r10d
 sete bl
@@ -3556,13 +2601,13 @@ and al, 1
 jz _LIFPOST_0x39
 ;[[ id : f]]
 ;[[ id : f]]
-;[[ int : 1], [ || : ||], [ int : 8]]
+;[[ int : 1]]
 mov ebx, 1
 mov dword[rbp-40], ebx
 jmp _LIFELSE_0x3a
 _LIFPOST_0x39:
-;[[ id : modehash], [ == : ==], [ int : 157]]
-mov r10d, 157
+;[[ id : modehash], [ == : ==], [ int : 97]]
+mov r10d, 97
 mov ebx, dword[rbp-24]
 cmp ebx, r10d
 sete bl
@@ -3571,11 +2616,26 @@ and al, 1
 jz _LIFPOST_0x3b
 ;[[ id : f]]
 ;[[ id : f]]
-;[[ int : 2]]
-mov ebx, 2
+;[[ int : 1], [ || : ||], [ int : 8]]
+mov ebx, 1
 mov dword[rbp-40], ebx
 jmp _LIFELSE_0x3c
 _LIFPOST_0x3b:
+;[[ id : modehash], [ == : ==], [ int : 157]]
+mov r10d, 157
+mov ebx, dword[rbp-24]
+cmp ebx, r10d
+sete bl
+mov al, bl
+and al, 1
+jz _LIFPOST_0x3d
+;[[ id : f]]
+;[[ id : f]]
+;[[ int : 2]]
+mov ebx, 2
+mov dword[rbp-40], ebx
+jmp _LIFELSE_0x3e
+_LIFPOST_0x3d:
 ;[[ id : modehash], [ == : ==], [ int : 162]]
 mov r10d, 162
 mov ebx, dword[rbp-24]
@@ -3583,7 +2643,7 @@ cmp ebx, r10d
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x3d
+jz _LIFPOST_0x3f
 ;[[ id : m]]
 ;[[ id : m]]
 ;[[ int : 1792]]
@@ -3594,8 +2654,8 @@ mov dword[rbp-32], ebx
 ;[[ int : 2], [ || : ||], [ int : 64]]
 mov ebx, 2
 mov dword[rbp-40], ebx
-jmp _LIFELSE_0x3e
-_LIFPOST_0x3d:
+jmp _LIFELSE_0x40
+_LIFPOST_0x3f:
 ;[[ id : m]]
 ;[[ id : m]]
 ;[[ int : 1792]]
@@ -3606,11 +2666,11 @@ mov dword[rbp-32], ebx
 ;[[ int : 2], [ || : ||], [ int : 8], [ || : ||], [ int : 64]]
 mov ebx, 2
 mov dword[rbp-40], ebx
+_LIFELSE_0x40:
 _LIFELSE_0x3e:
 _LIFELSE_0x3c:
 _LIFELSE_0x3a:
 _LIFELSE_0x38:
-_LIFELSE_0x36:
 ;[[ id : m]]
 mov ebx, dword[rbp-32]
 mov edx, ebx
@@ -3638,7 +2698,7 @@ sete r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x3f
+jz _LIFPOST_0x41
 ;[[ int : 2]]
 mov edx, 2
 and rdx, 0xffffffff
@@ -3652,9 +2712,9 @@ and rdi, 0xffffffff
 xor rax, rax
 call _int_lseek_pfd_tintint
 ;[[ fn(x) : [ function int lseek( [[fd_t fd @ 0], [int offset @ 0], [int whence @ 0]] ) ] ]]
-jmp _LIFELSE_0x40
-_LIFPOST_0x3f:
-_LIFELSE_0x40:
+jmp _LIFELSE_0x42
+_LIFPOST_0x41:
+_LIFELSE_0x42:
 ;[[ id : out]]
 mov ebx, dword[rbp-48]
 mov eax, ebx
@@ -3806,8 +2866,8 @@ call _int_lseek_pfd_tintint
 ;[[ id : fsize]]
 mov edi, dword[rbp-16]
 xor rax, rax
-call _void._malloc_psize_t
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 8]] ) ] ]]
+call malloc
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
 mov qword[rbp-24], rax
 ;[[ id : fsize]]
 mov edx, dword[rbp-16]
@@ -3832,17 +2892,180 @@ mov byte[rbp-32], bl
 mov bl, byte[rbp-32]
 mov al, bl
 and al, 1
-jz _LIFPOST_0x41
+jz _LIFPOST_0x43
 ;[[ int : 0]]
 xor eax, eax
 jmp ___void._floads_pfd_t__return
-jmp _LIFELSE_0x42
-_LIFPOST_0x41:
-_LIFELSE_0x42:
+jmp _LIFELSE_0x44
+_LIFPOST_0x43:
+_LIFELSE_0x44:
 ;[[ id : buffer]]
 mov rax, qword[rbp-24]
 jmp ___void._floads_pfd_t__return
 ___void._floads_pfd_t__return:
+leave
+ret
+;[ function long fork( [] ) ]
+
+_long_fork_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+mov rax, 57
+    syscall
+___long_fork_p__return:
+leave
+ret
+;[ function long vfork( [] ) ]
+
+_long_vfork_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+mov rax, 58
+    syscall
+___long_vfork_p__return:
+leave
+ret
+;[ function long execve( [[char. pathname @ 8], [char.. args @ 16], [char.. env @ 24]] ) ]
+
+_long_execve_pchar.char..char..:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [char. pathname @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [char.. args @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [char.. env @ 24]
+mov [rbp-24], rdx
+mov rax, 59
+    syscall
+___long_execve_pchar.char..char..__return:
+leave
+ret
+;[ function long pause( [] ) ]
+
+_long_pause_p:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+mov rax, 34
+    syscall
+___long_pause_p__return:
+leave
+ret
+;[ function long waitpid( [[pid_t pid @ 8], [int. wstatus @ 16], [int options @ 24]] ) ]
+
+_long_waitpid_ppid_tint.int:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [pid_t pid @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [int. wstatus @ 16]
+mov [rbp-16], rsi
+;Load Parameter: [int options @ 24]
+mov [rbp-24], rdx
+mov rax, 61
+    xor r8, r8
+    syscall
+___long_waitpid_ppid_tint.int__return:
+leave
+ret
+;[ function long execl( [[char. path @ 8], [char.. args @ 16]] ) ]
+
+_long_execl_pchar.char..:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+;Load Parameter: [char. path @ 8]
+mov [rbp-8], rdi
+;Load Parameter: [char.. args @ 16]
+mov [rbp-16], rsi
+;[[ id : __emptyenv]]
+mov rbx, __emptyenv
+mov rdx, rbx
+;[[ id : args]]
+mov rbx, qword[rbp-16]
+mov rsi, rbx
+;[[ id : path]]
+mov rbx, qword[rbp-8]
+mov rdi, rbx
+xor rax, rax
+call _long_execve_pchar.char..char..
+;[[ fn(x) : [ function long execve( [[char. pathname @ 8], [char.. args @ 16], [char.. env @ 24]] ) ] ]]
+jmp ___long_execl_pchar.char..__return
+___long_execl_pchar.char..__return:
+leave
+ret
+;[ function long system( [[char. command @ 8]] ) ]
+
+_long_system_pchar.:
+push rbp
+mov rbp, rsp
+sub rsp, 32
+;Load Parameter: [char. command @ 8]
+mov [rbp-8], rdi
+mov rax, 0
+call _long_fork_p
+;[[ fn(x) : [ function long fork( [] ) ] ]]
+mov qword[rbp-16], rax
+;[[ id : pid], [ == : ==], [ int : 0]]
+mov rbx, qword[rbp-16]
+test rbx, rbx
+setz bl
+mov al, bl
+and al, 1
+jz _LIFPOST_0x45
+;[[ id : __systemcallargvconst], [ [ : [], [ int : 2], [ ] : ]]]
+mov r10d, 2
+mov rbx, __systemcallargvconst
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+;[[ id : __systemcallargvconst], [ [ : [], [ int : 2], [ ] : ]]]
+mov r10d, 2
+mov rbx, __systemcallargvconst
+and r10, 0xffffffff
+lea rbx, [rbx+r10*8]
+;[[ id : command]]
+mov r11, qword[rbp-8]
+mov qword[rbx], r11
+;[[ id : __systemcallargvconst]]
+mov rbx, __systemcallargvconst
+mov rsi, rbx
+;[[ id : __systembashpath]]
+mov rbx, __systembashpath
+mov rdi, rbx
+xor rax, rax
+call _long_execl_pchar.char..
+;[[ fn(x) : [ function long execl( [[char. path @ 8], [char.. args @ 16]] ) ] ]]
+mov qword[rbp-24], rax
+;[[ id : err]]
+mov rbx, qword[rbp-24]
+mov rdi, rbx
+xor rax, rax
+call _char._strerror_plong
+mov rdi, rax
+;[[ fn(x) : [ function char. strerror( [[long errnum @ 8]] ) ] ]]
+xor rax, rax
+call _void_printf_pchar.
+;[[ fn(x) : [ function void printf( [[char. fmt @ 8]] ) ] ]]
+jmp _LIFELSE_0x46
+_LIFPOST_0x45:
+_LIFELSE_0x46:
+;[[ int : 0]]
+xor edx, edx
+and rdx, 0xffffffff
+;[[ int : 0]]
+xor esi, esi
+;[[ id : pid]]
+mov rbx, qword[rbp-16]
+mov rdi, rbx
+xor rax, rax
+call _long_waitpid_ppid_tint.int
+;[[ fn(x) : [ function long waitpid( [[pid_t pid @ 8], [int. wstatus @ 16], [int options @ 24]] ) ] ]]
+___long_system_pchar.__return:
 leave
 ret
 ;[ function int scanint( [[char. str @ 8], [long. dest @ 16], [bool signed @ 24]] ) ]
@@ -3880,7 +3103,7 @@ mov r10b, byte[rbp-24]
 and bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x43
+jz _LIFPOST_0x47
 ;[[ id : negative]]
 ;[[ id : negative]]
 ;[[ $ : bool], [ int : 1]]
@@ -3901,11 +3124,11 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-40], r11b
-jmp _LIFELSE_0x44
-_LIFPOST_0x43:
-_LIFELSE_0x44:
-jmp _LWHILECMP_0x46
-_LWHILESTART_0x45:
+jmp _LIFELSE_0x48
+_LIFPOST_0x47:
+_LIFELSE_0x48:
+jmp _LWHILECMP_0x4a
+_LWHILESTART_0x49:
 ;[[ id : val]]
 ;[[ id : val]]
 ;[[ ( : (], [ id : val], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
@@ -3932,7 +3155,7 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-40], r11b
-_LWHILECMP_0x46:
+_LWHILECMP_0x4a:
 ;[[ id : c], [ <= : <=], [ char : 57], [ && : &&], [ id : c], [ >= : >=], [ char : 48]]
 mov r10b, 57
 mov bl, byte[rbp-40]
@@ -3945,15 +3168,15 @@ setge r10b
 and bl, r10b
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0x45
-_LWHILEEND_0x47:
+jnz _LWHILESTART_0x49
+_LWHILEEND_0x4b:
 ;[[ ! : !], [ id : negative]]
 mov bl, byte[rbp-48]
 cmp bl, 0
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x48
+jz _LIFPOST_0x4c
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -3963,8 +3186,8 @@ mov r10, rbx
 ;[[ id : val]]
 mov r11, qword[rbp-32]
 mov qword[r10], r11
-jmp _LIFELSE_0x49
-_LIFPOST_0x48:
+jmp _LIFELSE_0x4d
+_LIFPOST_0x4c:
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -3977,7 +3200,7 @@ mov r11, qword[rbp-32]
 mov r13, r12
 sub r13, r11
 mov qword[r10], r13
-_LIFELSE_0x49:
+_LIFELSE_0x4d:
 ;[[ id : str], [ - : -], [ id : ogstr]]
 mov r10, qword[rbp-56]
 mov rbx, qword[rbp-8]
@@ -4002,8 +3225,8 @@ mov [rbp-24], rdx
 ;[[ id : str]]
 mov rbx, qword[rbp-8]
 mov qword[rbp-32], rbx
-jmp _LWHILECMP_0x4b
-_LWHILESTART_0x4a:
+jmp _LWHILECMP_0x4f
+_LWHILESTART_0x4e:
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-24]
 mov r10, rbx
@@ -4019,7 +3242,7 @@ mov byte[r10], r12b
 inc qword[rbp-8]
 ;[[ id : dest], [ ++ : ++]]
 inc qword[rbp-24]
-_LWHILECMP_0x4b:
+_LWHILECMP_0x4f:
 ;[[ @ : @], [ id : str], [ != : !=], [ id : delim]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -4029,8 +3252,8 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x4a
-_LWHILEEND_0x4c:
+jnz _LWHILESTART_0x4e
+_LWHILEEND_0x50:
 ;[[ id : str], [ - : -], [ id : ogstr]]
 mov r10, qword[rbp-32]
 mov rbx, qword[rbp-8]
@@ -4084,7 +3307,7 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x4d
+jz _LIFPOST_0x51
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-24]
 mov r10, rbx
@@ -4097,9 +3320,9 @@ movq qword[r10], xmm7
 ;[[ id : diff]]
 mov rax, qword[rbp-48]
 jmp ___int_scansd_pchar.booldouble.__return
-jmp _LIFELSE_0x4e
-_LIFPOST_0x4d:
-_LIFELSE_0x4e:
+jmp _LIFELSE_0x52
+_LIFPOST_0x51:
+_LIFELSE_0x52:
 ;[[ id : str], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ $ : bool], [ int : 0]]
@@ -4186,15 +3409,15 @@ setz r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x4f
+jz _LIFPOST_0x53
 ;[[ int : 0]]
 xor eax, eax
 jmp ___int___SSCANF_pchar.char.void..__return
-jmp _LIFELSE_0x50
-_LIFPOST_0x4f:
-_LIFELSE_0x50:
-jmp _LWHILECMP_0x52
-_LWHILESTART_0x51:
+jmp _LIFELSE_0x54
+_LIFPOST_0x53:
+_LIFELSE_0x54:
+jmp _LWHILECMP_0x56
+_LWHILESTART_0x55:
 ;[[ @ : @], [ id : format], [ != : !=], [ char : 37]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -4204,13 +3427,13 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x54
+jz _LIFPOST_0x58
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ id : input], [ ++ : ++]]
 inc qword[rbp-16]
-jmp _LIFELSE_0x55
-_LIFPOST_0x54:
+jmp _LIFELSE_0x59
+_LIFPOST_0x58:
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ @ : @], [ id : format]]
@@ -4225,7 +3448,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x56
+jz _LIFPOST_0x5a
 ;[[ id : diff]]
 ;[[ id : diff]]
 ;[[ $ : bool], [ int : 1]]
@@ -4257,8 +3480,8 @@ add r10, rbx
 mov qword[rbp-16], r10
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x57
-_LIFPOST_0x56:
+jmp _LIFELSE_0x5b
+_LIFPOST_0x5a:
 ;[[ id : c], [ == : ==], [ char : 117]]
 mov r10b, 117
 mov bl, byte[rbp-40]
@@ -4266,7 +3489,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x58
+jz _LIFPOST_0x5c
 ;[[ id : diff]]
 ;[[ id : diff]]
 ;[[ $ : bool], [ int : 0]]
@@ -4298,8 +3521,8 @@ add r10, rbx
 mov qword[rbp-16], r10
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x59
-_LIFPOST_0x58:
+jmp _LIFELSE_0x5d
+_LIFPOST_0x5c:
 ;[[ id : c], [ == : ==], [ char : 99]]
 mov r10b, 99
 mov bl, byte[rbp-40]
@@ -4307,7 +3530,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x5a
+jz _LIFPOST_0x5e
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r10d, dword[rbp-32]
 mov rbx, qword[rbp-24]
@@ -4330,8 +3553,8 @@ mov byte[r10], r12b
 inc qword[rbp-16]
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x5b
-_LIFPOST_0x5a:
+jmp _LIFELSE_0x5f
+_LIFPOST_0x5e:
 ;[[ id : c], [ == : ==], [ char : 115]]
 mov r10b, 115
 mov bl, byte[rbp-40]
@@ -4339,7 +3562,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x5c
+jz _LIFPOST_0x60
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ id : diff]]
@@ -4371,8 +3594,8 @@ mov rbx, qword[rbp-48]
 mov r10, qword[rbp-16]
 add r10, rbx
 mov qword[rbp-16], r10
-jmp _LIFELSE_0x5d
-_LIFPOST_0x5c:
+jmp _LIFELSE_0x61
+_LIFPOST_0x60:
 ;[[ id : c], [ == : ==], [ char : 102], [ || : ||], [ id : c], [ == : ==], [ char : 100]]
 mov r10b, 102
 mov bl, byte[rbp-40]
@@ -4385,7 +3608,7 @@ sete r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x5e
+jz _LIFPOST_0x62
 ;[[ id : diff]]
 ;[[ id : diff]]
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
@@ -4417,17 +3640,17 @@ add r10, rbx
 mov qword[rbp-16], r10
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x5f
-_LIFPOST_0x5e:
+jmp _LIFELSE_0x63
+_LIFPOST_0x62:
+_LIFELSE_0x63:
+_LIFELSE_0x61:
 _LIFELSE_0x5f:
 _LIFELSE_0x5d:
 _LIFELSE_0x5b:
-_LIFELSE_0x59:
-_LIFELSE_0x57:
 ;[[ id : argc], [ ++ : ++]]
 inc dword[rbp-32]
-_LIFELSE_0x55:
-_LWHILECMP_0x52:
+_LIFELSE_0x59:
+_LWHILECMP_0x56:
 ;[[ @ : @], [ id : format], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -4436,8 +3659,8 @@ test r10b, r10b
 setnz r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x51
-_LWHILEEND_0x53:
+jnz _LWHILESTART_0x55
+_LWHILEEND_0x57:
 ;[[ id : argc]]
 mov ebx, dword[rbp-32]
 mov eax, ebx
@@ -4725,15 +3948,15 @@ mov qword[rbp-16], 80
 mov rbx, qword[rbp-16]
 mov rdi, rbx
 xor rax, rax
-call _void._malloc_psize_t
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 8]] ) ] ]]
+call malloc
+;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
 mov qword[rbp-24], rax
 ;[[ int : 0]]
 mov qword[rbp-40], 0
 ;[[ id : msg]]
 mov rsi, qword[rbp-8]
-;[[ id : STRING_CONSTANT_137]]
-mov rbx, STRING_CONSTANT_137
+;[[ id : STRING_CONSTANT_141]]
+mov rbx, STRING_CONSTANT_141
 mov rdi, rbx
 xor rax, rax
 call printf
@@ -4749,8 +3972,8 @@ and rdi, 0xffffffff
 xor rax, rax
 call _bool_fgets_pfd_tchar.size_t
 ;[[ fn(x) : [ function bool fgets( [[fd_t fd @ 8], [char. buffer @ 16], [size_t amt @ 24]] ) ] ]]
-jmp _LWHILECMP_0x61
-_LWHILESTART_0x60:
+jmp _LWHILECMP_0x65
+_LWHILESTART_0x64:
 ;[[ id : len], [ == : ==], [ id : size]]
 mov r10, qword[rbp-16]
 mov rbx, qword[rbp-40]
@@ -4758,7 +3981,7 @@ cmp rbx, r10
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x63
+jz _LIFPOST_0x67
 ;[[ id : size]]
 ;[[ id : size]]
 ;[[ id : size], [ * : *], [ int : 2]]
@@ -4773,12 +3996,12 @@ mov rsi, r10
 ;[[ id : str]]
 mov rdi, qword[rbp-24]
 xor rax, rax
-call _void._realloc_pvoid.size_t
+call realloc
 mov qword[rbp-24], rax
-;[[ fn(x) : [ function void. realloc( [[void. og @ 8], [size_t newsize @ 16]] ) ] ]]
-jmp _LIFELSE_0x64
-_LIFPOST_0x63:
-_LIFELSE_0x64:
+;[[ fn(x) : [ function void. realloc( [[void. og @ 0], [size_t newsize @ 0]] ) ] ]]
+jmp _LIFELSE_0x68
+_LIFPOST_0x67:
+_LIFELSE_0x68:
 ;[[ id : str], [ [ : [], [ id : len], [ ] : ]]]
 mov r10, qword[rbp-40]
 mov rbx, qword[rbp-24]
@@ -4807,7 +4030,7 @@ call _bool_fgets_pfd_tchar.size_t
 mov r10, qword[rbp-40]
 inc r10
 mov qword[rbp-40], r10
-_LWHILECMP_0x61:
+_LWHILECMP_0x65:
 ;[[ id : c], [ != : !=], [ int : 10]]
 mov r10d, 10
 mov ebx, dword[rbp-32]
@@ -4815,8 +4038,8 @@ cmp ebx, r10d
 setne bl
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0x60
-_LWHILEEND_0x62:
+jnz _LWHILESTART_0x64
+_LWHILEEND_0x66:
 ;[[ id : str], [ [ : [], [ id : len], [ + : +], [ int : 1], [ ] : ]]]
 mov rbx, qword[rbp-40]
 inc rbx
@@ -4836,8 +4059,8 @@ mov rsi, rbx
 ;[[ id : str]]
 mov rdi, qword[rbp-24]
 xor rax, rax
-call _void._realloc_pvoid.size_t
-;[[ fn(x) : [ function void. realloc( [[void. og @ 8], [size_t newsize @ 16]] ) ] ]]
+call realloc
+;[[ fn(x) : [ function void. realloc( [[void. og @ 0], [size_t newsize @ 0]] ) ] ]]
 jmp ___char._getString_pchar.__return
 ___char._getString_pchar.__return:
 leave
@@ -4852,8 +4075,8 @@ sub rsp, 48
 mov [rbp-8], rdi
 ;Load Parameter: [bool signed @ 16]
 mov [rbp-16], rsi
-jmp _LWHILECMP_0x66
-_LWHILESTART_0x65:
+jmp _LWHILECMP_0x6a
+_LWHILESTART_0x69:
 ;[[ id : str]]
 ;[[ id : str]]
 ;[[ int : 1]]
@@ -4861,7 +4084,7 @@ mov ebx, 1
 mov r10, qword[rbp-8]
 add r10, rbx
 mov qword[rbp-8], r10
-_LWHILECMP_0x66:
+_LWHILECMP_0x6a:
 ;[[ @ : @], [ id : str], [ == : ==], [ char : 32]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -4871,8 +4094,8 @@ cmp r10b, bl
 sete r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x65
-_LWHILEEND_0x67:
+jnz _LWHILESTART_0x69
+_LWHILEEND_0x6b:
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -4893,7 +4116,7 @@ mov r10b, byte[rbp-16]
 and bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x68
+jz _LIFPOST_0x6c
 ;[[ id : negative]]
 ;[[ id : negative]]
 ;[[ $ : bool], [ int : 1]]
@@ -4914,11 +4137,11 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-24], r11b
-jmp _LIFELSE_0x69
-_LIFPOST_0x68:
-_LIFELSE_0x69:
-jmp _LWHILECMP_0x6b
-_LWHILESTART_0x6a:
+jmp _LIFELSE_0x6d
+_LIFPOST_0x6c:
+_LIFELSE_0x6d:
+jmp _LWHILECMP_0x6f
+_LWHILESTART_0x6e:
 ;[[ id : val]]
 ;[[ id : val]]
 ;[[ ( : (], [ id : val], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
@@ -4945,7 +4168,7 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-24], r11b
-_LWHILECMP_0x6b:
+_LWHILECMP_0x6f:
 ;[[ id : c], [ != : !=], [ int : 0], [ && : &&], [ id : c], [ != : !=], [ int : 10], [ && : &&], [ id : c], [ != : !=], [ char : 32]]
 mov bl, byte[rbp-24]
 test bl, bl
@@ -4964,22 +4187,22 @@ setne r10b
 and bl, r10b
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0x6a
-_LWHILEEND_0x6c:
+jnz _LWHILESTART_0x6e
+_LWHILEEND_0x70:
 ;[[ id : negative]]
 mov bl, byte[rbp-40]
 mov al, bl
 and al, 1
-jz _LIFPOST_0x6d
+jz _LIFPOST_0x71
 ;[[ int : 0], [ - : -], [ id : val]]
 mov r10d, dword[rbp-32]
 xor ebx, ebx
 sub ebx, r10d
 mov eax, ebx
 jmp ___int_toInteger_pchar.bool__return
-jmp _LIFELSE_0x6e
-_LIFPOST_0x6d:
-_LIFELSE_0x6e:
+jmp _LIFELSE_0x72
+_LIFPOST_0x71:
+_LIFELSE_0x72:
 ;[[ id : val]]
 mov ebx, dword[rbp-32]
 mov eax, ebx
@@ -5024,10 +4247,10 @@ push r10
 ;[[ id : inp]]
 mov rdi, rbx
 xor rax, rax
-call _void_free_pvoid.
+call free
 pop r10
 pop rbx
-;[[ fn(x) : [ function void free( [[void. ptr @ 8]] ) ] ]]
+;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
 ;[[ id : retval]]
 mov r11d, r10d
 mov eax, r11d
@@ -5145,169 +4368,23 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 96
+sub rsp, 24
 ;Load Parameter: [int argc @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [char.. argv @ 16]
 mov [rbp-16], rsi
-;[[ int : 0]]
-xor edx, edx
-and rdx, 0xffffffff
-;[[ int : 1]]
-mov esi, 1
-and rsi, 0xffffffff
-;[[ int : 2]]
-mov edi, 2
-and rdi, 0xffffffff
-xor rax, rax
-call _fd_t_socket_pintintint
-;[[ fn(x) : [ function fd_t socket( [[int family @ 8], [int type @ 16], [int protocol @ 24]] ) ] ]]
-mov dword[rbp-24], eax
-;[[ id : sock]]
-mov esi, dword[rbp-24]
-;[[ id : STRING_CONSTANT_138]]
-mov rbx, STRING_CONSTANT_138
-mov rdi, rbx
-xor rax, rax
-call printf
-;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
-;[[ & : &], [ id : addr]]
-lea rbx, [rbp-32]
-mov rsi, rbx
-;[[ id : STRING_CONSTANT_139]]
-mov rbx, STRING_CONSTANT_139
-mov rdi, rbx
-xor rax, rax
-call _int_inet_aton_pchar.in_addr.
-;[[ fn(x) : [ function int inet_aton( [[char. cp @ 8], [in_addr. addr @ 16]] ) ] ]]
-mov dword[rbp-40], eax
-;[[ id : addr]]
-mov esi, dword[rbp-32]
-;[[ id : STRING_CONSTANT_140]]
-mov rbx, STRING_CONSTANT_140
-mov rdi, rbx
-xor rax, rax
-call printf
-;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
-mov word[rbp-64], 0
-mov word[rbp-62], 0
-mov dword[rbp-60], 0
-mov qword[rbp-56], 0
-;[[ id : addrin.sin_family]]
-;[[ id : addrin.sin_family]]
-;[[ int : 2]]
-mov ebx, 2
-mov word[rbp-64], bx
-;[[ id : addrin.sin_addr]]
-;[[ id : addrin.sin_addr]]
-;[[ id : addr]]
-mov r10d, dword[rbp-32]
-mov dword[rbp-60], r10d
-;[[ id : addrin.sin_port]]
-;[[ id : addrin.sin_port]]
-;[[ int : 2001]]
-mov edi, 2001
-and rdi, 0xffff
-xor rax, rax
-call _short_hton16_pshort
-mov rbx, rax
-;[[ fn(x) : [ function short hton16( [[short x @ 8]] ) ] ]]
-mov word[rbp-62], bx
-;[[ id : addrin.sin_zero]]
-mov r8, qword[rbp-56]
-;[[ id : addrin.sin_port], [ && : &&], [ int : 65535]]
-mov r10w, word[rbp-62]
-mov ebx, 65535
-and r11d, 0xffffffff
-mov r11d, r10d
-and r11d, ebx
-mov rcx, r11
-;[[ id : addrin.sin_addr]]
-mov edx, dword[rbp-60]
-;[[ id : addrin.sin_family], [ && : &&], [ int : 65535]]
-mov r10w, word[rbp-64]
-mov ebx, 65535
-and r11d, 0xffffffff
-mov r11d, r10d
-and r11d, ebx
-mov rsi, r11
-;[[ id : STRING_CONSTANT_141]]
-mov rbx, STRING_CONSTANT_141
-mov rdi, rbx
-xor rax, rax
-call printf
-;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0], [void arg2 @ 0], [void arg3 @ 0], [void arg4 @ 0]] ) ] ]]
-;[[ id : sockaddr_in]]
-mov edx, 16
-and rdx, 0xffffffff
-;[[ & : &], [ id : addrin]]
-lea rbx, [rbp-64]
-mov rsi, rbx
-;[[ id : sock]]
-mov ebx, dword[rbp-24]
-mov edi, ebx
-and rdi, 0xffffffff
-xor rax, rax
-call _int_connect_pfd_tsockaddr_in.int
-;[[ fn(x) : [ function int connect( [[fd_t fd @ 8], [sockaddr_in. uservaddr @ 16], [int addrlen @ 24]] ) ] ]]
-mov qword[rbp-72], rax
 ;[[ id : STRING_CONSTANT_142]]
-mov qword[rbp-80], STRING_CONSTANT_142
-;[[ id : msg]]
-mov rbx, qword[rbp-80]
+mov rbx, STRING_CONSTANT_142
 mov rdi, rbx
 xor rax, rax
-call _size_t_strlen_pchar.
-;[[ fn(x) : [ function size_t strlen( [[char. str @ 8]] ) ] ]]
-mov qword[rbp-88], rax
-;[[ int : 0]]
-xor ecx, ecx
-and rcx, 0xffffffff
-;[[ id : msglen]]
-mov rbx, qword[rbp-88]
-mov rdx, rbx
-;[[ id : msg]]
-mov rbx, qword[rbp-80]
-mov rsi, rbx
-;[[ id : sock]]
-mov ebx, dword[rbp-24]
-mov edi, ebx
-and rdi, 0xffffffff
-xor rax, rax
-call _int_send_pfd_tchar.size_tint
-;[[ fn(x) : [ function int send( [[fd_t sockfd @ 8], [char. buff @ 16], [size_t len @ 24], [int flags @ 32]] ) ] ]]
+call _long_system_pchar.
+;[[ fn(x) : [ function long system( [[char. command @ 8]] ) ] ]]
 ;[[ id : STRING_CONSTANT_143]]
 mov rbx, STRING_CONSTANT_143
 mov rdi, rbx
 xor rax, rax
 call _void_printf_pchar.
 ;[[ fn(x) : [ function void printf( [[char. fmt @ 8]] ) ] ]]
-;[[ int : 0]]
-xor ecx, ecx
-and rcx, 0xffffffff
-;[[ id : msglen]]
-mov rbx, qword[rbp-88]
-mov rdx, rbx
-;[[ id : msg]]
-mov rbx, qword[rbp-80]
-mov rsi, rbx
-;[[ id : sock]]
-mov ebx, dword[rbp-24]
-mov edi, ebx
-and rdi, 0xffffffff
-xor rax, rax
-call _int_recv_pfd_tchar.size_tint
-;[[ fn(x) : [ function int recv( [[fd_t sockfd @ 8], [char. buff @ 16], [size_t len @ 24], [int flags @ 32]] ) ] ]]
-;[[ int : 0]]
-xor esi, esi
-and rsi, 0xffffffff
-;[[ id : sock]]
-mov ebx, dword[rbp-24]
-mov edi, ebx
-and rdi, 0xffffffff
-xor rax, rax
-call _int_shutdown_pfd_tint
-;[[ fn(x) : [ function int shutdown( [[fd_t sockfd @ 8], [int how @ 16]] ) ] ]]
 __main__return:
 leave
 ret

@@ -4,55 +4,15 @@
 #ifndef __MEMORY
 #define __MEMORY 1
 #include "stddef.k"
+typedef int intptr_t;
+typedef int off_t;
 
-function void* malloc(size_t size){
+cextern void* malloc(size_t size);
+cextern void* calloc(size_t size);
+cextern void* realloc(void* og, size_t newsize);
+cextern void free(void *ptr);
 
-    __asm{"
-    
-    ALIGN_STACK
-    call malloc
-    UNALIGN_STACK
-    
-    "}
 
-}
-
-function void* calloc(size_t size){
-
-    __asm{"
-    
-    ALIGN_STACK
-    call calloc
-    UNALIGN_STACK
-    
-    "}
-
-}
-
-function void* realloc(void* og, size_t newsize){
-
-    __asm{"
-    
-    ALIGN_STACK
-    call realloc
-    UNALIGN_STACK
-    
-    "}
-
-}
-
-function void free(void *ptr){
-
-    __asm{"
-    
-    ALIGN_STACK
-    call free
-    UNALIGN_STACK
-    
-    
-    "}
-
-}
 
 function void memcpy(void *dest, void* source, size_t bytes){
 
@@ -94,6 +54,21 @@ function void memset(void* dest, unsigned char value, size_t bytes){
     mov [rdi+rdx], sil
     jnz _void_memset_pvoid.ucharsize_t_flp
     
+    "}
+}
+
+
+global void* mmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset){
+    __asm{"
+    mov rax, 9
+    syscall
+    "}
+}
+
+global void* munmap(void* addr, size_t length){
+    __asm{"
+    mov rax, 11
+    syscall
     "}
 }
 
