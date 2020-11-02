@@ -70,6 +70,7 @@ global long system(char* command){
         
     } // if child, execute bash
     waitpid(pid, nullptr, nullptr);
+    return 0;
 }
 
 

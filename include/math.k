@@ -196,6 +196,36 @@ global long log(long n, long b){
   "}
 }
 
+global long log2(long n){
+  __asm{"
+  
+  xor rax, rax
+  _long_lop2_plong_flp:
+  sar rdi, 1
+  inc rax
+  test rdi, rdi
+  jnz _long_lop2_plong_flp
+  dec rax
+  "}
+}
+
+
+global double log2(double n){
+
+  __asm{"
+  movq rax, xmm0
+  shl rax, 1
+  shr rax, 53
+  shl rax, 53
+  cvtsi2sd xmm1, rax
+  mov rax, 2
+  cvtsi2sd xmm3, rax
+  
+
+  "}
+
+}
+
 
 global long divmod(long dividend, long divisor, long* modulus ){
 

@@ -50,7 +50,10 @@ function long toStr(long val, char* buffer, bool signed, short base){
 char* __numbercharactersbase1016 = "0123456789abcdef";
 
 function long toStr(long val, char* buffer, bool signed, short base){
-
+    if(val == 0){
+        @buffer = '0';
+        return 2;
+    }
     char signspace = 0;
     if(val < 0 && signed){
         @buffer = '-';
@@ -59,10 +62,7 @@ function long toStr(long val, char* buffer, bool signed, short base){
         signspace=1;
     }
 
-    if(val == 0){
-        @buffer = '0';
-        return 2;
-    }
+    
 
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
@@ -106,7 +106,7 @@ function long toStr(double val, char* buffer, long multiplier){
     @buffer = '.';
     buffer++;
     l += toStr(round(val), buffer, 0, 10);
-    return l-1;
+    return l;
 
 
 }

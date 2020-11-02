@@ -23,6 +23,8 @@ global _long_abs_plong:
 global _double_abs_pdouble:
 global _long_log_plong:
 global _long_log_plonglong:
+global _long_log2_plong:
+global _double_log2_pdouble:
 global _long_divmod_plonglonglong.:
 global _int___sprintf_pchar.char.void.:
 global _int_sprintf_pchar.char.voidvoidvoidvoid:
@@ -207,8 +209,8 @@ STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 STRING_CONSTANT_139: db `sudo`, 0
 STRING_CONSTANT_140: db `-c`, 0
 STRING_CONSTANT_141: db `%s`, 0
-STRING_CONSTANT_142: db `python3 compile.py -i p.k -o test.bin -r -nasm -O3 -g`, 0
-STRING_CONSTANT_143: db `This is after because it is blocking`, 0
+STRING_CONSTANT_142: db `%f\n`, 0
+FLT_CONSTANT_1: dq 0x1.4000000000000p+4
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -721,6 +723,44 @@ xor rbx, rbx
 ___long_log_plonglong__return:
 leave
 ret
+;[ function long log2( [[long n @ 8]] ) ]
+
+_long_log2_plong:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [long n @ 8]
+mov [rbp-8], rdi
+xor rax, rax
+  _long_lop2_plong_flp:
+  sar rdi, 1
+  inc rax
+  test rdi, rdi
+  jnz _long_lop2_plong_flp
+  dec rax
+___long_log2_plong__return:
+leave
+ret
+;[ function double log2( [[double n @ 8]] ) ]
+
+_double_log2_pdouble:
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;Load Parameter: [double n @ 8]
+movsd [rbp-8], xmm0
+movq rax, xmm0
+  shl rax, 1
+  shr rax, 53
+  shl rax, 53
+  cvtsi2sd xmm1, rax
+  mov rax, 2
+  cvtsi2sd xmm3, rax
+  divsd xmm1, xmm3
+  divsd xmm0, xmm1
+___double_log2_pdouble__return:
+leave
+ret
 ;[ function long divmod( [[long dividend @ 8], [long divisor @ 16], [long. modulus @ 24]] ) ]
 
 _long_divmod_plonglonglong.:
@@ -1029,6 +1069,28 @@ mov [rbp-16], rsi
 mov [rbp-24], rdx
 ;Load Parameter: [short base @ 32]
 mov [rbp-32], rcx
+;[[ id : val], [ == : ==], [ int : 0]]
+mov rbx, qword[rbp-8]
+test rbx, rbx
+setz bl
+mov al, bl
+and al, 1
+jz _LIFPOST_0x19
+;[[ @ : @], [ id : buffer]]
+mov rbx, qword[rbp-16]
+mov r10, rbx
+;[[ @ : @], [ id : buffer]]
+mov rbx, qword[rbp-16]
+mov r10, rbx
+;[[ char : 48]]
+mov bl, 48
+mov byte[r10], bl
+;[[ int : 2]]
+mov eax, 2
+jmp ___long_toStr_plongchar.boolshort__return
+jmp _LIFELSE_0x1a
+_LIFPOST_0x19:
+_LIFELSE_0x1a:
 ;[[ int : 0]]
 mov byte[rbp-40], 0
 ;[[ id : val], [ < : <], [ int : 0], [ && : &&], [ id : signed]]
@@ -1041,7 +1103,7 @@ mov r10b, byte[rbp-24]
 and bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x19
+jz _LIFPOST_0x1b
 ;[[ @ : @], [ id : buffer]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -1071,28 +1133,6 @@ mov qword[rbp-8], r12
 ;[[ int : 1]]
 mov ebx, 1
 mov byte[rbp-40], bl
-jmp _LIFELSE_0x1a
-_LIFPOST_0x19:
-_LIFELSE_0x1a:
-;[[ id : val], [ == : ==], [ int : 0]]
-mov rbx, qword[rbp-8]
-test rbx, rbx
-setz bl
-mov al, bl
-and al, 1
-jz _LIFPOST_0x1b
-;[[ @ : @], [ id : buffer]]
-mov rbx, qword[rbp-16]
-mov r10, rbx
-;[[ @ : @], [ id : buffer]]
-mov rbx, qword[rbp-16]
-mov r10, rbx
-;[[ char : 48]]
-mov bl, 48
-mov byte[r10], bl
-;[[ int : 2]]
-mov eax, 2
-jmp ___long_toStr_plongchar.boolshort__return
 jmp _LIFELSE_0x1c
 _LIFPOST_0x1b:
 _LIFELSE_0x1c:
@@ -1310,9 +1350,8 @@ mov rbx, rax
 mov r11, qword[rbp-40]
 add r11, rbx
 mov qword[rbp-40], r11
-;[[ id : l], [ - : -], [ int : 1]]
+;[[ id : l]]
 mov rbx, qword[rbp-40]
-dec rbx
 mov rax, rbx
 jmp ___long_toStr_pdoublechar.long__return
 ___long_toStr_pdoublechar.long__return:
@@ -3065,6 +3104,9 @@ mov rdi, rbx
 xor rax, rax
 call _long_waitpid_ppid_tint.int
 ;[[ fn(x) : [ function long waitpid( [[pid_t pid @ 8], [int. wstatus @ 16], [int options @ 24]] ) ] ]]
+;[[ int : 0]]
+xor eax, eax
+jmp ___long_system_pchar.__return
 ___long_system_pchar.__return:
 leave
 ret
@@ -4373,18 +4415,21 @@ sub rsp, 24
 mov [rbp-8], rdi
 ;Load Parameter: [char.. argv @ 16]
 mov [rbp-16], rsi
+;[[ id : FLT_CONSTANT_1]]
+movsd xmm7, [FLT_CONSTANT_1]
+movsd xmm0, xmm7
+mov rax, 1
+call _double_log2_pdouble
+movq rax, xmm0
+;[[ fn(x) : [ function double log2( [[double n @ 8]] ) ] ]]
+movq xmm7, rax
+movq rsi, xmm7
 ;[[ id : STRING_CONSTANT_142]]
 mov rbx, STRING_CONSTANT_142
 mov rdi, rbx
-xor rax, rax
-call _long_system_pchar.
-;[[ fn(x) : [ function long system( [[char. command @ 8]] ) ] ]]
-;[[ id : STRING_CONSTANT_143]]
-mov rbx, STRING_CONSTANT_143
-mov rdi, rbx
-xor rax, rax
-call _void_printf_pchar.
-;[[ fn(x) : [ function void printf( [[char. fmt @ 8]] ) ] ]]
+mov rax, 1
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
 __main__return:
 leave
 ret
