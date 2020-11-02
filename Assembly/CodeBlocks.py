@@ -146,15 +146,24 @@ def spop(v: EC.ExpressionComponent):
 
 
 def fncall(fn):
+    global norm_scratch_registers_inuse, sse_scratch_registers_inuse
     if(not fn.inline):
         return "call %s\n" % fn.getCallingLabel()
     else:
+
+        regstate = norm_scratch_registers_inuse.copy()
+        regstatesse = sse_scratch_registers_inuse.copy()
+        rfreeAll()
+
         resetcfg = False
         if(fn.isCompiled and not config.__nowarn__):
             config.__nowarn__ = True
             resetcfg = True
         fn = fn.reset()
         fn.compile()
+
+        norm_scratch_registers_inuse = regstate
+        sse_scratch_registers_inuse = regstatesse
 
         if resetcfg:
             config.__nowarn__ = False

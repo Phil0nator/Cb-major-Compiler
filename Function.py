@@ -97,6 +97,7 @@ class Function:
 
 
         self.isCompiled = False
+        self.closinglabel = self.getClosingLabel()
 
 
     def advance(self):                              # advance token
@@ -123,7 +124,7 @@ class Function:
 
     # get raw asm label used to denote the end of this function
     def getClosingLabel(self):
-        return function_closer(self.getCallingLabel(), None).split("\n")[0]
+        return function_closer(self.getCallingLabel(), None).split("\n")[0] if not self.inline else getLogicLabel("INLINERETURN")+":"
 
     # get a variable of name q from first local then global scope if necessary
 
@@ -139,11 +140,13 @@ class Function:
         v.offset = self.stackCounter
         v.dtok = self.current_token
         # self.stackCounter += v.t.size(0)
-        if v.t.size(0) <= 8:
-            self.stackCounter += 8
-        else:
-            self.stackCounter += v.t.csize() + 8
-            v.stackarrsize = v.t.csize()
+
+        if(v.register is None):
+            if v.t.size(0) <= 8:
+                self.stackCounter += 8
+            else:
+                self.stackCounter += v.t.csize() + 8
+                v.stackarrsize = v.t.csize()
         self.variables.append(v)
 
     def addline(self, l):                           # add a line of assembly to raw
@@ -238,7 +241,7 @@ class Function:
                 else:
                     p.register = norm_parameter_registers[countn]
                     countn+=1
-                self.regdecls.append(p)
+                self.regdecls.append(EC.ExpressionComponent(p.register,p.t,token=self.tokens[0])) 
 
             self.addVariable(p)
             p.referenced = True
@@ -275,7 +278,7 @@ class Function:
                     token=self.current_token))
 
             self.addline(instr)
-        self.addline(Instruction('jmp', [self.getClosingLabel()[:-1]])) if not self.inline else None
+        self.addline(Instruction('jmp', [self.closinglabel[:-1]]))
         self.checkSemi()
         if self.recursive_depth == 1:
             self.hasReturned = True
@@ -1273,8 +1276,15 @@ class Function:
         # inline functions have no label
         if( not self.inline):
             self.addline(functionlabel(self))  # label
+
+        else:
+            self.stackCounter = 0 # inline functions require no overhead
         
-        
+        # closing label needs to be updated based on new properties
+        self.closinglabel = self.getClosingLabel()
+
+
+
         # stack allocator (size undetermined at this point)
         self.addline("/*ALLOCATOR*/")
         
@@ -1284,12 +1294,16 @@ class Function:
 
         # fill in allocator with real value
         self.asm = self.asm.replace(
-            "/*ALLOCATOR*/", function_allocator(self.stackCounter))
+            "/*ALLOCATOR*/", function_allocator(self.stackCounter)) if self.stackCounter > 0 else self.asm.replace("/*ALLOCATOR*/","")
 
         # self.addline(self.destructor_text)
         # return, destructors, stack frame closing
-        
-        self.createClosing() if not self.inline else self.addline("leave");              
+        if(self.inline):
+            self.addline(self.closinglabel)
+            if(self.stackCounter):
+                self.addline("leave")
+        elif not self.inline:
+            self.createClosing()        
 
         self.asm += self.suffix           # readonly memory
 
