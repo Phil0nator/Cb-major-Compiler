@@ -24,12 +24,15 @@ class Error:
         lines = file.split("\n")
 
         lp = ""
-        if(len(lines) > 2):
-            lp = f"|{line-1}\t" + lines[line - 2] + "\n"
-        if(len(lines) > 1):
-            lp += f"|{line}\t" + lines[line - 1] + "\n"
-        if(line != len(lines) - 1 and len(lines) > 1):
-            lp += f"|{line+1}\t" + lines[line] + "\n"
+        try:
+            if(len(lines) > 2 and line >=2):
+                lp = f"|{line-1}\t" + lines[line - 2] + "\n"
+            if(len(lines) > 1 and line >=1):
+                lp += f"|{line}\t" + lines[line - 1] + "\n"
+            if(line != len(lines) - 1 and len(lines) > 1):
+                lp += f"|{line+1}\t" + lines[line] + "\n"
+        except IndexError:
+            pass
 
         problem = lp
 

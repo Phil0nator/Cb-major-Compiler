@@ -406,7 +406,7 @@ char** __linux_errstrlist = {
 
 int errno = 0;
 
-
+// get the message associated with errorcode err
 global char* get_errstr(int err){
 
     if(err < MAX_ERR && err >= 0){

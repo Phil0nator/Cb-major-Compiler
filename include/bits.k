@@ -9,7 +9,7 @@
 
 typedef unsigned long ulong;
 
-
+// hton refers to little-endian to big endian conversion
 inline long hton64(long x){
     __asm{"
     

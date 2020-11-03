@@ -9,7 +9,7 @@
 
 
 #define __PRINTF_MAXNORMUSE 100000
-
+// printf is just a __sprintf wrapper
 global void __printf(char* fmt, void* args){
 
     char *normform = qmmap(__PRINTF_MAXNORMUSE);

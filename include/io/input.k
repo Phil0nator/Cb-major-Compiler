@@ -9,6 +9,11 @@
 #include "sscanf.k"
 
 #define MAX_INT64LEN 40
+/*
+
+    Printf msg, and return an integer value from stdin
+
+*/
 function int getInt(char* msg){
     
     printf(msg);
@@ -18,6 +23,11 @@ function int getInt(char* msg){
     return toInteger(&buff, true);
 
 }
+
+/*
+    Printf msg, and return an unsigned integer value from stdin
+
+*/
 function unsigned int getUint(char* msg){
 
     printf(msg);
@@ -27,7 +37,7 @@ function unsigned int getUint(char* msg){
     return toInteger(&buff, true);
 
 }
-
+/* get last char in stdin */
 function char getchar(){
     char c;
     fgets(STDIN, &c, 1);
@@ -38,6 +48,7 @@ function int getHex(char* msg){
     /*TODO*/
     return 0;
 }
+/* printf msg, and copy a string from stdin into buffer of length no greater than maxlen */
 function void getString(char* buffer, int maxlen, char* msg){
     
     printf(msg);
@@ -46,7 +57,11 @@ function void getString(char* buffer, int maxlen, char* msg){
 }
 
 
-
+/* 
+    printf msg, get string from stdin and allocate enough space for it. 
+    Returns a pointer to allocated space.
+    The pointer returned must be freed.
+*/
 function char* getString(char* msg){
     
     size_t size = 80;
@@ -74,7 +89,7 @@ function char* getString(char* msg){
 
 }
 
-
+// String to integer
 function int toInteger(char* str, bool signed){
 
     while(@str == ' '){
@@ -102,7 +117,7 @@ function int toInteger(char* str, bool signed){
 
 }
 
-
+// scanf wrappers
 __cdecl int __scanf(char* format, void** args){
     register char* inp = floads(STDIN);
     register int retval = __SSCANF(format, inp, args);

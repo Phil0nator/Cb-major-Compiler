@@ -113,9 +113,22 @@ function long toStr(double val, char* buffer, long multiplier){
 }
 
 
+/*
 
+    Format fmt with args into str.
+    Formats:
+        -%i signed integer value
+        -%u unsigned integer value
+        -%x hex value
+        -%c char
+        -%b boolean
+        -%f float
+        -%d double
+        -%s cstring
 
+    str must be already allocated with enough size for the operation to complete. If not, SIGSEGV will be raised.
 
+*/
 global int __sprintf(char* str, char* fmt, void* args){
 
     int argc = 0;
