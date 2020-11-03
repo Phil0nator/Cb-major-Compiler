@@ -79,6 +79,41 @@ inline long clone(unsigned long clone_flags, unsigned long newsp, void* parent_t
     "}
 }
 
+inline void exit(long c){
+    __asm{"
+    mov rax,60
+    syscall
+    "}
+}
+
+
+inline long tgkill(pid_t tgid, pid_t pid, long sig){
+    __asm{"
+    mov rax, 234
+    syscall
+    "}
+}
+
+inline long gettid(){
+    __asm{"
+    mov rax, 186
+    syscall
+    "}
+}
+
+inline long getpid(){
+    __asm{"
+    mov rax, 39
+    syscall
+    "}
+}
+inline long wait4(pid_t upid, int*stat_addr, long options, void*ru){
+    __asm{"
+    mov rax, 61
+    mov r10, rcx
+    syscall
+    "}
+}
 
 
 char* __systembashpath = "/bin/bash";

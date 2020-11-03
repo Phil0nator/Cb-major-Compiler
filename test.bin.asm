@@ -1,13 +1,8 @@
 
 
 global _char._get_errstr_pint:
-extern malloc
-extern calloc
-extern realloc
-extern free
 global _void._mmap_pvoid.size_tlonglonglongoff_t:
 global _void._munmap_pvoid.size_t:
-global _long_divmod_plonglonglong.:
 global _int___sprintf_pchar.char.void.:
 global _int_sprintf_pchar.char.voidvoidvoidvoid:
 global _void___printf_pchar.void.:
@@ -17,6 +12,7 @@ extern printf
 extern printf
 extern printf
 global _void_printf_pchar.:
+global _void_usleep_plong:
 global _long_execl_pchar.char..:
 global _long_system_pchar.:
 global _int___SSCANF_pchar.char.void..:
@@ -32,7 +28,10 @@ extern scanf
 extern scanf
 extern scanf
 extern scanf
+global _void___thrdext_p:
+global _void.___crtstack_p:
 global _thread_t_thread_p__threadcallablevoid.:
+global _long_thread_join_pthread_t:
 
 
 
@@ -182,8 +181,7 @@ STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 STRING_CONSTANT_139: db `sudo`, 0
 STRING_CONSTANT_140: db `-c`, 0
 STRING_CONSTANT_141: db `%s`, 0
-STRING_CONSTANT_142: db `%i`, 0
-STRING_CONSTANT_143: db `This was a test.`, 0
+STRING_CONSTANT_142: db `i: %i\n`, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -193,6 +191,8 @@ rand_next: DQ 1
 __systembashpath: DQ "/bin/bash"
 __emptyenv: DQ STRING_CONSTANT_138, 0
 __systemcallargvconst: DQ STRING_CONSTANT_139, STRING_CONSTANT_140, 0
+clone_threadflags: DQ 4001536
+__tsigfutex: DQ 0
 
 
 section .bss
@@ -256,42 +256,6 @@ jmp ___char._get_errstr_pint__return
 ___char._get_errstr_pint__return:
 leave
 ret
-
-
-
-;[ function void. malloc( [[size_t size @ 0]] ) ]
-
-
-
-
-
-
-
-
-;[ function void. calloc( [[size_t size @ 0]] ) ]
-
-
-
-
-
-
-
-
-;[ function void. realloc( [[void. og @ 0], [size_t newsize @ 0]] ) ]
-
-
-
-
-
-
-
-
-;[ function void free( [[void. ptr @ 0]] ) ]
-
-
-
-
-
 
 
 
@@ -513,35 +477,6 @@ ret
 
 
 
-;[ function long divmod( [[long dividend @ 8], [long divisor @ 16], [long. modulus @ 24]] ) ]
-
-
-
-
-
-_long_divmod_plonglonglong.:
-push rbp
-mov rbp, rsp
-sub rsp, 32
-
-;Load Parameter: [long dividend @ 8]
-mov [rbp-8], rdi
-;Load Parameter: [long divisor @ 16]
-mov [rbp-16], rsi
-;Load Parameter: [long. modulus @ 24]
-mov [rbp-24], rdx
-  mov rbx, rdx
-  xor rdx, rdx
-  mov rax, rdi
-  div rsi
-  mov [rbx], rdx
-  
-___long_divmod_plonglonglong.__return:
-leave
-ret
-
-
-
 ;[ function int strcpy( [[char. dest @ 8], [char. source @ 16]] ) ]
 
 
@@ -626,8 +561,8 @@ mov r11, qword[rbp-8]
 mov r10, qword[rbp-24]
 add r11, r10
 mov rbx, r11
-jmp _LWHILECMP_0x10
-_LWHILESTART_0xf:
+jmp _LWHILECMP_0xf
+_LWHILESTART_0xe:
 ;[[ @ : @], [ id : str], [ == : ==], [ id : c]]
 mov r10, qword[rbp-8]
 and r11, 0xff
@@ -637,17 +572,17 @@ cmp r11b, r10b
 sete r11b
 mov al, r11b
 and al, 1
-jz _LIFPOST_0x12
+jz _LIFPOST_0x11
 ;[[ id : str]]
 mov r10, qword[rbp-8]
 mov rax, r10
 jmp ___char._memchr_pchar.charsize_t__return
-jmp _LIFELSE_0x13
-_LIFPOST_0x12:
-_LIFELSE_0x13:
+jmp _LIFELSE_0x12
+_LIFPOST_0x11:
+_LIFELSE_0x12:
 ;[[ id : str], [ ++ : ++]]
 inc qword[rbp-8]
-_LWHILECMP_0x10:
+_LWHILECMP_0xf:
 ;[[ id : str], [ < : <], [ id : finalptr]]
 mov r11, qword[rbp-8]
 mov r10, rbx
@@ -655,8 +590,8 @@ cmp r11, r10
 setl r11b
 mov al, r11b
 and al, 1
-jnz _LWHILESTART_0xf
-_LWHILEEND_0x11:
+jnz _LWHILESTART_0xe
+_LWHILEEND_0x10:
 ;[[ int : 0]]
 xor rax, rax
 jmp ___char._memchr_pchar.charsize_t__return
@@ -690,8 +625,8 @@ mov r12, qword[rbp-8]
 mov r11, qword[rbp-24]
 add r12, r11
 mov r10, r12
-jmp _LWHILECMP_0x15
-_LWHILESTART_0x14:
+jmp _LWHILECMP_0x14
+_LWHILESTART_0x13:
 ;[[ @ : @], [ id : str1], [ < : <], [ @ : @], [ id : str2]]
 mov r11, qword[rbp-8]
 and r12, 0xff
@@ -703,19 +638,19 @@ cmp r12b, r13b
 setl r12b
 mov al, r12b
 and al, 1
-jz _LIFPOST_0x17
+jz _LIFPOST_0x16
 ;[[ id : value], [ -- : --]]
 dec ebx
-jmp _LIFELSE_0x18
-_LIFPOST_0x17:
+jmp _LIFELSE_0x17
+_LIFPOST_0x16:
 ;[[ id : value], [ ++ : ++]]
 inc ebx
-_LIFELSE_0x18:
+_LIFELSE_0x17:
 ;[[ id : str1], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ id : str2], [ ++ : ++]]
 inc qword[rbp-16]
-_LWHILECMP_0x15:
+_LWHILECMP_0x14:
 ;[[ id : str1], [ < : <], [ id : maxstr]]
 mov r12, qword[rbp-8]
 mov r11, r10
@@ -723,8 +658,8 @@ cmp r12, r11
 setl r12b
 mov al, r12b
 and al, 1
-jnz _LWHILESTART_0x14
-_LWHILEEND_0x16:
+jnz _LWHILESTART_0x13
+_LWHILEEND_0x15:
 ;[[ id : value]]
 mov r11d, ebx
 mov eax, r11d
@@ -768,8 +703,8 @@ sub rsp, 24
 mov [rbp-8], rdi
 ;Load Parameter: [char c @ 16]
 mov [rbp-16], rsi
-jmp _LWHILECMP_0x1a
-_LWHILESTART_0x19:
+jmp _LWHILECMP_0x19
+_LWHILESTART_0x18:
 ;[[ @ : @], [ id : str], [ == : ==], [ id : c]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -779,17 +714,17 @@ cmp r10b, bl
 sete r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x1c
+jz _LIFPOST_0x1b
 ;[[ id : str]]
 mov rbx, qword[rbp-8]
 mov rax, rbx
 jmp ___char._strchr_pchar.char__return
-jmp _LIFELSE_0x1d
-_LIFPOST_0x1c:
-_LIFELSE_0x1d:
+jmp _LIFELSE_0x1c
+_LIFPOST_0x1b:
+_LIFELSE_0x1c:
 ;[[ id : str], [ ++ : ++]]
 inc qword[rbp-8]
-_LWHILECMP_0x1a:
+_LWHILECMP_0x19:
 ;[[ @ : @], [ id : str], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -798,8 +733,8 @@ test r10b, r10b
 setnz r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x19
-_LWHILEEND_0x1b:
+jnz _LWHILESTART_0x18
+_LWHILEEND_0x1a:
 ;[[ int : 0]]
 xor rax, rax
 jmp ___char._strchr_pchar.char__return
@@ -847,7 +782,7 @@ cmp r10, rbx
 setge r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x1e
+jz _LIFPOST_0x1d
 ;[[ id : errnum]]
 mov rdi, qword[rbp-8]
 and rdi, 0xffffffff
@@ -855,8 +790,8 @@ xor rax, rax
 call _char._get_errstr_pint
 ;[[ fn(x) : [ function char. get_errstr( [[int err @ 8]] ) ] ]]
 jmp ___char._strerror_plong__return
-jmp _LIFELSE_0x1f
-_LIFPOST_0x1e:
+jmp _LIFELSE_0x1e
+_LIFPOST_0x1d:
 ;[[ int : 0], [ - : -], [ id : errnum]]
 mov r10, qword[rbp-8]
 xor rbx, rbx
@@ -867,7 +802,7 @@ xor rax, rax
 call _char._get_errstr_pint
 ;[[ fn(x) : [ function char. get_errstr( [[int err @ 8]] ) ] ]]
 jmp ___char._strerror_plong__return
-_LIFELSE_0x1f:
+_LIFELSE_0x1e:
 ;[[ int : 0]]
 xor rax, rax
 jmp ___char._strerror_plong__return
@@ -947,7 +882,7 @@ test rbx, rbx
 setz bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x20
+jz _LIFPOST_0x1f
 ;[[ @ : @], [ id : buffer]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -960,9 +895,9 @@ mov byte[r10], bl
 ;[[ int : 1]]
 mov rax, 1
 jmp ___long_toStr_plongchar.boolshort__return
-jmp _LIFELSE_0x21
-_LIFPOST_0x20:
-_LIFELSE_0x21:
+jmp _LIFELSE_0x20
+_LIFPOST_0x1f:
+_LIFELSE_0x20:
 ;[[ int : 0]]
 mov byte[rbp-40], 0
 ;[[ id : val], [ < : <], [ int : 0], [ && : &&], [ id : signed]]
@@ -974,7 +909,7 @@ mov bl, byte[rbp-24]
 and r10b, bl
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x22
+jz _LIFPOST_0x21
 ;[[ @ : @], [ id : buffer]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -1003,9 +938,9 @@ mov qword[rbp-8], r10
 ;[[ int : 1]]
 mov rbx, 1
 mov byte[rbp-40], bl
-jmp _LIFELSE_0x23
-_LIFPOST_0x22:
-_LIFELSE_0x23:
+jmp _LIFELSE_0x22
+_LIFPOST_0x21:
+_LIFELSE_0x22:
 ;[[ int : 64]]
 mov rdx, 64
 ;[[ int : 0]]
@@ -1019,8 +954,8 @@ call _void_memset_pvoid.ucharsize_t
 ;[[ fn(x) : [ function void memset( [[void. dest @ 8], [uchar value @ 16], [size_t bytes @ 24]] ) ] ]]
 ;[[ int : 0]]
 mov dword[rbp-120], 0
-jmp _LWHILECMP_0x25
-_LWHILESTART_0x24:
+jmp _LWHILECMP_0x24
+_LWHILESTART_0x23:
 ;[[ id : val]]
 ;[[ id : val]]
 ;[[ & : &], [ id : mod]]
@@ -1032,9 +967,15 @@ mov si, word[rbp-32]
 mov r10, qword[rbp-8]
 mov rdi, r10
 xor rax, rax
-call _long_divmod_plonglonglong.
+  mov rbx, rdx
+  xor rdx, rdx
+  mov rax, rdi
+  div rsi
+  mov [rbx], rdx
+  
+_LINLINERETURN_0x27:
 mov qword[rbp-8], rax
-;[[ fn(x) : [ function long divmod( [[long dividend @ 8], [long divisor @ 16], [long. modulus @ 24]] ) ] ]]
+;[[ fn(x) : [ function long divmod( [[long dividend @ rdi], [long divisor @ rsi], [long. modulus @ rdx]] ) ] ]]
 ;[[ id : tmpbuf], [ [ : [], [ id : len], [ ] : ]]]
 mov r10d, dword[rbp-120]
 lea rbx, [rbp-112] 
@@ -1060,20 +1001,20 @@ mov rbx, 1
 mov r10d, dword[rbp-120]
 add r10d, ebx
 mov dword[rbp-120], r10d
-_LWHILECMP_0x25:
+_LWHILECMP_0x24:
 ;[[ id : val], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-8]
 test rbx, rbx
 setnz bl
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0x24
-_LWHILEEND_0x26:
+jnz _LWHILESTART_0x23
+_LWHILEEND_0x25:
 ;[[ id : len]]
 mov ebx, dword[rbp-120]
 mov dword[rbp-136], ebx
-jmp _LFORCMP_0x28
-_LFORTOP_0x27:
+jmp _LFORCMP_0x2a
+_LFORTOP_0x29:
 
 ;[[ id : buffer], [ [ : [], [ id : i], [ ] : ]]]
 mov r10d, dword[rbp-136]
@@ -1095,10 +1036,10 @@ lea r12, [r12+r11*1]
 mov r12b, byte[r12]
 and r12, 0xff
 mov byte[rbx], r12b
-_LFORUPDATE_0x29:
+_LFORUPDATE_0x2b:
 ;[[ id : i], [ -- : --]]
 dec dword[rbp-136]
-_LFORCMP_0x28:
+_LFORCMP_0x2a:
 ;[[ id : i], [ > : >], [ int : 0]]
 mov r10d, dword[rbp-136]
 xor rbx, rbx
@@ -1107,8 +1048,8 @@ cmp r11, rbx
 setg r11b
 mov al, r11b
 and al, 1
-jnz _LFORTOP_0x27
-_LFOREND_0x2a:
+jnz _LFORTOP_0x29
+_LFOREND_0x2c:
 ;[[ id : len], [ + : +], [ int : 1], [ + : +], [ id : signspace]]
 mov ebx, dword[rbp-120]
 inc ebx
@@ -1179,7 +1120,7 @@ mov rax, 1
   xorpd xmm1, xmm2
   andpd xmm0, xmm1
   
-_LINLINERETURN_0x2c:
+_LINLINERETURN_0x2e:
 movq rax, xmm0
 ;[[ fn(x) : [ function double abs( [[double x @ xmm0]] ) ] ]]
 movq xmm7, rax
@@ -1225,7 +1166,7 @@ movsd xmm7, qword[rbp-8]
 movsd xmm0, xmm7
 mov rax, 1
 cvtsd2si rax, xmm0
-_LINLINERETURN_0x32:
+_LINLINERETURN_0x34:
 mov rdi, rax
 ;[[ fn(x) : [ function long round( [[double x @ xmm0]] ) ] ]]
 xor rax, rax
@@ -1277,15 +1218,15 @@ setz r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x34
+jz _LIFPOST_0x36
 ;[[ int : 0]]
 xor rax, rax
 jmp ___int___sprintf_pchar.char.void.__return
-jmp _LIFELSE_0x35
-_LIFPOST_0x34:
-_LIFELSE_0x35:
-jmp _LWHILECMP_0x37
-_LWHILESTART_0x36:
+jmp _LIFELSE_0x37
+_LIFPOST_0x36:
+_LIFELSE_0x37:
+jmp _LWHILECMP_0x39
+_LWHILESTART_0x38:
 ;[[ @ : @], [ id : fmt], [ != : !=], [ char : 37]]
 mov rbx, qword[rbp-16]
 and r10, 0xff
@@ -1295,7 +1236,7 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x39
+jz _LIFPOST_0x3b
 ;[[ @ : @], [ id : str]]
 mov rbx, qword[rbp-8]
 mov r10, rbx
@@ -1307,8 +1248,8 @@ mov r11, qword[rbp-16]
 and r12, 0xff
 mov r12b, byte[r11]
 mov byte[r10], r12b
-jmp _LIFELSE_0x3a
-_LIFPOST_0x39:
+jmp _LIFELSE_0x3c
+_LIFPOST_0x3b:
 ;[[ id : fmt]]
 ;[[ id : fmt]]
 ;[[ int : 1]]
@@ -1325,25 +1266,25 @@ mov byte[rbp-48], r10b
 mov r10b, byte[rbp-48]
 mov bl, r10b
 cmp bl, 105
-je _LSWITCHCASE_0x3c
-cmp bl, 99
-je _LSWITCHCASE_0x3d
-cmp bl, 120
 je _LSWITCHCASE_0x3e
-cmp bl, 111
+cmp bl, 99
 je _LSWITCHCASE_0x3f
-cmp bl, 117
+cmp bl, 120
 je _LSWITCHCASE_0x40
-cmp bl, 115
+cmp bl, 111
 je _LSWITCHCASE_0x41
-cmp bl, 98
+cmp bl, 117
 je _LSWITCHCASE_0x42
+cmp bl, 115
+je _LSWITCHCASE_0x43
+cmp bl, 98
+je _LSWITCHCASE_0x44
 cmp bl, 100
-je _LSWITCHCASE_0x45
+je _LSWITCHCASE_0x47
 cmp bl, 102
-je _LSWITCHCASE_0x46
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x3c:
+je _LSWITCHCASE_0x48
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x3e:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1376,8 +1317,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x3d:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x3f:
 ;[[ $ : char], [ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1396,8 +1337,8 @@ mov r11, r10
 ;[[ id : cf]]
 mov r12b, byte[rbp-72]
 mov byte[r11], r12b
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x3e:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x40:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1430,8 +1371,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x3f:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x41:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1464,8 +1405,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x40:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x42:
 ;[[ ( : (], [ id : args], [ [ : [], [ id : argc], [ ] : ]], [ ) : )]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1498,8 +1439,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x41:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x43:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1523,8 +1464,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x42:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x44:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1538,14 +1479,14 @@ mov qword[rbp-144], STRING_CONSTANT_134
 mov r10b, byte[rbp-136]
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x43
+jz _LIFPOST_0x45
 ;[[ id : boolean_string]]
 ;[[ id : boolean_string]]
 ;[[ id : STRING_CONSTANT_135]]
 mov qword[rbp-144], STRING_CONSTANT_135
-jmp _LIFELSE_0x44
-_LIFPOST_0x43:
-_LIFELSE_0x44:
+jmp _LIFELSE_0x46
+_LIFPOST_0x45:
+_LIFELSE_0x46:
 ;[[ id : boolean_string]]
 mov r10, qword[rbp-144]
 mov rsi, r10
@@ -1563,8 +1504,8 @@ mov r10d, dword[rbp-152]
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x45:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x47:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1594,8 +1535,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHCASE_0x46:
+jmp _LSWITCHEND_0x3d
+_LSWITCHCASE_0x48:
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r11d, dword[rbp-32]
 mov r10, qword[rbp-24]
@@ -1625,8 +1566,8 @@ mov r10, r11
 mov r11, qword[rbp-8]
 add r11, r10
 mov qword[rbp-8], r11
-jmp _LSWITCHEND_0x3b
-_LSWITCHEND_0x3b:
+jmp _LSWITCHEND_0x3d
+_LSWITCHEND_0x3d:
 ;[[ id : argc]]
 ;[[ id : argc]]
 ;[[ int : 1]]
@@ -1634,7 +1575,7 @@ mov rbx, 1
 mov r10d, dword[rbp-32]
 add r10d, ebx
 mov dword[rbp-32], r10d
-_LIFELSE_0x3a:
+_LIFELSE_0x3c:
 ;[[ id : fmt]]
 ;[[ id : fmt]]
 ;[[ int : 1]]
@@ -1649,7 +1590,7 @@ mov rbx, 1
 mov r10, qword[rbp-8]
 add r10, rbx
 mov qword[rbp-8], r10
-_LWHILECMP_0x37:
+_LWHILECMP_0x39:
 ;[[ @ : @], [ id : fmt], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-16]
 and r10, 0xff
@@ -1658,8 +1599,8 @@ test r10b, r10b
 setnz r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x36
-_LWHILEEND_0x38:
+jnz _LWHILESTART_0x38
+_LWHILEEND_0x3a:
 ;[[ ( : (], [ $ : long], [ id : str], [ ) : )], [ - : -], [ id : og]]
 mov r10, qword[rbp-8]
 mov rbx, qword[rbp-40]
@@ -1698,8 +1639,55 @@ mov [rbp-48], r9
 ;[[ int : 4], [ * : *], [ id : void]]
 mov rdi, 32
 xor rax, rax
-call malloc
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push rdi
+;[[ id : size], [ + : +], [ int : 8]]
+mov r10, rdi
+add r10, 8
+mov rdi, r10
+xor rax, rax
+push rdi
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32]]
+mov rcx, 34
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ id : amt]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+pop rdi
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp _LINLINERETURN_0x4c
+_LINLINERETURN_0x4c:
+pop rdi
+;[[ fn(x) : [ function void. qmmap( [[size_t amt @ rdi]] ) ] ]]
+mov rbx, rax
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ id : size]]
+mov qword[r10], rdi
+;[[ id : out], [ + : +], [ int : 8]]
+mov rbx, rbx
+add rbx, 8
+mov rax, rbx
+jmp _LINLINERETURN_0x4a
+_LINLINERETURN_0x4a:
+leave
+;[[ fn(x) : [ function void. malloc( [[size_t size @ rdi]] ) ] ]]
 mov qword[rbp-56], rax
 ;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
 mov rbx, qword[rbp-56]
@@ -1758,8 +1746,23 @@ mov dword[rbp-64], eax
 mov rbx, qword[rbp-56]
 mov rdi, rbx
 xor rax, rax
-call free
-;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
+push rdi
+;[[ @ : @], [ ( : (], [ id : addr], [ - : -], [ int : 8], [ ) : )]]
+mov rbx, rdi
+sub rbx, 8
+mov r10, qword[rbx]
+mov rsi, r10
+;[[ id : addr], [ - : -], [ int : 8]]
+mov rbx, rdi
+sub rbx, 8
+mov rdi, rbx
+xor rax, rax
+call _void._munmap_pvoid.size_t
+pop rdi
+;[[ fn(x) : [ function void. munmap( [[void. addr @ 8], [size_t length @ 16]] ) ] ]]
+jmp _LINLINERETURN_0x4e
+_LINLINERETURN_0x4e:
+;[[ fn(x) : [ function void free( [[void. addr @ rdi]] ) ] ]]
 ;[[ id : l]]
 mov ebx, dword[rbp-64]
 mov eax, ebx
@@ -1788,8 +1791,28 @@ mov [rbp-16], rsi
 ;[[ int : 100000]]
 mov rdi, 100000
 xor rax, rax
-call malloc
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
+push rdi
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32]]
+mov rcx, 34
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ id : amt]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+pop rdi
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp _LINLINERETURN_0x50
+_LINLINERETURN_0x50:
+;[[ fn(x) : [ function void. qmmap( [[size_t amt @ rdi]] ) ] ]]
 mov qword[rbp-24], rax
 ;[[ id : args]]
 mov rbx, qword[rbp-16]
@@ -1814,13 +1837,15 @@ mov rdi, 1
 xor rax, rax
         mov rax, 1
         syscall
-_LINLINERETURN_0x48:
+_LINLINERETURN_0x52:
 ;[[ fn(x) : [ function ssize_t write( [[fd_t fd @ rdi], [char. buf @ rsi], [size_t count @ rdx]] ) ] ]]
+;[[ int : 100000]]
+mov rsi, 100000
 ;[[ id : normform]]
 mov rdi, qword[rbp-24]
 xor rax, rax
-call free
-;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
+call _void._munmap_pvoid.size_t
+;[[ fn(x) : [ function void. munmap( [[void. addr @ 8], [size_t length @ 16]] ) ] ]]
 ___void___printf_pchar.void.__return:
 leave
 ret
@@ -1836,7 +1861,7 @@ ret
 printf:
 push rbp
 mov rbp, rsp
-sub rsp, 64
+sub rsp, 112
 
 ;Load Parameter: [char. fmt @ 8]
 mov [rbp-8], rdi
@@ -1850,65 +1875,59 @@ mov [rbp-32], rcx
 mov [rbp-40], r8
 ;Load Parameter: [void arg5 @ 48]
 mov [rbp-48], r9
-;[[ int : 6], [ * : *], [ id : void]]
-mov rdi, 48
-xor rax, rax
-call malloc
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
-mov qword[rbp-56], rax
 ;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 ;[[ id : args], [ [ : [], [ int : 0], [ ] : ]]]
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 ;[[ id : arg1]]
-mov r11, qword[rbp-16]
-mov qword[rbx], r11
+mov r10, qword[rbp-16]
+mov qword[rbx], r10
 ;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
 mov r10, 1
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 1], [ ] : ]]]
 mov r10, 1
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : arg2]]
-mov r11, qword[rbp-24]
-mov qword[rbx], r11
+mov r10, qword[rbp-24]
+mov qword[rbx], r10
 ;[[ id : args], [ [ : [], [ int : 2], [ ] : ]]]
 mov r10, 2
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 2], [ ] : ]]]
 mov r10, 2
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : arg3]]
-mov r11, qword[rbp-32]
-mov qword[rbx], r11
+mov r10, qword[rbp-32]
+mov qword[rbx], r10
 ;[[ id : args], [ [ : [], [ int : 3], [ ] : ]]]
 mov r10, 3
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 3], [ ] : ]]]
 mov r10, 3
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : arg4]]
-mov r11, qword[rbp-40]
-mov qword[rbx], r11
+mov r10, qword[rbp-40]
+mov qword[rbx], r10
 ;[[ id : args], [ [ : [], [ int : 4], [ ] : ]]]
 mov r10, 4
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : args], [ [ : [], [ int : 4], [ ] : ]]]
 mov r10, 4
-mov rbx, qword[rbp-56]
+lea rbx, [rbp-104] 
 lea rbx, [rbx+r10*8]
 ;[[ id : arg5]]
-mov r11, qword[rbp-48]
-mov qword[rbx], r11
-;[[ id : args]]
-mov rbx, qword[rbp-56]
+mov r10, qword[rbp-48]
+mov qword[rbx], r10
+;[[ & : &], [ id : args]]
+lea rbx, [rbp-104]
 mov rsi, rbx
 ;[[ id : fmt]]
 mov rbx, qword[rbp-8]
@@ -1916,12 +1935,6 @@ mov rdi, rbx
 xor rax, rax
 call _void___printf_pchar.void.
 ;[[ fn(x) : [ function void __printf( [[char. fmt @ 8], [void. args @ 16]] ) ] ]]
-;[[ id : args]]
-mov rbx, qword[rbp-56]
-mov rdi, rbx
-xor rax, rax
-call free
-;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
 __printf__return:
 leave
 ret
@@ -2051,11 +2064,53 @@ sub rsp, 8
 ;[[ id : rand_next]]
 xor rax, rax
 rdrand rax
-_LINLINERETURN_0x4b:
+_LINLINERETURN_0x55:
 mov rbx, rax
 ;[[ fn(x) : [ function int rdrand( [] ) ] ]]
 mov [rand_next], ebx
 ___void_srand_p__return:
+leave
+ret
+
+
+
+;[ function void usleep( [[long nanoseconds @ 8]] ) ]
+
+
+
+
+
+_void_usleep_plong:
+push rbp
+mov rbp, rsp
+sub rsp, 40
+
+;Load Parameter: [long nanoseconds @ 8]
+mov [rbp-8], rdi
+mov qword[rbp-32], 0
+mov qword[rbp-24], 0
+;[[ id : req.tv_sec]]
+;[[ id : req.tv_sec]]
+;[[ int : 0]]
+xor rbx, rbx
+mov qword[rbp-32], rbx
+;[[ id : req.tv_usec]]
+;[[ id : req.tv_usec]]
+;[[ id : nanoseconds]]
+mov r10, qword[rbp-8]
+mov qword[rbp-24], r10
+;[[ int : 0]]
+xor rsi, rsi
+;[[ & : &], [ id : req]]
+lea rbx, [rbp-32]
+mov rdi, rbx
+xor rax, rax
+    mov rax, 35
+    syscall
+    
+_LINLINERETURN_0x58:
+;[[ fn(x) : [ function void nanosleep( [[timeval_t. req @ rdi], [timeval_t. rem @ rsi]] ) ] ]]
+___void_usleep_plong__return:
 leave
 ret
 
@@ -2163,7 +2218,7 @@ xor rax, rax
         bswap edi
         mov eax, edi
         
-_LINLINERETURN_0x4e:
+_LINLINERETURN_0x5b:
 mov rbx, rax
 ;[[ fn(x) : [ function int hton32( [[int x @ rdi]] ) ] ]]
 mov dword[r10], ebx
@@ -2217,7 +2272,7 @@ xor rax, rax
     mov r10, rcx
     syscall
     
-_LINLINERETURN_0x51:
+_LINLINERETURN_0x5e:
 ;[[ fn(x) : [ function int recvfrom( [[fd_t sockfd @ rdi], [char. buff @ rsi], [size_t len @ rdx], [int flags @ rcx], [sockaddr_in. addr @ r8], [size_t addrsize @ r9]] ) ] ]]
 jmp ___int_recv_pfd_tchar.size_tint__return
 ___int_recv_pfd_tchar.size_tint__return:
@@ -2266,7 +2321,7 @@ xor rax, rax
     mov r10, rcx
     syscall
     
-_LINLINERETURN_0x54:
+_LINLINERETURN_0x61:
 ;[[ fn(x) : [ function int sendto( [[fd_t fd @ rdi], [void. buff @ rsi], [size_t len @ rdx], [int flags @ rcx], [sockaddr_in. addr @ r8], [size_t addrsize @ r9]] ) ] ]]
 jmp ___int_send_pfd_tchar.size_tint__return
 ___int_send_pfd_tchar.size_tint__return:
@@ -2309,61 +2364,61 @@ mov qword[rbp-40], 0
 mov r10, qword[rbp-24]
 mov rbx, r10
 cmp rbx, 114
-je _LSWITCHCASE_0x57
+je _LSWITCHCASE_0x64
 cmp rbx, 119
-je _LSWITCHCASE_0x58
+je _LSWITCHCASE_0x65
 cmp rbx, 97
-je _LSWITCHCASE_0x59
+je _LSWITCHCASE_0x66
 cmp rbx, 157
-je _LSWITCHCASE_0x5a
+je _LSWITCHCASE_0x67
 cmp rbx, 162
-je _LSWITCHCASE_0x5b
+je _LSWITCHCASE_0x68
 cmp rbx, 140
-je _LSWITCHCASE_0x5c
-jmp _LSWITCHEND_0x56
-_LSWITCHCASE_0x57:
+je _LSWITCHCASE_0x69
+jmp _LSWITCHEND_0x63
+_LSWITCHCASE_0x64:
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 0]]
 xor r10, r10
 mov qword[rbp-40], r10
-jmp _LSWITCHEND_0x56
-_LSWITCHCASE_0x58:
+jmp _LSWITCHEND_0x63
+_LSWITCHCASE_0x65:
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 1], [ || : ||], [ int : 64], [ || : ||], [ int : 512]]
 mov r10, 1
 mov qword[rbp-40], r10
-jmp _LSWITCHEND_0x56
-_LSWITCHCASE_0x59:
+jmp _LSWITCHEND_0x63
+_LSWITCHCASE_0x66:
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 1], [ || : ||], [ int : 64], [ || : ||], [ int : 8]]
 mov r10, 1
 mov qword[rbp-40], r10
-jmp _LSWITCHEND_0x56
-_LSWITCHCASE_0x5a:
+jmp _LSWITCHEND_0x63
+_LSWITCHCASE_0x67:
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 2]]
 mov r10, 2
 mov qword[rbp-40], r10
-jmp _LSWITCHEND_0x56
-_LSWITCHCASE_0x5b:
+jmp _LSWITCHEND_0x63
+_LSWITCHCASE_0x68:
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 2], [ || : ||], [ int : 64], [ || : ||], [ int : 512]]
 mov r10, 2
 mov qword[rbp-40], r10
-jmp _LSWITCHEND_0x56
-_LSWITCHCASE_0x5c:
+jmp _LSWITCHEND_0x63
+_LSWITCHCASE_0x69:
 ;[[ id : f]]
 ;[[ id : f]]
 ;[[ int : 2], [ || : ||], [ int : 8], [ || : ||], [ int : 64]]
 mov r10, 2
 mov qword[rbp-40], r10
-jmp _LSWITCHEND_0x56
-_LSWITCHEND_0x56:
+jmp _LSWITCHEND_0x63
+_LSWITCHEND_0x63:
 ;[[ id : m]]
 mov rbx, qword[rbp-32]
 mov rdx, rbx
@@ -2377,7 +2432,7 @@ xor rax, rax
         mov rax, 2
         syscall
     
-_LINLINERETURN_0x5e:
+_LINLINERETURN_0x6b:
 ;[[ fn(x) : [ function fd_t open( [[char. fname @ rdi], [int flags @ rsi], [mode_t mode @ rdx]] ) ] ]]
 mov qword[rbp-48], rax
 ;[[ id : modehash], [ == : ==], [ int : 140], [ || : ||], [ id : modehash], [ == : ==], [ int : 97]]
@@ -2392,7 +2447,7 @@ sete r10b
 or r10b, r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x60
+jz _LIFPOST_0x6d
 ;[[ int : 2]]
 mov rdx, 2
 and rdx, 0xffffffff
@@ -2406,11 +2461,11 @@ xor rax, rax
     mov rax, 8
     syscall
     
-_LINLINERETURN_0x63:
+_LINLINERETURN_0x70:
 ;[[ fn(x) : [ function int lseek( [[fd_t fd @ rdi], [int offset @ rsi], [int whence @ rdx]] ) ] ]]
-jmp _LIFELSE_0x61
-_LIFPOST_0x60:
-_LIFELSE_0x61:
+jmp _LIFELSE_0x6e
+_LIFPOST_0x6d:
+_LIFELSE_0x6e:
 ;[[ id : out]]
 mov rbx, qword[rbp-48]
 mov rax, rbx
@@ -2455,7 +2510,7 @@ mov rdi, rbx
 xor rax, rax
         mov rax, 1
         syscall
-_LINLINERETURN_0x66:
+_LINLINERETURN_0x73:
 ;[[ fn(x) : [ function ssize_t write( [[fd_t fd @ rdi], [char. buf @ rsi], [size_t count @ rdx]] ) ] ]]
 mov qword[rbp-32], rax
 ;[[ id : out]]
@@ -2497,7 +2552,7 @@ xor rax, rax
     xor rax, rax
     syscall
     
-_LINLINERETURN_0x69:
+_LINLINERETURN_0x76:
 ;[[ fn(x) : [ function ssize_t read( [[fd_t fd @ rdi], [char. buf @ rsi], [size_t count @ rdx]] ) ] ]]
 mov qword[rbp-32], rax
 ;[[ id : out]]
@@ -2536,7 +2591,7 @@ xor rax, rax
     mov rax, 8
     syscall
     
-_LINLINERETURN_0x6c:
+_LINLINERETURN_0x79:
 ;[[ fn(x) : [ function int lseek( [[fd_t fd @ rdi], [int offset @ rsi], [int whence @ rdx]] ) ] ]]
 mov dword[rbp-16], eax
 ;[[ int : 2]]
@@ -2556,13 +2611,60 @@ xor rax, rax
     mov rax, 8
     syscall
     
-_LINLINERETURN_0x6f:
+_LINLINERETURN_0x7c:
 ;[[ fn(x) : [ function int lseek( [[fd_t fd @ rdi], [int offset @ rsi], [int whence @ rdx]] ) ] ]]
 ;[[ id : fsize]]
 mov edi, dword[rbp-16]
 xor rax, rax
-call malloc
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push rdi
+;[[ id : size], [ + : +], [ int : 8]]
+mov r10, rdi
+add r10, 8
+mov rdi, r10
+xor rax, rax
+push rdi
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32]]
+mov rcx, 34
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ id : amt]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+pop rdi
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp _LINLINERETURN_0x81
+_LINLINERETURN_0x81:
+pop rdi
+;[[ fn(x) : [ function void. qmmap( [[size_t amt @ rdi]] ) ] ]]
+mov rbx, rax
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ id : size]]
+mov qword[r10], rdi
+;[[ id : out], [ + : +], [ int : 8]]
+mov rbx, rbx
+add rbx, 8
+mov rax, rbx
+jmp _LINLINERETURN_0x7f
+_LINLINERETURN_0x7f:
+leave
+;[[ fn(x) : [ function void. malloc( [[size_t size @ rdi]] ) ] ]]
 mov qword[rbp-24], rax
 ;[[ id : fsize]]
 mov edx, dword[rbp-16]
@@ -2576,7 +2678,7 @@ xor rax, rax
     xor rax, rax
     syscall
     
-_LINLINERETURN_0x72:
+_LINLINERETURN_0x83:
 mov r10, rax
 ;[[ fn(x) : [ function ssize_t read( [[fd_t fd @ rdi], [char. buf @ rsi], [size_t count @ rdx]] ) ] ], [ < : <], [ int : 0]]
 xor rbx, rbx
@@ -2587,13 +2689,13 @@ mov byte[rbp-32], r10b
 mov bl, byte[rbp-32]
 mov al, bl
 and al, 1
-jz _LIFPOST_0x74
+jz _LIFPOST_0x85
 ;[[ int : 0]]
 xor rax, rax
 jmp ___void._floads_pfd_t__return
-jmp _LIFELSE_0x75
-_LIFPOST_0x74:
-_LIFELSE_0x75:
+jmp _LIFELSE_0x86
+_LIFPOST_0x85:
+_LIFELSE_0x86:
 ;[[ id : buffer]]
 mov rax, qword[rbp-24]
 jmp ___void._floads_pfd_t__return
@@ -2631,7 +2733,7 @@ xor rax, rax
     mov rax, 59
     syscall
     
-_LINLINERETURN_0x77:
+_LINLINERETURN_0x88:
 ;[[ fn(x) : [ function long execve( [[char. pathname @ rdi], [char.. args @ rsi], [char.. env @ rdx]] ) ] ]]
 jmp ___long_execl_pchar.char..__return
 ___long_execl_pchar.char..__return:
@@ -2657,7 +2759,7 @@ mov rax, 0
     mov rax, 57
     syscall
     
-_LINLINERETURN_0x7a:
+_LINLINERETURN_0x8b:
 ;[[ fn(x) : [ function long fork( [] ) ] ]]
 mov qword[rbp-16], rax
 ;[[ id : pid], [ == : ==], [ int : 0]]
@@ -2666,7 +2768,7 @@ test rbx, rbx
 setz bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x7c
+jz _LIFPOST_0x8d
 ;[[ id : __systemcallargvconst], [ [ : [], [ int : 2], [ ] : ]]]
 mov r10, 2
 mov rbx, __systemcallargvconst
@@ -2698,9 +2800,9 @@ mov rdi, rax
 xor rax, rax
 call _void_printf_pchar.
 ;[[ fn(x) : [ function void printf( [[char. fmt @ 8]] ) ] ]]
-jmp _LIFELSE_0x7d
-_LIFPOST_0x7c:
-_LIFELSE_0x7d:
+jmp _LIFELSE_0x8e
+_LIFPOST_0x8d:
+_LIFELSE_0x8e:
 ;[[ int : 0]]
 xor rdx, rdx
 and rdx, 0xffffffff
@@ -2714,7 +2816,7 @@ xor rax, rax
     xor r8, r8
     syscall
     
-_LINLINERETURN_0x7f:
+_LINLINERETURN_0x90:
 ;[[ fn(x) : [ function long waitpid( [[pid_t pid @ rdi], [int. wstatus @ rsi], [int options @ rdx]] ) ] ]]
 ;[[ int : 0]]
 xor rax, rax
@@ -2765,7 +2867,7 @@ mov r10b, byte[rbp-24]
 and bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x81
+jz _LIFPOST_0x92
 ;[[ id : negative]]
 ;[[ id : negative]]
 ;[[ $ : bool], [ int : 1]]
@@ -2786,11 +2888,11 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-40], r11b
-jmp _LIFELSE_0x82
-_LIFPOST_0x81:
-_LIFELSE_0x82:
-jmp _LWHILECMP_0x84
-_LWHILESTART_0x83:
+jmp _LIFELSE_0x93
+_LIFPOST_0x92:
+_LIFELSE_0x93:
+jmp _LWHILECMP_0x95
+_LWHILESTART_0x94:
 ;[[ id : val]]
 ;[[ id : val]]
 ;[[ ( : (], [ id : val], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
@@ -2816,7 +2918,7 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-40], r11b
-_LWHILECMP_0x84:
+_LWHILECMP_0x95:
 ;[[ id : c], [ <= : <=], [ char : 57], [ && : &&], [ id : c], [ >= : >=], [ char : 48]]
 mov r10b, 57
 mov bl, byte[rbp-40]
@@ -2829,15 +2931,15 @@ setge r10b
 and bl, r10b
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0x83
-_LWHILEEND_0x85:
+jnz _LWHILESTART_0x94
+_LWHILEEND_0x96:
 ;[[ ! : !], [ id : negative]]
 mov bl, byte[rbp-48]
 cmp bl, 0
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x86
+jz _LIFPOST_0x97
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -2847,8 +2949,8 @@ mov r10, rbx
 ;[[ id : val]]
 mov r11, qword[rbp-32]
 mov qword[r10], r11
-jmp _LIFELSE_0x87
-_LIFPOST_0x86:
+jmp _LIFELSE_0x98
+_LIFPOST_0x97:
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-16]
 mov r10, rbx
@@ -2860,7 +2962,7 @@ mov r12, qword[rbp-32]
 xor r11, r11
 sub r11, r12
 mov qword[r10], r11
-_LIFELSE_0x87:
+_LIFELSE_0x98:
 ;[[ id : str], [ - : -], [ id : ogstr]]
 mov r10, qword[rbp-56]
 mov rbx, qword[rbp-8]
@@ -2893,8 +2995,8 @@ mov [rbp-24], rdx
 ;[[ id : str]]
 mov rbx, qword[rbp-8]
 mov qword[rbp-32], rbx
-jmp _LWHILECMP_0x89
-_LWHILESTART_0x88:
+jmp _LWHILECMP_0x9a
+_LWHILESTART_0x99:
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-24]
 mov r10, rbx
@@ -2910,7 +3012,7 @@ mov byte[r10], r12b
 inc qword[rbp-8]
 ;[[ id : dest], [ ++ : ++]]
 inc qword[rbp-24]
-_LWHILECMP_0x89:
+_LWHILECMP_0x9a:
 ;[[ @ : @], [ id : str], [ != : !=], [ id : delim]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -2920,8 +3022,8 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x88
-_LWHILEEND_0x8a:
+jnz _LWHILESTART_0x99
+_LWHILEEND_0x9b:
 ;[[ id : str], [ - : -], [ id : ogstr]]
 mov r10, qword[rbp-32]
 mov rbx, qword[rbp-8]
@@ -2983,7 +3085,7 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x8b
+jz _LIFPOST_0x9c
 ;[[ @ : @], [ id : dest]]
 mov rbx, qword[rbp-24]
 mov r10, rbx
@@ -2996,9 +3098,9 @@ movq qword[r10], xmm7
 ;[[ id : diff]]
 mov rax, qword[rbp-48]
 jmp ___int_scansd_pchar.booldouble.__return
-jmp _LIFELSE_0x8c
-_LIFPOST_0x8b:
-_LIFELSE_0x8c:
+jmp _LIFELSE_0x9d
+_LIFPOST_0x9c:
+_LIFELSE_0x9d:
 ;[[ id : str], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ $ : bool], [ int : 0]]
@@ -3026,14 +3128,14 @@ xor rax, rax
   
   mov rax, rdi
   dec rsi
-  jz _L_0x8f_int_pow_pintint_end
-  _L_0x8f_int_pow_pintint_flp:
+  jz _L_0xa0_int_pow_pintint_end
+  _L_0xa0_int_pow_pintint_flp:
   mul rdi
   dec rsi
-  jnz _L_0x8f_int_pow_pintint_flp
-  _L_0x8f_int_pow_pintint_end:
+  jnz _L_0xa0_int_pow_pintint_flp
+  _L_0xa0_int_pow_pintint_end:
   
-_LINLINERETURN_0x8e:
+_LINLINERETURN_0x9f:
 ;[[ fn(x) : [ function long pow( [[long base @ rdi], [long exp @ rsi]] ) ] ]]
 mov dword[rbp-64], eax
 ;[[ id : integral]]
@@ -3103,15 +3205,15 @@ setz r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x90
+jz _LIFPOST_0xa1
 ;[[ int : 0]]
 xor rax, rax
 jmp ___int___SSCANF_pchar.char.void..__return
-jmp _LIFELSE_0x91
-_LIFPOST_0x90:
-_LIFELSE_0x91:
-jmp _LWHILECMP_0x93
-_LWHILESTART_0x92:
+jmp _LIFELSE_0xa2
+_LIFPOST_0xa1:
+_LIFELSE_0xa2:
+jmp _LWHILECMP_0xa4
+_LWHILESTART_0xa3:
 ;[[ @ : @], [ id : format], [ != : !=], [ char : 37]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -3121,13 +3223,13 @@ cmp r10b, bl
 setne r10b
 mov al, r10b
 and al, 1
-jz _LIFPOST_0x95
+jz _LIFPOST_0xa6
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ id : input], [ ++ : ++]]
 inc qword[rbp-16]
-jmp _LIFELSE_0x96
-_LIFPOST_0x95:
+jmp _LIFELSE_0xa7
+_LIFPOST_0xa6:
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ @ : @], [ id : format]]
@@ -3142,7 +3244,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x97
+jz _LIFPOST_0xa8
 ;[[ id : diff]]
 ;[[ id : diff]]
 ;[[ $ : bool], [ int : 1]]
@@ -3174,8 +3276,8 @@ add r10, rbx
 mov qword[rbp-16], r10
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x98
-_LIFPOST_0x97:
+jmp _LIFELSE_0xa9
+_LIFPOST_0xa8:
 ;[[ id : c], [ == : ==], [ char : 117]]
 mov r10b, 117
 mov bl, byte[rbp-40]
@@ -3183,7 +3285,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x99
+jz _LIFPOST_0xaa
 ;[[ id : diff]]
 ;[[ id : diff]]
 ;[[ $ : bool], [ int : 0]]
@@ -3215,8 +3317,8 @@ add r10, rbx
 mov qword[rbp-16], r10
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x9a
-_LIFPOST_0x99:
+jmp _LIFELSE_0xab
+_LIFPOST_0xaa:
 ;[[ id : c], [ == : ==], [ char : 99]]
 mov r10b, 99
 mov bl, byte[rbp-40]
@@ -3224,7 +3326,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x9b
+jz _LIFPOST_0xac
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
 mov r10d, dword[rbp-32]
 mov rbx, qword[rbp-24]
@@ -3247,8 +3349,8 @@ mov byte[r10], r12b
 inc qword[rbp-16]
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0x9c
-_LIFPOST_0x9b:
+jmp _LIFELSE_0xad
+_LIFPOST_0xac:
 ;[[ id : c], [ == : ==], [ char : 115]]
 mov r10b, 115
 mov bl, byte[rbp-40]
@@ -3256,7 +3358,7 @@ cmp bl, r10b
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0x9d
+jz _LIFPOST_0xae
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
 ;[[ id : diff]]
@@ -3288,8 +3390,8 @@ mov rbx, qword[rbp-48]
 mov r10, qword[rbp-16]
 add r10, rbx
 mov qword[rbp-16], r10
-jmp _LIFELSE_0x9e
-_LIFPOST_0x9d:
+jmp _LIFELSE_0xaf
+_LIFPOST_0xae:
 ;[[ id : c], [ == : ==], [ char : 102], [ || : ||], [ id : c], [ == : ==], [ char : 100]]
 mov r10b, 102
 mov bl, byte[rbp-40]
@@ -3302,7 +3404,7 @@ sete r10b
 or bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0x9f
+jz _LIFPOST_0xb0
 ;[[ id : diff]]
 ;[[ id : diff]]
 ;[[ id : args], [ [ : [], [ id : argc], [ ] : ]]]
@@ -3334,17 +3436,17 @@ add r10, rbx
 mov qword[rbp-16], r10
 ;[[ id : format], [ ++ : ++]]
 inc qword[rbp-8]
-jmp _LIFELSE_0xa0
-_LIFPOST_0x9f:
-_LIFELSE_0xa0:
-_LIFELSE_0x9e:
-_LIFELSE_0x9c:
-_LIFELSE_0x9a:
-_LIFELSE_0x98:
+jmp _LIFELSE_0xb1
+_LIFPOST_0xb0:
+_LIFELSE_0xb1:
+_LIFELSE_0xaf:
+_LIFELSE_0xad:
+_LIFELSE_0xab:
+_LIFELSE_0xa9:
 ;[[ id : argc], [ ++ : ++]]
 inc dword[rbp-32]
-_LIFELSE_0x96:
-_LWHILECMP_0x93:
+_LIFELSE_0xa7:
+_LWHILECMP_0xa4:
 ;[[ @ : @], [ id : format], [ != : !=], [ int : 0]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -3353,8 +3455,8 @@ test r10b, r10b
 setnz r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0x92
-_LWHILEEND_0x94:
+jnz _LWHILESTART_0xa3
+_LWHILEEND_0xa5:
 ;[[ id : argc]]
 mov ebx, dword[rbp-32]
 mov eax, ebx
@@ -3712,8 +3814,55 @@ mov qword[rbp-16], 80
 mov rbx, qword[rbp-16]
 mov rdi, rbx
 xor rax, rax
-call malloc
-;[[ fn(x) : [ function void. malloc( [[size_t size @ 0]] ) ] ]]
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push rdi
+;[[ id : size], [ + : +], [ int : 8]]
+mov r10, rdi
+add r10, 8
+mov rdi, r10
+xor rax, rax
+push rdi
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32]]
+mov rcx, 34
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ id : amt]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+pop rdi
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp _LINLINERETURN_0xb5
+_LINLINERETURN_0xb5:
+pop rdi
+;[[ fn(x) : [ function void. qmmap( [[size_t amt @ rdi]] ) ] ]]
+mov rbx, rax
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ id : size]]
+mov qword[r10], rdi
+;[[ id : out], [ + : +], [ int : 8]]
+mov rbx, rbx
+add rbx, 8
+mov rax, rbx
+jmp _LINLINERETURN_0xb3
+_LINLINERETURN_0xb3:
+leave
+;[[ fn(x) : [ function void. malloc( [[size_t size @ rdi]] ) ] ]]
 mov qword[rbp-24], rax
 ;[[ int : 0]]
 mov qword[rbp-40], 0
@@ -3735,8 +3884,8 @@ xor rdi, rdi
 xor rax, rax
 call _long_fgets_pfd_tchar.size_t
 ;[[ fn(x) : [ function long fgets( [[fd_t fd @ 8], [char. buffer @ 16], [size_t amt @ 24]] ) ] ]]
-jmp _LWHILECMP_0xa2
-_LWHILESTART_0xa1:
+jmp _LWHILECMP_0xb7
+_LWHILESTART_0xb6:
 ;[[ id : len], [ == : ==], [ id : size]]
 mov r10, qword[rbp-16]
 mov rbx, qword[rbp-40]
@@ -3744,7 +3893,7 @@ cmp rbx, r10
 sete bl
 mov al, bl
 and al, 1
-jz _LIFPOST_0xa4
+jz _LIFPOST_0xb9
 ;[[ id : size]]
 ;[[ id : size]]
 ;[[ id : size], [ * : *], [ int : 2]]
@@ -3759,12 +3908,149 @@ mov rsi, r10
 ;[[ id : str]]
 mov rdi, qword[rbp-24]
 xor rax, rax
-call realloc
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;[[ @ : @], [ ( : (], [ id : addr], [ - : -], [ int : 8], [ ) : )]]
+mov r10, rdi
+sub r10, 8
+mov r11, qword[r10]
+mov rbx, r11
+;[[ id : oldsize], [ == : ==], [ id : newsize]]
+mov r11, rsi
+mov r10, rbx
+cmp r10, r11
+sete r10b
+mov al, r10b
+and al, 1
+jz _LIFPOST_0xbd
+;[[ id : addr]]
+mov r10, rdi
+mov rax, r10
+jmp _LINLINERETURN_0xbc
+jmp _LIFELSE_0xbe
+_LIFPOST_0xbd:
+_LIFELSE_0xbe:
+push rdi
+push rsi
+push rbx
+;[[ id : newsize]]
+mov r11, rsi
+mov rdi, r11
+xor rax, rax
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push rdi
+;[[ id : size], [ + : +], [ int : 8]]
+mov r10, rdi
+add r10, 8
+mov rdi, r10
+xor rax, rax
+push rdi
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32]]
+mov rcx, 34
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ id : amt]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+pop rdi
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp _LINLINERETURN_0xc2
+_LINLINERETURN_0xc2:
+pop rdi
+;[[ fn(x) : [ function void. qmmap( [[size_t amt @ rdi]] ) ] ]]
+mov rbx, rax
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ id : size]]
+mov qword[r10], rdi
+;[[ id : out], [ + : +], [ int : 8]]
+mov rbx, rbx
+add rbx, 8
+mov rax, rbx
+jmp _LINLINERETURN_0xc0
+_LINLINERETURN_0xc0:
+leave
+pop rbx
+pop rsi
+pop rdi
+;[[ fn(x) : [ function void. malloc( [[size_t size @ rdi]] ) ] ]]
+mov r10, rax
+push rdi
+push rsi
+push rbx
+push r10
+;[[ id : newsize]]
+mov rbx, rsi
+mov rdx, rbx
+;[[ id : addr]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ id : out]]
+mov rbx, r10
+mov rdi, rbx
+xor rax, rax
+call _void_avx_memcpy_pvoid.void.size_t
+pop r10
+pop rbx
+pop rsi
+pop rdi
+;[[ fn(x) : [ function void avx_memcpy( [[void. dest @ 8], [void. source @ 16], [size_t bytes @ 24]] ) ] ]]
+push rdi
+push rsi
+push rbx
+push r10
+;[[ id : addr]]
+mov rbx, rdi
+mov rdi, rbx
+xor rax, rax
+push rdi
+;[[ @ : @], [ ( : (], [ id : addr], [ - : -], [ int : 8], [ ) : )]]
+mov rbx, rdi
+sub rbx, 8
+mov r10, qword[rbx]
+mov rsi, r10
+;[[ id : addr], [ - : -], [ int : 8]]
+mov rbx, rdi
+sub rbx, 8
+mov rdi, rbx
+xor rax, rax
+call _void._munmap_pvoid.size_t
+pop rdi
+;[[ fn(x) : [ function void. munmap( [[void. addr @ 8], [size_t length @ 16]] ) ] ]]
+jmp _LINLINERETURN_0xc4
+_LINLINERETURN_0xc4:
+pop r10
+pop rbx
+pop rsi
+pop rdi
+;[[ fn(x) : [ function void free( [[void. addr @ rdi]] ) ] ]]
+;[[ id : out]]
+mov rbx, r10
+mov rax, rbx
+jmp _LINLINERETURN_0xbc
+_LINLINERETURN_0xbc:
+leave
 mov qword[rbp-24], rax
-;[[ fn(x) : [ function void. realloc( [[void. og @ 0], [size_t newsize @ 0]] ) ] ]]
-jmp _LIFELSE_0xa5
-_LIFPOST_0xa4:
-_LIFELSE_0xa5:
+;[[ fn(x) : [ function void. realloc( [[void. addr @ rdi], [size_t newsize @ rsi]] ) ] ]]
+jmp _LIFELSE_0xba
+_LIFPOST_0xb9:
+_LIFELSE_0xba:
 ;[[ id : str], [ [ : [], [ id : len], [ ] : ]]]
 mov r10, qword[rbp-40]
 mov rbx, qword[rbp-24]
@@ -3792,7 +4078,7 @@ call _long_fgets_pfd_tchar.size_t
 mov r10, qword[rbp-40]
 inc r10
 mov qword[rbp-40], r10
-_LWHILECMP_0xa2:
+_LWHILECMP_0xb7:
 ;[[ id : c], [ != : !=], [ int : 10]]
 mov r10d, dword[rbp-32]
 mov rbx, 10
@@ -3801,8 +4087,8 @@ cmp r11, rbx
 setne r11b
 mov al, r11b
 and al, 1
-jnz _LWHILESTART_0xa1
-_LWHILEEND_0xa3:
+jnz _LWHILESTART_0xb6
+_LWHILEEND_0xb8:
 ;[[ id : str], [ [ : [], [ id : len], [ + : +], [ int : 1], [ ] : ]]]
 mov rbx, qword[rbp-40]
 inc rbx
@@ -3822,8 +4108,145 @@ mov rsi, rbx
 ;[[ id : str]]
 mov rdi, qword[rbp-24]
 xor rax, rax
-call realloc
-;[[ fn(x) : [ function void. realloc( [[void. og @ 0], [size_t newsize @ 0]] ) ] ]]
+push rbp
+mov rbp, rsp
+sub rsp, 16
+;[[ @ : @], [ ( : (], [ id : addr], [ - : -], [ int : 8], [ ) : )]]
+mov r10, rdi
+sub r10, 8
+mov r11, qword[r10]
+mov rbx, r11
+;[[ id : oldsize], [ == : ==], [ id : newsize]]
+mov r11, rsi
+mov r10, rbx
+cmp r10, r11
+sete r10b
+mov al, r10b
+and al, 1
+jz _LIFPOST_0xc7
+;[[ id : addr]]
+mov r10, rdi
+mov rax, r10
+jmp _LINLINERETURN_0xc6
+jmp _LIFELSE_0xc8
+_LIFPOST_0xc7:
+_LIFELSE_0xc8:
+push rdi
+push rsi
+push rbx
+;[[ id : newsize]]
+mov r11, rsi
+mov rdi, r11
+xor rax, rax
+push rbp
+mov rbp, rsp
+sub rsp, 8
+push rdi
+;[[ id : size], [ + : +], [ int : 8]]
+mov r10, rdi
+add r10, 8
+mov rdi, r10
+xor rax, rax
+push rdi
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32]]
+mov rcx, 34
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ id : amt]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+pop rdi
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp _LINLINERETURN_0xcc
+_LINLINERETURN_0xcc:
+pop rdi
+;[[ fn(x) : [ function void. qmmap( [[size_t amt @ rdi]] ) ] ]]
+mov rbx, rax
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ @ : @], [ id : out]]
+mov rbx, rbx
+mov r10, rbx
+;[[ id : size]]
+mov qword[r10], rdi
+;[[ id : out], [ + : +], [ int : 8]]
+mov rbx, rbx
+add rbx, 8
+mov rax, rbx
+jmp _LINLINERETURN_0xca
+_LINLINERETURN_0xca:
+leave
+pop rbx
+pop rsi
+pop rdi
+;[[ fn(x) : [ function void. malloc( [[size_t size @ rdi]] ) ] ]]
+mov r10, rax
+push rdi
+push rsi
+push rbx
+push r10
+;[[ id : newsize]]
+mov rbx, rsi
+mov rdx, rbx
+;[[ id : addr]]
+mov rbx, rdi
+mov rsi, rbx
+;[[ id : out]]
+mov rbx, r10
+mov rdi, rbx
+xor rax, rax
+call _void_avx_memcpy_pvoid.void.size_t
+pop r10
+pop rbx
+pop rsi
+pop rdi
+;[[ fn(x) : [ function void avx_memcpy( [[void. dest @ 8], [void. source @ 16], [size_t bytes @ 24]] ) ] ]]
+push rdi
+push rsi
+push rbx
+push r10
+;[[ id : addr]]
+mov rbx, rdi
+mov rdi, rbx
+xor rax, rax
+push rdi
+;[[ @ : @], [ ( : (], [ id : addr], [ - : -], [ int : 8], [ ) : )]]
+mov rbx, rdi
+sub rbx, 8
+mov r10, qword[rbx]
+mov rsi, r10
+;[[ id : addr], [ - : -], [ int : 8]]
+mov rbx, rdi
+sub rbx, 8
+mov rdi, rbx
+xor rax, rax
+call _void._munmap_pvoid.size_t
+pop rdi
+;[[ fn(x) : [ function void. munmap( [[void. addr @ 8], [size_t length @ 16]] ) ] ]]
+jmp _LINLINERETURN_0xce
+_LINLINERETURN_0xce:
+pop r10
+pop rbx
+pop rsi
+pop rdi
+;[[ fn(x) : [ function void free( [[void. addr @ rdi]] ) ] ]]
+;[[ id : out]]
+mov rbx, r10
+mov rax, rbx
+jmp _LINLINERETURN_0xc6
+_LINLINERETURN_0xc6:
+leave
+;[[ fn(x) : [ function void. realloc( [[void. addr @ rdi], [size_t newsize @ rsi]] ) ] ]]
 jmp ___char._getString_pchar.__return
 ___char._getString_pchar.__return:
 leave
@@ -3846,8 +4269,8 @@ sub rsp, 48
 mov [rbp-8], rdi
 ;Load Parameter: [bool signed @ 16]
 mov [rbp-16], rsi
-jmp _LWHILECMP_0xa7
-_LWHILESTART_0xa6:
+jmp _LWHILECMP_0xd0
+_LWHILESTART_0xcf:
 ;[[ id : str]]
 ;[[ id : str]]
 ;[[ int : 1]]
@@ -3855,7 +4278,7 @@ mov rbx, 1
 mov r10, qword[rbp-8]
 add r10, rbx
 mov qword[rbp-8], r10
-_LWHILECMP_0xa7:
+_LWHILECMP_0xd0:
 ;[[ @ : @], [ id : str], [ == : ==], [ char : 32]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -3865,8 +4288,8 @@ cmp r10b, bl
 sete r10b
 mov al, r10b
 and al, 1
-jnz _LWHILESTART_0xa6
-_LWHILEEND_0xa8:
+jnz _LWHILESTART_0xcf
+_LWHILEEND_0xd1:
 ;[[ $ : char], [ ( : (], [ @ : @], [ id : str], [ ) : )]]
 mov rbx, qword[rbp-8]
 and r10, 0xff
@@ -3887,7 +4310,7 @@ mov r10b, byte[rbp-16]
 and bl, r10b
 mov al, bl
 and al, 1
-jz _LIFPOST_0xa9
+jz _LIFPOST_0xd2
 ;[[ id : negative]]
 ;[[ id : negative]]
 ;[[ $ : bool], [ int : 1]]
@@ -3908,11 +4331,11 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-24], r11b
-jmp _LIFELSE_0xaa
-_LIFPOST_0xa9:
-_LIFELSE_0xaa:
-jmp _LWHILECMP_0xac
-_LWHILESTART_0xab:
+jmp _LIFELSE_0xd3
+_LIFPOST_0xd2:
+_LIFELSE_0xd3:
+jmp _LWHILECMP_0xd5
+_LWHILESTART_0xd4:
 ;[[ id : val]]
 ;[[ id : val]]
 ;[[ ( : (], [ id : val], [ * : *], [ int : 10], [ ) : )], [ + : +], [ ( : (], [ id : c], [ - : -], [ char : 48], [ ) : )]]
@@ -3939,7 +4362,7 @@ mov r10, qword[rbp-8]
 and r11, 0xff
 mov r11b, byte[r10]
 mov byte[rbp-24], r11b
-_LWHILECMP_0xac:
+_LWHILECMP_0xd5:
 ;[[ id : c], [ != : !=], [ int : 0], [ && : &&], [ id : c], [ != : !=], [ int : 10], [ && : &&], [ id : c], [ != : !=], [ char : 32]]
 mov bl, byte[rbp-24]
 test bl, bl
@@ -3957,13 +4380,13 @@ setne r10b
 and bl, r10b
 mov al, bl
 and al, 1
-jnz _LWHILESTART_0xab
-_LWHILEEND_0xad:
+jnz _LWHILESTART_0xd4
+_LWHILEEND_0xd6:
 ;[[ id : negative]]
 mov bl, byte[rbp-40]
 mov al, bl
 and al, 1
-jz _LIFPOST_0xae
+jz _LIFPOST_0xd7
 ;[[ int : 0], [ - : -], [ id : val]]
 mov r10d, dword[rbp-32]
 xor rbx, rbx
@@ -3971,9 +4394,9 @@ mov r11, r10
 sub rbx, r11
 mov eax, ebx
 jmp ___int_toInteger_pchar.bool__return
-jmp _LIFELSE_0xaf
-_LIFPOST_0xae:
-_LIFELSE_0xaf:
+jmp _LIFELSE_0xd8
+_LIFPOST_0xd7:
+_LIFELSE_0xd8:
 ;[[ id : val]]
 mov ebx, dword[rbp-32]
 mov eax, ebx
@@ -4025,13 +4448,28 @@ push r10
 ;[[ id : inp]]
 mov rdi, rbx
 xor rax, rax
-call free
+push rdi
+;[[ @ : @], [ ( : (], [ id : addr], [ - : -], [ int : 8], [ ) : )]]
+mov rbx, rdi
+sub rbx, 8
+mov r10, qword[rbx]
+mov rsi, r10
+;[[ id : addr], [ - : -], [ int : 8]]
+mov rbx, rdi
+sub rbx, 8
+mov rdi, rbx
+xor rax, rax
+call _void._munmap_pvoid.size_t
+pop rdi
+;[[ fn(x) : [ function void. munmap( [[void. addr @ 8], [size_t length @ 16]] ) ] ]]
+jmp _LINLINERETURN_0xda
+_LINLINERETURN_0xda:
 pop r10
 pop rbx
-;[[ fn(x) : [ function void free( [[void. ptr @ 0]] ) ] ]]
+;[[ fn(x) : [ function void free( [[void. addr @ rdi]] ) ] ]]
 ;[[ id : retval]]
-mov r11d, r10d
-mov eax, r11d
+mov ebx, r10d
+mov eax, ebx
 jmp ____scanf__return
 ____scanf__return:
 leave
@@ -4174,6 +4612,79 @@ ret
 
 
 
+;[ function void __thrdext( [] ) ]
+
+
+
+
+
+__thrdext:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+
+;[[ id : __tsigfutex]]
+;[[ id : __tsigfutex]]
+xor rax, rax
+xor rax, rax
+    mov rax, 186
+    syscall
+    
+_LINLINERETURN_0xde:
+;[[ fn(x) : [ function long gettid( [] ) ] ]]
+jmp _LINLINERETURN_0xdc
+_LINLINERETURN_0xdc:
+mov rbx, rax
+;[[ fn(x) : [ function long thread_self( [] ) ] ]]
+mov [__tsigfutex], ebx
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+    mov rax,60
+    syscall
+    
+_LINLINERETURN_0xe1:
+;[[ fn(x) : [ function void exit( [[long c @ rdi]] ) ] ]]
+____thrdext__return:
+leave
+ret
+
+
+
+;[ function void. __crtstack( [] ) ]
+
+
+
+
+
+__crtstack:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+
+;[[ int : 0]]
+xor r9, r9
+and r9, 0xffffffff
+;[[ int : 0]]
+xor r8, r8
+;[[ int : 2], [ | : |], [ int : 32], [ | : |], [ int : 16777216]]
+mov rcx, 16777250
+;[[ int : 1], [ | : |], [ int : 2]]
+mov rdx, 3
+;[[ int : 65536]]
+mov rsi, 65536
+;[[ int : 0]]
+xor rdi, rdi
+xor rax, rax
+call _void._mmap_pvoid.size_tlonglonglongoff_t
+;[[ fn(x) : [ function void. mmap( [[void. addr @ 8], [size_t length @ 16], [long prot @ 24], [long flags @ 32], [long fd @ 40], [off_t offset @ 48]] ) ] ]]
+jmp ____crtstack__return
+____crtstack__return:
+leave
+ret
+
+
+
 ;[ function thread_t thread( [[__threadcallable fn @ 8], [void. arg @ 16]] ) ]
 
 
@@ -4183,27 +4694,101 @@ ret
 _thread_t_thread_p__threadcallablevoid.:
 push rbp
 mov rbp, rsp
-sub rsp, 24
+sub rsp, 48
 
 ;Load Parameter: [__threadcallable fn @ 8]
 mov [rbp-8], rdi
 ;Load Parameter: [void. arg @ 16]
 mov [rbp-16], rsi
-;[[ int : 46545465468546548]]
-mov rsi, 46545465468546548
-;[[ id : STRING_CONSTANT_142]]
-mov rbx, STRING_CONSTANT_142
-mov rdi, rbx
+;[[ id : cpid]]
+mov rcx, qword[rbp-32]
+;[[ id : ppid]]
+mov rdx, qword[rbp-24]
+;[[ id : arg]]
+mov rsi, qword[rbp-16]
+;[[ id : fn]]
+mov rdi, qword[rbp-8]
 xor rax, rax
-call printf
-;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+    
+    call _L_0xe5thrdcrtsubfnc
+    jmp _L_0xe5thrdcrtend
+    
+    ; nested function without stack frame for use of clone'd stack
+    _L_0xe5thrdcrtsubfnc:
+    push rdi
+    call __crtstack                 ; build stack
+    lea rsi, [rax + 65536 - 16] ; get top of stack
+    pop qword [rsi]                 ; place function at the top of stack
+    mov qword[rsi+0x8], __thrdext   ; place exit function for clean exit
+    mov rdi, [clone_threadflags]    ; flags
+    mov rax, 56                     ; syscall
+    syscall
+    ret
+    _L_0xe5thrdcrtend:
+    
+_LINLINERETURN_0xe4:
+;[[ fn(x) : [ function long thrdcrt( [[void. fn @ rdi], [void arg @ rsi], [void. ptid @ rdx], [void. childtid @ rcx]] ) ] ]]
+mov qword[rbp-40], rax
+;[[ id : out]]
+mov rbx, qword[rbp-40]
+mov rax, rbx
+jmp ___thread_t_thread_p__threadcallablevoid.__return
 ___thread_t_thread_p__threadcallablevoid.__return:
 leave
 ret
 
 
 
-;[ function void test( [[void arg @ 8]] ) ]
+;[ function long thread_join( [[thread_t thread @ 8]] ) ]
+
+
+
+
+
+_long_thread_join_pthread_t:
+push rbp
+mov rbp, rsp
+sub rsp, 24
+
+;Load Parameter: [thread_t thread @ 8]
+mov [rbp-8], rdi
+;[[ int : 2147483648]]
+mov rdx, 2147483648
+and rdx, 0xffffffff
+;[[ int : 0]]
+xor rsi, rsi
+xor rax, rax
+    mov rax, 39
+    syscall
+    
+_LINLINERETURN_0xea:
+mov rdi, rax
+;[[ fn(x) : [ function long getpid( [] ) ] ]]
+xor rax, rax
+    mov rax, 61
+    xor r8, r8
+    syscall
+    
+_LINLINERETURN_0xed:
+;[[ fn(x) : [ function long waitpid( [[pid_t pid @ rdi], [int. wstatus @ rsi], [int options @ rdx]] ) ] ]]
+mov qword[rbp-16], rax
+;[[ id : err]]
+mov rbx, qword[rbp-16]
+mov rdi, rbx
+xor rax, rax
+call _char._strerror_plong
+mov rdi, rax
+;[[ fn(x) : [ function char. strerror( [[long errnum @ 8]] ) ] ]]
+xor rax, rax
+call _void_printf_pchar.
+;[[ fn(x) : [ function void printf( [[char. fmt @ 8]] ) ] ]]
+___long_thread_join_pthread_t__return:
+leave
+ret
+
+
+
+;[ function void test( [[void a @ 8]] ) ]
 
 
 
@@ -4212,23 +4797,48 @@ ret
 _void_test_pvoid:
 push rbp
 mov rbp, rsp
-sub rsp, 16
+sub rsp, 32
 
-;Load Parameter: [void arg @ 8]
+;Load Parameter: [void a @ 8]
 mov [rbp-8], rdi
-;[[ id : STRING_CONSTANT_143]]
-mov rbx, STRING_CONSTANT_143
+;[[ int : 0]]
+mov dword[rbp-16], 0
+jmp _LFORCMP_0xf0
+_LFORTOP_0xef:
+
+;[[ id : i]]
+mov esi, dword[rbp-16]
+;[[ id : STRING_CONSTANT_142]]
+mov rbx, STRING_CONSTANT_142
 mov rdi, rbx
 xor rax, rax
-call _void_printf_pchar.
-;[[ fn(x) : [ function void printf( [[char. fmt @ 8]] ) ] ]]
+call printf
+;[[ fn(x) : [ function void printf( [[char. fmt @ 0], [void arg1 @ 0]] ) ] ]]
+_LFORUPDATE_0xf1:
+;[[ id : i], [ ++ : ++]]
+inc dword[rbp-16]
+_LFORCMP_0xf0:
+;[[ id : i], [ < : <], [ int : 100]]
+mov r10d, dword[rbp-16]
+mov rbx, 100
+mov r11, r10
+cmp r11, rbx
+setl r11b
+mov al, r11b
+and al, 1
+jnz _LFORTOP_0xef
+_LFOREND_0xf2:
+;[[ int : 6], [ * : *], [ int : 5]]
+mov rax, 30
+movq xmm7, rax
+movsd qword[rbp-24], xmm7
 ___void_test_pvoid__return:
 leave
 ret
 
 
 
-;[ function int main( [] ) ]
+;[ function int main( [[long argc @ 8]] ) ]
 
 
 
@@ -4237,8 +4847,10 @@ ret
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 16
+sub rsp, 24
 
+;Load Parameter: [long argc @ 8]
+mov [rbp-8], rdi
 ;[[ int : 1]]
 mov rsi, 1
 ;[[ id : test]]
@@ -4246,7 +4858,13 @@ mov rdi, _void_test_pvoid
 xor rax, rax
 call _thread_t_thread_p__threadcallablevoid.
 ;[[ fn(x) : [ function thread_t thread( [[__threadcallable fn @ 8], [void. arg @ 16]] ) ] ]]
-mov qword[rbp-8], rax
+mov qword[rbp-16], rax
+;[[ id : t]]
+mov rbx, qword[rbp-16]
+mov rdi, rbx
+xor rax, rax
+call _long_thread_join_pthread_t
+;[[ fn(x) : [ function long thread_join( [[thread_t thread @ 8]] ) ] ]]
 __main__return:
 leave
 ret

@@ -26,10 +26,33 @@
 typedef int intptr_t;
 typedef int off_t;
 
-cextern void* malloc(size_t size);
-cextern void* calloc(size_t size);
-cextern void* realloc(void* og, size_t newsize);
-cextern void free(void *ptr);
+//cextern void* malloc(size_t size);
+//cextern void* calloc(size_t size);
+//cextern void* realloc(void* og, size_t newsize);
+//cextern void free(void *ptr);
+
+
+/* Temporary memory macros until proper malloc is implimented */
+
+inline void* malloc(size_t size){
+    register void* out = qmmap(size+8);
+    @out = size;
+    return out+8;
+}
+inline void free(void* addr){
+    return munmap(addr-0x8, @(addr-0x8));
+}
+inline void* realloc(void* addr, size_t newsize){
+    register size_t oldsize = @(addr-0x8);
+    if(oldsize == newsize){
+        return addr;
+    }
+    register void* out = malloc(newsize);
+    avx_memcpy(out, addr,newsize);
+    free(addr);
+    return out;
+
+}
 
 
 
@@ -90,6 +113,10 @@ global void* munmap(void* addr, size_t length){
     mov rax, 11
     syscall
     "}
+}
+
+inline void* qmmap(size_t amt){
+    return mmap(0, amt, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0); 
 }
 
 

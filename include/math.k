@@ -227,7 +227,7 @@ inline double log2(double n){
 }
 
 
-global long divmod(long dividend, long divisor, long* modulus ){
+inline long divmod(long dividend, long divisor, long* modulus ){
 
   __asm{"
   mov rbx, rdx

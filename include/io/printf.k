@@ -12,24 +12,24 @@
 
 global void __printf(char* fmt, void* args){
 
-    char *normform = malloc(__PRINTF_MAXNORMUSE);
+    char *normform = qmmap(__PRINTF_MAXNORMUSE);
     int l = __sprintf(normform,fmt,args);
     write(STDOUT, normform, l);
 
-    free(normform);
+    munmap(normform, __PRINTF_MAXNORMUSE);
 
 }
 
 __cdecl void printf(char* fmt, void arg1, void arg2, void arg3, void arg4, void arg5){
 
-    void* args =malloc(6*void);
+    void args[6];
     args[0]=arg1;
     args[1]=arg2;
     args[2]=arg3;
     args[3]=arg4;
     args[4]=arg5;
-    __printf(fmt,args);
-    free(args);
+    __printf(fmt,&args);
+    
 
 }
 

@@ -3,10 +3,10 @@
 
 #include "stddef.k"
 
-
+typedef long time_t;
 struct timeval_t{
-    int tv_sec;         /* seconds */
-    int tv_usec;        /* and microseconds */
+    long tv_sec;         /* seconds */
+    long tv_usec;        /* and microseconds */
 };
 
 struct itimerval_t{
@@ -18,8 +18,8 @@ struct itimerval_t{
 
 struct timezone_t{
 
-    int32 tz_minuteswest; /* minutes west of Greenwich */
-    int32 tz_dsttime;     /* type of dst correction */
+    int tz_minuteswest; /* minutes west of Greenwich */
+    int tz_dsttime;     /* type of dst correction */
 
 };
 
@@ -73,6 +73,18 @@ inline time_t time(time_t *tloc){
     mov rax, 201
     syscall
     "}
+}
+inline void nanosleep(timeval_t*req, timeval_t*rem){
+    __asm{"
+    mov rax, 35
+    syscall
+    "}
+}
+global void usleep(long nanoseconds){
+    timeval_t req;
+    req.tv_sec = 0;
+    req.tv_usec = nanoseconds;
+    nanosleep(&req, nullptr);
 }
 
 
