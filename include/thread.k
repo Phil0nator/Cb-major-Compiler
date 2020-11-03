@@ -7,6 +7,7 @@
 #include "stddef.k"
 #include "sys/time.k"
 #include "sys/signal.k"
+#include "sys/futex.k"
 
 typedef void* __threadcallable;
 
