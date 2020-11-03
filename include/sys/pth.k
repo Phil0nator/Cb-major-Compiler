@@ -43,6 +43,15 @@ inline long waitpid(pid_t pid, int *wstatus, int options){
 
 }
 
+inline long clone(unsigned long clone_flags, unsigned long newsp, void* parent_tid, void* child_tid, unsigned int tid){
+    __asm{"
+    mov rax, 56
+    mov r10, rcx
+    syscall
+    "}
+}
+
+
 
 char* __systembashpath = "/bin/bash";
 

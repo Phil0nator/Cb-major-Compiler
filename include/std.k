@@ -19,6 +19,8 @@
 #include "io/input.k"       /* input functions */
 #include "io/filesystem.k"  /* high level file interaction */
 
+#include "sys/pth.k"        /* low level threading */
+#include "thread.k"         /* high level threading */
 
 
 #endif

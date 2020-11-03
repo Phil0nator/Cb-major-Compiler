@@ -140,6 +140,7 @@ inline int shutdown(fd_t sockfd, int how){
 inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
     __asm{"
     mov rax, 45
+    mov r10, rcx
     syscall
     "}
 }
@@ -147,6 +148,7 @@ inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in*
 inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
     __asm{"
     mov rax, 44
+    mov r10, rcx
     syscall
     "}
 }

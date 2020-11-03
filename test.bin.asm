@@ -5,7 +5,7 @@ extern malloc
 extern calloc
 extern realloc
 extern free
-global _void._mmap_pvoid.size_tintintintoff_t:
+global _void._mmap_pvoid.size_tlonglonglongoff_t:
 global _void._munmap_pvoid.size_t:
 global _int___sprintf_pchar.char.void.:
 global _int_sprintf_pchar.char.voidvoidvoidvoid:
@@ -31,6 +31,7 @@ extern scanf
 extern scanf
 extern scanf
 extern scanf
+global _thread_t_thread_p__threadcallablevoid.:
 
 
 
@@ -180,9 +181,6 @@ STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 STRING_CONSTANT_139: db `sudo`, 0
 STRING_CONSTANT_140: db `-c`, 0
 STRING_CONSTANT_141: db `%s`, 0
-STRING_CONSTANT_142: db `testing.txt`, 0
-STRING_CONSTANT_143: db `r+`, 0
-STRING_CONSTANT_144: db `This is other text\n`, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -361,7 +359,7 @@ ___void_memset_pvoid.ucharsize_t__return:
 leave
 ret
 
-_void._mmap_pvoid.size_tintintintoff_t:
+_void._mmap_pvoid.size_tlonglonglongoff_t:
 push rbp
 mov rbp, rsp
 sub rsp, 56
@@ -375,7 +373,7 @@ mov [rbp-48], r9
     mov rax, 9
     syscall
     
-___void._mmap_pvoid.size_tintintintoff_t__return:
+___void._mmap_pvoid.size_tlonglonglongoff_t__return:
 leave
 ret
 
@@ -1523,6 +1521,7 @@ mov rbx, qword[rbp-8]
 mov rdi, rbx
 xor rax, rax
     mov rax, 45
+    mov r10, rcx
     syscall
     
 .L0x53:
@@ -1552,6 +1551,7 @@ mov rbx, qword[rbp-8]
 mov rdi, rbx
 xor rax, rax
     mov rax, 44
+    mov r10, rcx
     syscall
     
 .L0x56:
@@ -2843,88 +2843,34 @@ ret
 
 
 
-main:
+_thread_t_thread_p__threadcallablevoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 32
 
-mov rbx, STRING_CONSTANT_143
-mov rsi, rbx
-mov rbx, STRING_CONSTANT_142
-mov rdi, rbx
+mov [rbp-8], rdi
+mov [rbp-16], rsi
+mov r9d, 0
+and r9, 0xffffffff
+mov r8d, -1
+mov ecx, 34
+mov edx, 3
+mov esi, 4096
+xor edi, edi
 xor rax, rax
-call _FILE_fopen_pchar.char.
-mov qword[rbp-8], rax
-mov edi, 100
-xor rax, rax
-call malloc
+call _void._mmap_pvoid.size_tlonglonglongoff_t
 mov qword[rbp-24], rax
-mov r10, STRING_CONSTANT_144
-mov rsi, r10
-mov r10, qword[rbp-8]
-mov rdi, r10
-xor rax, rax
-call _int_fputs_pfd_tchar.
-mov qword[rbp-16], rax
-mov r10d, 0
-mov rbx, qword[rbp-16]
-mov r11, r10
-cmp rbx, r11
-setl bl
-mov al, bl
-and al, 1
-jz .L0xb2
-mov rbx, qword[rbp-16]
-mov rdi, rbx
-xor rax, rax
-call _char._strerror_plong
-mov rdi, rax
-xor rax, rax
-call _void_printf_pchar.
-jmp .L0xb3
-.L0xb2:
-.L0xb3:
-mov edx, 0
-and rdx, 0xffffffff
-xor esi, esi
-and rsi, 0xffffffff
-mov rbx, qword[rbp-8]
-mov rdi, rbx
-xor rax, rax
-    mov rax, 8
-    syscall
-    
-.L0xb5:
-mov edx, 100
-mov r10, qword[rbp-24]
-mov rsi, r10
-mov r10, qword[rbp-8]
-mov rdi, r10
-xor rax, rax
-call _long_fgets_pfd_tchar.size_t
-mov qword[rbp-16], rax
-mov r10d, 0
-mov rbx, qword[rbp-16]
-mov r11, r10
-cmp rbx, r11
-setl bl
-mov al, bl
-and al, 1
-jz .L0xb7
-mov rbx, qword[rbp-16]
-mov rdi, rbx
-xor rax, rax
-call _char._strerror_plong
-mov rdi, rax
-xor rax, rax
-call _void_printf_pchar.
-jmp .L0xb8
-.L0xb7:
-.L0xb8:
-mov rbx, qword[rbp-24]
-mov rdi, rbx
-xor rax, rax
-call _void_printf_pchar.
+mov eax, 0
+jmp ___thread_t_thread_p__threadcallablevoid.__return
+___thread_t_thread_p__threadcallablevoid.__return:
+leave
+ret
+
+main:
+push rbp
+mov rbp, rsp
+sub rsp, 8
+
 __main__return:
 leave
 ret
