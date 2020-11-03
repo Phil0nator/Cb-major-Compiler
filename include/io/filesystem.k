@@ -6,6 +6,7 @@
 #include "include/stddef.k"
 #include "include/memory.k"
 #include "sys/files.k"
+#include "sys/stat.k"
 
 typedef fd_t FILE;
 
@@ -30,7 +31,7 @@ typedef fd_t FILE;
 
 function FILE fopen(char* fname, char* mode){
     long modehash = mode[0]+mode[1];
-    long m = 0;
+    long m = DEFFILEMODE;
     long f = 0;
 
     switch(modehash){
@@ -40,23 +41,23 @@ function FILE fopen(char* fname, char* mode){
             break;
         }
         case _fopen_writeonly{
-            f = O_WRONLY;
+            f = O_WRONLY || O_CREAT || O_TRUNC;
             break;
         }
         case _fopen_append{
-            f = O_WRONLY||O_APPEND;
+            f = O_WRONLY||O_CREAT||O_APPEND;
             break;
         }
         case _fopen_rw{
             f = O_RDWR;
             break;
         }case _fopen_wc{
-            m = O_USRPERM;
-            f = O_RDWR||O_CREAT;
+            //m = O_USRPERM;
+            f = O_RDWR||O_CREAT||O_TRUNC;
             break;
         }
         case _fopen_ac{
-            m = O_USRPERM;
+            //m = O_USRPERM;
             f =  O_RDWR||O_APPEND||O_CREAT;
             break;
         }

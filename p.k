@@ -10,7 +10,7 @@ function int main(){
 
      long err;
      char* contents = malloc(100);
-     err = fputs(fd, "This is other text");
+     err = fputs(fd, "This is other text\n");
      if (err < 0){
           printf(strerror(err));
      }
