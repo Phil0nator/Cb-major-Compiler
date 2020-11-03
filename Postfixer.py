@@ -32,37 +32,54 @@ class Postfixer:
     # add a given token to the final output as an ExpressionComponent object
     def addtok(self, t):
         ec = None
+        # operators are passed directly into ExpressionComponents
         if self.isOperator(t):
             ec = EC.ExpressionComponent(t.tok, t.value, isoperation=True)
         else:
+            # Int literals are given type void, and constint flag
             if(t.tok == T_INT):
-                ec = EC.ExpressionComponent(t.value, VOID.copy(), constint=True)
+                ec = EC.ExpressionComponent(
+                    t.value, VOID.copy(), constint=True)
+
+            # an ID could be a local variable, global variable, function
+            # pointer, member variable
             elif(t.tok == T_ID):
                 v: Variable = self.fn.getVariable(t.value)
                 if(v is None):
 
                     v = self.fn.compiler.getType(t.value)
                     if(v is None):
-                        if(self.fn.compiler.ismember(t.value)):
+                        if(self.fn.compiler.ismember(t.value)):  # the variable is a member
                             ec = EC.ExpressionComponent(
                                 t.value, VOID.copy(), token=t)
-                        else:
+                        else:  # the ID does not exist
                             throw(UnkownIdentifier(t))
-                    else:
+                    else:  # variable is type, so it is replace by its size
 
                         ec = EC.ExpressionComponent(
                             v.size(0), VOID.copy(), constint=True, token=t)
                         ec.memory_location = valueOf(v)
-                else:
+                else:  # variable is local or global or function pointer
                     v.referenced = True
                     ec = EC.ExpressionComponent(v, v.t)
+            # function calls are replaced by a pop because their return values are already pushed.
+            # the Peephole optimizer will remove redundant push-pops and replace them with mov's
+            # when possible, and with a high enough Optimization flag (set by
+            # -O2, -O3)
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop", t.fn.returntype)
+
+            # indexer values are also poped
+            # \depricated
             elif(t.tok == T_IDXER):
                 ec = EC.ExpressionComponent("pop", t.value)
+
+            # char literals can be replaced by their value, and given type char
             elif(t.tok == T_CHAR):
                 ec = EC.ExpressionComponent(
                     t.value, CHAR.copy(), constint=True)
+
+            # unkown tokens are simply added for later
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
         if(ec is None):
@@ -72,6 +89,7 @@ class Postfixer:
 
     def createPostfix(self):        # main function
 
+        # standard infix to postfix algorithm
         for t in self.tokens:
 
             if t.tok == "(" or t.tok == "[":

@@ -1,34 +1,32 @@
-from Classes.Variable import *
-from Classes.DType import DType
-from Classes.Token import *
-from Classes.Error import *
-from Postfixer import Postfixer
-from ExpressionEvaluator import RightSideEvaluator
-from ExpressionEvaluator import LeftSideEvaluator, optloadRegs
+import time
+
+import Assembly.AVX as AVX
+import Assembly.CodeBlocks as CodeBlocks
+import Assembly.TypeSizes as TypeSizes
+import Classes.ExpressionComponent as EC
 import Classes.Optimizer
 import config
-import time
-import Classes.ExpressionComponent as EC
-
-from Assembly.Registers import *
+from Assembly.AVX import (avx_correctSize, avx_doToReg, avx_dropToAddress,
+                          avx_loadToReg, avx_ralloc, avx_rfree)
+from Assembly.CodeBlocks import (check_fortrue, doFloatOperation,
+                                 doIntOperation, fncall, function_allocator,
+                                 function_closer, functionlabel, getLogicLabel,
+                                 loadToPtr, loadToReg, maskset, movRegToVar,
+                                 movVarToReg, spop, spush, valueOf)
 from Assembly.Instructions import Instruction, Peephole
-
-from Assembly.CodeBlocks import function_allocator, doIntOperation, doFloatOperation
-from Assembly.CodeBlocks import function_closer, fncall, check_fortrue
-from Assembly.CodeBlocks import loadToPtr, loadToReg, movVarToReg, movRegToVar
-from Assembly.CodeBlocks import valueOf, getLogicLabel, maskset, functionlabel, spush, spop
-import Assembly.CodeBlocks as CodeBlocks
-
+from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat
-import Assembly.TypeSizes as TypeSizes
-
-from Assembly.AVX import avx_ralloc, avx_rfree, avx_correctSize
-from Assembly.AVX import avx_loadToReg, avx_dropToAddress, avx_doToReg
-import Assembly.AVX as AVX
-
-from globals import TsCompatible, INT, BOOL, CHAR, SHORT, LONG, VOID, DOUBLE, isIntrinsic
-
 from Classes.Constexpr import determineConstexpr
+from Classes.DType import DType
+from Classes.Error import *
+from Classes.Token import *
+from Classes.Variable import *
+from ExpressionEvaluator import (LeftSideEvaluator, RightSideEvaluator,
+                                 optloadRegs)
+from globals import (BOOL, CHAR, DOUBLE, INT, LONG, SHORT, VOID, TsCompatible,
+                     isIntrinsic)
+from Postfixer import Postfixer
+
 # multiply all items in an array
 
 
@@ -69,6 +67,7 @@ class Function:
         self.current_token = self.tokens[0] if len(
             self.tokens) > 0 else None     # current token
         self.ctidx = 0                          # corrent token index
+        self.maxtokens = len(self.tokens)   # one len call
 
         # extern is in reference to c-standard names vs .k names
         self.extern = extern
@@ -90,16 +89,51 @@ class Function:
 
         # monitoring:
 
+        # hasReturned keeps track of if a function has made a guarenteed return.
+        # A guarenteed return is one not inside any other control structure, and that
+        # will always happen.
         self.hasReturned = False
+
+        # recursive_depth keeps track of how many control-structures deep the function is.
+        # so, for example:
+        #
+        #   recursive_depth = 0;
+        #   if(...){
+        #       ...
+        #       recursive_depth = 1;
+        #       switch(...){
+        #           case ... {
+        #               recursive_depth = 2;
+        #               break;
+        #           }
+        #
+        #       }
+        #       recursive_depth = 1;
+        #
+        #
+        #   }
+        #   recursive_depth = 0;
+        #
         self.recursive_depth = 0
 
+        # canbeInline is used to determine if the compiler can safely make
+        # a function inline without the user specifically defining it as such
         self.canbeInline = True
 
+        # isCompiled is used to determine if the function has already been
+        # compiled.
         self.isCompiled = False
+
+        # closing label is the label placed right before the stack exit and return in the
+        # assembly of a function. It will be different for an inline vs regular
+        # function.
         self.closinglabel = self.getClosingLabel()
 
     def advance(self):                              # advance token
         self.ctidx += 1
+        if(self.ctidx == self.maxtokens):
+            throw(UnexepectedEOFError(self.tokens[-1]))
+
         self.current_token = self.tokens[self.ctidx]
         return self.current_token
 

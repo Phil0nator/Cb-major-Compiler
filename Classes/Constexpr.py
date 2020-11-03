@@ -130,15 +130,13 @@ def calculateCfloat(a, b, op):
 # get result of a op b while taking initializer value for a and b if they
 # are vars.
 def evaluate(a, b, op):
-    
-    
+
     if(a is None):
         return evaluate(b, None, None)
     if(isinstance(a.accessor, Variable)):
         a.accessor = a.accessor.initializer
     if(b is not None and isinstance(b.accessor, Variable)):
         b.accessor = b.accessor.initializer
-
 
         return calculateConstant(a, b, op) if isinstance(
             a.accessor, int) and isinstance(b.accessor, int) else calculateCfloat(a, b, op)

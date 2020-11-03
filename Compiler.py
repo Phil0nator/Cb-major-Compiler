@@ -179,6 +179,8 @@ class Compiler:
 
         self.advance()
 
+        # variables declared with extern are not placed in the data section, and are simply
+        # recorded for use by the compiler.
         if(extern):
             if(self.current_token.tok == T_EQUALS):
                 throw(AssigningExternedValue(self.current_token))
@@ -188,7 +190,11 @@ class Compiler:
             self.advance()
             return
 
+        # test for early endline
         if (self.current_token.tok != T_EQUALS):
+
+            # if there is no assignment, these variables can be moved to the bss section because they
+            # are uninitialized.
             if(self.current_token.tok == T_ENDL):
                 self.globals.append(
                     Variable(
@@ -204,6 +210,9 @@ class Compiler:
 
         self.advance()
 
+        # Tokens need to be collected to be passed through the constexpr evaluator.
+        # \see Classes.Constexpr
+
         exprtokens = []
         isSet = False
         if(self.current_token.tok == T_OPENSCOPE):
@@ -218,6 +227,8 @@ class Compiler:
             "CMAININIT", [], VOID.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], VOID.copy(), self, exprtokens))
 
+        # if the final value is a variable, the initializer to that variable is
+        # taken
         if(isinstance(value.accessor, Variable)):
 
             value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
@@ -334,6 +345,7 @@ class Compiler:
                 signed=f.returntype.signed))
 
     def buildStruct(self):                  # isolate and build a structure
+        # \see Structure
         parser = Structure(self)
         parser.construct()
 
@@ -387,7 +399,10 @@ class Compiler:
                 self.createConstant()
             elif (self.current_token.tok == T_KEYWORD):
 
+                # unsigned keyword is always followed by a normal variable
+                # declaration.
                 if(self.current_token.value == "unsigned"):
+
                     s = self.current_token
                     self.advance()
                     self.createConstant()
@@ -399,16 +414,28 @@ class Compiler:
                     v.t = v.t.copy()
                     v.t.signed = False
                     v.glob = True
+
+                # typedef is always followed by two types and an endline:
                 elif(self.current_token.value == "typedef"):
+
+                    # start token
                     s = self.current_token
+
                     self.advance()
+
+                    # type a
                     ta = self.checkType()
                     if(self.current_token.tok != T_ID):
                         throw(ExpectedIdentifier(self.current_token))
+
+                    # new type name
                     ntn = self.current_token.value
                     newtype = ta.copy()
                     newtype.name = ntn
+                    # add new typename to precedence list
                     type_precedence[ntn] = type_precedence[ta.name]
+
+                    # add new type to types and tdefs
                     self.types.append(newtype.copy())
                     self.tdefs.append((ta, newtype))
                     if(self.isIntrinsic(ntn)):
@@ -418,17 +445,26 @@ class Compiler:
                         throw(ExpectedSemicolon(self.current_token))
                     self.advance()
 
+                # extern is followed by either a function declaration or a
+                # variable declaration
                 elif(self.current_token.value == "extern"):
                     self.advance()
+                    # record location to jump back to
                     backto = self.ctidx - 1
                     self.checkType()
                     self.advance()
 
+                    # function determinant:
+                    #   for function delcarations fndp.tok will always be a '(', and for variables
+                    #   it will always be something else.
                     fndp = self.current_token
+
+                    # with the determinant, jump back to the begining to
+                    # perform the compilation
                     self.ctidx = backto
                     self.advance()
 
-                    if(fndp.tok == "("):
+                    if(fndp.tok == "("):  # if is function
 
                         self.createFunction()
                         fn = self.functions[-1]
@@ -437,13 +473,13 @@ class Compiler:
                         glob = self.globals[-1]
                         glob.name = fn.getCallingLabel()
 
-                    else:
+                    else:  # if is variable
 
                         self.createConstant(True)
 
                         config.__CEXTERNS__ += "extern " + \
                             self.globals[-1].name + "\n"
-
+                # same code as extern, with slight modification for cextern
                 elif(self.current_token.value == "cextern"):
                     self.advance()
                     backto = self.ctidx - 1
@@ -470,21 +506,25 @@ class Compiler:
                         config.__CEXTERNS__ += "extern " + \
                             self.globals[-1].name + "\n"
 
+                # __cdecl is always followed by a function declaration
                 elif(self.current_token.value == "__cdecl"):
                     self.advance()
 
                     self.createFunction()
                     fn = self.functions[-1]
+                    # apply new properties to generated function:
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-1] + "\n"
                     fn.extern = True
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
 
+                # global is always followed by a function declaration
                 elif(self.current_token.value == "global"):
                     self.advance()
 
                     self.createFunction()
+                    # apply global properties
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-1] + "\n"
@@ -493,10 +533,11 @@ class Compiler:
 
                 elif(self.current_token.value == "struct"):
                     self.buildStruct()
-
+                # inline is always followed by a function declaration
                 elif(self.current_token.value == "inline"):
                     self.advance()
                     self.createFunction()
+                    # apply new properties
                     self.functions[-1].inline = True
                     self.globals.pop()
 

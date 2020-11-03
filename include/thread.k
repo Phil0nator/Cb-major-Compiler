@@ -14,7 +14,7 @@ typedef void* __threadcallable;
 
 typedef unsigned long thread_t;
 
-long clone_threadflags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SYSVSEM | CLONE_SIGHAND | CLONE_THREAD | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | 0);
+long clone_threadflags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SYSVSEM |SIGCHLD| CLONE_SIGHAND | CLONE_THREAD | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | 0);
 
 int __tsigfutex = 0;
 
@@ -67,7 +67,7 @@ inline long __thrdgetrbp(){
 
 
 
-global thread_t thread(__threadcallable fn, void *arg){
+global thread_t thread_create(__threadcallable fn, void *arg){
 
     
     pid_t ppid;
@@ -79,8 +79,8 @@ global thread_t thread(__threadcallable fn, void *arg){
 } 
 
 global long thread_join(thread_t thread){
-    long err= waitpid(getpid(), nullptr, __WCLONE);
-    printf(strerror(err));
+    //long err= waitpid(getpid(), nullptr, __WCLONE);
+    nfutex(&__tsigfutex, FUTEX_WAIT, thread);
 }
 
 

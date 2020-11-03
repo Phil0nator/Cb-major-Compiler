@@ -21,6 +21,19 @@ def join(arr, d):
 # EX: __WIN32, __LINUX, __DARWIN, etc...
 oslist = ["Linux", "Darwin", "Windows", "SunOS", "Java", "BSD"]
 
+r'''
+getCompilerDefines() is what generates all pre-defined macros.
+    It defines macros about the following:
+        -Operating system
+        -SSE capability
+        -AVX capability
+        -BMI capability
+        -Date / Time of compilation
+    Non-constant macros will be set as they appear in PreProcessor.checkDefn()
+    \see PreProcessor.checkDefn
+
+'''
+
 
 def getCompilerDefines():
     operating_system = platform.system()
@@ -90,7 +103,9 @@ class PreProcessor:
         self.tokens = tokens                    # all tokens
         self.current_token = tokens[0]          # current token
         self.tkidx = 0                          # current position
-        # definition: [str:name, tokens[]]
+
+        # predefined macros are generated here
+        # \see getCompilerDefines()
         self.definitions = getCompilerDefines()
         self.dels = 0                           # number of tokens deleted
 
@@ -121,8 +136,11 @@ class PreProcessor:
 
         self.checkToks([T_STRING, T_INCLUDER])
         path = self.current_token.value
+        # \see loadRaw
         rawdata = self.loadRaw(path)
 
+        # create tokens from new file, and insert them in this PreProcessor's
+        # tokenlist
         lex = Lexer(path, rawdata)
         tokens = lex.getTokens()
         self.delmov()
@@ -155,6 +173,8 @@ class PreProcessor:
         assert self.current_token.tok == T_ID
         dq = self.getDefn(self.current_token.value)
         if(dq is None):
+
+            # non-constant macros need to be replaced by specific values
             if(self.current_token.value == "__LINE__"):
                 self.delmov()
                 self.tokens[self.tkidx] = Token(

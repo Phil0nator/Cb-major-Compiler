@@ -92,6 +92,11 @@ includepath = f"{compilepath}/include/" if compilepath != "" else f"include/"
 
 include_directories = ["", compilepath, callpath, includepath]
 
+# load raw file is used in the preprocessor to load object files and code files
+# from any of the includepaths specified in either the code or commandline
+# arguments. It will also add the parent folder of the files loaded to includefiles
+# so that that folder can be accessed in the future without the full path.
+
 
 def loadRawFile(path, token):
     rawdata = None

@@ -121,6 +121,8 @@ class Peephole:
         return self.instructions
 
 
+# these comparison specifiers can be added onto the end
+# of conditional instructions like cmovcc, jcc, setcc, etc...
 signed_comparisons = {
 
     "==": "e",
@@ -143,12 +145,16 @@ unsigned_comparisons = {
 
 }
 
+# get the comparison specifier for op, with sign signed
+
 
 def getComparater(signed, op):
     if(signed):
         return signed_comparisons[op]
     else:
         return unsigned_comparisons[op]
+
+# format an instruction
 
 
 def Instruction(op, operands=[]):

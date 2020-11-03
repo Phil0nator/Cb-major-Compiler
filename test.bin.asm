@@ -1,5 +1,4 @@
 
-
 global _char._get_errstr_pint:
 global _void._mmap_pvoid.size_tlonglonglongoff_t:
 global _void._munmap_pvoid.size_t:
@@ -30,12 +29,8 @@ extern scanf
 extern scanf
 global _void___thrdext_p:
 global _void.___crtstack_p:
-global _thread_t_thread_p__threadcallablevoid.:
+global _thread_t_thread_create_p__threadcallablevoid.:
 global _long_thread_join_pthread_t:
-
-
-
-
 
 section .data
 STRING_CONSTANT_0: db `Success`, 0
@@ -181,7 +176,6 @@ STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 STRING_CONSTANT_139: db `sudo`, 0
 STRING_CONSTANT_140: db `-c`, 0
 STRING_CONSTANT_141: db `%s`, 0
-STRING_CONSTANT_142: db `Number: `, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -193,26 +187,16 @@ __emptyenv: DQ STRING_CONSTANT_138, 0
 __systemcallargvconst: DQ STRING_CONSTANT_139, STRING_CONSTANT_140, 0
 clone_threadflags: DQ 0
 __tsigfutex: DQ 0
-
-
 section .bss
 align 16
-
 __heap_padding__: resz 1
-
-
-
 section .text
 align 8
 global main
-
-
-
 _char._get_errstr_pint:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-
 mov [rbp-8], rdi
 mov r10d, dword[rbp-8]
 mov rbx, 131
@@ -244,12 +228,10 @@ jmp ___char._get_errstr_pint__return
 ___char._get_errstr_pint__return:
 leave
 ret
-
 _void_memcpy_pvoid.void.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 32
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -268,12 +250,10 @@ mov [rbp-24], rdx
 ___void_memcpy_pvoid.void.size_t__return:
 leave
 ret
-
 _void_avx_memcpy_pvoid.void.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 56
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -293,7 +273,6 @@ mov qword[rbp-40], rbx
 mov dword[rbp-48], 0
 jmp .L0x4
 .L0x3:
-
 mov ebx, dword[rbp-48]
 shl rbx, 3
 add rbx, [rbp-16]
@@ -339,12 +318,10 @@ jmp .L0x8
 ___void_avx_memcpy_pvoid.void.size_t__return:
 leave
 ret
-
 _void_memset_pvoid.ucharsize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 32
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -358,12 +335,10 @@ mov [rbp-24], rdx
 ___void_memset_pvoid.ucharsize_t__return:
 leave
 ret
-
 _void._mmap_pvoid.size_tlonglonglongoff_t:
 push rbp
 mov rbp, rsp
 sub rsp, 56
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -377,12 +352,10 @@ mov [rbp-48], r9
 ___void._mmap_pvoid.size_tlonglonglongoff_t__return:
 leave
 ret
-
 _void._munmap_pvoid.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
     mov rax, 11
@@ -391,12 +364,10 @@ mov [rbp-16], rsi
 ___void._munmap_pvoid.size_t__return:
 leave
 ret
-
 _int_strcpy_pchar.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
     mov rax, -1
@@ -415,12 +386,10 @@ mov [rbp-16], rsi
 ___int_strcpy_pchar.char.__return:
 leave
 ret
-
 _size_t_strlen_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-
 mov [rbp-8], rdi
     mov rax, -1
     _size_t_strlen_pchar._flp:
@@ -434,12 +403,10 @@ mov [rbp-8], rdi
 ___size_t_strlen_pchar.__return:
 leave
 ret
-
 _char._memchr_pchar.charsize_t:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -479,12 +446,10 @@ jmp ___char._memchr_pchar.charsize_t__return
 ___char._memchr_pchar.charsize_t__return:
 leave
 ret
-
 _int_memcmp_pchar.char.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 48
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -528,14 +493,10 @@ jmp ___int_memcmp_pchar.char.size_t__return
 ___int_memcmp_pchar.char.size_t__return:
 leave
 ret
-
-
-
 _char._strchr_pchar.char:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 jmp .L0x19
@@ -571,14 +532,10 @@ jmp ___char._strchr_pchar.char__return
 ___char._strchr_pchar.char__return:
 leave
 ret
-
-
-
 _char._strerror_plong:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-
 mov [rbp-8], rdi
 mov r10, qword[rbp-8]
 xor rbx, rbx
@@ -609,16 +566,10 @@ ___char._strerror_plong__return:
 leave
 ret
 
-
-
-
-
-
 _long_toStr_plongchar.boolshort:
 push rbp
 mov rbp, rsp
 sub rsp, 144
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -724,7 +675,6 @@ mov ebx, dword[rbp-120]
 mov dword[rbp-136], ebx
 jmp .L0x2a
 .L0x29:
-
 mov r10d, dword[rbp-136]
 mov rbx, qword[rbp-16]
 and r10, 0xffffffff
@@ -765,12 +715,10 @@ jmp ___long_toStr_plongchar.boolshort__return
 ___long_toStr_plongchar.boolshort__return:
 leave
 ret
-
 _long_toStr_pdoublechar.long:
 push rbp
 mov rbp, rsp
 sub rsp, 48
-
 movsd [rbp-8], xmm0
 mov [rbp-16], rdi
 mov [rbp-24], rsi
@@ -843,12 +791,10 @@ jmp ___long_toStr_pdoublechar.long__return
 ___long_toStr_pdoublechar.long__return:
 leave
 ret
-
 _int___sprintf_pchar.char.void.:
 push rbp
 mov rbp, rsp
 sub rsp, 192
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -1161,12 +1107,10 @@ jmp ___int___sprintf_pchar.char.void.__return
 ___int___sprintf_pchar.char.void.__return:
 leave
 ret
-
 _int_sprintf_pchar.char.voidvoidvoidvoid:
 push rbp
 mov rbp, rsp
 sub rsp, 72
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -1270,12 +1214,10 @@ jmp ___int_sprintf_pchar.char.voidvoidvoidvoid__return
 ___int_sprintf_pchar.char.voidvoidvoidvoid__return:
 leave
 ret
-
 _void___printf_pchar.void.:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rdi, 100000
@@ -1319,12 +1261,10 @@ call _void._munmap_pvoid.size_t
 ___void___printf_pchar.void.__return:
 leave
 ret
-
 printf:
 push rbp
 mov rbp, rsp
 sub rsp, 112
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -1377,15 +1317,10 @@ __printf__return:
 leave
 ret
 
-
-
-
-
 _void_printf_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-
 mov [rbp-8], rdi
 mov rbx, qword[rbp-8]
 mov rsi, rbx
@@ -1395,12 +1330,10 @@ call _int_fputs_pfd_tchar.
 ___void_printf_pchar.__return:
 leave
 ret
-
 _int_rand_p:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-
 mov r10d, [rand_next]
 sal r10d, 13
 mov r11d, [rand_next]
@@ -1422,12 +1355,10 @@ jmp ___int_rand_p__return
 ___int_rand_p__return:
 leave
 ret
-
 _void_srand_p:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-
 mov rax, 0
 rdrand rax
 .L0x55:
@@ -1436,12 +1367,10 @@ mov [rand_next], ebx
 ___void_srand_p__return:
 leave
 ret
-
 _void_usleep_plong:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov qword[rbp-32], 0
 mov qword[rbp-24], 0
@@ -1460,12 +1389,10 @@ xor rax, rax
 ___void_usleep_plong__return:
 leave
 ret
-
 _int_inet_aton_pchar.in_addr.:
 push rbp
 mov rbp, rsp
 sub rsp, 76
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 lea rbx, [rbp-28]
@@ -1549,12 +1476,10 @@ jmp ___int_inet_aton_pchar.in_addr.__return
 ___int_inet_aton_pchar.in_addr.__return:
 leave
 ret
-
 _int_recv_pfd_tchar.size_tint:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -1580,12 +1505,10 @@ jmp ___int_recv_pfd_tchar.size_tint__return
 ___int_recv_pfd_tchar.size_tint__return:
 leave
 ret
-
 _int_send_pfd_tchar.size_tint:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -1610,12 +1533,10 @@ jmp ___int_send_pfd_tchar.size_tint__return
 ___int_send_pfd_tchar.size_tint__return:
 leave
 ret
-
 _FILE_fopen_pchar.char.:
 push rbp
 mov rbp, rsp
 sub rsp, 56
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, qword[rbp-16]
@@ -1714,12 +1635,10 @@ jmp ___FILE_fopen_pchar.char.__return
 ___FILE_fopen_pchar.char.__return:
 leave
 ret
-
 _int_fputs_pfd_tchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, qword[rbp-16]
@@ -1743,12 +1662,10 @@ jmp ___int_fputs_pfd_tchar.__return
 ___int_fputs_pfd_tchar.__return:
 leave
 ret
-
 _long_fgets_pfd_tchar.size_t:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -1770,12 +1687,10 @@ jmp ___long_fgets_pfd_tchar.size_t__return
 ___long_fgets_pfd_tchar.size_t__return:
 leave
 ret
-
 _void._floads_pfd_t:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov rdx, 2
 and rdx, 0xffffffff
@@ -1871,12 +1786,10 @@ jmp ___void._floads_pfd_t__return
 ___void._floads_pfd_t__return:
 leave
 ret
-
 _long_execl_pchar.char..:
 push rbp
 mov rbp, rsp
 sub rsp, 24
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rbx, __emptyenv
@@ -1894,12 +1807,10 @@ jmp ___long_execl_pchar.char..__return
 ___long_execl_pchar.char..__return:
 leave
 ret
-
 _long_system_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 32
-
 mov [rbp-8], rdi
 mov rax, 0
     mov rax, 57
@@ -1954,12 +1865,10 @@ jmp ___long_system_pchar.__return
 ___long_system_pchar.__return:
 leave
 ret
-
 _int_scanint_pchar.long.bool:
 push rbp
 mov rbp, rsp
 sub rsp, 64
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -2059,12 +1968,10 @@ jmp ___int_scanint_pchar.long.bool__return
 ___int_scanint_pchar.long.bool__return:
 leave
 ret
-
 _int_scanstr_pchar.charchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -2101,12 +2008,10 @@ jmp ___int_scanstr_pchar.charchar.__return
 ___int_scanstr_pchar.charchar.__return:
 leave
 ret
-
 _int_scansd_pchar.booldouble.:
 push rbp
 mov rbp, rsp
 sub rsp, 80
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -2202,12 +2107,10 @@ jmp ___int_scansd_pchar.booldouble.__return
 ___int_scansd_pchar.booldouble.__return:
 leave
 ret
-
 _int___SSCANF_pchar.char.void..:
 push rbp
 mov rbp, rsp
 sub rsp, 64
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -2420,12 +2323,10 @@ jmp ___int___SSCANF_pchar.char.void..__return
 ___int___SSCANF_pchar.char.void..__return:
 leave
 ret
-
 sscanf:
 push rbp
 mov rbp, rsp
 sub rsp, 96
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -2473,15 +2374,10 @@ __sscanf__return:
 leave
 ret
 
-
-
-
-
 _int_getInt_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 64
-
 mov [rbp-8], rdi
 mov rbx, qword[rbp-8]
 mov rdi, rbx
@@ -2513,12 +2409,10 @@ jmp ___int_getInt_pchar.__return
 ___int_getInt_pchar.__return:
 leave
 ret
-
 _uint_getUint_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 64
-
 mov [rbp-8], rdi
 mov rbx, qword[rbp-8]
 mov rdi, rbx
@@ -2550,12 +2444,10 @@ jmp ___uint_getUint_pchar.__return
 ___uint_getUint_pchar.__return:
 leave
 ret
-
 _char_getchar_p:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-
 mov rdx, 1
 lea rbx, [rbp-8]
 mov rsi, rbx
@@ -2568,24 +2460,20 @@ jmp ___char_getchar_p__return
 ___char_getchar_p__return:
 leave
 ret
-
 _int_getHex_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 16
-
 mov [rbp-8], rdi
 mov rax, 0
 jmp ___int_getHex_pchar.__return
 ___int_getHex_pchar.__return:
 leave
 ret
-
 _void_getString_pchar.intchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 32
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -2602,12 +2490,10 @@ call _long_fgets_pfd_tchar.size_t
 ___void_getString_pchar.intchar.__return:
 leave
 ret
-
 _char._getString_pchar.:
 push rbp
 mov rbp, rsp
 sub rsp, 48
-
 mov [rbp-8], rdi
 mov qword[rbp-16], 80
 mov rbx, qword[rbp-16]
@@ -2946,12 +2832,10 @@ jmp ___char._getString_pchar.__return
 ___char._getString_pchar.__return:
 leave
 ret
-
 _int_toInteger_pchar.bool:
 push rbp
 mov rbp, rsp
 sub rsp, 48
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 jmp .L0xd0
@@ -3059,12 +2943,10 @@ jmp ___int_toInteger_pchar.bool__return
 ___int_toInteger_pchar.bool__return:
 leave
 ret
-
 __scanf:
 push rbp
 mov rbp, rsp
 sub rsp, 40
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rdi, 0
@@ -3107,12 +2989,10 @@ jmp ____scanf__return
 ____scanf__return:
 leave
 ret
-
 scanf:
 push rbp
 mov rbp, rsp
 sub rsp, 104
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov [rbp-24], rdx
@@ -3166,16 +3046,10 @@ __scanf__return:
 leave
 ret
 
-
-
-
-
-
 __thrdext:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-
 mov rax, 0
 xor rax, rax
     mov rax, 186
@@ -3195,12 +3069,10 @@ xor rax, rax
 ____thrdext__return:
 leave
 ret
-
 __crtstack:
 push rbp
 mov rbp, rsp
 sub rsp, 8
-
 mov r9, 0
 and r9, 0xffffffff
 xor r8, r8
@@ -3214,12 +3086,10 @@ jmp ____crtstack__return
 ____crtstack__return:
 leave
 ret
-
-_thread_t_thread_p__threadcallablevoid.:
+_thread_t_thread_create_p__threadcallablevoid.:
 push rbp
 mov rbp, rsp
 sub rsp, 48
-
 mov [rbp-8], rdi
 mov [rbp-16], rsi
 mov rcx, qword[rbp-32]
@@ -3248,59 +3118,53 @@ xor rax, rax
 mov qword[rbp-40], rax
 mov rbx, qword[rbp-40]
 mov rax, rbx
-jmp ___thread_t_thread_p__threadcallablevoid.__return
-___thread_t_thread_p__threadcallablevoid.__return:
+jmp ___thread_t_thread_create_p__threadcallablevoid.__return
+___thread_t_thread_create_p__threadcallablevoid.__return:
 leave
 ret
-
 _long_thread_join_pthread_t:
 push rbp
 mov rbp, rsp
-sub rsp, 24
-
+sub rsp, 16
 mov [rbp-8], rdi
-mov rdx, 2147483648
+mov rdx, qword[rbp-8]
 and rdx, 0xffffffff
 xor rsi, rsi
-xor rax, rax
-    mov rax, 39
-    syscall
-    
-.L0xea:
-mov rdi, rax
-xor rax, rax
-    mov rax, 61
-    xor r8, r8
-    syscall
-    
-.L0xed:
-mov qword[rbp-16], rax
-mov rbx, qword[rbp-16]
+mov rbx, __tsigfutex
 mov rdi, rbx
 xor rax, rax
-call _char._strerror_plong
-mov rdi, rax
+push rdi
+push rsi
+push rdx
+xor r9, r9
+and r9, 0xffffffff
+xor r8, r8
+xor rcx, rcx
+mov ebx, edx
+mov edx, ebx
+and rdx, 0xffffffff
+mov rbx, rsi
+mov rsi, rbx
+mov rbx, rdi
+mov rdi, rbx
 xor rax, rax
-call _void_printf_pchar.
+    mov rax, 202
+    mov r10, rcx
+    syscall
+    
+.L0xe9:
+pop rdx
+pop rsi
+pop rdi
+jmp .L0xe7
+.L0xe7:
 ___long_thread_join_pthread_t__return:
 leave
 ret
-
 main:
 push rbp
 mov rbp, rsp
-sub rsp, 16
-
-mov rbx, STRING_CONSTANT_142
-mov rdi, rbx
-xor rax, rax
-call _char._getString_pchar.
-mov qword[rbp-8], rax
-mov rbx, qword[rbp-8]
-mov rdi, rbx
-xor rax, rax
-call _void_printf_pchar.
+sub rsp, 8
 __main__return:
 leave
 ret
-

@@ -3,7 +3,8 @@
 #   CodeBlocks contains functions and constants used accross
 #       many files as templates to create a block of asm
 #       based on some inputs.
-#
+#   CodeBlocks is especially messy because it contains
+#       the bulk of the raw string operations.
 #
 ######################################################
 
@@ -19,13 +20,17 @@ import math
 # bitmasks for boolean values
 ensure_boolean = "and al, 1\n"
 
-
+# check if a value is true, (same as ensure_boolean because 'and' will set
+# flags enough)
 check_fortrue = f"{ensure_boolean}"
+
+# get calling label for function based on name mangling scheme
 
 
 def functionlabel(fn):
-    if(fn.extern):
+    if(fn.extern):  # externs have no mangling
         return fn.name + ":"
+    # _returntype_name_ptypetypetype...  :
     out = "_%s_%s_%s:\n" % (fn.returntype, fn.name, "p#")
     types = ""
     for p in fn.parameters:
@@ -33,18 +38,26 @@ def functionlabel(fn):
     out = out.replace("#", types)
     return out
 
+# get the code block to allocate a stack frame at the begining of a function
+
 
 def function_allocator(amt):
 
     return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % ((amt))
 
+# set a register to zero using the faster 'xor' instruction
+
 
 def zeroize(reg):
     return Instruction("xor", [reg, reg])
 
+# make name a label
+
 
 def label(name):
     return "%s:\n" % name
+
+# generate the closing for a function (exit stack frame, and return)
 
 
 def function_closer(name, destructions):
@@ -53,6 +66,9 @@ def function_closer(name, destructions):
 leave
 ret
 """ % (name, destructions)
+
+# Get the value of a number that is within a set ( a set refers to this
+# notation: { ... , ... , ... })
 
 
 def setValueOf(val, flt, ptr):
@@ -65,9 +81,12 @@ def setValueOf(val, flt, ptr):
         else:
             return setValueOf(val.accessor.initializer, flt, False)
 
+# generate .data code for an intrinsic constant (can be a set)
+
 
 def createIntrinsicConstant(variable):
 
+    # if it is a set
     if(isinstance(variable.initializer, list)):
         if(variable.t.isflt()):
 
@@ -75,15 +94,19 @@ def createIntrinsicConstant(variable):
         else:
             out = f"{variable.name}: {getConstantReserver(variable.t.down())} { str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))  }\n"
         return out
-
+    # for floats
     if((variable.t.isflt())):
         return f"{variable.name}: dq {variable.initializer.hex()}\n"
 
+    # for int types
     return "%s: %s %s\n" % (variable.name, getConstantReserver(
         variable.t), (variable.initializer))
 
 
+# keep string IDS
 stringconstant_counter = 0
+
+# create specifically a string literal in .data
 
 
 def createStringConstant(s):
@@ -96,7 +119,10 @@ def createStringConstant(s):
     return out
 
 
+# keep float IDs
 floatconstant_counter = 0
+
+# create specifically a float literal in .data
 
 
 def createFloatConstant(s):
@@ -109,9 +135,13 @@ def createFloatConstant(s):
     floatconstant_counter += 1
     return out
 
+# create .bss variable
+
 
 def createIntrinsicHeap(variable):
     return "%s: %s\n" % (variable.name, getHeapReserver(variable))
+
+# load source (any type) to dest (also any type)
 
 
 def loadToPtr(dest, source):
@@ -128,6 +158,8 @@ def loadToPtr(dest, source):
         return loadToReg(dest, source)
     return loadToReg(f"[{setSize(dest,8)}]", source)
 
+# push v to the stack
+
 
 def spush(v: EC.ExpressionComponent):
     if(v.type.isflt()):
@@ -135,6 +167,8 @@ def spush(v: EC.ExpressionComponent):
     if(isinstance(v.accessor, Variable)):
         return f"mov {rax}, {valueOf(v.accessor)}\npush {rax}\n"
     return f"push {v.accessor}\n"
+
+# pop from the stack into v
 
 
 def spop(v: EC.ExpressionComponent):
@@ -144,6 +178,11 @@ def spop(v: EC.ExpressionComponent):
         return f"pop {rax}\nmov {valueOf(v.accessor)}, {rax}\n"
     return f"pop {v.accessor}\n"
 
+# call a function
+# (for regular functions this is as simple as using the 'call' instruction)
+# for inline functions this means recompiling the function, and pasting its
+# raw assembly
+
 
 def fncall(fn):
     global norm_scratch_registers_inuse, sse_scratch_registers_inuse
@@ -151,24 +190,31 @@ def fncall(fn):
         return "call %s\n" % fn.getCallingLabel()
     else:
 
+        # save register allocation for calling
         regstate = norm_scratch_registers_inuse.copy()
         regstatesse = sse_scratch_registers_inuse.copy()
+        # free all registers for re-compilation of the inline
         rfreeAll()
 
         resetcfg = False
+
+        # suppress warnings for re-compilation
         if(fn.isCompiled and not config.__nowarn__):
             config.__nowarn__ = True
             resetcfg = True
         fn = fn.reset()
         fn.compile()
-
+        # restore register state
         norm_scratch_registers_inuse = regstate
         sse_scratch_registers_inuse = regstatesse
 
+        # re-enable warnings if necessary
         if resetcfg:
             config.__nowarn__ = False
 
         return fn.asm
+
+# mov variable var into register reg
 
 
 def movVarToReg(reg, var):
@@ -182,6 +228,16 @@ def movVarToReg(reg, var):
             return f"cvtsi2sd {reg}, {valueOf(var)}\n"
         else:
             return f"mov {reg},  {valueOf(var)}\n"
+#
+# get the value of x.
+# valueOf is used within lines, so it will always equate to one
+# operand, without a newline, for use as destination or source.
+#
+# the dflt flag is depricated
+# the exactSize flag is used to specify that the exact size of the
+# variable / register should be used rather than the defualt 8 byte
+# standard.
+#
 
 
 def valueOf(x, dflt=False, exactSize=True):
@@ -205,6 +261,8 @@ def valueOf(x, dflt=False, exactSize=True):
     elif (isinstance(x, int)):
         return (x)
 
+# load value value into register reg
+
 
 def loadToReg(reg, value):
 
@@ -222,8 +280,7 @@ def loadToReg(reg, value):
 
     if(isinstance(reg, str)):
         if("xmm" in reg):
-            # TODO:
-            # SEE IF THIS IS FINE
+
             if(isinstance(value, Variable) and value.t.isflt()):
                 return f"movsd {reg}, {valueOf(value)}\n"
             elif(isinstance(value, str) and "xmm" in value):
@@ -269,11 +326,16 @@ def movRegToVar(od, reg):
 # logic label handling
 total_labelCounter = -1
 
+# logic labels are created with an inf value only when the debug flag is
+# set (-g)
+
 
 def getLogicLabel(inf):
     global total_labelCounter
     total_labelCounter += 1
     return f"_L{inf}_{hex(total_labelCounter)}" if config.DO_DEBUG else f".L{hex(total_labelCounter)}"
+
+# bitshift int a by int b in direction op, based on signed flag
 
 
 def shiftInt(a, b, op, signed):
@@ -303,17 +365,26 @@ def shiftInt(a, b, op, signed):
             rfree(tmp)
             return f"mov {tmp}, rcx\nmov cl, {boolchar_version[b]}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
 
+# load register to rax
+
 
 def loadToRax(areg):
     return Instruction("mov", [setSize(rax, sizeOf(areg)), areg])
+
+# load rax to register
 
 
 def getFromRax(areg):
     return Instruction("mov", [areg, setSize(rax, sizeOf(areg))])
 
+# load rdx to register
+
 
 def getFromRdx(areg):
     return Instruction("mov", [areg, setSize(rdx, sizeOf(areg))])
+
+# perform integer arithmatic op on areg by breg
+# (op areg, breg)
 
 
 def doIntOperation(areg, breg, op, signed, size=8):
@@ -353,17 +424,25 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op in ["!", "&&", "||", "^", "~", "|", "&"]):
         return boolmath(areg, breg, op)
 
+# compare areg, breg
+# set(op) (byte)breg
+
 
 def cmpI(areg, breg, signed, op):
 
     comparator = getComparater(signed, op)
     return f"\ncmp {areg}, {breg}\nset{comparator} {setSize(areg, 1)}\n"
 
+# compare areg, breg
+# set(op) al
+
 
 def cmpF(areg, breg, op):
 
     comparator = getComparater(False, op)
     return f"ucomisd {areg}, {breg}\nset{comparator} {'al'}\n"
+
+# perform boolean operations (bitwize/logical)
 
 
 def boolmath(areg, breg, op):
@@ -383,6 +462,8 @@ def boolmath(areg, breg, op):
 
     return instr
 
+# perform boolean / bitwise operations on floating point registers
+
 
 def bitmathf(areg, breg, op):
     cmd = ""
@@ -398,6 +479,9 @@ def bitmathf(areg, breg, op):
         return f"movq {rax}, {areg}\nnot {rax}\nmovq {areg}, {rax}\n"
 
     return f"{cmd} {areg}, {breg}\n"
+
+# perform op on areg by breg for floating point values
+# (op areg, breg)
 
 
 def doFloatOperation(areg, breg, op):
@@ -423,6 +507,8 @@ def doFloatOperation(areg, breg, op):
 
     return f"{asmop} {areg}, {breg}\n"
 
+# wrapper for int or float doOperation functions
+
 
 def doOperation(t, areg, breg, op, signed=False):
     if("xmm" in areg and "xmm" in breg):
@@ -434,6 +520,9 @@ def doOperation(t, areg, breg, op, signed=False):
     else:
         print("fatal type mismatch: unkown.")
         exit(1)
+
+# cast breg of type b to newbreg of type a
+# areg is depricated
 
 
 def castABD(a, b, areg, breg, newbreg):
@@ -453,6 +542,8 @@ def castABD(a, b, areg, breg, newbreg):
     if(b.type.isflt() and not a.type.isflt()):
         return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False
+
+# get amount to shift by to multiply or divide by i
 
 
 def shiftmul(i):

@@ -15,6 +15,8 @@
 #           - run
 #           etc...
 #######################################################
+# lc 6440
+# lct 9144
 import time
 import traceback
 import re
@@ -44,10 +46,10 @@ def main():
     # preprocess
     lex = Lexer(config.__fileinput__, raw)
     firstTokens = lex.getTokens()
-
+    del lex
     pp = PreProcessor(firstTokens)
     totals = pp.process()
-
+    del pp
     # global compilation
     c = Compiler()
     config.GlobalCompiler = c
@@ -74,9 +76,9 @@ def main():
     asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
     asm = asm.replace("%%CONSTANTS%%", c.constants)
     asm = asm.replace("%%MACROTEXT%%", config.__macrotext__)
-
+    del c
     # cleanup
-    #asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
+    asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
 
     # linking, and running
 

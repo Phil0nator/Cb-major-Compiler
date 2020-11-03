@@ -2,6 +2,12 @@ import Classes.Token as T
 import Classes.Variable as V
 import Assembly.Registers as R
 
+# determine if a value (can be multiple types) is a float
+#   for tokens, return if value is sse register
+#   for strings, return if they are a sse register
+#   for variables, return their type's float function
+#   else: false
+
 
 def isfloat(x):
     if (isinstance(x, T.Token)):
@@ -18,6 +24,9 @@ def isfloat(x):
         return x.isflt() and not x.isptr
     return False
 
+# return the pointer size specifier for a variable v
+# ex: psizeof(int a) = dword because int is 32 bits
+
 
 def psizeof(v):
     if v.isptr:
@@ -32,6 +41,8 @@ def psizeof(v):
         return "word"
     return "qword"
 
+# return the pointer size specifier for a type t at ptrdepth lvl
+
 
 def psizeoft(t, lvl=0):
     if t.size(lvl) == 1:
@@ -45,6 +56,7 @@ def psizeoft(t, lvl=0):
     return "qword"
 
 
+# bss / data reservers
 constantReservers = ["DB", "DW", "DD", "DQ"]
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 
@@ -60,9 +72,13 @@ def getHeapReserver(t):
         return "RESQ 1"
     return "RESB %s" % t.t.csize()
 
+# depricated
+
 
 def getSizeSpecifier(t):
     return "QWORD"
+
+# use a mask to truncate reg to size
 
 
 def maskset(reg, size):

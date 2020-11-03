@@ -75,15 +75,24 @@ def bringdown_memlocs(a, b):
     return bringdown_memloc(a) + bringdown_memloc(b)
 
 
+'''
+The ExpressionEvaluator abstract class contains functions shared by
+    Leftside and Rightside evaluators. This is mostly functions for
+    semi-constexpr optimizations (int operations with one constant and one var).
+'''
+
+
 class ExpressionEvaluator:
     def __init__(self, fn):
         self.fn = fn
         self.resultflags = None
 
+    # Bitshift optimization for multiplication and division by multiples of 2
     def mult_div_optimization(self, a, b, op):
         newinstr = None
         newt = None
         apendee = None
+
         if(canShiftmul(b.accessor)):
             newinstr = ""
             newinstr += bringdown_memloc(a)
@@ -102,6 +111,7 @@ class ExpressionEvaluator:
         newt = a.type.copy()
         return newinstr, newt, apendee
 
+    # shifting by constant value optimization
     def const_shift_optimization(self, a, b, op):
         newinstr = ""
         newinstr += bringdown_memloc(a)
@@ -115,6 +125,7 @@ class ExpressionEvaluator:
         apendee = a
         newt = a.type.copy()
         return newinstr, newt, apendee
+    # addition or subtraction by one optimization
 
     def inc_dec_optimization(self, a, b, op):
         newinstr = ""
@@ -130,6 +141,8 @@ class ExpressionEvaluator:
         apendee = a
         newt = a.type.copy()
         return newinstr, newt, apendee
+    # use of smaller 'test' instruction in place of 'cmp' for particular
+    # comparisons
 
     def test_optimization(self, a, b, op):
 
@@ -139,6 +152,8 @@ class ExpressionEvaluator:
 
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
+    # optimization for operations which do not require both operands in
+    # registers
 
     def noloadOp(self, a, b, op):
 
@@ -148,6 +163,8 @@ class ExpressionEvaluator:
         return newinstr, a.type.copy(), EC.ExpressionComponent(
             areg, a.type.copy(), token=a.token)
 
+    # Check if an operation is a semiconstexpr, and if so what optimizations
+    # are possible.
     def check_semiconstexpr_optimization(self, a, b, op):
         newinstr = None
         newt = None
@@ -346,6 +363,8 @@ class RightSideEvaluator(ExpressionEvaluator):
     def __init__(self, fn):
         self.fn = fn
 
+    # optimization for addition or subtraction by one using 'inc' or 'dec'
+    # instructions
     def incdec(self, a, op, o):
         needload = True
         instr = ""
@@ -359,6 +378,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         o = a.type.copy()
         return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
 
+    # evaluate logical NOT
     def evalNot(self, a):
         # must be bool compatible
         instr = ""
@@ -422,12 +442,14 @@ class RightSideEvaluator(ExpressionEvaluator):
         else:
             throw(AddressOfConstant(a.token))
 
+    # find the value pointed to by a. (same as a[0])
     def derefrence(self, a):
         instr = ""
         if(a.isconstint()):
 
             throw(AddressOfConstant(a.token))
 
+        # a is variable
         elif(isinstance(a.accessor, Variable)):
 
             tmp = ralloc(False, a.accessor.t.csize())
@@ -444,6 +466,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             rfree(tmp)
             return instr, o, EC.ExpressionComponent(
                 oreg, o.copy(), token=a.token)
+        # a is register
         elif(a.isRegister()):
             result = ralloc(a.type.isflt(), a.type.csize())
             if(a.type.isflt()):
@@ -456,7 +479,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             o.ptrdepth -= 1
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
-
+        # a exists next on the stack
         elif(a.accessor == "pop"):
             result = ralloc(False, a.type.csize())
             instr += loadToReg(result, a.accessor)
@@ -476,6 +499,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             return instr, o, EC.ExpressionComponent(
                 areg, o.copy(), token=a.token)
 
+    # cast a to type e
     def typecast(self, a, e, o):
         instr = ""
         tid = e.type
@@ -560,12 +584,6 @@ class RightSideEvaluator(ExpressionEvaluator):
             newtype, toConvert = determinePrecedence(a.type, b.type, self.fn)
             o = newtype.copy()
 
-            # TODO:
-            #   The casting system will sometimes reverse the
-            #   order of operands!
-            #
-            #   \/\/\/\/\//\/\/\/\/\/\/\/\/\/\
-
             reverse = False
             if(newtype.__eq__(a.type)):
                 # cast to a
@@ -614,19 +632,19 @@ class RightSideEvaluator(ExpressionEvaluator):
 
         return instr, o, apendee
 
+    # access member b of struct a
     def memberAccess(self, a, b):
         instr = ""
         member = b.accessor
         if(isinstance(member, Variable)):
             member = member.name
-
+        # member as a Variable object
         memv = a.type.getMember(member)
         if(memv is None):
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()
-
+        # new register
         tmpaddr = ralloc(False)
-        #instr+=f"mov {tmpaddr}, {valueOf(a.accessor)}\n"
         instr += loadToReg(tmpaddr, a.accessor)
 
         rfree(a.accessor)
@@ -635,6 +653,8 @@ class RightSideEvaluator(ExpressionEvaluator):
         apendee = EC.ExpressionComponent(tmpaddr, memv.t.copy(), token=b.token)
         apendee.memory_location = True
         return instr, o, apendee
+
+    # take final result and cast it properly to the destination specified
 
     def depositFinal(self, final, o, dest):
         instr = ""
@@ -753,6 +773,8 @@ class RightSideEvaluator(ExpressionEvaluator):
 class LeftSideEvaluator(ExpressionEvaluator):
     def __init__(self, fn):
         self.fn = fn
+    # optimization for addition or subtraction by 1 using 'inc' or 'dec'
+    # instructions
 
     def incdec(self, a, op, o):
         needload = True
@@ -771,6 +793,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
         instr = ""
         apendee = None
 
+        # Generalized Leftside operation evaluation is only different for the
+        # '[' operator.
         if(op == "["):
             if(b.type.isflt()):
                 throw(UsingFloatAsIndex(b.token))
@@ -802,9 +826,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             return instr, o, apendee
 
+        # Leftside evaluation for general operations is the same as rightside evaluation,
+        # so unless the above conditions are met, a RightSideEvaluator can be used for common
+        # operations.
         rev = RightSideEvaluator(self.fn)
         return rev.performCastAndOperation(a, b, op, o)
 
+    # access member b of struct a
     def memberAccess(self, a, b):
         instr = ""
         member = b.accessor
@@ -818,7 +846,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
         o = memv.t.copy()
 
         tmpaddr = ralloc(False)
-        #instr+=f"mov {tmpaddr}, {valueOf(a.accessor)}\n"
         instr += loadToReg(tmpaddr, a.accessor)
 
         if(memv.offset != 0):
@@ -828,6 +855,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         return instr, o, EC.ExpressionComponent(
             tmpaddr, memv.t.copy(), token=b.token)
 
+    # evaluate logical NOT
     def evalNot(self, a):
         instr = ""
         if(not typematch(BOOL, a.type) and not a.isconstint()):
@@ -840,6 +868,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         return instr, o, EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
 
+    # evaluate bitwize not
     def evalANOT(self, a):
         instr = ""
         needload = True
@@ -849,6 +878,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         o = a.type.copy()
         return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
 
+    # take pointer to a
     def refrize(self, a):
         instr = ""
         if(a.isconstint()):
@@ -873,6 +903,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         else:
             throw(AddressOfConstant(a.token))
 
+    # get value pointed to by a. (same as a[0])
     def derefrence(self, a):
         instr = ""
         if(a.isconstint()):
@@ -907,6 +938,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
 
+    # cast a to type e
     def typecast(self, a, e, o):
         instr = ""
         tid = e.type
@@ -930,10 +962,12 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 a.accessor, t.copy(), token=a.token)
         return instr, o, appendee
 
+    # no deposit is necessary for leftside evaluation
     def depositFinal(self, final, o, dest):
         print(final)
         return "", final.type
 
+    # main wrapper
     def evaluate(self, pfix):
         out = self.evaluatePostfix(pfix, self)
         return out

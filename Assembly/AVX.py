@@ -19,6 +19,9 @@ def ymmVersion(xmm):
 def xmmVersion(ymm):
     return ymm.replace("y", "x")
 
+# get the correctly sized avx register (size may only be 2 or 4, refering
+# to QWORDS)
+
 
 def avx_correctSize(avxreg, size):
     if(size == 2):

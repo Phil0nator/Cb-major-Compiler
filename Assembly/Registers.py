@@ -10,7 +10,7 @@
 from Classes.Variable import Variable
 import config
 import traceback
-# REGISTERS
+# 64 bit registers
 
 rax = "rax"
 rbx = "rbx"
@@ -60,7 +60,7 @@ r13b = "r13b"
 r14b = "r14b"
 r15b = "r15b"
 
-
+# masterlist -- includes all available registers
 REGISTERS = ["rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
              "al", "bl", "cl", "dl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b",
              "eax", "ebx", "ecx", "edx", "esi", "edi", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d",
@@ -71,7 +71,7 @@ if(REGISTERS[-1] == "r15w"):
         REGISTERS.append(f"xmm{i}")
         REGISTERS.append(f"ymm{i}")
 
-
+# get byte version of qword register
 boolchar_version = {
 
     rax: al,
@@ -91,7 +91,7 @@ boolchar_version = {
 
 
 }
-
+# get dword version of qword version
 dword_version = {
 
     rax: "eax",
@@ -111,7 +111,7 @@ dword_version = {
 
 
 }
-
+# get word version of qword register
 small_version = {
 
     rax: "ax",
@@ -131,7 +131,7 @@ small_version = {
 
 
 }
-
+# return any int register to its qword size
 normal_size = {
 
 
@@ -220,7 +220,7 @@ sse_parameter_registers = [
 
 
 ]
-
+# scratch
 
 norm_scratch_registers = [
 
@@ -246,7 +246,7 @@ sse_scratch_registers = [
     xmm14,
 
 ]
-
+# allocation
 sse_scratch_registers_inuse = [
     False,
     False,
@@ -314,6 +314,8 @@ def rfreeAll():
         sse_scratch_registers_inuse[i] = False
         norm_scratch_registers_inuse[i] = False
 
+# set reg to size size (bytes)
+
 
 def setSize(reg, size):
     if("xmm" in reg):
@@ -327,6 +329,8 @@ def setSize(reg, size):
         return dword_version[reg]
 
     return reg
+
+# get the size in bytes of a register
 
 
 def sizeOf(reg):
