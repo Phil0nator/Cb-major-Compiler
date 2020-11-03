@@ -7,7 +7,7 @@
 #define DOUBLE_PRECISION_MULTIPLIER 1000000000
 #define FLOAT_PRECISION_MULTIPLIER 10000000
 
-global long hton64(long x){
+inline long hton64(long x){
     __asm{"
     
     bswap rdi
@@ -16,7 +16,7 @@ global long hton64(long x){
     "}
 }
 
-global int hton32(int x){
+inline int hton32(int x){
     __asm{
         "
         xor rax,rax
@@ -26,7 +26,7 @@ global int hton32(int x){
     }
 }
 
-global short hton16(short x){
+inline short hton16(short x){
     __asm{"
     xor rax, rax
     bswap edi

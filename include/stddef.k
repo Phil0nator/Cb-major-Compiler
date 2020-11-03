@@ -51,8 +51,11 @@ typedef short int32;
 #define MAX_INT 9223372036854775807
 #define MAX_UINT 18446744073709551615
 
-__cdecl long __inline__syscall(long call){__asm{"syscall"}}
-long* INLINE_SYSCALL = __inline__syscall;
+inline long __inline__syscall(long call){__asm{"
+  mov rax, rdi
+  syscall
+"}}
+
 
 
 #endif

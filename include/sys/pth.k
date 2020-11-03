@@ -7,33 +7,33 @@
 #include "string.k"
 typedef long pid_t;
 
-global long fork(){
+inline long fork(){
     __asm{"
     mov rax, 57
     syscall
     "}
 }
-global long vfork(){
+inline long vfork(){
     __asm{"
     mov rax, 58
     syscall
     "}
 }
-global long execve(char* pathname, char** args, char** env){
+inline long execve(char* pathname, char** args, char** env){
     __asm{"
     mov rax, 59
     syscall
     "}
 }
 
-global long pause(){
+inline long pause(){
     __asm{"
     mov rax, 34
     syscall
     "}
 }
 
-global long waitpid(pid_t pid, int *wstatus, int options){
+inline long waitpid(pid_t pid, int *wstatus, int options){
 
     __asm{"
     mov rax, 61

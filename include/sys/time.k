@@ -36,7 +36,7 @@ struct timezone_t{
 #define ITIMER_PROF     2
 
 
-function int getitimer(int which, itimerval_t* value){
+inline int getitimer(int which, itimerval_t* value){
     __asm{
         "
         mov rax, 36
@@ -44,31 +44,31 @@ function int getitimer(int which, itimerval_t* value){
         "
     }
 }
-function int gettimeofday(timeval_t *tv, timezone_t *tz){
+inline int gettimeofday(timeval_t *tv, timezone_t *tz){
     __asm{"
     mov rax, 96
     syscall
     "}
 }
-function int setitimer(int which, itimerval_t* value, itimerval_t* ovalue){
+inline int setitimer(int which, itimerval_t* value, itimerval_t* ovalue){
     __asm{"
     mov rax, 38
     syscall
     "}
 }
-function int settimeofday(timeval_t* tv, timezone_t* tz){
+inline int settimeofday(timeval_t* tv, timezone_t* tz){
     __asm{"
     mov rax, 164
     syscall
     "}
 }
-function int utimes(char* filename, timeval_t*utimes){
+inline int utimes(char* filename, timeval_t*utimes){
     __asm{"
     mov rax, 235
     syscall
     "}
 }
-function time_t time(time_t *tloc){
+inline time_t time(time_t *tloc){
     __asm{"
     mov rax, 201
     syscall

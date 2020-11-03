@@ -29,7 +29,6 @@ import Assembly.AVX as AVX
 from globals import TsCompatible, INT, BOOL, CHAR, SHORT, LONG, VOID, DOUBLE, isIntrinsic
 
 from Classes.Constexpr import determineConstexpr
-
 # multiply all items in an array
 
 
@@ -540,13 +539,11 @@ class Function:
         if(self.current_token.tok != T_STRING):
             throw(ExpectedToken(self.current_token, "Assembly String"))
 
-        content = f"{self.current_token.value}" # copy value so as not to change it
-        content = content.replace("\t", "").replace("  ", " ").strip()
+        # copy value so as not to change it
+        content = f"{self.current_token.value}"
 
         lnum = getLogicLabel("")
         content = content.replace("%L", lnum)
-
-
 
         self.addline(content)
 
@@ -808,10 +805,10 @@ class Function:
             fn = Function(fid, params, var.t, self.compiler, [])
             varcall = True
         elif(fn is None):
-            throw(UnkownFunction(fnstartt,fid,types))
+            throw(UnkownFunction(fnstartt, fid, types))
 
         else:
-            
+
             pcount = len(fn.parameters)
             varcall = False
         # build actual parameter-loading instructions using exact datatypes

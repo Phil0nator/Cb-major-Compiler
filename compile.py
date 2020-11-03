@@ -17,6 +17,7 @@
 #######################################################
 import time
 import traceback
+import re
 import os
 import config
 import argparse as arg
@@ -75,7 +76,7 @@ def main():
     asm = asm.replace("%%MACROTEXT%%", config.__macrotext__)
 
     # cleanup
-    asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
+    #asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
 
     # linking, and running
 

@@ -10,7 +10,7 @@ int rand_next = 1;
 * int rdrand() is a wrapper for the very slow x86 rdrand instruction which outputs cryptographically secure random integers.
 *
 */
-function int rdrand(){
+inline int rdrand(){
     __asm{"rdrand rax"}
 }
 
