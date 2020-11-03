@@ -66,16 +66,17 @@ function long toStr(long val, char* buffer, bool signed, short base){
 
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
-    int len = 1;
+    int len = 0;
     while(val != 0){
 
         char mod;
         val = divmod(val, base, &mod);
-        tmpbuf[len-1] = __numbercharactersbase1016[mod];
+        tmpbuf[len] = __numbercharactersbase1016[mod];
         len+=1;
 
     }
-    for(int i = len;i>=0;i--){
+
+    for(int i = len;i>0;i--){
         buffer[i]=tmpbuf[len-i];
     }
 

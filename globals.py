@@ -180,6 +180,8 @@ def typematch(a, b):
             return True
         if(a.__eq__(b)):
             return True
+        if(DType(a.name,a.size,a.members,a.ptrdepth,False,a.destructor,a.constructor).__eq__(DType(b.name,b.size,b.members,b.ptrdepth,False,b.destructor,b.constructor))):
+            return True
         if(not a.isflt() and not b.isflt()):
             return True
         elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):

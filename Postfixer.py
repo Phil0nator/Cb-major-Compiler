@@ -36,7 +36,7 @@ class Postfixer:
             ec = EC.ExpressionComponent(t.tok, t.value, isoperation=True)
         else:
             if(t.tok == T_INT):
-                ec = EC.ExpressionComponent(t.value, INT.copy(), constint=True)
+                ec = EC.ExpressionComponent(t.value, VOID.copy(), constint=True)
             elif(t.tok == T_ID):
                 v: Variable = self.fn.getVariable(t.value)
                 if(v is None):
@@ -51,7 +51,7 @@ class Postfixer:
                     else:
 
                         ec = EC.ExpressionComponent(
-                            v.size(0), INT.copy(), constint=True, token=t)
+                            v.size(0), VOID.copy(), constint=True, token=t)
                         ec.memory_location = valueOf(v)
                 else:
                     v.referenced = True

@@ -7,7 +7,7 @@
 #       to the ExpressionEvaluators, in that it will only call the
 #       "calculateConstant" function of globals.py for the evaluation.
 #####################################################
-from globals import INT, operatorISO, DOUBLE
+from globals import VOID, operatorISO, DOUBLE
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
@@ -16,58 +16,58 @@ from Classes.Variable import Variable
 def calculateConstant(a, b, op):
     if(op == "*"):
         return EC.ExpressionComponent(
-            int(a.accessor * b.accessor), INT.copy(), constint=True)
+            int(a.accessor * b.accessor), VOID.copy(), constint=True)
     elif(op == "/"):
         return EC.ExpressionComponent(
-            int(a.accessor / b.accessor), INT.copy(), constint=True)
+            int(a.accessor / b.accessor), VOID.copy(), constint=True)
     elif(op == "+"):
         return EC.ExpressionComponent(
-            int(a.accessor + b.accessor), INT.copy(), constint=True)
+            int(a.accessor + b.accessor), VOID.copy(), constint=True)
     elif(op == "-"):
         return EC.ExpressionComponent(
-            int(a.accessor - b.accessor), INT.copy(), constint=True)
+            int(a.accessor - b.accessor), VOID.copy(), constint=True)
     elif(op == "=="):
         return EC.ExpressionComponent(
-            int(a.accessor == b.accessor), INT.copy(), constint=True)
+            int(a.accessor == b.accessor), VOID.copy(), constint=True)
     elif(op == "!="):
         return EC.ExpressionComponent(
-            int(a.accessor != b.accessor), INT.copy(), constint=True)
+            int(a.accessor != b.accessor), VOID.copy(), constint=True)
     elif(op == "<="):
         return EC.ExpressionComponent(
-            int(a.accessor <= b.accessor), INT.copy(), constint=True)
+            int(a.accessor <= b.accessor), VOID.copy(), constint=True)
     elif(op == ">="):
         return EC.ExpressionComponent(
-            int(a.accessor >= b.accessor), INT.copy(), constint=True)
+            int(a.accessor >= b.accessor), VOID.copy(), constint=True)
     elif(op == ">"):
         return EC.ExpressionComponent(
-            int(a.accessor > b.accessor), INT.copy(), constint=True)
+            int(a.accessor > b.accessor), VOID.copy(), constint=True)
     elif(op == "<"):
         return EC.ExpressionComponent(
-            int(a.accessor < b.accessor), INT.copy(), constint=True)
+            int(a.accessor < b.accessor), VOID.copy(), constint=True)
     elif(op == "%"):
         return EC.ExpressionComponent(
-            int(a.accessor % b.accessor), INT.copy(), constint=True)
+            int(a.accessor % b.accessor), VOID.copy(), constint=True)
     elif(op == ">>"):
         return EC.ExpressionComponent(
-            int(a.accessor >> b.accessor), INT.copy(), constint=True)
+            int(a.accessor >> b.accessor), VOID.copy(), constint=True)
     elif(op == "<<"):
         return EC.ExpressionComponent(
-            int(a.accessor << b.accessor), INT.copy(), constint=True)
+            int(a.accessor << b.accessor), VOID.copy(), constint=True)
     elif(op == "||"):
         return EC.ExpressionComponent(
-            int(a.accessor or b.accessor), INT.copy(), constint=True)
+            int(a.accessor or b.accessor), VOID.copy(), constint=True)
     elif(op == "&&"):
         return EC.ExpressionComponent(
-            int(a.accessor and b.accessor), INT.copy(), constint=True)
+            int(a.accessor and b.accessor), VOID.copy(), constint=True)
     elif(op == "&"):
         return EC.ExpressionComponent(
-            int(a.accessor & b.accessor), INT.copy(), constint=True)
+            int(a.accessor & b.accessor), VOID.copy(), constint=True)
     elif(op == "|"):
         return EC.ExpressionComponent(
-            int(a.accessor | b.accessor), INT.copy(), constint=True)
+            int(a.accessor | b.accessor), VOID.copy(), constint=True)
     elif(op == "^"):
         return EC.ExpressionComponent(
-            int(a.accessor ^ b.accessor), INT.copy(), constint=True)
+            int(a.accessor ^ b.accessor), VOID.copy(), constint=True)
 
 
 def calculateCfloat(a, b, op):
@@ -171,7 +171,7 @@ def determineConstexpr(flt, tokens, fn):
                 if(op == "-"):
                     if(len(stack) == 0):
                         stack.append(
-                            evaluate(EC.ExpressionComponent(0, INT.copy()), a, op))
+                            evaluate(EC.ExpressionComponent(0, VOID.copy()), a, op))
                         continue
                 b = stack.pop()
                 stack.append(evaluate(a, b, op))

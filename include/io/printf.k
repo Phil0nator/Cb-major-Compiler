@@ -13,7 +13,6 @@
 global void __printf(char* fmt, void* args){
 
     char *normform = malloc(__PRINTF_MAXNORMUSE);
-    
     int l = __sprintf(normform,fmt,args);
     write(STDOUT, normform, l);
 

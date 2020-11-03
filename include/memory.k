@@ -80,6 +80,7 @@ function void memset(void* dest, unsigned char value, size_t bytes){
 global void* mmap(void* addr, size_t length, long prot, long flags, long fd, off_t offset){
     __asm{"
     mov rax, 9
+    mov r10, rcx
     syscall
     "}
 }

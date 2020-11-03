@@ -7,6 +7,9 @@
 #define DOUBLE_PRECISION_MULTIPLIER 1000000000
 #define FLOAT_PRECISION_MULTIPLIER 10000000
 
+typedef unsigned long ulong;
+
+
 inline long hton64(long x){
     __asm{"
     
