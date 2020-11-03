@@ -29,30 +29,42 @@ typedef fd_t FILE;
 */
 
 function FILE fopen(char* fname, char* mode){
-    int modehash = mode[0]+mode[1];
-    int m = 0;
-    int f = 0;
-    if(modehash == _fopen_readonly){
-        f = O_RDONLY;
+    long modehash = mode[0]+mode[1];
+    long m = 0;
+    long f = 0;
 
-    }else if(modehash == _fopen_writeonly){
-        f = O_WRONLY;
+    switch(modehash){
 
-    }else if (modehash == _fopen_append){
-        f = O_WRONLY||O_APPEND;
-        
-    }else if (modehash == _fopen_rw){
-        f = O_RDWR;
-    }else if (modehash == _fopen_wc){
-        m = O_USRPERM;
-        f = O_RDWR||O_CREAT;
-    }else{
-        m = O_USRPERM;
-        f =  O_RDWR||O_APPEND||O_CREAT;
+        case _fopen_readonly{
+            f = O_RDONLY;
+            break;
+        }
+        case _fopen_writeonly{
+            f = O_WRONLY;
+            break;
+        }
+        case _fopen_append{
+            f = O_WRONLY||O_APPEND;
+            break;
+        }
+        case _fopen_rw{
+            f = O_RDWR;
+            break;
+        }case _fopen_wc{
+            m = O_USRPERM;
+            f = O_RDWR||O_CREAT;
+            break;
+        }
+        case _fopen_ac{
+            m = O_USRPERM;
+            f =  O_RDWR||O_APPEND||O_CREAT;
+            break;
+        }
+
     }
 
     FILE out = open(fname, f, m);
-    if(modehash == 140 || modehash == 87){
+    if(modehash == _fopen_ac || modehash == _fopen_append){
         lseek(out,0, SEEK_END);
     }
     return out;
@@ -69,9 +81,8 @@ function FILE fopen(char* fname, char* mode){
 
 
 function int fputs(fd_t fd, char* text){
-    int l = strlen(text);
-    int out = write(fd, text, l);
-    lseek(fd,l,SEEK_CUR);
+    long l = strlen(text);
+    long out = write(fd, text, l);
     return out;
 }
 
@@ -82,9 +93,8 @@ function int fputs(fd_t fd, char* text){
 *
 */
 
-function bool fgets(fd_t fd, char* buffer, size_t amt){
-    bool out = read(fd, buffer, amt) > 0;
-    lseek(fd, amt, SEEK_CUR);
+function long fgets(fd_t fd, char* buffer, size_t amt){
+    long out = read(fd, buffer, amt);
     return out;
 }
 

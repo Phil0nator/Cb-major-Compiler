@@ -5,8 +5,8 @@
 
 
 #include "stddef.k"
-typedef unsigned int fd_t;  /* file descriptor datatype */
-typedef int mode_t;
+typedef unsigned long fd_t;  /* file descriptor datatype */
+typedef long mode_t;
 
 /* open flags */
 #define O_RDONLY       0x0000    /* open for read only  */
@@ -41,19 +41,63 @@ typedef int mode_t;
 #define SEEK_CUR       1
 #define SEEK_SET       0
 
-#link "files.o"
 
 
-
-extern ssize_t read(fd_t fd, char* buf, size_t count);
-extern ssize_t write(fd_t fd, char* buf, size_t count);
-extern fd_t open(char *fname, int flags, mode_t mode);
-extern int close(fd_t fd);
-extern int mkdir(char* pathname, mode_t mode);
-extern int rmdir(char* pathname);
-extern int creat(char* pathname, mode_t mode);
-extern int chdir(char* pathname);
-extern int lseek(fd_t fd, int offset, int whence);
+inline ssize_t read(fd_t fd, char* buf, size_t count){
+    __asm{"
+    xor rax, rax
+    syscall
+    "}
+}
+inline ssize_t write(fd_t fd, char* buf, size_t count){
+    __asm{"
+        mov rax, 1
+        syscall"
+    }
+}
+inline fd_t open(char *fname, int flags, mode_t mode){
+    __asm{"
+        mov rax, 2
+        syscall
+    "}
+}
+inline int close(fd_t fd){
+    __asm{"
+    mov rax, 3
+    syscall
+    "}
+}
+inline int mkdir(char* pathname, mode_t mode){
+    __asm{"
+    mov rax, 83
+    syscall
+    "}
+}
+inline int rmdir(char* pathname){
+    __asm{"
+    mov rax, 84
+    syscall
+    "}
+}
+inline int creat(char* pathname, mode_t mode){
+    __asm{"
+    mov rax, 85
+    syscall
+    "}
+}
+inline int chdir(char* pathname){
+    __asm{"
+    mov rax, 80
+    syscall
+    "}
+}
+inline int lseek(fd_t fd, int offset, int whence){
+    __asm{"
+    mov rax, 8
+    syscall
+    "
+    }
+}
 
 
 #endif
