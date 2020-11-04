@@ -281,6 +281,12 @@ class UnkownDirective(Error):
         self.tok = tok
         self.message = f"Unkown precompile directive: "
 
+class UnmatchedTernary(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unmatched ternary operator: "
+
+
 
 
 class Warning:

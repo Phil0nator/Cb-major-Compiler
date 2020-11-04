@@ -204,7 +204,7 @@ class Lexer:
                     advance()
                     tokens.append(self.buildMultichar())
 
-            elif (self.ch in "()}{[],^@%~."):
+            elif (self.ch in "()}{[],^@%~.:?"):
                 tokens.append(
                     Token(self.ch, self.ch, self.loc.copy(), self.loc.copy()))
                 advance()

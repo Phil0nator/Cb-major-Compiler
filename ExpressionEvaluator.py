@@ -24,14 +24,27 @@ from Assembly.TypeSizes import psizeof, psizeoft
 ############################
 
 
-def optloadRegs(a, b, op, o):
+def optloadRegs(a, b, op, o, constvalok = False):
     instr = ""
     o = a.type.copy()
     areg = ""
     breg = ""
     needLoadA = True
     needLoadB = True
-    if(a.isRegister()):
+
+    overrideAload = False
+
+    if (constvalok and isinstance(a.accessor, int)):
+        areg = a.accessor
+        if b is None:
+            return areg,None,o,""
+        overrideAload = True
+
+    if (b is not None and constvalok and isinstance (b.accessor, int)):
+        breg = b.accessor
+        return areg,breg,o,instr
+
+    if(a.isRegister() or overrideAload):
         areg = a.accessor
         needLoadA = False
     else:
@@ -82,10 +95,37 @@ The ExpressionEvaluator abstract class contains functions shared by
 '''
 
 
+from Classes.Constexpr import ternarystack # used to store out-of-order instructions for ternary operator
 class ExpressionEvaluator:
     def __init__(self, fn):
         self.fn = fn
         self.resultflags = None
+
+    def ternarypartA(self, a, b ): # op == "?"
+
+        reg, _, __, newinstr = optloadRegs(a,None,"?",LONG.copy())
+        newinstr += f"test {reg}, {reg}\n"
+        
+        if(len(ternarystack) <= 0):
+            throw(UnmatchedTernary(a.token))
+        cmpinstr, aregec,bregec  = ternarystack.pop()
+        newinstr+=cmpinstr
+        rfree(aregec.accessor)
+        rfree(bregec.accessor)
+        rfree(reg)
+        return newinstr, b.type.copy(), b
+
+    def ternarypartB(self, a,b): # op == ':'
+        if(a.type.isflt() != b.type.isflt()):
+            throw(TypeMismatch(a.tok, a.type, b.type))
+
+        areg, breg, __, newinstr = optloadRegs(a, b, ":", LONG.copy())
+        areg = setSize(areg,8)
+        breg = setSize(breg,8)
+        resultreg = ralloc(False, size=8)
+        newinstr += f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
+        ternarystack.append((newinstr,EC.ExpressionComponent( areg, a.type ), EC.ExpressionComponent(breg, b.type)))
+        return "", a.type.copy(), EC.ExpressionComponent(resultreg,a.type.copy(),token=a.token)
 
     # Bitshift optimization for multiplication and division by multiples of 2
     def mult_div_optimization(self, a, b, op):
@@ -171,7 +211,7 @@ class ExpressionEvaluator:
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op not in ["/", "[", ] and op not in signed_comparisons):
+        if(b.accessor == 0 and op not in ["/", "["] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
@@ -219,6 +259,16 @@ class ExpressionEvaluator:
                 a, b, op
             )
 
+
+        # ternary optimizations
+        if (op == ":"):
+
+            return self.ternarypartB(a,b)
+
+        elif( op == "?"):
+            return self.ternarypartA(a,b)
+
+
         return newinstr, newt, apendee
 
     # evaluate a generated postfix list of EC's
@@ -237,8 +287,22 @@ class ExpressionEvaluator:
                     a = stack.pop()              # first operand
                     op = e.accessor              #
 
-                    if(a.isconstint() and b.isconstint()):  # optimize for constant expressions
-                        stack.append(calculateConstant(a, b, op))
+                    
+                    # special case
+                    if(a.isconstint() and op in ["?"]):
+                        stack.append(calculateConstant(a,b,op))
+                        
+                        continue
+
+                    c = None
+                    if( op in [":"]):
+                        c =stack.pop()
+                        stack.append(c)
+                    if(a.isconstint() and b.isconstint() and ( c is None or c.isconstint())):  # optimize for constant expressions
+
+                        stack.append(calculateConstant(a, b, op, c=c))
+                        continue
+
 
                     # if one operand is constant
                     # optimize for semi constexpr
@@ -267,6 +331,20 @@ class ExpressionEvaluator:
                             ninster, o, apendee = evaluator.memberAccess(a, b)
                             instr += ninster
                             stack.append(apendee)
+
+                        # ternary operators:
+                        elif (op == T_TERNARYQ):
+
+                            ninster, o, apendee = self.ternarypartA(a,b)
+                            instr+=ninster
+                            stack.append(apendee)
+
+                        elif (op == T_TERNARYELSE):
+                            
+                            ninster, o, apendee = self.ternarypartB(a,b)
+                            instr+=ninster
+                            stack.append(apendee)
+
 
                         # op is any other op
                         else:
@@ -336,7 +414,6 @@ class ExpressionEvaluator:
 
         # at this point the result must be properly casted/moved into the
         # specified destination
-
         o = final.type.copy()
 
         self.resultflags = final

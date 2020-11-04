@@ -13,7 +13,7 @@ def link(i, o):
 
     else:
         linktext = f"\"{i}.o\""
-    return f"gcc \"{config.includepath}/macro.c\" {linktext}  -no-pie -lm -o \"{o}\""
+    return f"gcc \"{config.includepath}/macro.c\" {linktext} -g  -no-pie -lm -o \"{o}\""
 
 
 def linkonly(i, o):
@@ -22,4 +22,4 @@ def linkonly(i, o):
 
 
 def assemble(o):
-    return f"nasm -felf64 {o}.asm -w-number-overflow"
+    return f"nasm -felf64 -g {o}.asm -w-number-overflow"

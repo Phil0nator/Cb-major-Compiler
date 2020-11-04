@@ -11,9 +11,11 @@ from globals import LONG, operatorISO, DOUBLE
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
+from Assembly.Registers import rfree
 
 
-def calculateConstant(a, b, op):
+ternarystack = [] # ternary operator -- extra storage
+def calculateConstant(a, b, op, c=None):
     if(op == "*"):
         return EC.ExpressionComponent(
             int(a.accessor * b.accessor), LONG.copy(), constint=True)
@@ -68,6 +70,21 @@ def calculateConstant(a, b, op):
     elif(op == "^"):
         return EC.ExpressionComponent(
             int(a.accessor ^ b.accessor), LONG.copy(), constint=True)
+    elif (op == ":"):
+        ternarystack.append(("",a,b))
+        if ( c != None):
+            return a if c else b
+        
+    elif (op == "?"):
+        _, opa, opb = ternarystack.pop()
+        
+        
+        rfree( opa.accessor ) # just in case registers are being passed in here
+        rfree( opb.accessor )
+        rfree( b.accessor )
+        
+        
+        return opa if a.accessor == True else opb
 
 
 def calculateCfloat(a, b, op):

@@ -35,8 +35,8 @@ typedef unsigned long uint64_t; /* unsigned 64 bit type */
 /*
   * Default boolean values;
 */
-#define true    $bool 1
-#define false   $bool 0
+#define true    1
+#define false   0
 
 /*
   * float == double
