@@ -259,6 +259,14 @@ class PreProcessor:
 
                 elif(self.current_token.value == "link"):
                     self.addobject()
+                elif(self.current_token.value == "error"):
+                    errtok = self.current_token
+                    self.advance()
+                    self.checkToks([T_STRING])
+                    throw(Error(errtok,self.current_token.value))
+
+                else:
+                    throw(UnkownDirective(self.current_token))
 
             elif(self.current_token.tok == T_ID):
                 self.checkDefn()

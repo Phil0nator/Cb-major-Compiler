@@ -24,6 +24,7 @@
 #define M_SQRT2         1.41421356237309504880   /* sqrt( 2 )                                            */
 #define M_SQRT1_2       0.707106781186547524401  /* 1 / sqrt(2)                                          */
 #define M_MINZERO       -0.0                     /* double precision -0.0                                */
+#define M_LOG2_10       3
 double M_MINZERO_MEM = M_MINZERO;
 
 
@@ -154,46 +155,15 @@ inline double abs(double x){
 
 
 inline long log(long x){
-  __asm{"
-  xor rbx, rbx
-  mov rax, rdi
-  mov rcx, 10
-  %L_int_log_pint_flp:
-  xor rdx, rdx
-  div rcx
-  test rax, rax
-  jnz %L_int_log_pint_inc
-  jmp %L_int_log_pint_end
-  %L_int_log_pint_inc:
-  inc rbx
-  jmp %L_int_log_pint_flp
   
-  %L_int_log_pint_end:
-  mov rax, rbx
-
-  "}
+  return log2(x) / M_LOG2_10;
 
 }
 
-inline long log(long n, long b){
-  __asm{"
+inline long log(long base, long n){
   
-  xor rbx, rbx
-  mov rax, rdi
-  %L_int_log_pintint_flp:
-  xor rdx, rdx
-  div rsi
-  test rax, rax
-  jnz %L_int_log_pintint_inc
-  jmp %L_int_log_pintint_end
-  %L_int_log_pintint_inc:
-  inc rbx
-  jmp %L_int_log_pintint_flp
-  %L_int_log_pintint_end:
-  mov rax, rbx
+  return log2(n) / log2(base);
   
-  
-  "}
 }
 
 inline long log2(long n){
@@ -210,21 +180,9 @@ inline long log2(long n){
 }
 
 
-inline double log2(double n){
 
-  __asm{"
-  movq rax, xmm0
-  shl rax, 1
-  shr rax, 53
-  shl rax, 53
-  cvtsi2sd xmm1, rax
-  mov rax, 2
-  cvtsi2sd xmm3, rax
-  
 
-  "}
 
-}
 
 
 inline long divmod(long dividend, long divisor, long* modulus ){

@@ -276,6 +276,12 @@ class RecursiveInlineCall(Error):
         self.tok = tok
         self.message = f"Inline functions cannot be recursive: "
 
+class UnkownDirective(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unkown precompile directive: "
+
+
 
 class Warning:
     def __init__(self, msg, tok):
