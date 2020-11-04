@@ -80,7 +80,7 @@ global thread_t thread_create(__threadcallable fn, void *arg){
 
 global long thread_join(thread_t thread){
     //long err= waitpid(getpid(), nullptr, __WCLONE);
-    nfutex(&__tsigfutex, FUTEX_WAIT, thread);
+    return   nfutex(&__tsigfutex, FUTEX_WAIT, thread);
 }
 
 

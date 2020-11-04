@@ -39,7 +39,7 @@ class Postfixer:
             # Int literals are given type void, and constint flag
             if(t.tok == T_INT):
                 ec = EC.ExpressionComponent(
-                    t.value, VOID.copy(), constint=True)
+                    t.value, LONG.copy(), constint=True)
 
             # an ID could be a local variable, global variable, function
             # pointer, member variable
@@ -51,13 +51,13 @@ class Postfixer:
                     if(v is None):
                         if(self.fn.compiler.ismember(t.value)):  # the variable is a member
                             ec = EC.ExpressionComponent(
-                                t.value, VOID.copy(), token=t)
+                                t.value, LONG.copy(), token=t)
                         else:  # the ID does not exist
                             throw(UnkownIdentifier(t))
                     else:  # variable is type, so it is replace by its size
 
                         ec = EC.ExpressionComponent(
-                            v.size(0), VOID.copy(), constint=True, token=t)
+                            v.size(0), LONG.copy(), constint=True, token=t)
                         ec.memory_location = valueOf(v)
                 else:  # variable is local or global or function pointer
                     v.referenced = True

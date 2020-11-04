@@ -33,6 +33,10 @@ from PreParser import PreProcessor
 from Compiler import Compiler
 from Linker import *
 
+def asm_labelRepl(match):
+    return f"\n{match[0][2:]}"
+
+
 
 def main():
 
@@ -78,7 +82,16 @@ def main():
     asm = asm.replace("%%MACROTEXT%%", config.__macrotext__)
     del c
     # cleanup
-    asm = asm.replace("\n\n", "\n").replace("\n\n", "\n")
+
+    if(config.__tonasm__): # extra cleanup so the output looks good
+        asm = asm.replace("  ", " ").replace("  ", ' ')
+        while("\n " in asm):
+            asm = asm.replace("\n ", "\n")
+        while("\n\n" in asm):
+            asm = asm.replace("\n\n", "\n")
+        asm = asm.replace("\n", "\n\t")
+
+        asm = re.sub("\n\t.*:",asm_labelRepl,asm)
 
     # linking, and running
 
@@ -98,6 +111,7 @@ def main():
 
     if(not config.__tonasm__):
         os.remove(config.__fileoutput__ + ".asm")
+    
 
     print("Compiled and Linked symbols in %s s" % (time.time() - beginTime))
 

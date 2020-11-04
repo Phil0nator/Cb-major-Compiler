@@ -52,6 +52,8 @@ def avx_rfree(reg):
     avx_inuse[avx_registers.index(reg)] = False
 
 
+#integer operations:
+
 # 2 vs 4 denotes number of qwords
 avx_load2 = "movdqu"
 avx_load4 = "vmovdqu"
@@ -66,6 +68,8 @@ avx_sub4 = "vpsub#"
 
 avx_mul2 = "pmulud#"
 avx_mul4 = "vpmulud#"
+
+
 
 
 # get AVX opcode for a human operation

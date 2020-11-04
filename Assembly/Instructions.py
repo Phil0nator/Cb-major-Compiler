@@ -57,10 +57,16 @@ class Peephole:
     ####################################
 
     def opl3(self):
-        while self.opl2() > 0:
-            pass
+        self.opl2()
+
+    
+
 
     def opl2(self):
+        while self.opl2_parser() > 0:
+            pass
+
+    def opl2_parser(self):
 
         optims = 0
 

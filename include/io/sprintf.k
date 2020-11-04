@@ -107,7 +107,7 @@ function long toStr(double val, char* buffer, long multiplier){
     @buffer = '.';
     buffer++;
     l += toStr(round(val), buffer, 0, 10);
-    return l;
+    return l+1;
 
 
 }

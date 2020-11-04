@@ -170,7 +170,7 @@ def typematch(a, b):
         # anything can be cast to or from void
         if(config.GlobalCompiler.Tequals(a.name, "void") or config.GlobalCompiler.Tequals(b.name, "void")):
             return True
-        if(a.__eq__(VOID.copy()) and b.ptrdepth > 0):
+        if(a.__eq__(LONG.copy()) and b.ptrdepth > 0):
             return True
 
         # two equal types are compatible

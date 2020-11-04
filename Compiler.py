@@ -224,8 +224,8 @@ class Compiler:
 
         # use the constexpr evaluator to find the value for the global
         value = determineConstexpr(intr.isflt(), exprtokens, Function(
-            "CMAININIT", [], VOID.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
-                "CMAININIT", [], VOID.copy(), self, exprtokens))
+            "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
+                "CMAININIT", [], LONG.copy(), self, exprtokens))
 
         # if the final value is a variable, the initializer to that variable is
         # taken

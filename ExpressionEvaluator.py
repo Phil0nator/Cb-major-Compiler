@@ -97,7 +97,7 @@ class ExpressionEvaluator:
             newinstr = ""
             newinstr += bringdown_memloc(a)
 
-            areg, ___, _, i = optloadRegs(a, None, op, VOID.copy())
+            areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
             newinstr += i
 
             shiftdir = "<<" if op == "*" else ">>"
@@ -116,7 +116,7 @@ class ExpressionEvaluator:
         newinstr = ""
         newinstr += bringdown_memloc(a)
 
-        areg, ___, _, i = optloadRegs(a, None, op, VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
 
         newinstr += shiftInt(setSize(areg, a.type.csize()),
@@ -131,7 +131,7 @@ class ExpressionEvaluator:
         newinstr = ""
         newinstr += bringdown_memloc(a)
 
-        areg, ___, _, i = optloadRegs(a, None, op, VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
 
         cmd = "inc" if op == '+' else "dec"
@@ -226,7 +226,7 @@ class ExpressionEvaluator:
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
         stack = []      # used for evaluation
-        o = VOID.copy()
+        o = LONG.copy()
         for e in pfix:  # for each component
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):  # if the operator takes two operands
@@ -369,7 +369,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         needload = True
         instr = ""
         instr += bringdown_memloc(a)
-        areg, ___, _, i = optloadRegs(a, None, op, VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         instr += i
 
         cmd = "inc" if op == "++" else "dec"
@@ -389,7 +389,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         instr += bringdown_memloc(a)
 
         # load to register if necessary
-        areg, ___, _, i = optloadRegs(a, None, "op", VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())
         instr += i
 
         # do not
@@ -403,7 +403,7 @@ class RightSideEvaluator(ExpressionEvaluator):
         needload = True
         instr = ""
         instr += bringdown_memloc(a)
-        areg, ___, _, i = optloadRegs(a, None, "op", VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())
         instr += i
         instr += doOperation(a.type, areg, areg, T_ANOT, a.type.signed)
         o = a.type.copy()
@@ -861,7 +861,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         if(not typematch(BOOL, a.type) and not a.isconstint()):
             throw(TypeMismatch(a.token, BOOL, a.type))
 
-        areg, ___, _, i = optloadRegs(a, None, "op", VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())
         instr += i
         instr += boolmath(areg, None, T_NOT)
         o = BOOL.copy()
@@ -872,7 +872,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
     def evalANOT(self, a):
         instr = ""
         needload = True
-        areg, ___, _, i = optloadRegs(a, None, "op", VOID.copy())
+        areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())
         instr += i
         instr += doOperation(a.type, areg, areg, T_ANOT, a.type.signed)
         o = a.type.copy()

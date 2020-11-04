@@ -495,7 +495,7 @@ class Function:
 
         # build instructions to evaluate for the first given index
         determine_index1 = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, VOID.copy(), token=self.current_token))
+            EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
 
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
@@ -529,7 +529,7 @@ class Function:
             # build evaluation for the index
             idxn = ralloc(False)
             determine_idxn = self.evaluateRightsideExpression(
-                EC.ExpressionComponent(idxn, VOID.copy(), token=self.current_token))
+                EC.ExpressionComponent(idxn, LONG.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
 
@@ -553,7 +553,7 @@ class Function:
 
         # evaluate destination index
         determineidxf = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, VOID.copy(), token=self.current_token))
+            EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
         self.checkTok(T_CLSP)
 
         self.checkSemi()
@@ -589,7 +589,7 @@ class Function:
 
     def buildSwitch(self):
         self.advance()
-        o = VOID.copy()
+        o = LONG.copy()
 
         # determine datatype
         retrace = self.ctidx
@@ -814,7 +814,7 @@ class Function:
         # build parameters, without storing instructions in order to determine
         # the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
-            o = VOID.copy()
+            o = LONG.copy()
             tmp = self.evaluateRightsideExpression("AMB", o)
 
             if(self.current_token.tok == ","):
@@ -1167,6 +1167,7 @@ class Function:
             var.stackarrsize = totalsize
             var.isStackarr = True
             var.stacksizes = sizes
+            var.t.stackarr = True
             self.stackCounter += totalsize
             if(self.current_token.tok != T_ENDL):
                 throw(ExpectedToken(self.current_token, ";"))

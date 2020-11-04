@@ -9,7 +9,7 @@ from Classes.Error import *
 
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0,
-                 signed=True, destructor=None, constructor=None):
+                 signed=True, destructor=None, constructor=None, stackarr=False):
         self.name = name
         self.s = size  # base size if not pointer
         self.members = members  # for structures
@@ -18,6 +18,7 @@ class DType:
         self.signed = signed
         self.destructor = destructor  # only for structures
         self.constructor = constructor  # only for structures
+        self.stackarr = stackarr        # is stack-based array
 
     def size(self, depth):  # determine the size at a given pointer depth
         if(depth < self.ptrdepth):
@@ -51,7 +52,7 @@ class DType:
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
         return config.GlobalCompiler.Tequals(
-            self.name, "double") and self.ptrdepth == 0
+            self.name, "double") and self.ptrdepth == 0 and not self.stackarr
 
     def isfltdepth(self, depth):  # determine if the type is a double/float at a given depth
         return depth >= self.ptrdepth and config.GlobalCompiler.Tequals(

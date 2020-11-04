@@ -1,3 +1,1 @@
-#include <memory.h>
-#include <errno.h>
-
+// Used to prompt gcc linker

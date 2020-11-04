@@ -72,8 +72,12 @@ ret
 
 
 def setValueOf(val, flt, ptr):
+
+    if(isinstance(val, float)):
+        return val.hex()
+
     if(isinstance(val.accessor, (str, int, float))):
-        return str(val.accessor) if not flt else val.accessor.hex()
+        return str(val.accessor) if not flt else float(val.accessor).hex()
     if(isinstance(val.accessor, Variable)):
 
         if(ptr):
@@ -88,15 +92,16 @@ def createIntrinsicConstant(variable):
 
     # if it is a set
     if(isinstance(variable.initializer, list)):
-        if(variable.t.isflt()):
+        t = variable.t.down()
+        if(t.isflt()):
 
-            out = f"{variable.name}: dq {str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))}\n"
+            out = f"{variable.name}: DQ {str.join(', ', (setValueOf(val, t.isflt(), t.ptrdepth > 0) for val in variable.initializer))}\n"
         else:
-            out = f"{variable.name}: {getConstantReserver(variable.t.down())} { str.join(', ', (setValueOf(val, variable.t.isflt(), variable.t.ptrdepth > 0) for val in variable.initializer))  }\n"
+            out = f"{variable.name}: {getConstantReserver(t)} { str.join(', ', (setValueOf(val, t.isflt(), t.ptrdepth > 0) for val in variable.initializer))  }\n"
         return out
     # for floats
     if((variable.t.isflt())):
-        return f"{variable.name}: dq {variable.initializer.hex()}\n"
+        return f"{variable.name}: DQ {variable.initializer.hex()}\n"
 
     # for int types
     return "%s: %s %s\n" % (variable.name, getConstantReserver(
