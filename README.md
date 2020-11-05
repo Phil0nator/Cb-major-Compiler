@@ -2,7 +2,7 @@
 
 Compile, debug, and link C flat files.
 
-####Full Documentation
+###Full Documentation
 [Documentation](philo.kaulk.in/cflat)
 
 ## Usage
