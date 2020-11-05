@@ -2,6 +2,9 @@
 
 Compile, debug, and link C flat files.
 
+####Full Documentation
+[Documentation](philo.kaulk.in/cflat)
+
 ## Usage
 
 The file compile.py can be called with the following arguments:
