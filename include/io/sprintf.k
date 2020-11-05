@@ -100,9 +100,8 @@ function long toStr(double val, char* buffer, long multiplier){
     buffer+=l;
     
     val = abs(val);
-    val -= integral;
+    val -= abs(integral);
     val *= multiplier;
-
 
     @buffer = '.';
     buffer++;

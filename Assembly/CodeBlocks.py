@@ -553,3 +553,10 @@ def castABD(a, b, areg, breg, newbreg):
 
 def shiftmul(i):
     return int(math.log2(i)) if i > 0 else 0
+
+
+# move registers without any conversion
+def raw_regmov(a,b):
+    if("xmm" in a+b):
+        return f"movq {a}, {b}\n"
+    return f"mov {a}, {b}\n"

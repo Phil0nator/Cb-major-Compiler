@@ -268,7 +268,8 @@ class ExpressionEvaluator:
             )
 
 
-        # ternary optimizations
+        # ternary optimizations will by synonymous to their normal form 
+        # unless both operands are constants:
         if (op == ":"):
 
             return self.ternarypartB(a,b)

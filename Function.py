@@ -12,7 +12,7 @@ from Assembly.CodeBlocks import (check_fortrue, doFloatOperation,
                                  doIntOperation, fncall, function_allocator,
                                  function_closer, functionlabel, getLogicLabel,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
-                                 movVarToReg, spop, spush, valueOf)
+                                 movVarToReg, spop, spush, valueOf, raw_regmov)
 from Assembly.Instructions import Instruction, Peephole
 from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat
@@ -183,7 +183,6 @@ class Function:
         self.variables.append(v)
 
     def addline(self, l):                           # add a line of assembly to raw
-        # self.asm+=l+"\n"
         if(config.__oplevel__ > 1):
             self.peephole.addline(l)
             self.asm = f"{self.asm}{self.peephole.get()}\n"
@@ -914,7 +913,21 @@ class Function:
 
         instructions += (fncall(fn)
                          ) if not varcall else (Instruction("call", [valueOf(var)]))
+
+
+        # save return value for register restores
+        if(len(self.regdecls)>0):
+            tmp = ralloc(False)
+            instructions += raw_regmov(tmp, sse_return_register if fn.returntype.isflt() else norm_return_register )
+
         instructions += (self.restoreregs())
+        
+        # restore return value after register restores
+        if(len(self.regdecls) > 0):
+            rfree(tmp)
+            instructions += raw_regmov(sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
+
+
         return instructions, fn
 
     # construct expression components from tokens
@@ -1074,16 +1087,29 @@ class Function:
         if(self.compiler.getType(name) is not None):
             throw(UsingTypenameAsVariable(self.tokens[self.ctidx - 1]))
 
-        # add variable
-        self.addVariable(Variable(t, name))
+        
+        # create prototype variable
+        vprot = Variable(t, name)
+        
+        
+        # set the variable's register if one is given
+        vprot.register = ralloc(
+            t.isflt()) if register != False else None
+        
+
+        # add variable correctly to get extra properties added to it
+        self.addVariable(vprot)
+        
+        
+        
+        
+        
         # pull variable back out from the array in order to determine its offset
         # which is set by self.addVariable
         var = self.variables[-1]
         var.isptr = t.ptrdepth > 0
 
-        # set the variable's register if one is given
-        var.register = ralloc(
-            t.isflt()) if register != False else None
+        
 
         # if the variable is a stack-based structure,
         #   add its member variables too.

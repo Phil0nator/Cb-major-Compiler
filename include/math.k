@@ -113,17 +113,17 @@ inline long round(double x){
 
 
 inline long ceil(double x){
-  __asm{"
-  cvttsd2si rax, xmm0
-  inc rax
-  "}
+  return 0-floor(0-x);
 }
 
 
-inline long floor(double x){
+inline long trunc(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
+inline long floor(double x){
+  return round(x-0.5);
+}
 
 
 inline long abs(long x){
@@ -143,11 +143,14 @@ inline long abs(long x){
 inline double abs(double x){
 
   __asm{"
-  movsd xmm1, xmm0
-  mov rax, 1
-  movq xmm2, rax
-  xorpd xmm1, xmm2
-  andpd xmm0, xmm1
+
+
+  movq rax, xmm0
+  shl rax, 1
+  shr rax, 1
+  movq xmm0, rax 
+
+
   "}
 
 }
@@ -180,7 +183,12 @@ inline long log2(long n){
 }
 
 
+inline double fmod(double x, double n){
 
+  return (0-n)*(floor(x/n))+x;
+
+
+}
 
 
 
