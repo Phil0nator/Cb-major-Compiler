@@ -102,30 +102,38 @@ class ExpressionEvaluator:
         self.resultflags = None
 
     def ternarypartA(self, a, b ): # op == "?"
-
-        reg, _, __, newinstr = optloadRegs(a,None,"?",LONG.copy())
-        newinstr += f"test {reg}, {reg}\n"
+        newinstr = ""
+        
         
         if(len(ternarystack) <= 0):
             throw(UnmatchedTernary(a.token))
+        
+        
+        
+        reg, _, __, newinstr = optloadRegs(a,None,"?",LONG.copy())
+        newinstr += f"test {reg}, {reg}\n"
         cmpinstr, aregec,bregec  = ternarystack.pop()
         newinstr+=cmpinstr
+        
         rfree(aregec.accessor)
         rfree(bregec.accessor)
         rfree(reg)
         return newinstr, b.type.copy(), b
 
     def ternarypartB(self, a,b): # op == ':'
+        
         if(a.type.isflt() != b.type.isflt()):
             throw(TypeMismatch(a.tok, a.type, b.type))
 
-        areg, breg, __, newinstr = optloadRegs(a, b, ":", LONG.copy())
+
+        areg, breg, __, outinstr = optloadRegs(a, b, ":", LONG.copy())
         areg = setSize(areg,8)
         breg = setSize(breg,8)
         resultreg = ralloc(False, size=8)
-        newinstr += f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
+        
+        newinstr = f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
         ternarystack.append((newinstr,EC.ExpressionComponent( areg, a.type ), EC.ExpressionComponent(breg, b.type)))
-        return "", a.type.copy(), EC.ExpressionComponent(resultreg,a.type.copy(),token=a.token)
+        return outinstr, a.type.copy(), EC.ExpressionComponent(resultreg,a.type.copy(),token=a.token)
 
     # Bitshift optimization for multiplication and division by multiples of 2
     def mult_div_optimization(self, a, b, op):

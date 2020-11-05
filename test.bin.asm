@@ -32,6 +32,7 @@ global _void.___crtstack_p:
 global _thread_t_thread_create_p__threadcallablevoid.:
 global _long_thread_join_pthread_t:
 	section .data
+	align 8
 STRING_CONSTANT_0: db `Success`, 0
 STRING_CONSTANT_1: db `Operation not permitted`, 0
 STRING_CONSTANT_2: db `No such file or directory`, 0
@@ -3102,13 +3103,9 @@ main:
 	mov [rbp-8], rdi
 	mov dword[rbp-16], 2435
 	mov byte[rbp-24], 1
-	mov r12b, byte[rbp-24]
-	test r12b, r12b
-	xor r10, r10
+	mov r10d, dword[rbp-16]
 	mov rbx, 1
-	cmovnz r11, rbx
-	cmovz r11, r10
-	mov dword[rbp-32], r11d
+	mov dword[rbp-32], ebx
 	mov esi, dword[rbp-32]
 	mov rbx, STRING_CONSTANT_142
 	mov rdi, rbx
