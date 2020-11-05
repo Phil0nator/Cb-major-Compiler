@@ -4,6 +4,7 @@
 %%MACROTEXT%%
 
 section .data
+align 8
 %%CONSTANTS%%
 
 section .bss
