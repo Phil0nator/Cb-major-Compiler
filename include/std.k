@@ -20,7 +20,7 @@
 #include "io/filesystem.k"  /* high level file interaction */
 
 #include "sys/pth.k"        /* low level threading */
-#include "thread.k"         /* high level threading */
+#include "threads/thread.k"         /* high level threading */
 
 
 #endif

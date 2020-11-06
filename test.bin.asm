@@ -31,11 +31,15 @@ global _int_scanf_pchar.void.void.void.void.void.:
 	extern scanf
 	extern scanf
 	extern scanf
-global _void___thrdext_p:
-global _long_thrdcrt_pvoid.:
+global _void_mutex_cmpxchg_pmutex.intint:
+global _void_mlock_pmutex.:
+global _void_munlock_pmutex.:
+global _void___thrdext_plong:
+global _long_thrdcrt_pvoid.thread_t.void.:
 global _void.___crtstack_p:
-global _thread_t_thread_create_p__threadcallablevoid.:
-global _void_thread_join_pthread_t:
+global _long___enterthread_p__threadcallablethread_t.void.:
+global _void_thread_create_pthread_t.__threadcallablevoid.:
+global _void_thread_join_pthread_t.:
 	section .data
 	align 8
 STRING_CONSTANT_0: db `Success`, 0
@@ -181,9 +185,10 @@ STRING_CONSTANT_137: db `/bin/bash`, 0
 STRING_CONSTANT_138: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 STRING_CONSTANT_139: db `sudo`, 0
 STRING_CONSTANT_140: db `-c`, 0
-STRING_CONSTANT_141: db `Error: %s\n`, 0
-STRING_CONSTANT_142: db `This is a testing thread. %i \n`, 0
-STRING_CONSTANT_143: db `The thread has joined.\n`, 0
+STRING_CONSTANT_141: db `LOCKED`, 0
+STRING_CONSTANT_142: db `unlocked thread: %i\n`, 0
+STRING_CONSTANT_143: db `This is a testing thread. %i \n`, 0
+STRING_CONSTANT_144: db `Threads done!\n`, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DQ 0
 nullterm: DB 0
@@ -194,6 +199,7 @@ __systembashpath: DQ "/bin/bash"
 __emptyenv: DQ STRING_CONSTANT_138, 0
 __systemcallargvconst: DQ STRING_CONSTANT_139, STRING_CONSTANT_140, 0
 clone_threadflags: DQ 17
+m: DQ 0
 	section .bss
 	align 16
 __heap_padding__: resz 1
@@ -2713,39 +2719,259 @@ scanf:
 __scanf__return:
 	leave
 	ret
-__thrdext:
+_void_mutex_cmpxchg_pmutex.intint:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 8
-	mov rdi, rsp
-	call _void_free_pvoid.
-	xor rdi, rdi
+	sub rsp, 40
+	mov [rbp-8], rdi
+	mov [rbp-16], rsi
+	mov [rbp-24], rdx
+	lea rbx, [rbp-16]
+	mov qword[rbp-32], rbx
+	mov ebx, dword[rbp-24]
+	mov edx, ebx
+	and rdx, 0xffffffff
+	mov rbx, qword[rbp-32]
+	mov rsi, rbx
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
 	xor rax, rax
-	mov rax,60
-	syscall
-.L0xb7:
-____thrdext__return:
+	mov eax, [rsi]
+	lock cmpxchg dword[rdi], edx
+	jz .L0xb7__end
+	mov eax, [rdi]
+	mov [rsi], eax
+.L0xb7__end:
+.L0xb6:
+	mov rbx, qword[rbp-32]
+	and r10, 0xffffffff
+	mov r10d, dword[rbx]
+	mov rax, r10
+	jmp ___void_mutex_cmpxchg_pmutex.intint__return
+___void_mutex_cmpxchg_pmutex.intint__return:
 	leave
 	ret
-_long_thrdcrt_pvoid.:
+_void_mlock_pmutex.:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 24
+	mov [rbp-8], rdi
+	mov rdx, 1
+	and rdx, 0xffffffff
+	xor rsi, rsi
+	and rsi, 0xffffffff
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_mutex_cmpxchg_pmutex.intint
+	mov dword[rbp-16], eax
+	mov ebx, dword[rbp-16]
+	test ebx, ebx
+	setnz bl
+	mov al, bl
+	and al, 1
+	jz .L0xb8
+	jmp .L0xbb
+.L0xba:
+	mov rdx, 2
+	and rdx, 0xffffffff
+	mov rsi, 1
+	and rsi, 0xffffffff
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_mutex_cmpxchg_pmutex.intint
+	push rax
+	mov r10d, dword[rbp-16]
+	mov rbx, 2
+	mov r11, r10
+	cmp r11, rbx
+	sete r11b
+	pop rbx
+	test rbx, rbx
+	setnz bl
+	or r11b, bl
+	mov al, r11b
+	and al, 1
+	jz .L0xbd
+	mov rdx, 2
+	and rdx, 0xffffffff
+	xor rsi, rsi
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	push rdi
+	push rsi
+	push rdx
+	xor r9, r9
+	and r9, 0xffffffff
+	xor r8, r8
+	xor rcx, rcx
+	mov ebx, edx
+	mov edx, edx
+	and rdx, 0xffffffff
+	mov rbx, rsi
+	mov rsi, rsi
+	mov rbx, rdi
+	mov rdi, rdi
+	xor rax, rax
+	mov rax, 202
+	mov r10, rcx
+	syscall
+.L0xc2:
+	xor rbx, rbx
+	pop rdx
+	pop rsi
+	pop rdi
+	mov rax, rbx
+	jmp .L0xc0
+.L0xc0:
+	jmp .L0xbe
+.L0xbd:
+.L0xbe:
+	mov rdx, 2
+	and rdx, 0xffffffff
+	xor rsi, rsi
+	and rsi, 0xffffffff
+	mov r10, qword[rbp-8]
+	mov rdi, r10
+	xor rax, rax
+	call _void_mutex_cmpxchg_pmutex.intint
+	mov rbx, rax
+	mov dword[rbp-16], ebx
+	mov ebx, dword[rbp-16]
+	test ebx, ebx
+	setz bl
+	mov al, bl
+	and al, 1
+	jz .L0xc4
+	mov rbx, STRING_CONSTANT_141
+	mov rdi, STRING_CONSTANT_141
+	xor rax, rax
+	call _void_printf_pchar.
+	jmp .L0xbc
+	jmp .L0xc5
+.L0xc4:
+.L0xc5:
+.L0xbb:
+	mov rax, 1
+	and al, 1
+	jnz .L0xba
+.L0xbc:
+	jmp .L0xb9
+.L0xb8:
+.L0xb9:
+___void_mlock_pmutex.__return:
+	leave
+	ret
+_void_munlock_pmutex.:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 16
 	mov [rbp-8], rdi
+	mov rsi, 1
+	and rsi, 0xffffffff
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	xor rax, rax
+	mov eax, [rdi]
+	lock sub dword[rdi], esi
+.L0xc7:
+	mov r10, rax
+	mov rbx, 1
+	mov r11, r10
+	cmp r11, rbx
+	setne r11b
+	mov al, r11b
+	and al, 1
+	jz .L0xc9
+	xor rsi, rsi
+	and rsi, 0xffffffff
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	lock xchg dword[rdi], esi
+.L0xcc:
+	mov rdx, 2
+	and rdx, 0xffffffff
+	xor rsi, rsi
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	push rdi
+	push rsi
+	push rdx
+	xor r9, r9
+	and r9, 0xffffffff
+	xor r8, r8
+	xor rcx, rcx
+	mov ebx, edx
+	mov edx, edx
+	and rdx, 0xffffffff
+	mov rbx, rsi
+	mov rsi, rsi
+	mov rbx, rdi
+	mov rdi, rdi
+	xor rax, rax
+	mov rax, 202
+	mov r10, rcx
+	syscall
+.L0xd1:
+	xor rbx, rbx
+	pop rdx
+	pop rsi
+	pop rdi
+	mov rax, rbx
+	jmp .L0xcf
+.L0xcf:
+	jmp .L0xca
+.L0xc9:
+.L0xca:
+___void_munlock_pmutex.__return:
+	leave
+	ret
+__thrdext:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov [rbp-8], rdi
+	mov rdi, rsp
+	call _void_free_pvoid.
+	mov rbx, qword[rbp-8]
+	mov rdi, rbx
+	xor rax, rax
+	mov rax,60
+	syscall
+.L0xd5:
+____thrdext__return:
+	leave
+	ret
+_long_thrdcrt_pvoid.thread_t.void.:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 32
+	mov [rbp-8], rdi
+	mov [rbp-16], rsi
+	mov [rbp-24], rdx
 	mov r15, rdi
+	mov r14, rsi
+	mov r13, rdx
 	call __crtstack
 	lea rsi, [rax + 65536 - 8]
 	mov rdi, [clone_threadflags]
 	mov rax, 56
 	syscall
 	test rax, rax
-	jnz .L0xb9__end
-	call r15
+	jnz .L0xd7__end
+	mov rdi, r15
+	mov rsi, r14
+	mov rdx, r13
+	call __enterthread
 	mov rdi, rax
-	mov rax, 60
-	syscall
-.L0xb9__end:
-___long_thrdcrt_pvoid.__return:
+	call __thrdext
+.L0xd7__end:
+___long_thrdcrt_pvoid.thread_t.void.__return:
 	leave
 	ret
 __crtstack:
@@ -2765,52 +2991,84 @@ __crtstack:
 ____crtstack__return:
 	leave
 	ret
-_thread_t_thread_create_p__threadcallablevoid.:
+__enterthread:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 40
+	mov [rbp-8], rdi
+	mov [rbp-16], rsi
+	mov [rbp-24], rdx
+	mov rbx, qword[rbp-24]
+	mov rdi, rbx
+	xor rax, rax
+	call qword[rbp-8]
+	mov qword[rbp-32], rax
+	mov rbx, qword[rbp-16]
+	lea rbx, [rbx+0]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_munlock_pmutex.
+	mov rbx, qword[rbp-16]
+	lea rbx, [rbx+0]
+	mov ebx, dword[rbx]
+	and rbx, 0xffffffff
+	mov rsi, rbx
+	mov rbx, STRING_CONSTANT_142
+	mov rdi, STRING_CONSTANT_142
+	xor rax, rax
+	call printf
+	mov rbx, qword[rbp-32]
+	mov rax, rbx
+	jmp ____enterthread__return
+____enterthread__return:
+	leave
+	ret
+_void_thread_create_pthread_t.__threadcallablevoid.:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 32
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
-	mov rdi, qword[rbp-8]
-	xor rax, rax
-	call _long_thrdcrt_pvoid.
-	mov qword[rbp-24], rax
-	mov rbx, qword[rbp-24]
-	mov rax, rbx
-	jmp ___thread_t_thread_create_p__threadcallablevoid.__return
-___thread_t_thread_create_p__threadcallablevoid.__return:
-	leave
-	ret
-_void_thread_join_pthread_t:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 840
-	mov [rbp-8], rdi
-	mov dword[rbp-16], 0
-	xor r8, r8
-	mov rcx, 2
-	and rcx, 0xffffffff
-	lea rbx, [rbp-824]
-	mov rdx, rbx
-	mov rsi, 1
-	mov rdi, 2
-	and rdi, 0xffffffff
-	xor rax, rax
-	mov rax, 247
-	mov r10, rcx
-	syscall
-.L0xbb:
-	mov qword[rbp-832], rax
-	mov rbx, qword[rbp-832]
+	mov [rbp-24], rdx
+	mov rbx, qword[rbp-8]
+	lea rbx, [rbx+0]
 	mov rdi, rbx
 	xor rax, rax
-	call _char._strerror_plong
-	mov rsi, rax
-	mov rbx, STRING_CONSTANT_141
-	mov rdi, STRING_CONSTANT_141
+	call _void_mlock_pmutex.
+	mov rbx, qword[rbp-8]
+	lea rbx, [rbx+12]
+	mov rbx, qword[rbp-8]
+	lea rbx, [rbx+12]
+	mov r11, qword[rbp-24]
+	mov rdx, r11
+	mov r11, qword[rbp-8]
+	mov rsi, r11
+	mov rdi, qword[rbp-16]
 	xor rax, rax
-	call printf
-___void_thread_join_pthread_t__return:
+	call _long_thrdcrt_pvoid.thread_t.void.
+	mov r10, rax
+	mov qword[rbx], rax
+	mov rbx, qword[rbp-8]
+	lea rbx, [rbx+4]
+	mov rbx, qword[rbp-8]
+	lea rbx, [rbx+4]
+	mov r11, qword[rbp-16]
+	mov r10, r11
+	mov qword[rbx], r11
+___void_thread_create_pthread_t.__threadcallablevoid.__return:
+	leave
+	ret
+_void_thread_join_pthread_t.:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov [rbp-8], rdi
+	mov rbx, qword[rbp-8]
+	lea rbx, [rbx+0]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_mlock_pmutex.
+___void_thread_join_pthread_t.__return:
 	leave
 	ret
 _int_test_plong:
@@ -2818,20 +3076,21 @@ _int_test_plong:
 	mov rbp, rsp
 	sub rsp, 24
 	mov [rbp-8], rdi
-	mov rdi, 99999
+	mov rbx, m
+	mov rdi, m
 	xor rax, rax
-	call _void_usleep_plong
+	call _void_mlock_pmutex.
 	mov dword[rbp-16], 0
-	jmp .L0xbe
-.L0xbd:
+	jmp .L0xd9
+.L0xd8:
 	mov esi, dword[rbp-16]
-	mov rbx, STRING_CONSTANT_142
-	mov rdi, STRING_CONSTANT_142
+	mov rbx, STRING_CONSTANT_143
+	mov rdi, STRING_CONSTANT_143
 	xor rax, rax
 	call printf
-.L0xbf:
+.L0xda:
 	inc dword[rbp-16]
-.L0xbe:
+.L0xd9:
 	mov r10d, dword[rbp-16]
 	mov rbx, 10
 	mov r11, r10
@@ -2839,8 +3098,12 @@ _int_test_plong:
 	setl r11b
 	mov al, r11b
 	and al, 1
-	jnz .L0xbd
-.L0xc0:
+	jnz .L0xd8
+.L0xdb:
+	mov rbx, m
+	mov rdi, m
+	xor rax, rax
+	call _void_munlock_pmutex.
 	xor rax, rax
 	jmp ___int_test_plong__return
 ___int_test_plong__return:
@@ -2849,19 +3112,36 @@ ___int_test_plong__return:
 main:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 24
+	sub rsp, 72
 	mov [rbp-8], rdi
-	xor rsi, rsi
-	mov rdi, _int_test_plong
-	xor rax, rax
-	call _thread_t_thread_create_p__threadcallablevoid.
-	mov qword[rbp-16], rax
-	mov rbx, qword[rbp-16]
+	mov dword[rbp-36], 0
+	mov qword[rbp-32], 0
+	mov qword[rbp-24], 0
+	mov dword[rbp-64], 0
+	mov qword[rbp-60], 0
+	mov qword[rbp-52], 0
+	xor rdx, rdx
+	mov rsi, _int_test_plong
+	lea rbx, [rbp-36]
 	mov rdi, rbx
 	xor rax, rax
-	call _void_thread_join_pthread_t
-	mov rbx, STRING_CONSTANT_143
-	mov rdi, STRING_CONSTANT_143
+	call _void_thread_create_pthread_t.__threadcallablevoid.
+	lea rbx, [rbp-36]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_thread_join_pthread_t.
+	xor rdx, rdx
+	mov rsi, _int_test_plong
+	lea rbx, [rbp-64]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_thread_create_pthread_t.__threadcallablevoid.
+	lea rbx, [rbp-64]
+	mov rdi, rbx
+	xor rax, rax
+	call _void_thread_join_pthread_t.
+	mov rbx, STRING_CONSTANT_144
+	mov rdi, STRING_CONSTANT_144
 	xor rax, rax
 	call _void_printf_pchar.
 	xor rax, rax
