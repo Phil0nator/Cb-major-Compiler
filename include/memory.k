@@ -34,15 +34,15 @@ typedef int off_t;
 
 /* Temporary memory macros until proper malloc is implimented */
 
-inline void* malloc(size_t size){
+global void* malloc(size_t size){
     register void* out = qmmap(size+8);
     @out = size;
     return out+8;
 }
-inline void free(void* addr){
+global void free(void* addr){
     return munmap(addr-0x8, @(addr-0x8));
 }
-inline void* realloc(void* addr, size_t newsize){
+global void* realloc(void* addr, size_t newsize){
     register size_t oldsize = @(addr-0x8);
     if(oldsize == newsize){
         return addr;
@@ -115,7 +115,7 @@ global void* munmap(void* addr, size_t length){
     "}
 }
 
-inline void* qmmap(size_t amt){
+global void* qmmap(size_t amt){
     return mmap(0, amt, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0); 
 }
 

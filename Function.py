@@ -210,7 +210,6 @@ class Function:
                         break
                 if(valid):
                     return f
-
         for f in self.compiler.functions:  # seach others for valid casts
             if f.name == fn:
                 lt = len(types)
@@ -1391,6 +1390,18 @@ class Function:
             for v in self.variables:
                 rfree(v.register)
 
+        # extra optimization:
+
+        if(config.__oplevel__ == 3):
+
+            pfinal = Peephole()
+            pfinal.addline(self.asm)
+
+            self.asm = pfinal.get()
+
+
+
+
         self.isCompiled = True
 
     def __repr__(self):     # pretty print
@@ -1400,3 +1411,7 @@ class Function:
 
         return Function(self.name, self.parameters, self.returntype,
                         self.compiler, self.tokens, extern=self.extern, inline=self.inline)
+
+    def GC(self):
+        self.asm = ""
+        del self.peephole

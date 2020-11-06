@@ -1,6 +1,47 @@
 import config
 from Classes.Token import isdigit
 from Assembly.Registers import REGISTERS
+import re
+
+
+
+
+
+
+MOV_INST = ["mov", "movq", "movsd"]
+
+def getMovop(a, b):
+    if ("xmm" in a and "xmm" in b):
+        return "movsd"
+    elif ("xmm" in a) ^ ( "xmm" in b):
+        return "movq"
+    return "mov"
+
+
+
+
+
+
+def line_filter(line):
+    if( line.op == '' or line.dest is None): return False
+    return True
+
+class Line:
+    def __init__(self, op,dest,source,flags,idx):
+        self.op = op
+        self.dest=dest
+        self.source=source
+        self.flags=flags
+        self.idx = idx
+
+    def hasAddr(self):
+        return '[' in self.dest+self.source
+
+    def contains(self, c):
+        return c in self.__repr__()
+    
+    def __repr__(self):
+        return f"{self.op} {self.dest}, {self.source if self.source is not None else ''} {self.flags if self.flags is not None else ''} : {self.idx}"
 
 ################################################
 #
@@ -29,7 +70,10 @@ class Peephole:
     def addline(self, instruction):
         self.instructions = f"{self.instructions}{instruction}"
 
-    def parseLine(self, l):
+    def parseLine(self, l, i):
+
+
+
         sp = l.split(" ")
         opcount = len(sp)
         op = sp[0]
@@ -37,7 +81,7 @@ class Peephole:
         source = sp[2].strip() if opcount > 2 else None
         flags = sp[3].strip() if opcount > 3 else None
 
-        return op, dest, source, flags
+        return Line(op, dest, source, flags, i)
 
     def flush(self):
         self.instructions = ""
@@ -66,59 +110,56 @@ class Peephole:
         while self.opl2_parser() > 0:
             pass
 
-    def opl2_parser(self):
+    def opl2_parser(self, lineget = []):
 
         optims = 0
+        splitted = self.instructions.split("\n")
+        lines = []
+        for i in range(len(splitted)):
+            lines.append(self.parseLine(splitted[i],i))
 
-        lines = self.instructions.replace(
-            "\n\n", "\n").replace(
-            "\t", "").split("\n")
-        prev = self.parseLine(lines[0])
-        pi = 0
-        i = 1
-        for l in lines[1:]:
-            l = l.strip()
+        lines = list(filter(line_filter, lines))
 
-            if(l.startswith(";") or lines[pi] is None):
-                i += 1
-                continue
+        if(len(lines) > 1):
 
-            op, dest, source, flags = self.parseLine(l)
+            prev = lines[0]
+            for line in lines[1:]:
 
-            # redundant push and pop instructions
-            if(prev[0] == "push" and op == "pop"):
+                
+                
+                # redundant push/pop operations
+                if (line.op == "pop" and prev.op == "push"):
+                    if(line.dest != prev.dest):
+                        splitted[line.idx] = f"mov {line.dest}, {prev.dest}"
+                    else:
+                        splitted[line.idx] = ""
+                    splitted[prev.idx] = ""
+                    optims+=1
 
-                lines[pi] = Instruction(
-                    "mov", [
-                        dest, prev[1]]) if(
-                    dest != prev[1]) else None
-                lines[i] = None
+                # redundant mov's
+                if (line.op in MOV_INST and prev.op == line.op):
+                    # if same source  ->  destination, but both not addresses
+                    if(line.source == prev.dest and not prev.hasAddr()):
+                        splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
+                        #optims +=1
 
-                optims += 1
-
-            # excessive mov statements
-            if (prev[0] in ["mov", "movq", "movsd"] and op == prev[0]):
-                if(prev[1] == source and not ("[" in prev[2]) and ("[" in dest) and not isdigit(ord(prev[2][0]))):
-
-                    lines[i] = None
-                    lines[pi] = Instruction(
-                        op, [dest, prev[2]]) if dest != prev[2] else None
-
+                # replace 'mov %r, 0' with the faster 'xor %r, %r'
+                if(line.op == "mov" and line.source == "0" and not line.hasAddr()):
+                    splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
 
-            # zeroing-by-mov is less efficient than xor
-            if(op == "mov" and dest in REGISTERS and source == "0"):
-                lines[i] = Instruction("xor", [dest, dest])
-                optims += 1
+                
+                    
 
-            prev = (op, dest, source, flags)
-            i += 1
-            pi = i - 1
+                prev = line
 
-        lines = list(filter(None, lines))
-        self.instructions = str.join("\n", lines)
+
+        self.instructions = '\n'.join(splitted)
 
         return optims
+
+
+        
 
     def get(self):
         if(self.optlvl == 1):

@@ -93,6 +93,10 @@ def main():
 
         asm = re.sub("\n\t.*:",asm_labelRepl,asm)
 
+        if(not config.DO_DEBUG):
+            asm = re.sub(";.*","",asm)
+
+
     # linking, and running
 
     with open(config.__fileoutput__ + ".asm", "wb") as f:

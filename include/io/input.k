@@ -57,37 +57,7 @@ function void getString(char* buffer, int maxlen, char* msg){
 }
 
 
-/* 
-    printf msg, get string from stdin and allocate enough space for it. 
-    Returns a pointer to allocated space.
-    The pointer returned must be freed.
-*/
-function char* getString(char* msg){
-    
-    size_t size = 80;
-    char *str = malloc(size);
-    int c;
-    size_t len = 0;
-    printf("%s", msg);
 
-    fgets(STDIN, &c, 1);
-
-    while (c != 10) {
-        //str[len] = c;
-        if(len == size) {
-            size = size * 2;
-            str = realloc(str, size);
-        }
-        str[len] = c;
-        fgets(STDIN, &c, 1);
-        len=len+1;
-    }
-    str[len+1]=0;
-    return realloc(str, len);
-
-
-
-}
 
 // String to integer
 function int toInteger(char* str, bool signed){

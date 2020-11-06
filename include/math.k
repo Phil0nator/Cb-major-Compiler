@@ -146,8 +146,8 @@ inline double abs(double x){
 
 
   movq rax, xmm0
-  shl rax, 1
   shr rax, 1
+  shl rax, 1
   movq xmm0, rax 
 
 

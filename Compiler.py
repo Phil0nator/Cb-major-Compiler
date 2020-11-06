@@ -577,3 +577,6 @@ class Compiler:
                     f.asm = f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
 
                 self.text = f"{self.text}{f.asm}"
+
+                # garbage collection
+                f.GC() 

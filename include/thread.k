@@ -14,19 +14,27 @@ typedef void* __threadcallable;
 
 typedef unsigned long thread_t;
 
-long clone_threadflags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SYSVSEM |SIGCHLD| CLONE_SIGHAND | CLONE_THREAD | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID | 0);
+long clone_threadflags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SYSVSEM
+                       | CLONE_SIGHAND | CLONE_THREAD
+                       | CLONE_SETTLS | CLONE_PARENT_SETTID
+                       | CLONE_CHILD_CLEARTID
+                       | SIGCHLD);
 
-int __tsigfutex = 0;
 
 
 __cdecl void __thrdext(){
-    __tsigfutex = thread_self();
+    __asm{"mov rdi, rsp
+    call _void_free_pvoid.
+    "}
+
+
+
     exit(0);
 }
 
 
 #define __threadstacksize 65536
-
+/*
 inline long thrdcrt(void*fn, void arg, void*ptid, void*childtid){
     __asm{"
     
@@ -51,6 +59,32 @@ inline long thrdcrt(void*fn, void arg, void*ptid, void*childtid){
     "}
 }
 
+*/
+
+global long thrdcrt(void* fn){
+
+    __asm{"
+    mov r15, rdi
+    call __crtstack
+    lea rsi, [rax + 65536 - 8]
+    mov rdi, [clone_threadflags]
+    mov rax, 56
+    syscall
+    
+    test rax, rax
+    jnz %L__end
+    call r15
+    mov rdi, rax
+    mov rax, 60
+    syscall
+
+    %L__end:
+    "}
+
+}
+
+
+
 __cdecl void* __crtstack(){
     
     return mmap(0, __threadstacksize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|PROT_GROWSDOWN, 0, 0);
@@ -58,11 +92,6 @@ __cdecl void* __crtstack(){
 }
 
 
-inline long __thrdgetrbp(){
-    __asm{
-    "mov rax, rbp"
-    }
-}
 
 
 
@@ -70,17 +99,20 @@ inline long __thrdgetrbp(){
 global thread_t thread_create(__threadcallable fn, void *arg){
 
     
-    pid_t ppid;
-    pid_t cpid;
-    thread_t out = thrdcrt(fn, arg, ppid, cpid);    
+
+    thread_t out = thrdcrt(fn);    
     return out;
 
 
 } 
 
-global long thread_join(thread_t thread){
-    //long err= waitpid(getpid(), nullptr, __WCLONE);
-    return   nfutex(&__tsigfutex, FUTEX_WAIT, thread);
+global void thread_join(thread_t thread){
+    int status = 0;
+    void raw[100];
+    long err = waitid(P_ALL, 1, &raw, WUNTRACED, 0);
+    printf("Error: %s\n", strerror(err));
+    
+    
 }
 
 

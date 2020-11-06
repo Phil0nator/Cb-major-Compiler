@@ -132,7 +132,7 @@ def calculateCfloat(a, b, op):
             float(a.accessor or b.accessor), DOUBLE.copy(), constint=True)
     elif(op == "&&"):
         return EC.ExpressionComponent(
-            float(a.accessor and b.accessor), DOUBLE.copy(), constint=True)
+            float(a.accessor & b.accessor), DOUBLE.copy(), constint=True)
     elif(op == "&"):
         return EC.ExpressionComponent(
             float(a.accessor & b.accessor), DOUBLE.copy(), constint=True)

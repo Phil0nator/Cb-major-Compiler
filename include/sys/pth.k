@@ -71,6 +71,23 @@ inline long waitpid(pid_t pid, int *wstatus, int options){
 
 }
 
+typedef void siginfo;
+typedef void rusage;
+
+#define P_PID 0
+#define P_PGID 1
+#define P_ALL 2
+
+
+inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru){
+    __asm{"
+    mov rax, 247
+    mov r10, rcx
+    syscall
+    "}
+}
+
+
 inline long clone(unsigned long clone_flags, unsigned long newsp, void* parent_tid, void* child_tid, unsigned int tid){
     __asm{"
     mov rax, 56

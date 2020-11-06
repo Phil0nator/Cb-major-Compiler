@@ -70,7 +70,7 @@ function int scansd(char* str, bool double, double* dest){
     integral *= n;
     double num = integral+decimal;
 
-    @dest = num/n;
+    @dest = num/($double n);
 
 
     return diff+dif2;
