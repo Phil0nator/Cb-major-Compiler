@@ -184,10 +184,7 @@ inline long log2(long n){
 
 
 inline double fmod(double x, double n){
-
   return (0-n)*(floor(x/n))+x;
-
-
 }
 
 
