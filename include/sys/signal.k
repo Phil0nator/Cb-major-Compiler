@@ -1,4 +1,6 @@
-
+/**
+ * The following are symbolic constants representing the signals used in the kernel.
+ */
 #define SIGHUP   1
 #define SIGINT   2
 #define SIGQUIT   3

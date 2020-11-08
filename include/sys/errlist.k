@@ -1,3 +1,9 @@
+/**
+ * errlist.k contains the standard error outputs for C functions, and Linux syscalls.
+ * The printable representation of each error can be found at its index in __linux_errstrlist.
+ * You can easily access this through get_errstr().
+ */
+
 #ifndef __ERRLIST
 #define __ERRLIST 1
 
@@ -406,7 +412,12 @@ char** __linux_errstrlist = {
 
 int errno = 0;
 
-// get the message associated with errorcode err
+/**
+ * get_errstr will return the message associated with a given error, 
+ *  or "Unkown Error Code." if none was found. 
+ * @param err the error code to search (can be positive or negative)
+ * @returns a cstring with the associated message.
+ */
 global char* get_errstr(int err){
 
     if(err < MAX_ERR && err >= 0){

@@ -112,7 +112,7 @@ function long toStr(double val, char* buffer, long multiplier){
 }
 
 
-/*
+/**
 
     Format fmt with args into str.
     Formats:
@@ -126,7 +126,9 @@ function long toStr(double val, char* buffer, long multiplier){
         -%s cstring
 
     str must be already allocated with enough size for the operation to complete. If not, SIGSEGV will be raised.
-
+    @param str a destination string preallocated with enough space for the operation.
+    @param fmt a format string.
+    @param args the arguments to fill into the string. An inadequate amount of arguments will result in a SIGSEGV.
 */
 global int __sprintf(char* str, char* fmt, void* args){
 

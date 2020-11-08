@@ -1,3 +1,6 @@
+/**
+ * pth contains low level threading / multiprocessing access.
+ */
 #ifndef __PTH
 #define __PTH 1
 
@@ -34,33 +37,52 @@ typedef long pid_t;
 #define CLONE_IO                   0x80000000        /* Clone I/O context.  */
 
 
-
+/**
+ * https://man7.org/linux/man-pages/man2/fork.2.html
+ */
 inline long fork(){
     __asm{"
     mov rax, 57
     syscall
     "}
 }
+/**
+ * https://man7.org/linux/man-pages/man2/vfork.2.html
+ */ 
 inline long vfork(){
     __asm{"
     mov rax, 58
     syscall
     "}
 }
+/**
+ * Overwrite the current process with data found from pathname.
+ * 
+ * https://man7.org/linux/man-pages/man2/execve.2.html
+ * @param pathname path
+ * @param args arguments to pass into the new process
+ * @param env environment variables
+ * @returns On success execve does not return, on error it will return -1
+ * 
+ */
 inline long execve(char* pathname, char** args, char** env){
     __asm{"
     mov rax, 59
     syscall
     "}
 }
-
+/**
+ * https://www.man7.org/linux/man-pages/man2/pause.2.html
+ */
 inline long pause(){
     __asm{"
     mov rax, 34
     syscall
     "}
 }
-
+/**
+ * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
+ */
 inline long waitpid(pid_t pid, int *wstatus, int options){
 
     __asm{"
@@ -74,11 +96,16 @@ inline long waitpid(pid_t pid, int *wstatus, int options){
 typedef void siginfo;
 typedef void rusage;
 
-#define P_PID 0
-#define P_PGID 1
-#define P_ALL 2
+/**
+ * ID types:
+ */
+#define P_PID 0     /* Process id */
+#define P_PGID 1    /* Process group id */
+#define P_ALL 2     /* any id */
 
-
+/**
+ * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
+ */
 inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru){
     __asm{"
     mov rax, 247
@@ -87,15 +114,27 @@ inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru
     "}
 }
 
-
-inline long clone(unsigned long clone_flags, unsigned long newsp, void* parent_tid, void* child_tid, unsigned int tid){
+/**
+ * clone creates a new process. (This is the underlying function used by fork and vfork).
+ * @param clone_flags a bitwize or of 0 or more of the flags listed at the top of this file
+ * @param newsp a pointer to the new stack of this process.
+ * @param parent_tid (optional) a pointer to write parent_tid into
+ * @param child_tid (optional) a pointer to write child_tid into
+ * @param tid (optional) thread id
+ * @returns 0 is returned to the child, and the child tid is returned to the parent process, or errors will be returned to parent.
+ */
+inline long clone(unsigned long clone_flags, void* newsp, void* parent_tid, void* child_tid, unsigned int tid){
     __asm{"
     mov rax, 56
     mov r10, rcx
     syscall
     "}
 }
-
+/**
+ * End execution with exit code c
+ * @param c exit code
+ * @returns on success, exit does not return.
+ */
 inline void exit(long c){
     __asm{"
     mov rax,60
@@ -103,27 +142,36 @@ inline void exit(long c){
     "}
 }
 
-
+/**
+ * https://www.man7.org/linux/man-pages/man2/tgkill.2.html
+ */
 inline long tgkill(pid_t tgid, pid_t pid, long sig){
     __asm{"
     mov rax, 234
     syscall
     "}
 }
-
+/**
+ * Get local thread id
+ */
 inline long gettid(){
     __asm{"
     mov rax, 186
     syscall
     "}
 }
-
+/**
+ * Get local process id
+ */
 inline long getpid(){
     __asm{"
     mov rax, 39
     syscall
     "}
 }
+/**
+ * https://man7.org/linux/man-pages/man2/wait4.2.html
+ */
 inline long wait4(pid_t upid, int*stat_addr, long options, void*ru){
     __asm{"
     mov rax, 61
@@ -137,14 +185,18 @@ char* __systembashpath = "/bin/bash";
 
 char** __emptyenv = {"PATH=/bin:/usr/bin:/sbin:/usr/sbin",nullptr};
 
+//default execve call
 global long execl(char* path, char** args){
-
     return execve(path,args,__emptyenv);
-
 }
 
 char** __systemcallargvconst = {"sudo", "-c", nullptr};
 
+/**
+ * system will execute command in bash.
+ * @param command command to pass into bash
+ * @returns 0 on success
+ */
 global long system(char* command){
 
     

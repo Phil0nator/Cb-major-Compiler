@@ -1,3 +1,7 @@
+/**
+ * Mutex provides a higher level abstraction of futexes.
+ */
+
 #ifndef __MUTEX
 #define __MUTEX 1
 

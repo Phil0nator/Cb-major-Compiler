@@ -94,7 +94,11 @@ __cdecl int __scanf(char* format, void** args){
     free(inp);
     return retval;
 }
-
+/**
+ * scanf will scan stdin using format, and deposit the found values in the other arguments given.
+ * @param format the format to use
+ * @returns number of tokens found
+ */
 __cdecl int scanf(char* format, void* a, void* b, void* c, void* d, void* e){
     void* args[5];
     args[0]=a;

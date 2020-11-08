@@ -1,3 +1,6 @@
+/**
+ * thread.k provides higher level threading access.
+ */
 #ifndef __THREAD
 #define __THREAD 1
 

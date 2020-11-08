@@ -1,3 +1,6 @@
+/**
+ * Limits provides information about the limits and properties of primitive types.
+ */
 #ifndef __LIMITS
 #define __LIMITS 1
 

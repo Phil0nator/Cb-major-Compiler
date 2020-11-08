@@ -78,7 +78,7 @@ function int scansd(char* str, bool double, double* dest){
 
 
 }
-/*
+/**
 
     Scan input with format into args.
     Formats:
@@ -91,7 +91,10 @@ function int scansd(char* str, bool double, double* dest){
         -%d double
         -%s cstring
 
-
+    @param format the format for the string
+    @param input input data
+    @param args destinations for scanned data
+    @returns number of args filled
 */
 global int __SSCANF(char* format, char* input, void** args){
 

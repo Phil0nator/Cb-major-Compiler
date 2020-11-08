@@ -1,4 +1,6 @@
-
+/**
+ * bits.k provides information and functions relating to bitwise numerical operations.
+ */
 #ifndef __BITS
 #define __BITS 1
 
@@ -9,7 +11,9 @@
 
 typedef unsigned long ulong;
 
-// hton refers to little-endian to big endian conversion
+/**
+ * 64 bit little endian - big endian conversion
+ */
 inline long hton64(long x){
     __asm{"
     
@@ -18,7 +22,9 @@ inline long hton64(long x){
 
     "}
 }
-
+/**
+ * 32 bit little endian - big endian conversion
+ */
 inline int hton32(int x){
     __asm{
         "
@@ -28,7 +34,9 @@ inline int hton32(int x){
         "
     }
 }
-
+/**
+ * 16 bit little endian - big endian conversion
+ */
 inline short hton16(short x){
     __asm{"
     xor rax, rax

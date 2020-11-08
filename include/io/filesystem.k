@@ -1,4 +1,6 @@
-
+/**
+ * filesystem.k provides higher level file access.
+ */
 #ifndef __FSYSTEM
 #define __FSYSTEM 1
 
@@ -7,6 +9,7 @@
 #include "include/memory.k"
 #include "sys/files.k"
 #include "sys/stat.k"
+
 
 typedef fd_t FILE;
 
@@ -17,16 +20,20 @@ typedef fd_t FILE;
 #define _fopen_wc 162
 #define _fopen_ac 140
 
-/*
-*   fopen will open a file of name fname with the given mode and return a file descriptor.
-*       Mode can be one of the following cstrings:
-*           -"r": open for read only
-*           -"w": open for write only
-*           -"a": open for appending write
-*           -"r+": open for read or write
-*           -"w+": open for read/write and create the file if it doesn't yet exist
-*           -"a+": open for read/append and create the file if it doesn't yet exist
-*       fopen will return a negative integer if the open failed.
+/**
+ *   fopen will open a file of name fname with the given mode and return a file descriptor.
+ *       Mode can be one of the following cstrings:
+ *           -"r": open for read only
+ *           -"w": open for write only
+ *           -"a": open for appending write
+ *           -"r+": open for read or write
+ *           -"w+": open for read/write and create the file if it doesn't yet exist
+ *           -"a+": open for read/append and create the file if it doesn't yet exist
+ *       fopen will return a negative integer if the open failed.
+ * @param fname filepath
+ * @param mode the open-mode specifier
+ * @returns A file descriptor to the requested file, or the error code
+ *                  produced in trying to access it.
 */
 
 function FILE fopen(char* fname, char* mode){
@@ -52,12 +59,10 @@ function FILE fopen(char* fname, char* mode){
             f = O_RDWR;
             break;
         }case _fopen_wc{
-            //m = O_USRPERM;
             f = O_RDWR||O_CREAT||O_TRUNC;
             break;
         }
         case _fopen_ac{
-            //m = O_USRPERM;
             f =  O_RDWR||O_APPEND||O_CREAT;
             break;
         }
@@ -73,12 +78,14 @@ function FILE fopen(char* fname, char* mode){
 }
 
 
-/*
-*
-*   fputs will directly write the cstring given by text to the file given by fd
-*       and will lseek the file to the correct offset.
-*
-*/
+/**
+ *
+ *   fputs will directly write the cstring given by text to the file given by fd
+ *       and will lseek the file to the correct offset.
+ * @param fd file descriptor
+ * @param text data to write
+ * @returns number of bytes written
+ */
 
 
 function int fputs(fd_t fd, char* text){
@@ -87,33 +94,33 @@ function int fputs(fd_t fd, char* text){
     return out;
 }
 
-/*
-*   fgets will read the number of bytes specified by size_t amt into the buffer given,
-*       and will lseek the file by an offset of amt.
-*
-*
-*/
+/**
+ * fgets will read the requested number of bytes from a file descriptor into a buffer.
+ * @param fd file descriptor
+ * @param buffer a buffer for the data to be written to
+ * @param amt number of bytes
+ * @returns number of bytes read
+ */
 
 function long fgets(fd_t fd, char* buffer, size_t amt){
     long out = read(fd, buffer, amt);
     return out;
 }
 
-
-/*
-*   floads will load an entire file into a buffer, and place the pointer in dest.
-*   upon failure, floads will return true;
-*   (The buffer created by floads must be freed using free() reguardless of success / failure)
-*/
-
+/**
+ * floads will load an entire file into a char buffer, which is dynamically allocated. 
+ * The caller is responsible for freeing the returned buffer.
+ * @param fd the file to load from
+ * @returns a char buffer containing the file data, or an error code.
+ */
 function void* floads(fd_t fd){
 
     int fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0-fsize, SEEK_END);
     char* buffer = malloc(fsize);
-    bool out = read(fd,buffer,fsize) < 0;
-    if(out){
-        return 0;
+    size_t out = read(fd,buffer,fsize);
+    if(out < 0){
+        return out;
     }
     return buffer;
 }

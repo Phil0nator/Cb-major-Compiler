@@ -19,7 +19,12 @@ global void __printf(char* fmt, void* args){
     munmap(normform, __PRINTF_MAXNORMUSE);
 
 }
-
+/**
+ * Printf will print fmt into stdout, formatting it with the additional arguments.
+ * (for formats, @see __SPRINTF)
+ * @param fmt format
+ * @returns None
+ */
 __cdecl void printf(char* fmt, void arg1, void arg2, void arg3, void arg4, void arg5){
 
     void args[6];

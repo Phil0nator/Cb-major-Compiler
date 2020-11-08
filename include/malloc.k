@@ -1,3 +1,6 @@
+/**
+ * malloc provides higher level memory management.
+ */
 #ifndef __MALLOC
 #define __MALLOC 1
 #include "stddef.k"

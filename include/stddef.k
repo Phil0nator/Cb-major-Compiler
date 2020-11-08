@@ -1,7 +1,6 @@
-/* The <stddef.k> header contains important data type definitions copied from <sys/types.h> from C.
- * It is considered good programming practice to use these definitions, 
- * instead of the underlying base type.  By convention, all type names end 
- * with _t.
+/**
+ * The <stddef.k> header contains important data type definitions copied from <sys/types.h> from C.
+ * By convention, type names end with _t.
  */
 #ifndef __STDDEF
 #define __STDDEF 1

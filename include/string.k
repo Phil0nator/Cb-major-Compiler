@@ -1,8 +1,17 @@
+/**
+ * string.k provides functions for working with strings, (char arrays).
+ * Functions provided in string.k assume null terminated char* values.
+ */
 #ifndef __STRING
 #define __STRING 1
 
 
-
+/**
+ * Copy a string.
+ * @param dest destination of copy
+ * @param source source of copy
+ * @returns bytes copied
+ */
 function int strcpy(char* dest, char* source){
     __asm{"
     mov rax, -1
@@ -20,7 +29,11 @@ function int strcpy(char* dest, char* source){
     "}
 }
 
-
+/**
+ * Get the length of a string.
+ * @param str string in question
+ * @returns bytes of str
+ */
 function size_t strlen(char *str){
 
     __asm{"

@@ -1,5 +1,5 @@
 /*
-  * <math.k> includes some commonly used math functions and constants
+  * <math.k> includes some commonly used high level math functions and constants
 */
 
 #ifndef __MATH
@@ -27,7 +27,11 @@
 #define M_LOG2_10       3
 double M_MINZERO_MEM = M_MINZERO;
 
-
+/**
+ * Square root.
+ * @param a input
+ * @returns square root of a
+ */
 inline double sqrt(double a){
 
     __asm{"
@@ -37,7 +41,11 @@ inline double sqrt(double a){
     "}
 
 }
-
+/**
+ * Square root.
+ * @param a input
+ * @returns square root of a
+ */
 inline double sqrt(int a){
 
   __asm{"
@@ -49,7 +57,11 @@ inline double sqrt(int a){
 
 
 }
-
+/**
+ * Square root.
+ * @param a input
+ * @returns square root of a
+ */
 inline long sqrt(long a){
 
   __asm{"
@@ -65,7 +77,12 @@ inline long sqrt(long a){
 }
 
 
-
+/**
+ * Exponentiation.
+ * @param base base of exponent
+ * @param exp the exponent
+ * @returns base^exp
+ */
 inline long pow(long base, long exp){
 
   __asm{"
@@ -83,12 +100,25 @@ inline long pow(long base, long exp){
 
 }
 
+/**
+ * Exponentiation.
+ * @param base base of exponent
+ * @param exp the exponent
+ * @returns base^exp
+ */
 inline double pow(long base, long exp){
 
   pow(base, exp);
   __asm{"cvtsi2sd xmm0, rax"}
 
 }
+
+/**
+ * Exponentiation.
+ * @param base base of exponent
+ * @param exp the exponent
+ * @returns base^exp
+ */
 inline double pow(double base, long exp){
 
   __asm{"
@@ -106,26 +136,47 @@ inline double pow(double base, long exp){
 }
 
 
-
+/**
+ * Round a floating point double to an integer.
+ * @param x value to round
+ * @returns closest integer to x
+ */
 inline long round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
 
-
+/**
+ * Round a floating point double upwards.
+ * @param x value to ceil
+ * @returns integer higher than x
+ */
 inline long ceil(double x){
   return 0-floor(0-x);
 }
 
-
+/**
+ * Truncate a floating point double.
+ * @param x value to truncate
+ * @returns x without a decimal point
+ */
 inline long trunc(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
+/**
+ * Round a floating point double downwards.
+ * @param x number to floor
+ * @returns integer below x
+ */
 inline long floor(double x){
   return round(x-0.5);
 }
 
-
+/**
+ * Absolute value.
+ * @param x value
+ * @returns |x|
+ */
 inline long abs(long x){
 
   __asm{"
@@ -140,6 +191,11 @@ inline long abs(long x){
 }
 
 
+/**
+ * Absolute value.
+ * @param x value
+ * @returns |x|
+ */
 inline double abs(double x){
 
   __asm{"
@@ -156,19 +212,32 @@ inline double abs(double x){
 }
 
 
-
+/**
+ * Base 10 integer logarithm.
+ * @param x value
+ * @returns log(x)
+ */
 inline long log(long x){
   
   return log2(x) / M_LOG2_10;
 
 }
-
+/**
+ * Arbitrary base integer logarithm.
+ * @param base base
+ * @param n log
+ * @returns log base base of n
+ */
 inline long log(long base, long n){
   
   return log2(n) / log2(base);
   
 }
-
+/**
+ * Integer log base 2.
+ * @param n value
+ * @returns log2(n)
+ */
 inline long log2(long n){
   __asm{"
   
@@ -182,14 +251,26 @@ inline long log2(long n){
   "}
 }
 
-
+/**
+ * Modulo of two floating point values.
+ * @param x inp a
+ * @param n inp b
+ * @returns x % n
+ */
 inline double fmod(double x, double n){
   return (0-n)*(floor(x/n))+x;
 }
 
 
 
-
+/**
+ * Take the modulus and quotient of a single division operation.
+ * (This is useful because integer division is the most expensive integer operation)
+ * @param dividend dividend
+ * @param divisor divisor
+ * @param modulus destination for value of modulus
+ * @returns dividend / divisor, @modulus = dividend % divisor
+ */
 inline long divmod(long dividend, long divisor, long* modulus ){
 
   __asm{"

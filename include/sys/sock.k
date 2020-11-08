@@ -1,3 +1,6 @@
+/**
+ * sock.k contains low level system socket access.
+ */
 #ifndef __SYSSOCK
 #define __SYSSOCK 1
 
@@ -5,13 +8,14 @@
 #include "printf.k" // sscanf
 #include "memory.k"  // malloc
 
+/** 32bit ip address type */
 typedef int in_addr;
 
 struct sockaddr_in
 {
-    short                   sin_family; // e.g. AF_INET
-    short                   sin_port;   // e.g. htons(3490)
-    in_addr                 sin_addr;   //
+    short                   sin_family;     // e.g. AF_INET
+    short                   sin_port;       // e.g. htons(3490)
+    in_addr                 sin_addr;       // address (big endian 32 bit)
     long                    sin_zero = 0;   // 
 
 };
@@ -28,6 +32,7 @@ struct linger_t {
 
 };
 
+/* socket types */
 #define SOCK_STREAM       1
 #define SOCK_DGRAM        2
 #define SOCK_RAW          3
@@ -67,15 +72,26 @@ struct linger_t {
 #define AF_INET6 10 
 #define AF_MAX   12 
 
-
+/* macro for most common use */
 #define NORMAL_SOCKET socket(AF_INET, SOCK_STREAM, 0)
 
-
+/**
+ * isdigit returns if c is between '0' and '9'.
+ * @param c char
+ * @returns if c is a decimal number
+ */
 inline bool isdigit(char c){
     return c >= '0' && c <= '9';
 }
 
-
+/**
+ * inet_aton will convert a normal cstring ip address e.g: "127.0.0.1"
+ * into a properly formatted in_addr (big endian 32 bit).
+ * @param cp ip address
+ * @param in_addr destination for new 32 bit value
+ * @returns 1
+ * 
+ */
 function int inet_aton(char* cp, in_addr* addr){
 
     char p[4];
@@ -100,43 +116,81 @@ function int inet_aton(char* cp, in_addr* addr){
 
 
 
-
+/**
+ * socket promts the os to create a socket based on parameters.
+ * @param family socket family, e.g AF_INET
+ * @param type socket type, e.g SOCK_STREAM
+ * @param protocal (optional), e.g SO_LINGER
+ * @returns a new socket file descriptor, or a negative error
+ */
 inline fd_t socket(int family, int type, int protocol){
     __asm{"
     mov rax, 41
     syscall
     "}
 }
+/**
+ * connect a socket held by fd to an address.
+ * @param fd socket
+ * @param uservaddr address to connect to
+ * @param addrlen size of the structure used in uservaddr (simply use sizeof struct sockaddr_in)
+ * @returns 0 on success, negative error on failure
+ */
 inline int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
     __asm{"
     mov rax, 42
     syscall
     "}
 }
+/**
+ * Accept an incoming connection to socket fd.
+ * @param fd socket 
+ * @param uservaddr pointer to location to be filled with the incoming connection information
+ * @param addrlen size of uservaddr
+ * @returns a new file descriptor for a socket connected with the incoming connection
+ */
 inline int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
     __asm{"
     mov rax, 43
     syscall
     "}
 }
+/**
+ * bind a socket to an address and port
+ * @param fd socket
+ * @param umyaddr address/port to bind to
+ * @param addrlen sizeof umyaddr
+ * @returns 0 on success, negative error
+ */
 inline int bind(fd_t fd, sockaddr_in*umyaddr, int addrlen){
     __asm{"
     mov rax, 49
     syscall
     "}
 }
+/**
+ * Set a socket to listen for incoming connections:
+ * https://man7.org/linux/man-pages/man2/listen.2.html
+ */
 inline int listen(fd_t fd, int backlog){
     __asm{"
     mov rax, 50
     syscall
     "}
 }
+/**
+ * Shutdown socket sockfd with code how.
+ * https://man7.org/linux/man-pages/man2/shutdown.2.html
+ */
 inline int shutdown(fd_t sockfd, int how){
     __asm{"
     mov rax, 48
     syscall
     "}
 }
+/**
+ * https://man7.org/linux/man-pages/man2/recvfrom.2.html
+ */
 inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
     __asm{"
     mov rax, 45
@@ -144,7 +198,9 @@ inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in*
     syscall
     "}
 }
-
+/**
+ * https://www.man7.org/linux/man-pages/man2/sendto.2.html
+ */
 inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
     __asm{"
     mov rax, 44
@@ -153,14 +209,28 @@ inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr,
     "}
 }
 
-
+/**
+ * Attempt to recieve len bytes from sock into buff, using flags.
+ * @param sockfd socket
+ * @param buff buffer to write to
+ * @param len bytes to recv
+ * @param flags additional flags
+ * @returns the number of bytes recieved / error code. 
+ */
 function int recv(fd_t sockfd, char* buff, size_t len, int flags){
 
     return recvfrom(sockfd, buff, len, flags, NULL, NULL);
 
 }
 
-
+/**
+ * Attempt to send len bytes of buff to sockfd with flags
+ * @param sockfd socket
+ * @param buff buffer to read from
+ * @param len bytes to send
+ * @param flags additional flags
+ * @returns bytes sent / error code
+ */
 function int send(fd_t sockfd, char* buff, size_t len, int flags){
 
     return sendto(sockfd, buff, len,flags, NULL, NULL);

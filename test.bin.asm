@@ -1808,17 +1808,15 @@ _void._floads_pfd_t:
 	xor rax, rax
 	syscall
 .L0x7c:
-	push rax
+	mov qword[rbp-32], rax
 	xor r10, r10
-	pop rbx
+	mov rbx, qword[rbp-32]
 	cmp rbx, r10
 	setl bl
-	mov byte[rbp-32], bl
-	mov bl, byte[rbp-32]
 	mov al, bl
 	and al, 1
 	jz .L0x7e
-	xor rax, rax
+	mov rax, qword[rbp-32]
 	jmp ___void._floads_pfd_t__return
 	jmp .L0x7f
 .L0x7e:
