@@ -56,6 +56,9 @@ parser.add_argument(
     help="Suppress warnings",
     default=False)
 
+parser.add_argument("-E","--preprocess", action="store_true", default=False,
+                    help="Only run the preprocessor, and output a single compile-ready file.")
+
 
 args = parser.parse_args()
 __fileinput__ = args.input
@@ -69,6 +72,9 @@ __oplevel__ = 1
 __executable__ = not args.object
 __linkables__ = args.link if args.link is not None else []
 __nowarn__ = args.nowarn
+
+
+__preprocessonly__ = args.preprocess
 
 __macros__ = []
 __macrotext__ = ""

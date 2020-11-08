@@ -267,8 +267,15 @@ class Compiler:
 
         parameters = []
 
+        variardic = False
+
         # load parameters until end of fn header at ')'
         while self.current_token.tok != T_CLSP:
+
+            if(self.current_token.tok == T_ELIPSES):
+                variardic = True
+                self.advance()
+                break
 
             t = self.checkType()
 
@@ -333,6 +340,7 @@ class Compiler:
         # construct final object
         f = Function(name, parameters, rettype, self,
                      self.currentTokens[start:self.ctidx])
+        f.variardic = variardic
         self.functions.append(f)
         # add as a variable for fn pointers
         self.globals.append(

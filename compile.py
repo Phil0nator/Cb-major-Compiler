@@ -53,6 +53,16 @@ def main():
     del lex
     pp = PreProcessor(firstTokens)
     totals = pp.process()
+    
+    # no compilation needed, just output preprocessed file
+    if(config.__preprocessonly__):
+
+        output = "".join([t.reverse() for t in totals])
+        with open(config.__fileoutput__, "wb") as f:
+            f.write(output.encode())
+
+        return 0
+
     del pp
     # global compilation
     c = Compiler()

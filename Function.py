@@ -72,6 +72,12 @@ class Function:
         # extern is in reference to c-standard names vs .k names
         self.extern = extern
 
+        # Variardic functions will behave slightly differently.
+        # They are defined using the '...' token in their parameters,
+        # because they take an arbitrary number of parameters.
+        self.variardic = False
+
+
         self.destructor_text = ""               # automatically called destructors
 
         # used for read-only values generated during compiletime that can be
@@ -200,8 +206,9 @@ class Function:
 
         for f in self.compiler.functions:  # first seach exact matches
             if f.name == fn:
-                if(len(f.parameters) != len(types)):
+                if(len(f.parameters) != len(types) and not f.variardic):
                     continue
+                types = types[:len(f.parameters)] if f.variardic else types
                 valid = True
                 for i in range(len(types)):
                     if(not f.parameters[i].t.__eq__(types[i])):
@@ -210,6 +217,7 @@ class Function:
                         break
                 if(valid):
                     return f
+        
         for f in self.compiler.functions:  # seach others for valid casts
             if f.name == fn:
                 lt = len(types)
@@ -884,11 +892,14 @@ class Function:
                 inst = f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
 
+
+
                 # if(fn.parameters[i].t.csize() != 8):
 
                 #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
-# fn.parameters[i].t.csize()), setSize(result,
-# fn.parameters[i].t.csize())]))
+                # fn.parameters[i].t.csize()), setSize(result,
+                # fn.parameters[i].t.csize())]))
+                
                 inst += (maskset(
                     norm_parameter_registers[normused],
                     fn.parameters[i].t.csize()))

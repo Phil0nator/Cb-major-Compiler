@@ -57,7 +57,7 @@ class Lexer:
         op = self.ch
         begin = self.loc.copy()
         self.advance()
-        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):            
             return Token(op, op, begin, self.loc.copy())
         op += self.ch
         self.advance()
@@ -221,7 +221,7 @@ class Lexer:
                     advance()
                     tokens.append(self.buildMultichar())
 
-            elif (self.ch in "()}{[],^@%~.:?"):
+            elif (self.ch in "()}{[],^@%~:?"):
                 tokens.append(
                     Token(self.ch, self.ch, self.loc.copy(), self.loc.copy()))
                 advance()

@@ -336,11 +336,9 @@ class ExpressionEvaluator:
 
                         # op is -> or .
                         if(op == T_PTRACCESS or op == T_DOT):
-
                             ninster, o, apendee = evaluator.memberAccess(a, b)
                             instr += ninster
                             stack.append(apendee)
-
                         # ternary operators:
                         elif (op == T_TERNARYQ):
 
@@ -929,6 +927,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
             print(a, b, member, a.type.members)
 
             throw(UnkownIdentifier(b.token))
+
+
         o = memv.t.copy()
 
         tmpaddr = ralloc(False)

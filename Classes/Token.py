@@ -50,9 +50,9 @@ T_ANOT = "~"
 T_AOR = "|"
 T_AAND = "&"
 
-T_MULTIOP = "-><=!|&+/*"
+T_MULTIOP = "-><=!|&+/*."
 MULTIOPERS = ["->", "!=", "<=", ">=", "==", "+=", "*=",
-              "-=", "/=", "&&=", "||=", "<<=", ">>=", "++", "--", ">>", "<<", "||", "&&"]
+              "-=", "/=", "&&=", "||=", "<<=", ">>=", "++", "--", ">>", "<<", "||", "&&", "...", ".."]
 
 
 T_DIGITS = "0123456789"
@@ -82,6 +82,7 @@ T_CLSIDX = "]"
 
 T_COMMA = ","
 T_BSLASH = "\\"
+T_ELIPSES = "..."
 
 T_TYPECAST = "$"
 
@@ -173,6 +174,30 @@ class Token:
         self.start=other.start.copy()
         self.end = other.end.copy()
         return self
+
+    # reverse a token into its original string value
+    # (specifically used for the -E compile option for preprocess only)
+    def reverse(self):
+        
+        if(self.tok == T_EOF):
+            return ""
+
+        if(self.tok == T_STRING):
+            return f"\"{self.value}\""
+
+        if(self.tok == T_TYPECAST):
+            return f"${self.value} "
+
+        if(isinstance(self.value, int)):
+            return f"{self.value}"
+
+        if(self.tok == T_ID or self.tok == T_KEYWORD):
+            return f"{self.value} "
+
+        return str(self.value)
+
+
+
 
     def __repr__(self):  # pretty print
         if(self.tok != T_FUNCTIONCALL):

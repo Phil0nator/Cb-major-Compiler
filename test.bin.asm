@@ -3184,7 +3184,7 @@ main:
 	mov rbp, rsp
 	sub rsp, 16
 	mov [rbp-8], rdi
-	mov rsi, 8
+	mov rsi, 4
 	mov rbx, STRING_CONSTANT_144
 	mov rdi, STRING_CONSTANT_144
 	xor rax, rax
