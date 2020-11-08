@@ -366,6 +366,12 @@ class PreProcessor:
                     self.checkToks([T_STRING])
                     throw(Error(errtok,self.current_token.value))
 
+                elif(self.current_token.value == "warning"):
+                    warntok = self.current_token
+                    self.delmov()
+                    self.checkToks([T_STRING])
+                    warn(Warning(warntok, f" {self.current_token.value} "))
+                    self.delmov()
 
                 else:
                     throw(UnkownDirective(self.current_token))

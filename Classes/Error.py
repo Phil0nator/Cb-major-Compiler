@@ -290,7 +290,7 @@ class UnmatchedTernary(Error):
 
 
 class Warning:
-    def __init__(self, msg, tok):
+    def __init__(self, tok, msg):
         self.msg = msg
         self.tok = tok
 
