@@ -10,8 +10,8 @@ import re
 
 
 
-ambiguous_regex = re.compile("(?!([a-z]|[A-Z]|[_]|[0-9]))")
-
+#ambiguous_regex = re.compile("(?!([a-Z]|[_]|[0-9]))")
+ambiguous_regex = re.compile("\W", flags=re.ASCII)
 
 
 
@@ -134,12 +134,10 @@ class Lexer:
         self.advance()
         raw = self.raw
         chidx = self.chidx
-        count = 0
 
-        end = ambiguous_regex.search(self.raw,chidx)
-        value = (self.raw[chidx-1:end.end()])
+        end = ambiguous_regex.search(raw,chidx).end()-1
+        value = (raw[chidx-1:end])
         lv = len(value)-1
-
         """ for ch in raw[chidx:]:
             char = ord(ch)
             if(T.isidchar(char) or T.isdigit(char)):

@@ -2,7 +2,8 @@
 
 function int main(long argc){
     
-    printf("Funny\n");
+    printf("Funny %i\n", sizeof(int));
+
 
     return NULL;
 }

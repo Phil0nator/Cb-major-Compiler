@@ -384,11 +384,11 @@ class PreProcessor:
                 self.advance()
 
         # filter out deleted tokens that were replaced with None
-        return list(filter(badfilter,filter(None, self.tokens)))
+        return list(filter(badfilter, self.tokens))
 
 
 def badfilter(token):
-    return token.tok != T_BSLASH
+    return token is not None and token.tok != T_BSLASH 
 
 
 
