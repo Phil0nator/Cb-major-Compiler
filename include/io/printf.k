@@ -8,13 +8,13 @@
 #include "memory.k"
 
 
-#define __PRINTF_MAXNORMUSE 100000
+#define __PRINTF_MAXNORMUSE 10000
 // printf is just a __sprintf wrapper
-global void __printf(char* fmt, void* args){
+global void __printf(char* fmt, void* args, fd_t ostream){
 
     char *normform = qmmap(__PRINTF_MAXNORMUSE);
     int l = __sprintf(normform,fmt,args);
-    write(STDOUT, normform, l);
+    write(ostream, normform, l);
 
     munmap(normform, __PRINTF_MAXNORMUSE);
 
@@ -33,7 +33,7 @@ __cdecl void printf(char* fmt, void arg1, void arg2, void arg3, void arg4, void 
     args[2]=arg3;
     args[3]=arg4;
     args[4]=arg5;
-    __printf(fmt,&args);
+    __printf(fmt,&args, STDOUT);
     
 
 }
@@ -48,5 +48,29 @@ global void printf(char* fmt){
     fputs(STDOUT, fmt);
 }
 
+/**
+ * eprintf provides a way to use the standard printf function for the STDERR
+ * output stream. The output of eprintf will go to STDERR instead of STDOUT.
+ * for format information @see __SPRINTF
+ * @param fmt format
+ * @returns None
+ */
+__cdecl void eprintf(char* fmt, void arg1, void arg2, void arg3, void arg4, void arg5){
+    void args[6];
+    args[0]=arg1;
+    args[1]=arg2;
+    args[2]=arg3;
+    args[3]=arg4;
+    args[4]=arg5;
+    __printf(fmt,&args, STDERR);
+}
+
+cextern void eprintf(char* fmt, void arg1, void arg2, void arg3, void arg4);
+cextern void eprintf(char* fmt, void arg1, void arg2, void arg3);
+cextern void eprintf(char* fmt, void arg1, void arg2);
+cextern void eprintf(char* fmt, void arg1);
+global void eprintf(char* fmt){
+    fputs(STDERR, fmt);
+}
 
 #endif

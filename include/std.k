@@ -2,7 +2,7 @@
 #define __STD 1
 
 #include "sys/errlist.k"    /* Error handling */
-#include "bits.k"           /* bit operations / properties */
+#include "bits/endian.k"    /* endian conversion */
 #include "limits.k"         /* limits of datatypes */
 #include "stddef.k"         /* commonly used definitions */
 #include "memory.k"         /* memory operations */
@@ -10,6 +10,7 @@
 #include "math.k"           /* math functions */
 #include "random.k"         /* fast psudo random number generator */
 
+#include "assert/assert.k"  /* debug assertions */
 #include "sys/time.k"       /* time operations */
 #include "sys/files.k"      /* low level file interaction */
 #include "sys/sock.k"       /* low level socket interaction */

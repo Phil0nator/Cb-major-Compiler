@@ -5,7 +5,6 @@
 #define __THREAD 1
 
 #include "memory.k"
-#include "bits.k"
 #include "sys/pth.k"
 #include "stddef.k"
 #include "sys/time.k"

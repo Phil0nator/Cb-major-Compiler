@@ -1,7 +1,7 @@
 #ifndef __SCANF
 #define __SCANF 1
 #include "stddef.k"
-#include "bits.k"
+#include "bits/endian.k"
 #include "math.k"
 #define SSCANF_FORMAT_INT 'i'
 #define SSCANF_FORMAT_UINT 'u'

@@ -1,5 +1,5 @@
 /**
- * bits.k provides information and functions relating to bitwise numerical operations.
+ * endian.k provides conversions between big and little endian.
  */
 #ifndef __BITS
 #define __BITS 1

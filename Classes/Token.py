@@ -81,7 +81,7 @@ T_OPENIDX = "["
 T_CLSIDX = "]"
 
 T_COMMA = ","
-
+T_BSLASH = "\\"
 
 T_TYPECAST = "$"
 
@@ -165,6 +165,14 @@ class Token:
         self.fn = None          # hint
         self.thint = None  # type hint
         self.tracker = 0  # usage hint
+
+    def copy(self, start, end):
+        return Token(self.tok,self.value,start,end)
+
+    def loadLocs(self, other):
+        self.start=other.start.copy()
+        self.end = other.end.copy()
+        return self
 
     def __repr__(self):  # pretty print
         if(self.tok != T_FUNCTIONCALL):

@@ -153,7 +153,7 @@ class Lexer:
 
             elif(self.ch == "\\"):
                 advance()
-                advance()
+                tokens.append(Token(T.T_BSLASH, T.T_BSLASH,self.loc.copy(),self.loc.copy()))
 
             elif (self.ch == "#"):
                 advance()
