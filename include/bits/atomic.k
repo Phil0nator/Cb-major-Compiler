@@ -64,17 +64,17 @@ _atomic_cmpxchg(int* atom, int* expected, int desired){
 inline int _atomic_sub(int* atom, int subtractor){
     __asm{"
     xor rax, rax
-    mov eax, [rdi]
+    xchg eax, [rdi]
     lock sub dword[rdi], esi
     "}
 }
 /**
  * @see _atomic_sub(int*, int)
  */
-inline int _atomic_sub(long* atom, long subtractor){
+inline long _atomic_sub(long* atom, long subtractor){
     __asm{"
     xor rax, rax
-    mov rax, [rdi]
+    xchg rax, [rdi]
     lock sub qword[rdi], rsi
     "}
 }
@@ -97,6 +97,46 @@ inline void _atomic_store(int* atom, int newval){
 inline void _atomic_store(long* atom, long newval){
     __asm{"
     lock xchg qword[rdi], rsi
+    "}
+}
+/**
+ *  _atomic_sub gives access to the LOCK prefix for the 'add' x86 instruction.
+ *  @param atom a pointer to an atomic int
+ *  @param subtractor value to add to atom
+ *  @returns the value of atom
+ */
+inline int _atomic_add(int* atom, int adder){
+    __asm{"
+    xchg eax, [rdi]
+    lock add dword[rdi], esi
+    "}
+}
+/**
+ * @see _atomic_add
+ */
+inline long _atomic_add(long* atom, long adder){
+    __asm{"
+    xchg rax, [rdi]
+    lock add qword[rdi], rsi
+    "}
+}
+
+/**
+ * _atomic_read uses the LOCK prefix to safely read the atomic value.
+ * @param atom value to read
+ * @returns value of atom
+ */
+inline int _atomic_read(int* atom){
+    __asm{"
+    xchg eax, [rdi]
+    "}
+}
+/**
+ * @see _atomic_read
+ */
+inline long _atomic_read(int* atom){
+    __asm{"
+    xchg rax, [rdi]
     "}
 }
 

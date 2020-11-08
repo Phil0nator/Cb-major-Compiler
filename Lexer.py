@@ -95,14 +95,16 @@ class Lexer:
         if(self.ch == "\""):
             self.advance()
             return Token(T.T_STRING, "", begin, self.loc.copy())
-        content = self.ch
-        ch = self.advance()
+        #content = self.ch
+        #ch = self.advance()
 
-        while(ch != "\""):
-            content += ch
-            ch = self.advance()
-            if(self.chidx == len(self.raw) - 1):
-                throw(TokenMismatch(Token("\"", "\"", begin, begin)))
+        end = self.raw.find("\"", self.chidx)
+        if(end == -1 or end >= len(self.raw)):
+            throw(TokenMismatch(Token("\"", "\"", begin, begin)))
+        content = self.raw[self.chidx:end]
+        self.chidx = end
+
+
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
@@ -161,15 +163,6 @@ class Lexer:
                 t.tok = T.T_DIRECTIVE
                 tokens.append(t)
 
-                # if(not getDirectives):
-                #     while self.ch != "\n":
-                #         self.advance()
-                # else:
-                #     out = ""
-                #     while self.ch != "\n":
-                #         out+=self.ch
-                #         self.advance()
-                #     directives.append(out)
 
             elif(self.ch == "$"):
                 advance()
@@ -190,15 +183,22 @@ class Lexer:
                 tokens.append(self.buildMultichar())
             elif(self.ch == "/"):
                 advance()
+                
+                # managing comments:
+
+                # single line comments:
                 if(self.ch == "/"):
-                    while self.ch != "\n":
-                        advance()
+                    # find and jump to next newline
+                    self.chidx = self.raw.find("\n", self.chidx)
+                    advance()                
+                
+                # multiline comments: 
                 elif(self.ch == "*"):
-                    comment = "  "
-                    while comment[-2:] != "*/":
-                        self.advance()
-                        comment += self.ch
+                    #find and jump to next instance of '*/' in raw text
+                    self.chidx = self.raw.find("*/",self.chidx)+1
                     advance()
+                
+                # not a comment
                 else:
                     self.chidx -= 2
                     advance()
@@ -217,7 +217,6 @@ class Lexer:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:
-                    #t = Token("-","-",self.loc.copy(),self.loc.copy())
                     self.chidx -= 2
                     advance()
                     t = self.buildMultichar()
