@@ -5,6 +5,17 @@ from Classes.Error import throw
 from Classes.Error import UnkownCharSequence
 from Classes.Error import UnexepectedEOFError, TokenMismatch
 from globals import *
+import re
+
+
+
+
+ambiguous_regex = re.compile("(?!([a-z]|[A-Z]|[_]|[0-9]))")
+
+
+
+
+
 
 ##########################
 #
@@ -125,17 +136,25 @@ class Lexer:
         chidx = self.chidx
         count = 0
 
-        for ch in raw[chidx:]:
+        end = ambiguous_regex.search(self.raw,chidx)
+        value = (self.raw[chidx-1:end.end()])
+        lv = len(value)-1
+
+        """ for ch in raw[chidx:]:
             char = ord(ch)
             if(T.isidchar(char) or T.isdigit(char)):
                 count += 1
             else:
-                break
+                break """
 
-        value = f"{value}{raw[chidx:chidx+count]}"
-        lv = len(value) - 2
-        self.chidx += lv
-        self.loc.ch += lv
+        
+
+
+
+        #value = f"{value}{raw[chidx:chidx+count]}"
+        #lv = len(value) - 2
+        self.chidx += lv-1
+        self.loc.ch += lv-1
         self.advance()
         if(value in T.KEYWORDS):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
