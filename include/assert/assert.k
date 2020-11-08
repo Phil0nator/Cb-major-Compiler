@@ -21,7 +21,8 @@
 /**
  * Assert that condition x is true, otherwise print error and abort.
  */
-#define assert(x) __assert(x, __FILE__, __LINE__, __STRINGIFY__(x)) 
+#define assert(x) __assert(x, __FILE__, \ 
+                            __LINE__, __STRINGIFY__(x)) 
 #endif
 #ifdef NDEBUG
 #define assert(x) (1)

@@ -26,7 +26,7 @@
 #define LONG_MAX        9223372036854775807
 #define LONG_MIN        (0-LONG_MAX-1)
 
-
+#define sizeof(x) x
 
 
 #endif
