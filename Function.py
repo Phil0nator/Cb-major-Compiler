@@ -82,6 +82,18 @@ class Function:
         # because they take an arbitrary number of parameters.
         self.variardic = False
 
+        # user labels are custom labels embedded in the code itself. EX:
+        #   {
+        #       mylabel:
+        #       ...
+        #       goto mylabel;
+        # 
+        #  } 
+        #
+        # in the array they take the form of dictionaries: userlables =      {"username":"assembly-name"}       
+        # each user-defined label will have a corresponding assembly label.
+        self.userlabels = {}
+
 
         self.destructor_text = ""               # automatically called destructors
 
@@ -157,6 +169,9 @@ class Function:
         if(self.current_token.tok != T_ENDL):
             throw(ExpectedSemicolon(self.current_token))
         self.advance()
+
+    def getUserlabel(self, name):
+        return self.userlabels[name] if name in self.userlabels else None
 
     def checkTok(self, tok):                        # check current token for given token
         if(self.current_token.tok != tok):
@@ -798,6 +813,17 @@ class Function:
                 self.regdeclremain_norm -= 1
             self.advance()
 
+        elif (word == "goto"):
+            self.advance()
+            lname = self.checkTok(T_ID)
+            asmlabel = self.getUserlabel(lname)
+            if(asmlabel == None):
+                throw(UnkownIdentifier(self.current_token))
+            self.addline(f"jmp {asmlabel}")
+            self.checkSemi()
+
+
+
         else:
             throw(UnexpectedToken(self.current_token))
 
@@ -1334,6 +1360,19 @@ class Function:
 
         self.addline(inst)
 
+    def buildLabel(self):
+        name = self.current_token.value
+        
+        if(name in self.userlabels):
+            throw(VariableRedeclaration(self.current_token, name))
+        
+        asmname = getLogicLabel(f"USERDEF.{name}")
+        self.addline(f"{asmname}:")
+
+        self.userlabels[name] = asmname
+        self.advance()
+        self.checkTok(":")
+
     # build statement starting with an ambiguous ID token
 
     def buildIDStatement(self):
@@ -1343,6 +1382,8 @@ class Function:
         if (self.compiler.isType(id)
                 and self.tokens[self.ctidx + 1].tok != T_OPENP):
             self.buildDeclaration()  # declaration
+        elif (self.tokens[self.ctidx+1].tok == ":"):
+            self.buildLabel()
         else:
             # assignment or blank call
             """

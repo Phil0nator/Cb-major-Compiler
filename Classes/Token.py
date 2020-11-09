@@ -124,6 +124,7 @@ KEYWORDS = [
     "case",
     "register",
     "del",
+    "goto",
 
     "extern",
     "cextern",
