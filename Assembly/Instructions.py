@@ -4,42 +4,37 @@ from Assembly.Registers import REGISTERS
 import re
 
 
-
-
-
-
 MOV_INST = ["mov", "movq", "movsd"]
+
 
 def getMovop(a, b):
     if ("xmm" in a and "xmm" in b):
         return "movsd"
-    elif ("xmm" in a) ^ ( "xmm" in b):
+    elif ("xmm" in a) ^ ("xmm" in b):
         return "movq"
     return "mov"
 
 
-
-
-
-
 def line_filter(line):
-    if( line.op == '' or line.dest is None): return False
+    if(line.op == '' or line.dest is None):
+        return False
     return True
 
+
 class Line:
-    def __init__(self, op,dest,source,flags,idx):
+    def __init__(self, op, dest, source, flags, idx):
         self.op = op
-        self.dest=dest
-        self.source=source
-        self.flags=flags
+        self.dest = dest
+        self.source = source
+        self.flags = flags
         self.idx = idx
 
     def hasAddr(self):
-        return '[' in self.dest+self.source
+        return '[' in self.dest + self.source
 
     def contains(self, c):
         return c in self.__repr__()
-    
+
     def __repr__(self):
         return f"{self.op} {self.dest}, {self.source if self.source is not None else ''} {self.flags if self.flags is not None else ''} : {self.idx}"
 
@@ -72,8 +67,6 @@ class Peephole:
 
     def parseLine(self, l, i):
 
-
-
         sp = l.split(" ")
         opcount = len(sp)
         op = sp[0]
@@ -103,20 +96,17 @@ class Peephole:
     def opl3(self):
         self.opl2()
 
-    
-
-
     def opl2(self):
         while self.opl2_parser() > 0:
             pass
 
-    def opl2_parser(self, lineget = []):
+    def opl2_parser(self, lineget=[]):
 
         optims = 0
         splitted = self.instructions.split("\n")
         lines = []
         for i in range(len(splitted)):
-            lines.append(self.parseLine(splitted[i],i))
+            lines.append(self.parseLine(splitted[i], i))
 
         lines = list(filter(line_filter, lines))
 
@@ -125,8 +115,6 @@ class Peephole:
             prev = lines[0]
             for line in lines[1:]:
 
-                
-                
                 # redundant push/pop operations
                 if (line.op == "pop" and prev.op == "push"):
                     if(line.dest != prev.dest):
@@ -134,7 +122,7 @@ class Peephole:
                     else:
                         splitted[line.idx] = ""
                     splitted[prev.idx] = ""
-                    optims+=1
+                    optims += 1
 
                 # redundant mov's
                 if (line.op in MOV_INST and prev.op == line.op):
@@ -148,18 +136,11 @@ class Peephole:
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
 
-                
-                    
-
                 prev = line
-
 
         self.instructions = '\n'.join(splitted)
 
         return optims
-
-
-        
 
     def get(self):
         if(self.optlvl == 1):

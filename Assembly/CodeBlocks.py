@@ -556,7 +556,7 @@ def shiftmul(i):
 
 
 # move registers without any conversion
-def raw_regmov(a,b):
-    if("xmm" in a+b):
+def raw_regmov(a, b):
+    if("xmm" in a + b):
         return f"movq {a}, {b}\n"
     return f"mov {a}, {b}\n"
