@@ -1,4 +1,4 @@
-# The C flat Compiler
+# The C flat major Compiler
 
 Compile, debug, and link C flat files.
 
