@@ -440,8 +440,10 @@ class Compiler:
                     ntn = self.current_token.value
                     newtype = ta.copy()
                     newtype.name = ntn
-                    # add new typename to precedence list
-                    type_precedence[ntn] = type_precedence[ta.name]
+
+                    # add new typename to precedence list, if applicable
+                    if ta.name in type_precedence:
+                        type_precedence[ntn] = type_precedence[ta.name]
 
                     # add new type to types and tdefs
                     self.types.append(newtype.copy())

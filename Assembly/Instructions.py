@@ -67,7 +67,8 @@ class Peephole:
 
     def parseLine(self, l, i):
 
-        sp = l.split(" ")
+        spo = l.strip().split(",")
+        sp = spo[0].split(" ") + spo[1].strip().split(" ") if len(spo) > 1 else spo[0].split(" ")
         opcount = len(sp)
         op = sp[0]
         dest = sp[1].replace(",", "").strip() if opcount > 1 else None
@@ -129,6 +130,7 @@ class Peephole:
                     # if same source  ->  destination, but both not addresses
                     if(line.source == prev.dest and not prev.hasAddr()):
                         splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
+
                         #optims +=1
 
                 # replace 'mov %r, 0' with the faster 'xor %r, %r'

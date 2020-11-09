@@ -1,6 +1,6 @@
 #ifndef __STD
 #define __STD 1
-
+#include "sys/syscall.k"            /* easy syscall macro */
 #include "sys/errlist.k"            /* Error handling */
 #include "bits/endian.k"            /* endian conversion */
 #include "limits.k"                 /* limits of datatypes */
@@ -14,7 +14,7 @@
 #include "algorithm/algorithm.k"    /* high level algorithm macros */
 
 #include "assert/assert.k"          /* debug assertions */
-#include "sys/time.k"               /* time operations */
+#include "chrono.k"                 /* time operations */
 #include "sys/files.k"              /* low level file interaction */
 #include "sys/sock.k"               /* low level socket interaction */
 #include "sys/pth.k"                /* low level thread interaction */

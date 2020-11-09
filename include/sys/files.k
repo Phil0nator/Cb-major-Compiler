@@ -52,10 +52,7 @@ typedef long mode_t;         /* file openmode datatype   */
  * @returns number of bytes read
  */
 inline ssize_t read(fd_t fd, char* buf, size_t count){
-    __asm{"
-    xor rax, rax
-    syscall
-    "}
+    syscall(0)
 }
 /**
  * write count bytes from buf into file fd.
@@ -65,10 +62,8 @@ inline ssize_t read(fd_t fd, char* buf, size_t count){
  * @returns number of bytes written
  */
 inline ssize_t write(fd_t fd, char* buf, size_t count){
-    __asm{"
-        mov rax, 1
-        syscall"
-    }
+    syscall(1)
+
 }
 /**
  * open a file at path fname with flags/mode.
@@ -78,10 +73,8 @@ inline ssize_t write(fd_t fd, char* buf, size_t count){
  * @returns the new file descriptor, or an error code if unsuccessful.
  */
 inline fd_t open(char *fname, int flags, mode_t mode){
-    __asm{"
-        mov rax, 2
-        syscall
-    "}
+    syscall(2)
+
 }
 /**
  * Close a file.
@@ -89,10 +82,8 @@ inline fd_t open(char *fname, int flags, mode_t mode){
  * @returns success / or error code
  */
 inline int close(fd_t fd){
-    __asm{"
-    mov rax, 3
-    syscall
-    "}
+    syscall(3)
+
 }
 /**
  * Create a new directory pathname with mode
@@ -101,10 +92,7 @@ inline int close(fd_t fd){
  * @returns success / error code
  */
 inline int mkdir(char* pathname, mode_t mode){
-    __asm{"
-    mov rax, 83
-    syscall
-    "}
+    syscall(83)
 }
 /**
  * Remove a directory at pathname
@@ -112,10 +100,7 @@ inline int mkdir(char* pathname, mode_t mode){
  * @returns success / error code
  */
 inline int rmdir(char* pathname){
-    __asm{"
-    mov rax, 84
-    syscall
-    "}
+    syscall(84)
 }
 /**
  * Create a file pathname with mode
@@ -124,10 +109,8 @@ inline int rmdir(char* pathname){
  * @returns success / error code
  */
 inline int creat(char* pathname, mode_t mode){
-    __asm{"
-    mov rax, 85
-    syscall
-    "}
+    syscall(85)
+
 }
 /**
  * Change the working directory of the program to pathname.
@@ -135,10 +118,8 @@ inline int creat(char* pathname, mode_t mode){
  * @returns success / error code
  */
 inline int chdir(char* pathname){
-    __asm{"
-    mov rax, 80
-    syscall
-    "}
+    syscall(80)
+
 }
 /**
  * seek the file offset for file fd by offset from whence.
@@ -155,11 +136,7 @@ inline int chdir(char* pathname){
  * @param whence Starting point
  */
 inline int lseek(fd_t fd, int offset, int whence){
-    __asm{"
-    mov rax, 8
-    syscall
-    "
-    }
+    syscall(8)
 }
 
 

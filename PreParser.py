@@ -268,6 +268,7 @@ class PreProcessor:
                 opens += 1
             elif(self.current_token.tok == T_CLSP):
                 opens -= 1
+            if(self.current_token.value == "\\n"): self.current_token.value = "\n"
             output = f"{output} {self.current_token.value}" if opens else output
             self.delmov()
         return output[1:]

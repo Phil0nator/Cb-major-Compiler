@@ -124,10 +124,7 @@ function int inet_aton(char* cp, in_addr* addr){
  * @returns a new socket file descriptor, or a negative error
  */
 inline fd_t socket(int family, int type, int protocol){
-    __asm{"
-    mov rax, 41
-    syscall
-    "}
+    syscall(41)
 }
 /**
  * connect a socket held by fd to an address.
@@ -137,10 +134,7 @@ inline fd_t socket(int family, int type, int protocol){
  * @returns 0 on success, negative error on failure
  */
 inline int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
-    __asm{"
-    mov rax, 42
-    syscall
-    "}
+    syscall(42)
 }
 /**
  * Accept an incoming connection to socket fd.
@@ -150,10 +144,7 @@ inline int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
  * @returns a new file descriptor for a socket connected with the incoming connection
  */
 inline int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
-    __asm{"
-    mov rax, 43
-    syscall
-    "}
+    syscall(43)
 }
 /**
  * bind a socket to an address and port
@@ -163,50 +154,33 @@ inline int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
  * @returns 0 on success, negative error
  */
 inline int bind(fd_t fd, sockaddr_in*umyaddr, int addrlen){
-    __asm{"
-    mov rax, 49
-    syscall
-    "}
+    syscall(49)
 }
 /**
  * Set a socket to listen for incoming connections:
  * https://man7.org/linux/man-pages/man2/listen.2.html
  */
 inline int listen(fd_t fd, int backlog){
-    __asm{"
-    mov rax, 50
-    syscall
-    "}
+    syscall(50)
 }
 /**
  * Shutdown socket sockfd with code how.
  * https://man7.org/linux/man-pages/man2/shutdown.2.html
  */
 inline int shutdown(fd_t sockfd, int how){
-    __asm{"
-    mov rax, 48
-    syscall
-    "}
+    syscall(48)
 }
 /**
  * https://man7.org/linux/man-pages/man2/recvfrom.2.html
  */
 inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
-    __asm{"
-    mov rax, 45
-    mov r10, rcx
-    syscall
-    "}
+    syscall(45)
 }
 /**
  * https://www.man7.org/linux/man-pages/man2/sendto.2.html
  */
 inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
-    __asm{"
-    mov rax, 44
-    mov r10, rcx
-    syscall
-    "}
+    syscall(44)
 }
 
 /**

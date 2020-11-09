@@ -41,11 +41,7 @@
  * https://man7.org/linux/man-pages/man2/futex.2.html
  */
 inline long futex(int* uaddr, long op, int val, timeval_t *utime, int* uaddr2, int val3){
-    __asm{"
-    mov rax, 202
-    mov r10, rcx
-    syscall
-    "}
+    syscall(202)
 }
 /**
  * nfutex is a simple wrapper for the most common usage of futex

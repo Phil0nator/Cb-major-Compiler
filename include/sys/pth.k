@@ -41,19 +41,13 @@ typedef long pid_t;
  * https://man7.org/linux/man-pages/man2/fork.2.html
  */
 inline long fork(){
-    __asm{"
-    mov rax, 57
-    syscall
-    "}
+    syscall(57)
 }
 /**
  * https://man7.org/linux/man-pages/man2/vfork.2.html
  */ 
 inline long vfork(){
-    __asm{"
-    mov rax, 58
-    syscall
-    "}
+    syscall(58)
 }
 /**
  * Overwrite the current process with data found from pathname.
@@ -66,19 +60,15 @@ inline long vfork(){
  * 
  */
 inline long execve(char* pathname, char** args, char** env){
-    __asm{"
-    mov rax, 59
-    syscall
-    "}
+    syscall(59)
+
 }
 /**
  * https://www.man7.org/linux/man-pages/man2/pause.2.html
  */
 inline long pause(){
-    __asm{"
-    mov rax, 34
-    syscall
-    "}
+    syscall(34)
+
 }
 /**
  * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
@@ -107,11 +97,8 @@ typedef void rusage;
  * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
  */
 inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru){
-    __asm{"
-    mov rax, 247
-    mov r10, rcx
-    syscall
-    "}
+    syscall(247)
+
 }
 
 /**
@@ -124,11 +111,8 @@ inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru
  * @returns 0 is returned to the child, and the child tid is returned to the parent process, or errors will be returned to parent.
  */
 inline long clone(unsigned long clone_flags, void* newsp, void* parent_tid, void* child_tid, unsigned int tid){
-    __asm{"
-    mov rax, 56
-    mov r10, rcx
-    syscall
-    "}
+    syscall(56)
+
 }
 /**
  * End execution with exit code c
@@ -136,48 +120,37 @@ inline long clone(unsigned long clone_flags, void* newsp, void* parent_tid, void
  * @returns on success, exit does not return.
  */
 inline void exit(long c){
-    __asm{"
-    mov rax,60
-    syscall
-    "}
+    syscall(60)
+
 }
 
 /**
  * https://www.man7.org/linux/man-pages/man2/tgkill.2.html
  */
 inline long tgkill(pid_t tgid, pid_t pid, long sig){
-    __asm{"
-    mov rax, 234
-    syscall
-    "}
+    syscall(234)
+
 }
 /**
  * Get local thread id
  */
 inline long gettid(){
-    __asm{"
-    mov rax, 186
-    syscall
-    "}
+    syscall(186)
+
 }
 /**
  * Get local process id
  */
 inline long getpid(){
-    __asm{"
-    mov rax, 39
-    syscall
-    "}
+    syscall(39)
+
 }
 /**
  * https://man7.org/linux/man-pages/man2/wait4.2.html
  */
 inline long wait4(pid_t upid, int*stat_addr, long options, void*ru){
-    __asm{"
-    mov rax, 61
-    mov r10, rcx
-    syscall
-    "}
+    syscall(61)
+
 }
 
 

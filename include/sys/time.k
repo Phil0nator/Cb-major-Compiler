@@ -11,7 +11,7 @@ struct timeval_t{
     long tv_sec;         /* seconds */
     long tv_usec;        /* and microseconds */
 };
-
+typedef timeval_t timespec;
 struct itimerval_t{
 
     timeval_t it_interval;  /* timer interval */
@@ -39,61 +39,80 @@ struct timezone_t{
 #define ITIMER_VIRTUAL  1
 #define ITIMER_PROF     2
 
+/*
+ * The IDs of the various system clocks (for POSIX.1b interval timers):
+ */
+#define CLOCK_REALTIME              0
+#define CLOCK_MONOTONIC             1
+#define CLOCK_PROCESS_CPUTIME_ID    2
+#define CLOCK_THREAD_CPUTIME_ID     3
+#define CLOCK_MONOTONIC_RAW         4
+#define CLOCK_REALTIME_COARSE       5
+#define CLOCK_MONOTONIC_COARSE      6
+#define CLOCK_BOOTTIME              7
+#define CLOCK_REALTIME_ALARM        8
+#define CLOCK_BOOTTIME_ALARM        9
+/*
+ * The driver implementing this got removed. The clock ID is kept as a
+ * place holder. Do not reuse!
+ */
+#define CLOCK_SGI_CYCLE     10
+#define CLOCK_TAI           11
+#define MAX_CLOCKS          16
+#define CLOCKS_MASK         (CLOCK_REALTIME | CLOCK_MONOTONIC)
+#define CLOCKS_MONO         CLOCK_MONOTONIC
+
+
+#define CLOCKS_PER_SEC 1000000
+
+
+
+
+
+
 /**
  * https://man7.org/linux/man-pages/man2/getitimer.2.html
  */
 inline int getitimer(int which, itimerval_t* value){
-    __asm{
-        "
-        mov rax, 36
-        syscall
-        "
-    }
+    syscall(36)
 }
 /**
  * https://man7.org/linux/man-pages/man2/gettimeofday.2.html
  */
 inline int gettimeofday(timeval_t *tv, timezone_t *tz){
-    __asm{"
-    mov rax, 96
-    syscall
-    "}
+    syscall(96)
 }
 /**
  * https://man7.org/linux/man-pages/man2/setitimer.2.html
  */
 inline int setitimer(int which, itimerval_t* value, itimerval_t* ovalue){
-    __asm{"
-    mov rax, 38
-    syscall
-    "}
+    syscall(38)
 }
 /**
  * https://man7.org/linux/man-pages/man2/settimeofday.2.html
  */
 inline int settimeofday(timeval_t* tv, timezone_t* tz){
-    __asm{"
-    mov rax, 164
-    syscall
-    "}
+    syscall(164)
+
 }
 /**
  * https://man7.org/linux/man-pages/man2/utimes.2.html
  */
 inline int utimes(char* filename, timeval_t*utimes){
-    __asm{"
-    mov rax, 235
-    syscall
-    "}
+    syscall(235)
 }
+
+inline long clock_gettime(long which, timespec* tp){
+    syscall(228)
+}
+
+
+
 /**
  * https://man7.org/linux/man-pages/man2/time.2.html
  */
 inline time_t time(time_t *tloc){
-    __asm{"
-    mov rax, 201
-    syscall
-    "}
+    syscall(201)
 }
 /**
  * Halt execution of the calling thread for at least the amount of time specified by req.
@@ -103,10 +122,7 @@ inline time_t time(time_t *tloc){
  * @returns None (cannot fail)
  */
 inline void nanosleep(timeval_t*req, timeval_t*rem){
-    __asm{"
-    mov rax, 35
-    syscall
-    "}
+    syscall(35)
 }
 /**
  * Halt execution of the calling thread for at least the specified nanoseconds.

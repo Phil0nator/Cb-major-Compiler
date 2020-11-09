@@ -287,6 +287,7 @@ class Function:
 
     def buildPredef(self):
         p = self.current_token.value
+        stp = self.current_token
         assert p in predefs
 
         self.advance()
@@ -296,12 +297,12 @@ class Function:
             rfree(final.accessor)
             if(final.isconstint()):
                 return Token(T_INT, final.accessor,
-                             final.token.start, final.token.end)
+                             stp.start, stp.end)
             if(not final.isRegister()):
                 return Token(T_INT, final.type.csize(),
-                             final.token.start, final.token.end)
+                             stp.start, stp.end)
             return Token(T_INT, final.type.csize(),
-                         final.token.start, final.token.end)
+                         stp.start, stp.end)
 
     # load parameters into memory (first instructions)
 
