@@ -740,15 +740,26 @@ class Function:
     def buildDoWhile(self):
         self.advance()
         self.checkTok(T_OPENSCOPE)
+
+        # determine label to mark begining of loop
         startlabel = getLogicLabel("DOWHILE")
         self.addline(f"{startlabel}:")
+
+        # compile body
         self.beginRecursiveCompile()
         self.advance()
+
+        # ensure that body is followed by a while
         whileq = self.checkTok(T_KEYWORD)
-        if(whileq != "while"): throw(ExpectedToken(self.tokens[self.ctidx-1],"while"))
-        
-        footerinst = self.evaluateRightsideExpression(EC.ExpressionComponent("rax",LONG.copy()))
+        if(whileq != "while"):
+            throw(ExpectedToken(self.tokens[self.ctidx - 1], "while"))
+
+        # compile while comparison instructions
+        footerinst = self.evaluateRightsideExpression(
+            EC.ExpressionComponent("rax", LONG.copy()))
         footerinst = f"{footerinst}{check_fortrue}jnz {startlabel}\n"
+
+        # close up
         self.addline(footerinst)
         self.checkSemi()
 
@@ -830,10 +841,13 @@ class Function:
 
         elif (word == "goto"):
             self.advance()
+            # get label name
             lname = self.checkTok(T_ID)
             asmlabel = self.getUserlabel(lname)
+            # ensure that this label exists
             if(asmlabel is None):
                 throw(UnkownIdentifier(self.current_token))
+            # jump to it
             self.addline(f"jmp {asmlabel}")
             self.checkSemi()
 
@@ -1360,15 +1374,25 @@ class Function:
 
     def buildLabel(self):
         name = self.current_token.value
-
+        # ensure that this label does not already exist
         if(name in self.userlabels):
             throw(VariableRedeclaration(self.current_token, name))
 
+        # get an asm label to correspond with this label
         asmname = getLogicLabel(f"USERDEF.{name}")
+
+        # add the asm label to the current compilation location for jumping
         self.addline(f"{asmname}:")
 
+        # record data in userlabels
         self.userlabels[name] = asmname
+
+        # close up
         self.advance()
+
+        # label declarations do not require a ';' because they are a simple
+        # two token declaration, so the code after them can share a line or
+        # not.
         self.checkTok(":")
 
     # build statement starting with an ambiguous ID token
@@ -1384,12 +1408,6 @@ class Function:
             self.buildLabel()
         else:
             # assignment or blank call
-            """
-            if (self.compiler.getFunction(id) is not None):
-                # fn call
-                self.buildBlankfnCall()
-
-            else: """
 
             self.buildAssignment()
 
