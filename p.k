@@ -7,8 +7,8 @@ long* test = {0,5,0,0};
 function int main(long argc){
     
 
-    printf("%b\n", none_of(test,4,cmpfn));
 
+    
 
     return NULL;
 }

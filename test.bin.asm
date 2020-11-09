@@ -3364,6 +3364,7 @@ main:
 	mov rbp, rsp
 	sub rsp, 16
 	mov [rbp-8], rdi
+.L0xef:
 	mov rcx, _bool_cmpfn_plong
 	mov rdx, 4
 	mov rsi, 8
@@ -3375,6 +3376,13 @@ main:
 	mov rdi, STRING_CONSTANT_144
 	xor rax, rax
 	call printf
+	mov r10, 1
+	mov rbx, test
+	lea rbx, [rbx+r10*8]
+	mov rbx, qword[rbx]
+	mov rax, rbx
+	and al, 1
+	jnz .L0xef
 	xor rax, rax
 	jmp __main__return
 __main__return:

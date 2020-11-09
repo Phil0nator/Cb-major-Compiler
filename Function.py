@@ -738,7 +738,19 @@ class Function:
                 self.regdeclremain_norm -= 1
 
     def buildDoWhile(self):
-        print(self.current_token)
+        self.advance()
+        self.checkTok(T_OPENSCOPE)
+        startlabel = getLogicLabel("DOWHILE")
+        self.addline(f"{startlabel}:")
+        self.beginRecursiveCompile()
+        self.advance()
+        whileq = self.checkTok(T_KEYWORD)
+        if(whileq != "while"): throw(ExpectedToken(self.tokens[self.ctidx-1],"while"))
+        
+        footerinst = self.evaluateRightsideExpression(EC.ExpressionComponent("rax",LONG.copy()))
+        footerinst = f"{footerinst}{check_fortrue}jnz {startlabel}\n"
+        self.addline(footerinst)
+        self.checkSemi()
 
     # build a statement that starts with a keyword
 
