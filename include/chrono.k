@@ -64,6 +64,7 @@ timezone_t __internaltime;
 int* mdays = {31,28,31,30,31,30,31,31,30,31,30,31};
 
 global tm* gmtime(time_t timer){
+    tzset(); // POSIX standard 
     time_t ogt = timer;
     tm* tmd = &__tmbuf;
 
@@ -92,12 +93,13 @@ global tm* gmtime(time_t timer){
 
     for(int mi = 0 ; true; mi++){
         if(mday > mdays[mi]){
-            printf("%i\n", mdays[mi]);
             mday = mday - mdays[mi];
         }else{
             break;
         }
     }
+
+    month = mi++;
 
     tmd->tm_sec = seconds; 
     tmd->tm_min = minutes;
@@ -109,6 +111,53 @@ global tm* gmtime(time_t timer){
     tmd->tm_mon = month;
     return tmd;
 }
+
+char** wday_name = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+char** mon_name = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
+char* asctime__result_buf = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', NULL};
+
+global char* asctime(tm* timeptr){
+
+    memset(asctime__result_buf, ' ', 28);
+    strcpy(asctime__result_buf, wday_name[timeptr->tm_wday]);
+    asctime__result_buf[3] = ' ';
+    strcpy(asctime__result_buf+4, mon_name[timeptr->tm_mon]);
+    asctime__result_buf[7] = ' ';
+    sprintf(asctime__result_buf+7, "%i ", timeptr->tm_mday, NULL, NULL, NULL);
+    sprintf(asctime__result_buf+10, "%i:%i:%i %i",timeptr->tm_hour,timeptr->tm_min, timeptr->tm_sec, 1900+(timeptr->tm_year));
+    return asctime__result_buf;
+}
+
+/* externally defined time information (per POSIX) */
+extern time_t timezone;
+extern int daylight;
+extern char* tzname;
+cextern void tzset();
+
+
+global tm* localtime(time_t timer){
+    tzset(); // POSIX standard
+    return gmtime(timer-timezone);
+
+
+}
+
+
+
+global char* ctime(time_t timer){
+    return asctime(localtime(timer));
+}
+
+
+/**
+ * TODO:
+ *  Impliment strftime()
+ *  http://www.cplusplus.com/reference/ctime/strftime/
+ * 
+ */
 
 
 #endif

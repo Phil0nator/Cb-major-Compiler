@@ -206,7 +206,10 @@ class Lexer:
                 # multiline comments:
                 elif(self.ch == "*"):
                     # find and jump to next instance of '*/' in raw text
+                    olchdx = self.chidx
                     self.chidx = self.raw.find("*/", self.chidx) + 1
+                    self.loc.ch += self.chidx-olchdx
+                    self.loc.line += self.raw.count("\n",olchdx,self.chidx)
                     advance()
 
                 # not a comment

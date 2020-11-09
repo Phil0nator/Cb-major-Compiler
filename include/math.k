@@ -32,7 +32,7 @@ double M_MINZERO_MEM = M_MINZERO;
  * @param a input
  * @returns square root of a
  */
-inline double sqrt(double a){
+global double sqrt(double a){
 
     __asm{"
     
@@ -46,7 +46,7 @@ inline double sqrt(double a){
  * @param a input
  * @returns square root of a
  */
-inline double sqrt(int a){
+global double sqrt(int a){
 
   __asm{"
   
@@ -62,7 +62,7 @@ inline double sqrt(int a){
  * @param a input
  * @returns square root of a
  */
-inline long sqrt(long a){
+global long sqrt(long a){
 
   __asm{"
   
@@ -83,18 +83,18 @@ inline long sqrt(long a){
  * @param exp the exponent
  * @returns base^exp
  */
-inline long pow(long base, long exp){
+global long pow(long base, long exp){
 
   __asm{"
   
   mov rax, rdi
   dec rsi
-  jz %L_int_pow_pintint_end
-  %L_int_pow_pintint_flp:
+  jz _int_pow_pintint_end
+  _int_pow_pintint_flp:
   mul rdi
   dec rsi
-  jnz %L_int_pow_pintint_flp
-  %L_int_pow_pintint_end:
+  jnz _int_pow_pintint_flp
+  _int_pow_pintint_end:
   "}
 
 
@@ -106,7 +106,7 @@ inline long pow(long base, long exp){
  * @param exp the exponent
  * @returns base^exp
  */
-inline double pow(long base, long exp){
+global double pow(long base, long exp){
 
   pow(base, exp);
   __asm{"cvtsi2sd xmm0, rax"}
@@ -119,16 +119,16 @@ inline double pow(long base, long exp){
  * @param exp the exponent
  * @returns base^exp
  */
-inline double pow(double base, long exp){
+global double pow(double base, long exp){
 
   __asm{"
   
     
     dec rdi
-    %L_double_pow_pdoubleint_flp:
+    _double_pow_pdoubleint_flp:
     mulsd xmm0, xmm0
     dec rdi
-    jnz %L_int_pow_pintint_flp
+    jnz _int_pow_pintint_flp
   
   
   "}
@@ -141,7 +141,7 @@ inline double pow(double base, long exp){
  * @param x value to round
  * @returns closest integer to x
  */
-inline long round(double x){
+global long round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
 
@@ -150,7 +150,7 @@ inline long round(double x){
  * @param x value to ceil
  * @returns integer higher than x
  */
-inline long ceil(double x){
+global long ceil(double x){
   return 0-floor(0-x);
 }
 
@@ -159,7 +159,7 @@ inline long ceil(double x){
  * @param x value to truncate
  * @returns x without a decimal point
  */
-inline long trunc(double x){
+global long trunc(double x){
   __asm{"cvttsd2si rax, xmm0"}
 }
 
@@ -168,7 +168,7 @@ inline long trunc(double x){
  * @param x number to floor
  * @returns integer below x
  */
-inline long floor(double x){
+global long floor(double x){
   return round(x-0.5);
 }
 
@@ -177,7 +177,7 @@ inline long floor(double x){
  * @param x value
  * @returns |x|
  */
-inline long abs(long x){
+global long abs(long x){
 
   __asm{"
   
@@ -196,7 +196,7 @@ inline long abs(long x){
  * @param x value
  * @returns |x|
  */
-inline double abs(double x){
+global double abs(double x){
 
   __asm{"
 
@@ -217,7 +217,7 @@ inline double abs(double x){
  * @param x value
  * @returns log(x)
  */
-inline long log(long x){
+global long log(long x){
   
   return log2(x) / M_LOG2_10;
 
@@ -228,7 +228,7 @@ inline long log(long x){
  * @param n log
  * @returns log base base of n
  */
-inline long log(long base, long n){
+global long log(long base, long n){
   
   return log2(n) / log2(base);
   
@@ -238,7 +238,7 @@ inline long log(long base, long n){
  * @param n value
  * @returns log2(n)
  */
-inline long log2(long n){
+global long log2(long n){
   __asm{"
   
   xor rax, rax
@@ -257,7 +257,7 @@ inline long log2(long n){
  * @param n inp b
  * @returns x % n
  */
-inline double fmod(double x, double n){
+global double fmod(double x, double n){
   return (0-n)*(floor(x/n))+x;
 }
 
@@ -282,6 +282,7 @@ inline long divmod(long dividend, long divisor, long* modulus ){
   "}
 
 }
+
 
 
 #endif

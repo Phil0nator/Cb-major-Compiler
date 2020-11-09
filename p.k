@@ -1,8 +1,10 @@
 #include "std.k"
 
 function int main(long argc){
-    tm* time = gmtime(time(NULL));
-    printf("TIME: %i m\n", time->tm_mon);
+    
+    while(true){
+        printf("%s \r", ctime(time(NULL)));
+    }
 
     return NULL;
 }
