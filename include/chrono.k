@@ -58,11 +58,18 @@ global clock_t clock()
  */
 #define clockdif(end, beginning) ((($double end-beginning)/CLOCKS_PER_SEC))
 
+/* locally used definitions */
 tm __tmbuf;
 timezone_t __internaltime;
-
 int* mdays = {31,28,31,30,31,30,31,31,30,31,30,31};
 
+
+/**
+ * Construct a tm object based on a time_t value, under the GMT timezone.
+ * @param timer epoch time
+ * @returns a pointer to a tm object build based on the epoch time.
+ * @warning the pointer returned may be overwritten and altered in subsequent calls to gmtime, localtime, ctime, or asctime.
+ */
 global tm* gmtime(time_t timer){
     tzset(); // POSIX standard 
     time_t ogt = timer;
@@ -74,9 +81,10 @@ global tm* gmtime(time_t timer){
     int yday;
     int years;
     int wday;
-
     int month = 0;
     int mday = 0;
+
+
 
     timer = divmod(timer, 60, &seconds);
     timer = divmod(timer, 60, &minutes);
@@ -111,14 +119,21 @@ global tm* gmtime(time_t timer){
     tmd->tm_mon = month;
     return tmd;
 }
-
+/* Locally used definitions */
 char** wday_name = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 char** mon_name = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
+// buffer
 char* asctime__result_buf = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', NULL};
 
+/**
+ * Format a tm object into a string in the form: Www Mmm Ddd hh:mm:ss yyyy
+ * @param timeptr a pointer to a tm object to format
+ * @returns a string containing the formatted tm object
+ * @warning the string returned from asctime CANNOT be passed into free(), and will be overwritten in subsequent asctime and ctime calls.
+ */
 global char* asctime(tm* timeptr){
 
     memset(asctime__result_buf, ' ', 28);
@@ -137,7 +152,12 @@ extern int daylight;
 extern char* tzname;
 cextern void tzset();
 
-
+/**
+ * Get the current time as a tm object based on the current timezone.
+ * @param timer the time to format
+ * @returns a formatted tm object
+ * @warning the pointer returned may be overwritten and altered in subsequent calls to gmtime, localtime, ctime, or asctime.
+ */
 global tm* localtime(time_t timer){
     tzset(); // POSIX standard
     return gmtime(timer-timezone);
@@ -146,7 +166,12 @@ global tm* localtime(time_t timer){
 }
 
 
-
+/**
+ * Get a string representation of the time timer in the local timezone.
+ * @param timer time to format
+ * @returns formatted string 
+ * @warning the string returned from ctime CANNOT be passed into free(), and will be overwritten in subsequent asctime and ctime calls.
+ */
 global char* ctime(time_t timer){
     return asctime(localtime(timer));
 }

@@ -14,7 +14,7 @@
 #include "algorithm/algorithm.k"    /* high level algorithm macros */
 
 #include "assert/assert.k"          /* debug assertions */
-#include "chrono.k"                 /* time operations */
+#include "chrono.k"                 /* high level time operations */
 #include "sys/files.k"              /* low level file interaction */
 #include "sys/sock.k"               /* low level socket interaction */
 #include "sys/pth.k"                /* low level thread interaction */
