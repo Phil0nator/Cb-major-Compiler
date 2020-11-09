@@ -57,12 +57,12 @@ def psizeoft(t, lvl=0):
 
 
 # bss / data reservers
-constantReservers = ["DB", "DW", "DD", "DQ"]
+constantReservers = {"1":"DB", "2":"DW", "4":"DD", "8":"DQ"}
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 
 
 def getConstantReserver(t):
-    return constantReservers[t.size(0) - 5]
+    return constantReservers[str(t.csize())]
 
 
 def getHeapReserver(t):

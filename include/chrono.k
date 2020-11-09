@@ -61,17 +61,53 @@ global clock_t clock()
 tm __tmbuf;
 timezone_t __internaltime;
 
-global tm* localtime(time_t timer){
-    tm* timedest = &__tmbuf;
-    
+int* mdays = {31,28,31,30,31,30,31,31,30,31,30,31};
+
+global tm* gmtime(time_t timer){
+    time_t ogt = timer;
+    tm* tmd = &__tmbuf;
+
     int seconds;
+    int minutes;
+    int hours;
+    int yday;
+    int years;
+    int wday;
+
+    int month = 0;
+    int mday = 0;
+
     timer = divmod(timer, 60, &seconds);
+    timer = divmod(timer, 60, &minutes);
+    timer = divmod(timer, 24, &hours);
+    
+    yday  = ((ogt / 60) / 60) / 24;
+    years = floor(yday / 365.25);
+    yday = yday - floor((years*365.25));
 
-    timedest->tm_sec = seconds; 
+    wday = (yday + 4) % 7;
 
-    printf("%i\n", timedest->tm_sec);
 
-    return timedest;
+    mday = yday;
+
+    for(int mi = 0 ; true; mi++){
+        if(mday > mdays[mi]){
+            printf("%i\n", mdays[mi]);
+            mday = mday - mdays[mi];
+        }else{
+            break;
+        }
+    }
+
+    tmd->tm_sec = seconds; 
+    tmd->tm_min = minutes;
+    tmd->tm_hour = hours;
+    tmd->tm_yday = yday;
+    tmd->tm_year = years+70; /* years since 1900, not 1970 */
+    tmd->tm_wday = wday;
+    tmd->tm_mday = mday;
+    tmd->tm_mon = month;
+    return tmd;
 }
 
 
