@@ -497,7 +497,7 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             throw(AddressOfConstant(a.token))
 
-        elif(isinstance(a.accessor, Variable)):
+        elif(isinstance(a.accessor, Variable) and not a.accessor.glob):
 
             if(a.accessor.register is not None):
                 throw(AddressOfConstant(a.token))
@@ -510,6 +510,14 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"lea {result}, [rbp-{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
             o = a.type.copy()
             o.ptrdepth += 1
+            return instr, o, EC.ExpressionComponent(
+                result, o.copy(), token=a.token)
+
+        elif(isinstance(a.accessor, Variable)):
+
+            result = ralloc(False)
+            instr += f"mov {result}, {a.accessor.name}\n"
+            o = a.type.up()
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
 
@@ -967,7 +975,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             throw(AddressOfConstant(a.token))
 
-        elif(isinstance(a.accessor, Variable)):
+        elif(isinstance(a.accessor, Variable) and not a.accessor.glob):
 
             if(a.accessor.register is not None):
                 throw(AddressOfConstant(a.token))
@@ -981,6 +989,15 @@ class LeftSideEvaluator(ExpressionEvaluator):
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
+        
+        elif(isinstance(a.accessor, Variable)):
+
+            result = ralloc(False)
+            instr += f"mov {result}, {a.accessor.name}\n"
+            o = a.type.up()
+            return instr, o, EC.ExpressionComponent(
+                result, o.copy(), token=a.token)
+
 
         else:
             throw(AddressOfConstant(a.token))

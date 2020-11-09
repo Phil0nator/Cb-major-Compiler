@@ -5,6 +5,9 @@
 #ifndef __STDDEF
 #define __STDDEF 1
 
+#include "io/io.k" /* IO stream definitions */
+#include "sys/syscall.k" /* syscall macro */
+
 
 #define nullptr 0
 
@@ -16,13 +19,11 @@ char nullterm = 0;
 
 typedef unsigned long size_t;
 
-typedef unsigned long time_t; /* time in sec since 1 Jan 1970 0000 GMT */
 
 typedef long ssize_t; /* The type ssize_t holds all signed results of the sizeof operator. */
 
 typedef int ptrdiff_t;
 
-typedef long clock_t; /* unit for system accounting */
 
 
 
@@ -43,8 +44,6 @@ typedef unsigned long uint64_t; /* unsigned 64 bit type */
 typedef double float;
 
 typedef short int32;
-
-#include "io/io.k"
 
 
 #define MAX_INT 9223372036854775807

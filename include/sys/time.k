@@ -6,7 +6,7 @@
 
 #include "stddef.k"
 
-typedef long time_t;
+typedef unsigned long time_t;
 struct timeval_t{
     long tv_sec;         /* seconds */
     long tv_usec;        /* and microseconds */
