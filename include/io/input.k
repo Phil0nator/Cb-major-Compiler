@@ -87,10 +87,21 @@ function int toInteger(char* str, bool signed){
 
 }
 
-// scanf wrappers
-__cdecl int __scanf(char* format, void** args){
-    register char* inp = floads(STDIN);
-    register int retval = __SSCANF(format, inp, args);
+#define __SCANFMAXCHUNK 1000
+__cdecl int __scanf(char* format, void** args, fd_t file){
+    
+    char* inp = nullptr;
+    size_t len = 0;
+    size_t gotten = 0;
+    do {
+        len+= __SCANFMAXCHUNK;
+        inp = realloc(inp, len);
+        gotten = fgets(file,inp+len-__SCANFMAXCHUNK, __SCANFMAXCHUNK);
+        inp[len-__SCANFMAXCHUNK+gotten]=0;
+    } while (gotten >= __SCANFMAXCHUNK );
+    
+    
+    int retval = __SSCANF(format, inp, args);
     free(inp);
     return retval;
 }
@@ -99,22 +110,39 @@ __cdecl int __scanf(char* format, void** args){
  * @param format the format to use
  * @returns number of tokens found
  */
-__cdecl int scanf(char* format, void* a, void* b, void* c, void* d, void* e){
+__cdecl size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e){
     void* args[5];
     args[0]=a;
     args[1]=b;
     args[2]=c;
     args[3]=d;
     args[4]=e;
-    return __scanf(format, &args);
+    return __scanf(format, &args, STDIN);
 }
-cextern int scanf(char* format, void* a, void* b, void* c, void*d);
-cextern int scanf(char* format, void* a, void* b, void* c);
-cextern int scanf(char* format, void* a, void* b);
-cextern int scanf(char* format, void* a);
-cextern int scanf(char* format);
+cextern size_t scanf(char* format, void* a, void* b, void* c, void*d);
+cextern size_t scanf(char* format, void* a, void* b, void* c);
+cextern size_t scanf(char* format, void* a, void* b);
+cextern size_t scanf(char* format, void* a);
+cextern size_t scanf(char* format);
 
-
+/**
+ * fscanf will do the same as scanf, but on a file of your choice.
+ * @param file the file descriptor to read from
+ * @param format the format of the data
+ * @returns the number of arguments satisfied
+ */
+__cdecl size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d ){
+    void* args[4];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    return __scanf(format, &args, file);
+}
+cextern size_t fscanf(fd_t file, char* format, void* a, void* b, void* c);
+cextern size_t fscanf(fd_t file, char* format, void* a, void* b);
+cextern size_t fscanf(fd_t file, char* format, void* a);
+cextern size_t fscanf(fd_t file, char* format);
 
 
 

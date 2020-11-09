@@ -43,6 +43,10 @@ global void free(void* addr){
     return munmap(addr-0x8, @(addr-0x8));
 }
 global void* realloc(void* addr, size_t newsize){
+    
+    if(addr == nullptr){
+        return malloc(newsize);
+    }
     register size_t oldsize = @(addr-0x8);
     if(oldsize == newsize){
         return addr;

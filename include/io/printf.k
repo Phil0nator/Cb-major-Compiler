@@ -44,7 +44,7 @@ cextern void printf(char* fmt, void arg1, void arg2, void arg3, void arg4);
 cextern void printf(char* fmt, void arg1, void arg2, void arg3);
 cextern void printf(char* fmt, void arg1, void arg2);
 cextern void printf(char* fmt, void arg1);
-global void printf(char* fmt){
+inline void printf(char* fmt){
     fputs(STDOUT, fmt);
 }
 
@@ -69,8 +69,29 @@ cextern void eprintf(char* fmt, void arg1, void arg2, void arg3, void arg4);
 cextern void eprintf(char* fmt, void arg1, void arg2, void arg3);
 cextern void eprintf(char* fmt, void arg1, void arg2);
 cextern void eprintf(char* fmt, void arg1);
-global void eprintf(char* fmt){
+inline void eprintf(char* fmt){
     fputs(STDERR, fmt);
+}
+
+/**
+ * fprintf provides the functionality of printf but for an output file or stream of your choice.
+ * @param file output file / stream
+ * @param fmt format
+ * @returns None
+ */
+__cdecl void fprintf(fd_t file, char* fmt, void arg1, void arg2, void arg3, void arg4){
+    void args[4];
+    args[0]=arg1;
+    args[1]=arg2;
+    args[2]=arg3;
+    args[3]=arg4;
+    __printf(fmt,&args, file);
+}
+cextern void fprintf(fd_t file, char* fmt, void arg1, void arg2, void arg3);
+cextern void fprintf(fd_t file, char* fmt, void arg1, void arg2);
+cextern void fprintf(fd_t file, char* fmt, void arg1);
+inline void fprintf(fd_t file,char* fmt){
+    fputs(file, fmt);
 }
 
 #endif
