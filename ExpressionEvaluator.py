@@ -1,3 +1,5 @@
+# used to store out-of-order instructions for ternary operator
+from Classes.Constexpr import ternarystack
 from Classes.Error import *
 from Classes.Token import *
 from Classes.DType import *
@@ -24,7 +26,7 @@ from Assembly.TypeSizes import psizeof, psizeoft
 ############################
 
 
-def optloadRegs(a, b, op, o, constvalok = False):
+def optloadRegs(a, b, op, o, constvalok=False):
     instr = ""
     o = a.type.copy()
     areg = ""
@@ -37,12 +39,12 @@ def optloadRegs(a, b, op, o, constvalok = False):
     if (constvalok and isinstance(a.accessor, int)):
         areg = a.accessor
         if b is None:
-            return areg,None,o,""
+            return areg, None, o, ""
         overrideAload = True
 
-    if (b is not None and constvalok and isinstance (b.accessor, int)):
+    if (b is not None and constvalok and isinstance(b.accessor, int)):
         breg = b.accessor
-        return areg,breg,o,instr
+        return areg, breg, o, instr
 
     if(a.isRegister() or overrideAload):
         areg = a.accessor
@@ -95,45 +97,44 @@ The ExpressionEvaluator abstract class contains functions shared by
 '''
 
 
-from Classes.Constexpr import ternarystack # used to store out-of-order instructions for ternary operator
 class ExpressionEvaluator:
     def __init__(self, fn):
         self.fn = fn
         self.resultflags = None
 
-    def ternarypartA(self, a, b ): # op == "?"
+    def ternarypartA(self, a, b):  # op == "?"
         newinstr = ""
-        
-        
+
         if(len(ternarystack) <= 0):
             throw(UnmatchedTernary(a.token))
-        
-        
-        
-        reg, _, __, newinstr = optloadRegs(a,None,"?",LONG.copy())
+
+        reg, _, __, newinstr = optloadRegs(a, None, "?", LONG.copy())
         newinstr += f"test {reg}, {reg}\n"
-        cmpinstr, aregec,bregec  = ternarystack.pop()
-        newinstr+=cmpinstr
-        
+        cmpinstr, aregec, bregec = ternarystack.pop()
+        newinstr += cmpinstr
+
         rfree(aregec.accessor)
         rfree(bregec.accessor)
         rfree(reg)
         return newinstr, b.type.copy(), b
 
-    def ternarypartB(self, a,b): # op == ':'
-        
+    def ternarypartB(self, a, b):  # op == ':'
+
         if(a.type.isflt() != b.type.isflt()):
             throw(TypeMismatch(a.tok, a.type, b.type))
 
-
         areg, breg, __, outinstr = optloadRegs(a, b, ":", LONG.copy())
-        areg = setSize(areg,8)
-        breg = setSize(breg,8)
+        areg = setSize(areg, 8)
+        breg = setSize(breg, 8)
         resultreg = ralloc(False, size=8)
-        
+
         newinstr = f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
-        ternarystack.append((newinstr,EC.ExpressionComponent( areg, a.type ), EC.ExpressionComponent(breg, b.type)))
-        return outinstr, a.type.copy(), EC.ExpressionComponent(resultreg,a.type.copy(),token=a.token)
+        ternarystack.append(
+            (newinstr, EC.ExpressionComponent(
+                areg, a.type), EC.ExpressionComponent(
+                breg, b.type)))
+        return outinstr, a.type.copy(), EC.ExpressionComponent(
+            resultreg, a.type.copy(), token=a.token)
 
     # Bitshift optimization for multiplication and division by multiples of 2
     def mult_div_optimization(self, a, b, op):
@@ -267,16 +268,14 @@ class ExpressionEvaluator:
                 a, b, op
             )
 
-
-        # ternary optimizations will by synonymous to their normal form 
+        # ternary optimizations will by synonymous to their normal form
         # unless both operands are constants:
         if (op == ":"):
 
-            return self.ternarypartB(a,b)
+            return self.ternarypartB(a, b)
 
-        elif( op == "?"):
-            return self.ternarypartA(a,b)
-
+        elif(op == "?"):
+            return self.ternarypartA(a, b)
 
         return newinstr, newt, apendee
 
@@ -296,22 +295,21 @@ class ExpressionEvaluator:
                     a = stack.pop()              # first operand
                     op = e.accessor              #
 
-                    
                     # special case
                     if(a.isconstint() and op in ["?"]):
-                        stack.append(calculateConstant(a,b,op))
-                        
+                        stack.append(calculateConstant(a, b, op))
+
                         continue
 
                     c = None
-                    if( op in [":"]):
-                        c =stack.pop()
+                    if(op in [":"]):
+                        c = stack.pop()
                         stack.append(c)
-                    if(a.isconstint() and b.isconstint() and ( c is None or c.isconstint())):  # optimize for constant expressions
+                    # optimize for constant expressions
+                    if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
 
                         stack.append(calculateConstant(a, b, op, c=c))
                         continue
-
 
                     # if one operand is constant
                     # optimize for semi constexpr
@@ -342,16 +340,15 @@ class ExpressionEvaluator:
                         # ternary operators:
                         elif (op == T_TERNARYQ):
 
-                            ninster, o, apendee = self.ternarypartA(a,b)
-                            instr+=ninster
+                            ninster, o, apendee = self.ternarypartA(a, b)
+                            instr += ninster
                             stack.append(apendee)
 
                         elif (op == T_TERNARYELSE):
-                            
-                            ninster, o, apendee = self.ternarypartB(a,b)
-                            instr+=ninster
-                            stack.append(apendee)
 
+                            ninster, o, apendee = self.ternarypartB(a, b)
+                            instr += ninster
+                            stack.append(apendee)
 
                         # op is any other op
                         else:
@@ -927,7 +924,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
             print(a, b, member, a.type.members)
 
             throw(UnkownIdentifier(b.token))
-
 
         o = memv.t.copy()
 

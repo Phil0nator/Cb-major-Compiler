@@ -87,13 +87,12 @@ class Function:
         #       mylabel:
         #       ...
         #       goto mylabel;
-        # 
-        #  } 
         #
-        # in the array they take the form of dictionaries: userlables =      {"username":"assembly-name"}       
+        #  }
+        #
+        # in the array they take the form of dictionaries: userlables =      {"username":"assembly-name"}
         # each user-defined label will have a corresponding assembly label.
         self.userlabels = {}
-
 
         self.destructor_text = ""               # automatically called destructors
 
@@ -237,7 +236,7 @@ class Function:
                         break
                 if(valid):
                     return f
-        
+
         for f in self.compiler.functions:  # seach others for valid casts
             if f.name == fn:
                 lt = len(types)
@@ -286,22 +285,23 @@ class Function:
         t.signed = signed
         return t
 
-
     def buildPredef(self):
         p = self.current_token.value
         assert p in predefs
 
         self.advance()
         if(p == "typeof"):
-            
+
             final = self.evaluateLeftsideExpression()[1]
             rfree(final.accessor)
             if(final.isconstint()):
-                return Token(T_INT,final.accessor,final.token.start,final.token.end)
+                return Token(T_INT, final.accessor,
+                             final.token.start, final.token.end)
             if(not final.isRegister()):
-                return Token(T_INT,final.type.csize(),final.token.start,final.token.end)
-            return Token(T_INT,final.type.csize(),final.token.start,final.token.end)
-
+                return Token(T_INT, final.type.csize(),
+                             final.token.start, final.token.end)
+            return Token(T_INT, final.type.csize(),
+                         final.token.start, final.token.end)
 
     # load parameters into memory (first instructions)
 
@@ -737,6 +737,9 @@ class Function:
             else:
                 self.regdeclremain_norm -= 1
 
+    def buildDoWhile(self):
+        print(self.current_token)
+
     # build a statement that starts with a keyword
 
     def buildKeywordStatement(self):
@@ -817,12 +820,13 @@ class Function:
             self.advance()
             lname = self.checkTok(T_ID)
             asmlabel = self.getUserlabel(lname)
-            if(asmlabel == None):
+            if(asmlabel is None):
                 throw(UnkownIdentifier(self.current_token))
             self.addline(f"jmp {asmlabel}")
             self.checkSemi()
 
-
+        elif(word == "do"):
+            self.buildDoWhile()
 
         else:
             throw(UnexpectedToken(self.current_token))
@@ -853,13 +857,6 @@ class Function:
 
         # function name
         fid = self.current_token.value
-
-        
-
-
-
-
-
 
         # token of function name
         fnstartt = self.current_token
@@ -948,14 +945,12 @@ class Function:
                 inst = f"{self.evaluateRightsideExpression(ec)}"
                 # finalize with mov of correct size
 
-
-
                 # if(fn.parameters[i].t.csize() != 8):
 
                 #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
                 # fn.parameters[i].t.csize()), setSize(result,
                 # fn.parameters[i].t.csize())]))
-                
+
                 inst += (maskset(
                     norm_parameter_registers[normused],
                     fn.parameters[i].t.csize()))
@@ -980,19 +975,19 @@ class Function:
         instructions += (fncall(fn)
                          ) if not varcall else (Instruction("call", [valueOf(var)]))
 
-
         # save return value for register restores
-        if(len(self.regdecls)>0):
+        if(len(self.regdecls) > 0):
             tmp = ralloc(False)
-            instructions += raw_regmov(tmp, sse_return_register if fn.returntype.isflt() else norm_return_register )
+            instructions += raw_regmov(
+                tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
 
         instructions += (self.restoreregs())
-        
+
         # restore return value after register restores
         if(len(self.regdecls) > 0):
             rfree(tmp)
-            instructions += raw_regmov(sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
-
+            instructions += raw_regmov(
+                sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
 
         return instructions, fn
 
@@ -1158,29 +1153,20 @@ class Function:
         if(self.compiler.getType(name) is not None):
             throw(UsingTypenameAsVariable(self.tokens[self.ctidx - 1]))
 
-        
         # create prototype variable
         vprot = Variable(t, name)
-        
-        
+
         # set the variable's register if one is given
         vprot.register = ralloc(
             t.isflt()) if register != False else None
-        
 
         # add variable correctly to get extra properties added to it
         self.addVariable(vprot)
-        
-        
-        
-        
-        
+
         # pull variable back out from the array in order to determine its offset
         # which is set by self.addVariable
         var = self.variables[-1]
         var.isptr = t.ptrdepth > 0
-
-        
 
         # if the variable is a stack-based structure,
         #   add its member variables too.
@@ -1362,10 +1348,10 @@ class Function:
 
     def buildLabel(self):
         name = self.current_token.value
-        
+
         if(name in self.userlabels):
             throw(VariableRedeclaration(self.current_token, name))
-        
+
         asmname = getLogicLabel(f"USERDEF.{name}")
         self.addline(f"{asmname}:")
 
@@ -1382,7 +1368,7 @@ class Function:
         if (self.compiler.isType(id)
                 and self.tokens[self.ctidx + 1].tok != T_OPENP):
             self.buildDeclaration()  # declaration
-        elif (self.tokens[self.ctidx+1].tok == ":"):
+        elif (self.tokens[self.ctidx + 1].tok == ":"):
             self.buildLabel()
         else:
             # assignment or blank call
@@ -1485,9 +1471,6 @@ class Function:
             pfinal.addline(self.asm)
 
             self.asm = pfinal.get()
-
-
-
 
         self.isCompiled = True
 

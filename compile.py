@@ -33,9 +33,9 @@ from PreParser import PreProcessor
 from Compiler import Compiler
 from Linker import *
 
+
 def asm_labelRepl(match):
     return f"\n{match[0][2:]}"
-
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
     del lex
     pp = PreProcessor(firstTokens)
     totals = pp.process()
-    
+
     # no compilation needed, just output preprocessed file
     if(config.__preprocessonly__):
 
@@ -93,7 +93,7 @@ def main():
     del c
     # cleanup
 
-    if(config.__tonasm__): # extra cleanup so the output looks good
+    if(config.__tonasm__):  # extra cleanup so the output looks good
         asm = asm.replace("  ", " ").replace("  ", ' ')
         while("\n " in asm):
             asm = asm.replace("\n ", "\n")
@@ -101,11 +101,10 @@ def main():
             asm = asm.replace("\n\n", "\n")
         asm = asm.replace("\n", "\n\t")
 
-        asm = re.sub("\n\t.*:",asm_labelRepl,asm)
+        asm = re.sub("\n\t.*:", asm_labelRepl, asm)
 
         if(not config.DO_DEBUG):
-            asm = re.sub(";.*","",asm)
-
+            asm = re.sub(";.*", "", asm)
 
     # linking, and running
 
@@ -125,7 +124,6 @@ def main():
 
     if(not config.__tonasm__):
         os.remove(config.__fileoutput__ + ".asm")
-    
 
     print("Compiled and Linked symbols in %s s" % (time.time() - beginTime))
 

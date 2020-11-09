@@ -8,13 +8,8 @@ from globals import *
 import re
 
 
-
-
 #ambiguous_regex = re.compile("(?!([a-Z]|[_]|[0-9]))")
-ambiguous_regex = re.compile("\W", flags=re.ASCII)
-
-
-
+ambiguous_regex = re.compile(r"\W", flags=re.ASCII)
 
 
 ##########################
@@ -57,7 +52,7 @@ class Lexer:
         op = self.ch
         begin = self.loc.copy()
         self.advance()
-        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):            
+        if(self.ch not in T.T_MULTIOP or op + self.ch not in T.MULTIOPERS):
             return Token(op, op, begin, self.loc.copy())
         op += self.ch
         self.advance()
@@ -115,7 +110,6 @@ class Lexer:
         content = self.raw[self.chidx:end]
         self.chidx = end
 
-
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
@@ -135,9 +129,9 @@ class Lexer:
         raw = self.raw
         chidx = self.chidx
 
-        end = ambiguous_regex.search(raw,chidx).end()-1
-        value = (raw[chidx-1:end])
-        lv = len(value)-1
+        end = ambiguous_regex.search(raw, chidx).end() - 1
+        value = (raw[chidx - 1:end])
+        lv = len(value) - 1
         """ for ch in raw[chidx:]:
             char = ord(ch)
             if(T.isidchar(char) or T.isdigit(char)):
@@ -145,14 +139,10 @@ class Lexer:
             else:
                 break """
 
-        
-
-
-
         #value = f"{value}{raw[chidx:chidx+count]}"
         #lv = len(value) - 2
-        self.chidx += lv-1
-        self.loc.ch += lv-1
+        self.chidx += lv - 1
+        self.loc.ch += lv - 1
         self.advance()
         if(value in T.KEYWORDS):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
@@ -171,7 +161,12 @@ class Lexer:
                 advance()
 
             elif(self.ch == "\\"):
-                tokens.append(Token(T.T_BSLASH, T.T_BSLASH,self.loc.copy(),self.loc.copy()))
+                tokens.append(
+                    Token(
+                        T.T_BSLASH,
+                        T.T_BSLASH,
+                        self.loc.copy(),
+                        self.loc.copy()))
                 advance()
 
             elif (self.ch == "#"):
@@ -179,7 +174,6 @@ class Lexer:
                 t = self.buildAmbiguous()
                 t.tok = T.T_DIRECTIVE
                 tokens.append(t)
-
 
             elif(self.ch == "$"):
                 advance()
@@ -200,21 +194,21 @@ class Lexer:
                 tokens.append(self.buildMultichar())
             elif(self.ch == "/"):
                 advance()
-                
+
                 # managing comments:
 
                 # single line comments:
                 if(self.ch == "/"):
                     # find and jump to next newline
                     self.chidx = self.raw.find("\n", self.chidx)
-                    advance()                
-                
-                # multiline comments: 
-                elif(self.ch == "*"):
-                    #find and jump to next instance of '*/' in raw text
-                    self.chidx = self.raw.find("*/",self.chidx)+1
                     advance()
-                
+
+                # multiline comments:
+                elif(self.ch == "*"):
+                    # find and jump to next instance of '*/' in raw text
+                    self.chidx = self.raw.find("*/", self.chidx) + 1
+                    advance()
+
                 # not a comment
                 else:
                     self.chidx -= 2

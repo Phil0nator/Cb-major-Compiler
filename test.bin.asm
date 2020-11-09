@@ -3375,8 +3375,6 @@ main:
 	mov rdi, STRING_CONSTANT_144
 	xor rax, rax
 	call printf
-.L0xef:
-	jmp .L0xef
 	xor rax, rax
 	jmp __main__return
 __main__return:

@@ -124,6 +124,7 @@ KEYWORDS = [
     "case",
     "register",
     "del",
+    "do",
     "goto",
 
     "extern",
@@ -169,17 +170,17 @@ class Token:
         self.tracker = 0  # usage hint
 
     def copy(self, start, end):
-        return Token(self.tok,self.value,start,end)
+        return Token(self.tok, self.value, start, end)
 
     def loadLocs(self, other):
-        self.start=other.start.copy()
+        self.start = other.start.copy()
         self.end = other.end.copy()
         return self
 
     # reverse a token into its original string value
     # (specifically used for the -E compile option for preprocess only)
     def reverse(self):
-        
+
         if(self.tok == T_EOF):
             return ""
 
@@ -196,9 +197,6 @@ class Token:
             return f"{self.value} "
 
         return str(self.value)
-
-
-
 
     def __repr__(self):  # pretty print
         if(self.tok != T_FUNCTIONCALL):

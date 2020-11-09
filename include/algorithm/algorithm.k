@@ -14,6 +14,8 @@ typedef void* iterable;
 
 #define newarray(type, amt) malloc(type*amt)
 #define new(type) malloc(type)
+#define delete(ptr) free(ptr)
+
 
 global bool all_of_raw(iterable array, size_t itemsize,size_t itemcount, void* cmpfn){
     register iterable max = array+(itemsize*itemcount);

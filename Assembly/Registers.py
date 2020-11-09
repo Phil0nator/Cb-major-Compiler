@@ -274,10 +274,9 @@ norm_scratch_registers_inuse = [
 
 def ralloc(flt, size=8):
 
-    # Register leak debugging: 
+    # Register leak debugging:
     #config.LAST_RALLOC = traceback.format_stack()
-    
-    
+
     if(flt):
         for i in range(len(sse_scratch_registers_inuse)):
             if(not sse_scratch_registers_inuse[i]):

@@ -25,9 +25,9 @@ class Error:
 
         lp = ""
         try:
-            if(len(lines) > 2 and line >=2):
+            if(len(lines) > 2 and line >= 2):
                 lp = f"|{line-1}\t" + lines[line - 2] + "\n"
-            if(len(lines) > 1 and line >=1):
+            if(len(lines) > 1 and line >= 1):
                 lp += f"|{line}\t" + lines[line - 1] + "\n"
             if(line != len(lines) - 1 and len(lines) > 1):
                 lp += f"|{line+1}\t" + lines[line] + "\n"
@@ -276,17 +276,17 @@ class RecursiveInlineCall(Error):
         self.tok = tok
         self.message = f"Inline functions cannot be recursive: "
 
+
 class UnkownDirective(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unkown precompile directive: "
 
+
 class UnmatchedTernary(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unmatched ternary operator: "
-
-
 
 
 class Warning:

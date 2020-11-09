@@ -587,4 +587,4 @@ class Compiler:
                 self.text = f"{self.text}{f.asm}"
 
                 # garbage collection
-                f.GC() 
+                f.GC()

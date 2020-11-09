@@ -164,8 +164,6 @@ class PreProcessor:
             self.buildMacro(name)
             return
 
-
-
         if(self.current_token.start.line != sline):
             self.definitions.append(
                 [name, [Token(T_INT, 0, self.current_token.start, self.current_token.end)]])
@@ -182,7 +180,7 @@ class PreProcessor:
 
     def checkDefn(self):
         assert self.current_token.tok == T_ID
-        if (self.tokens[self.tkidx+1].tok == T_OPENP):
+        if (self.tokens[self.tkidx + 1].tok == T_OPENP):
             self.checkMacro()
             return
 
@@ -234,7 +232,7 @@ class PreProcessor:
                         opens -= 1
 
     def buildMacro(self, name):
-        
+
         self.checkToks([T_OPENP])
         self.delmov()
         inputs = []
@@ -242,22 +240,22 @@ class PreProcessor:
             self.checkToks([T_ID])
             inputs.append(self.current_token)
             self.delmov()
-            self.checkToks([T_COMMA,T_CLSP])
-            if(self.current_token.tok == T_CLSP): break
+            self.checkToks([T_COMMA, T_CLSP])
+            if(self.current_token.tok == T_CLSP):
+                break
             self.delmov()
         self.delmov()
         body = []
         mline = self.current_token.start.line
         while(self.current_token.start.line == mline):
             if(self.current_token.tok == T_BSLASH):
-                mline+=1
+                mline += 1
             else:
                 body.append(self.current_token)
             self.delmov()
 
-        m = Macro(name,inputs,body)
+        m = Macro(name, inputs, body)
         self.macros.append(m)
-
 
     def doStringify(self):
         self.delmov()
@@ -267,9 +265,9 @@ class PreProcessor:
         output = ""
         while(opens != 0):
             if(self.current_token.tok == T_OPENP):
-                opens+=1
+                opens += 1
             elif(self.current_token.tok == T_CLSP):
-                opens-=1
+                opens -= 1
             output = f"{output} {self.current_token.value}" if opens else output
             self.delmov()
         return output[1:]
@@ -279,19 +277,19 @@ class PreProcessor:
         starttok = self.current_token
         id = self.current_token.value
         macro = self.getMacro(id)
-        if macro is None: 
-            
+        if macro is None:
+
             if (id == "__STRINGIFY__"):
                 o = self.doStringify()
                 self.tokens[startidx] = None
-                self.tokens[startidx:self.tkidx] = [Token(T_STRING, o, starttok.start, starttok.end)]
+                self.tokens[startidx:self.tkidx] = [
+                    Token(T_STRING, o, starttok.start, starttok.end)]
                 self.tkidx = startidx
                 self.update()
 
-
             else:
                 self.advance()
-            
+
             return
         else:
             self.delmov()
@@ -300,29 +298,27 @@ class PreProcessor:
             inps = []
             opens = 1
             subinp = []
-            while(opens!=0):
+            while(opens != 0):
 
                 if(self.current_token.tok == T_OPENP):
-                    opens+=1
+                    opens += 1
                 elif(self.current_token.tok == T_CLSP):
-                    opens-=1
-                elif (self.current_token.tok == T_COMMA and opens==1):
+                    opens -= 1
+                elif (self.current_token.tok == T_COMMA and opens == 1):
                     inps.append(subinp.copy())
                     subinp = []
                 else:
                     subinp.append(self.current_token)
-                
+
                 self.delmov()
 
             inps.append(subinp.copy())
             tks = macro.get(inps, starttok)
-            
+
             self.tokens[startidx:self.tkidx] = tks
-            
+
             self.tkidx = startidx
             self.update()
-
-
 
     def addobject(self):
         self.delmov()
@@ -367,7 +363,7 @@ class PreProcessor:
                     errtok = self.current_token
                     self.advance()
                     self.checkToks([T_STRING])
-                    throw(Error(errtok,self.current_token.value))
+                    throw(Error(errtok, self.current_token.value))
 
                 elif(self.current_token.value == "warning"):
                     warntok = self.current_token
@@ -375,7 +371,6 @@ class PreProcessor:
                     self.checkToks([T_STRING])
                     warn(Warning(warntok, f" {self.current_token.value} "))
                     self.delmov()
-
 
                 else:
                     throw(UnkownDirective(self.current_token))
@@ -391,33 +386,33 @@ class PreProcessor:
 
 
 def badfilter(token):
-    return token is not None and token.tok != T_BSLASH 
-
+    return token is not None and token.tok != T_BSLASH
 
 
 class Macro:
     def __init__(self, name, params, body):
         self.name = name
-        self.params = [p.value for p in params] # format : (name)
+        self.params = [p.value for p in params]  # format : (name)
         self.body = body
+
     def get(self, inputs, start):
         outbody = self.body.copy()
         i = 0
-        
+
         while(i < len(outbody)):
-            if(outbody[i] is None): 
-                i+=1
+            if(outbody[i] is None):
+                i += 1
                 continue
-            
-            outbody[i] = outbody[i].copy(start.start,start.end)
+
+            outbody[i] = outbody[i].copy(start.start, start.end)
             val = outbody[i].value
             if outbody[i].tok == T_ID and val in self.params:
-                
+
                 outbody[i] = None
                 outbody[i:i] = inputs[self.params.index(val)]
-            i+=1
+            i += 1
 
-        return list(filter(None,outbody))
-    
+        return list(filter(None, outbody))
+
     def __repr__(self):
         return f"{self.name}({self.params}) : {self.body}\n"
