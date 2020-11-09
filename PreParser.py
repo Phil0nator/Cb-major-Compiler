@@ -1,6 +1,7 @@
 from Classes.Token import *
 from Classes.Location import Location
 from Classes.Error import *
+from Postfixer import Postfixer
 from Lexer import Lexer
 from config import include_directories
 import os
@@ -286,6 +287,8 @@ class PreProcessor:
                 self.tokens[startidx:self.tkidx] = [Token(T_STRING, o, starttok.start, starttok.end)]
                 self.tkidx = startidx
                 self.update()
+
+
             else:
                 self.advance()
             
@@ -412,7 +415,6 @@ class Macro:
                 
                 outbody[i] = None
                 outbody[i:i] = inputs[self.params.index(val)]
-            
             i+=1
 
         return list(filter(None,outbody))

@@ -11,6 +11,8 @@
 #include "math.k"                   /* math functions */
 #include "random.k"                 /* fast psudo random number generator */
 
+#include "algorithm/algorithm.k"    /* high level algorithm macros */
+
 #include "assert/assert.k"          /* debug assertions */
 #include "sys/time.k"               /* time operations */
 #include "sys/files.k"              /* low level file interaction */

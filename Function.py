@@ -37,6 +37,11 @@ def product(arr):
     return total
 
 
+predefs = [
+    "typeof"
+]
+
+
 ###################################################
 #
 #   The Function class is where the bulk of compilation occurs.
@@ -265,6 +270,23 @@ class Function:
         t.ptrdepth = ptrdepth
         t.signed = signed
         return t
+
+
+    def buildPredef(self):
+        p = self.current_token.value
+        assert p in predefs
+
+        self.advance()
+        if(p == "typeof"):
+            
+            final = self.evaluateLeftsideExpression()[1]
+            rfree(final.accessor)
+            if(final.isconstint()):
+                return Token(T_INT,final.accessor,final.token.start,final.token.end)
+            if(not final.isRegister()):
+                return Token(T_INT,final.type.csize(),final.token.start,final.token.end)
+            return Token(T_INT,final.type.csize(),final.token.start,final.token.end)
+
 
     # load parameters into memory (first instructions)
 
@@ -520,8 +542,8 @@ class Function:
             opn = self.current_token.tok
             if(not Postfixer.isOperator(None, self.current_token)):
                 throw(ExpectedToken(self.current_token, "operator"))
-            if(op not in ["+", "-", "*"] and not flt):
-                throw(InvalidSimdOperation(self.current_token, op))
+            if(opn not in ["+", "-", "*"] and not flt):
+                throw(InvalidSimdOperation(self.current_token, opn))
             self.advance()
             self.checkTok(T_COMMA)
 
@@ -540,9 +562,9 @@ class Function:
             avxn = avx_ralloc()
 
             # fill in instruction blocks
-            avxn = avx_correctSize(avxn, op)
+            avxn = avx_correctSize(avxn, opn)
             self.addline(determine_idxn)
-            self.addline(avx_loadToReg(op, avxn, arrn, idxn))
+            self.addline(avx_loadToReg(opn, avxn, arrn, idxn))
             self.addline(avx_doToReg(opn, op, vsize, avx1, avxn, flt))
 
             avx_rfree(avxn)
@@ -805,6 +827,14 @@ class Function:
 
         # function name
         fid = self.current_token.value
+
+        
+
+
+
+
+
+
         # token of function name
         fnstartt = self.current_token
         # placeholder
@@ -968,6 +998,11 @@ class Function:
             elif(self.current_token.tok == T_ID):
                 if(self.tokens[self.ctidx + 1].tok == "("):
                     wasfunc = True
+
+                    if(self.current_token.value in predefs):
+                        exprtokens.append(self.buildPredef())
+                        continue
+
                     start = self.current_token.start.copy()
                     fninstr, fn = self.buildFunctionCall()
 
