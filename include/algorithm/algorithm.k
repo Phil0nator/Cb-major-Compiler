@@ -116,13 +116,29 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
 
 /**
  * Loop header for a for loop that traverses an array.
+ * @param varname name of iterator
+ * @param array the array
+ * @param items the number of items
  */
 #define each(varname, array, items) (size_t varname = 0; varname < (items); varname++)
 
 /**
  * Loop header for a for loop that traverses an array with an iterator.
+ * @param varname the name of iterable
+ * @param array the array
+ * @param items number of items
  */
 #define each_in(varname, array, items) (iterable varname = (array); varname < (array) +  items*typeof((array))  ; varname += typeof(array))
+
+/**
+ * Loop header for a for loop traversing a linked list
+ * @param type the datatype of the links
+ * @param varname the name to declare the iterator
+ * @param member the name of the next pointer of the linked list structure
+ * @param listhead the first link
+ */
+#define each_link(type, varname, member, listhead) (type *varname = listhead; varname->member; varname = varname->member )
+
 
 /**
  * Perminantly halt the calling process until it is stopped by a signal.
@@ -138,7 +154,7 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
 #define swap(a, b) a = a ^ b; b = a ^ b; a = a ^ b
 
 /**
- * Take a binary value (1 or 0) a, and make it ternary.
+ * Take a binary value (1 or 0) a, and make it either -1, or 1.
  * @param a an integer value, presumed to be either 1 or zero
  * @returns -1 for 0, 1 for 1
  */

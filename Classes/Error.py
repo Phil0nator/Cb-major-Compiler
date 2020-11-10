@@ -288,6 +288,11 @@ class UnmatchedTernary(Error):
         self.tok = tok
         self.message = f"Unmatched ternary operator: "
 
+class UseOfIncompleteType(Error):
+    def __init__(self, tok, t):
+        self.tok = tok
+        self.message = f"Invalid use of incomplete type ('{t}'): "
+
 
 class Warning:
     def __init__(self, tok, msg):

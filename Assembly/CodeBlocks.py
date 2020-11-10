@@ -150,12 +150,17 @@ def createIntrinsicHeap(variable):
 
 
 def loadToPtr(dest, source):
-
     if(isinstance(dest, EC.ExpressionComponent)):
 
         size = dest.type.csize()
         if(isinstance(dest.accessor, Variable)):
+
+            if(dest.accessor.glob):
+                dest.accessor = Variable(dest.accessor.t,dest.accessor.name,glob=True,isptr=False)
+
             return loadToReg(dest.accessor, setSize(source, size))
+
+
         return loadToReg(
             f'{psizeoft(dest.type)}[{setSize(dest.accessor,8)}]', setSize(source, size))
 
@@ -253,7 +258,7 @@ def valueOf(x, dflt=False, exactSize=True):
         if(x.glob):
             if(x.isptr):
                 return f"{x.name}"
-            return f"[{x.name}]"
+            return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:
             offset = x.offset
 
@@ -270,7 +275,6 @@ def valueOf(x, dflt=False, exactSize=True):
 
 
 def loadToReg(reg, value):
-
     if(reg == value):
         return ""
     if(value == "pop"):

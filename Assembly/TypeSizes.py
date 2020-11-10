@@ -90,3 +90,4 @@ def maskset(reg, size):
         return f"and {reg}, 0xffff\n"
     if(size == 1):
         return f"and {reg}, 0xff\n"
+    return ""

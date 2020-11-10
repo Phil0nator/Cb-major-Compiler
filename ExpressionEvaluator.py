@@ -1075,10 +1075,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # no deposit is necessary for leftside evaluation
     def depositFinal(self, final, o, dest):
-        print(final)
-        return "", final.type
+        return final
 
     # main wrapper
     def evaluate(self, pfix):
         out = self.evaluatePostfix(pfix, self)
+        
+
         return out

@@ -1,0 +1,84 @@
+/**
+ * malloc provides higher level memory management.
+ */
+#ifndef __MALLOC
+#define __MALLOC 1
+#include "memory.k"
+#include "algorithm/algorithm.k"
+#include "assert/assert.k"
+
+
+#define MALLOC_PAGESIZE 4096
+#define MALLOC_PAGESIZE_ADJUSTED (MALLOC_PAGESIZE-sizeof(mblock))
+
+struct mblock{
+
+    size_t size;
+    mblock* next;
+    mblock* prev;
+
+};
+
+
+
+mblock* mlc_head = nullptr;
+
+function mblock* scan_existing(size_t size){
+
+    if(mlc_head == nullptr){
+        return nullptr;
+    }
+    
+}
+
+function void add_block(mblock* b){
+    assert(mlc_head != nullptr);
+    mlc_head->prev=b;
+    b->next=mlc_head;
+    mlc_head = b;
+}
+
+function void remove_block(mblock* b){
+    if(b == mlc_head){
+        mlc_head = b->next;
+        b->next = nullptr;
+        b->prev = nullptr;
+        return;
+    }
+
+    if(b->prev != nullptr){
+        b->prev->next = b->next;
+    }
+    if(b->next != nullptr){
+        b->next->prev = b->prev;
+    }
+}
+
+function void* mapnew(size_t size){
+    assert(size > 0);
+    return mmap(0,size,PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+}
+
+
+global void* mlc(size_t size){
+    assert(size > 0);
+
+    mblock* output = scan_existing(size);
+    
+    if(output == nullptr){
+        size_t allocsize = size;
+        if(size <= MALLOC_PAGESIZE_ADJUSTED){
+            allocsize = MALLOC_PAGESIZE;
+        }
+
+
+    }
+
+
+}
+
+
+
+
+
+#endif

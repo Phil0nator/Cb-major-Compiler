@@ -291,9 +291,11 @@ class Function:
         assert p in predefs
 
         self.advance()
+
         if(p == "typeof"):
 
             final = self.evaluateLeftsideExpression()[1]
+            pend = self.current_token
             rfree(final.accessor)
             if(final.isconstint()):
                 return Token(T_INT, final.accessor,
@@ -303,6 +305,7 @@ class Function:
                              stp.start, stp.end)
             return Token(T_INT, final.type.csize(),
                          stp.start, stp.end)
+
 
     # load parameters into memory (first instructions)
 
@@ -1049,8 +1052,10 @@ class Function:
 
                     if(self.current_token.value in predefs):
                         exprtokens.append(self.buildPredef())
+                        # ensure correct closing
+                        exprtokens.append(self.current_token) if self.current_token.tok == T_CLSP else None
                         continue
-
+                    
                     start = self.current_token.start.copy()
                     fninstr, fn = self.buildFunctionCall()
 

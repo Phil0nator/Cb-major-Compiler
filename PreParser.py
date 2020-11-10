@@ -316,10 +316,12 @@ class PreProcessor:
             inps.append(subinp.copy())
             tks = macro.get(inps, starttok)
             
+            self.tokens[startidx] = None
             self.tokens[startidx:self.tkidx] = tks
 
             self.tkidx = startidx
             self.update()
+        
 
     def addobject(self):
         self.delmov()
