@@ -256,7 +256,7 @@ def valueOf(x, dflt=False, exactSize=True):
     elif (isinstance(x, Variable)):
         x.referenced = True
         if(x.glob):
-            if(x.isptr):
+            if(x.isptr and x.t.ptrdepth > 0):
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:

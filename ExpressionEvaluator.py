@@ -81,6 +81,7 @@ def bringdown_memloc(a):
         instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
         instr += maskset(a.accessor, a.type.csize())
         a.memory_location = False
+    
     return instr
 
 # do two bringdown_memloc calls in one
@@ -201,8 +202,9 @@ class ExpressionEvaluator:
 
     def test_optimization(self, a, b, op):
 
-        areg, breg, o, newinstr = optloadRegs(a, None, op, None)
-        newinstr += bringdown_memlocs(a,b)
+        newinstr = bringdown_memlocs(a,b)
+        areg, breg, o, ninst = optloadRegs(a, None, op, None)
+        newinstr+=ninst
         cmp = "z" if op == "==" else "nz"
         newinstr += f"test {setSize(areg, a.type.csize())}, {setSize(areg, a.type.csize())}\nset{cmp} {setSize(areg, 1)}\n"
 
@@ -716,7 +718,7 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             instr += doOperation(caster.type, creg,
                                  newcoreg, op, caster.type.signed)
-
+            
             # handle float comparison
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
 

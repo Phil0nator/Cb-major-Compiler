@@ -179,7 +179,6 @@ class PreProcessor:
     # if so, replace it with the actual values for that macro
 
     def checkDefn(self):
-        assert self.current_token.tok == T_ID
         if (self.tokens[self.tkidx + 1].tok == T_OPENP):
             self.checkMacro()
             return
@@ -321,7 +320,7 @@ class PreProcessor:
 
             self.tkidx = startidx
             self.update()
-        
+
 
     def addobject(self):
         self.delmov()

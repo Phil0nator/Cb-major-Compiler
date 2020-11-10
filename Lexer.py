@@ -10,7 +10,7 @@ import re
 
 #ambiguous_regex = re.compile("(?!([a-Z]|[_]|[0-9]))")
 ambiguous_regex = re.compile(r"\W", flags=re.ASCII)
-
+number_regex = re.compile("(?!([0-9]|[.e\-]))", flags=re.ASCII)
 
 ##########################
 #

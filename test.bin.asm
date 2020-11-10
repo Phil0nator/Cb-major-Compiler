@@ -40,7 +40,6 @@ global _void_fprintf_pfd_tchar.voidvoidvoidvoid:
 	extern fprintf
 	extern fprintf
 global _void___assert_pboolchar.intchar.:
-global _void._mlc_psize_t:
 global _void._malloc_psize_t:
 global _void_free_pvoid.:
 global _void._realloc_pvoid.size_t:
@@ -224,56 +223,49 @@ STRING_CONSTANT_133: db `0123456789abcdef`, 0
 STRING_CONSTANT_134: db `False`, 0
 STRING_CONSTANT_135: db `True`, 0
 STRING_CONSTANT_136: db `%s:%i: Assertion '%s' failed.\n`, 0
-STRING_CONSTANT_137: db `malloc.cb`, 0
-STRING_CONSTANT_138: db `mlc_head != nullptr`, 0
-STRING_CONSTANT_139: db `malloc.cb`, 0
-STRING_CONSTANT_140: db `size > 0`, 0
-STRING_CONSTANT_141: db `malloc.cb`, 0
-STRING_CONSTANT_142: db `size > 0`, 0
 FLT_CONSTANT_2: dq 0x1.6d40000000000p+8
 FLT_CONSTANT_3: dq 0x1.6d40000000000p+8
-STRING_CONSTANT_143: db `Sun`, 0
-STRING_CONSTANT_144: db `Mon`, 0
-STRING_CONSTANT_145: db `Tue`, 0
-STRING_CONSTANT_146: db `Wed`, 0
-STRING_CONSTANT_147: db `Thu`, 0
-STRING_CONSTANT_148: db `Fri`, 0
-STRING_CONSTANT_149: db `Sat`, 0
-STRING_CONSTANT_150: db `Jan`, 0
-STRING_CONSTANT_151: db `Feb`, 0
-STRING_CONSTANT_152: db `Mar`, 0
-STRING_CONSTANT_153: db `Apr`, 0
-STRING_CONSTANT_154: db `May`, 0
-STRING_CONSTANT_155: db `Jun`, 0
-STRING_CONSTANT_156: db `Jul`, 0
-STRING_CONSTANT_157: db `Aug`, 0
-STRING_CONSTANT_158: db `Sep`, 0
-STRING_CONSTANT_159: db `Oct`, 0
-STRING_CONSTANT_160: db `Nov`, 0
-STRING_CONSTANT_161: db `Dec`, 0
-STRING_CONSTANT_162: db `%i `, 0
-STRING_CONSTANT_163: db `%i:%i:%i %i`, 0
-STRING_CONSTANT_164: db `%i.%i.%i.%i`, 0
-STRING_CONSTANT_165: db `/bin/bash`, 0
-STRING_CONSTANT_166: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
-STRING_CONSTANT_167: db `sudo`, 0
-STRING_CONSTANT_168: db `-c`, 0
-STRING_CONSTANT_169: db `LOCKED`, 0
-STRING_CONSTANT_170: db `unlocked thread: %i\n`, 0
+STRING_CONSTANT_137: db `Sun`, 0
+STRING_CONSTANT_138: db `Mon`, 0
+STRING_CONSTANT_139: db `Tue`, 0
+STRING_CONSTANT_140: db `Wed`, 0
+STRING_CONSTANT_141: db `Thu`, 0
+STRING_CONSTANT_142: db `Fri`, 0
+STRING_CONSTANT_143: db `Sat`, 0
+STRING_CONSTANT_144: db `Jan`, 0
+STRING_CONSTANT_145: db `Feb`, 0
+STRING_CONSTANT_146: db `Mar`, 0
+STRING_CONSTANT_147: db `Apr`, 0
+STRING_CONSTANT_148: db `May`, 0
+STRING_CONSTANT_149: db `Jun`, 0
+STRING_CONSTANT_150: db `Jul`, 0
+STRING_CONSTANT_151: db `Aug`, 0
+STRING_CONSTANT_152: db `Sep`, 0
+STRING_CONSTANT_153: db `Oct`, 0
+STRING_CONSTANT_154: db `Nov`, 0
+STRING_CONSTANT_155: db `Dec`, 0
+STRING_CONSTANT_156: db `%i `, 0
+STRING_CONSTANT_157: db `%i:%i:%i %i`, 0
+STRING_CONSTANT_158: db `%i.%i.%i.%i`, 0
+STRING_CONSTANT_159: db `/bin/bash`, 0
+STRING_CONSTANT_160: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
+STRING_CONSTANT_161: db `sudo`, 0
+STRING_CONSTANT_162: db `-c`, 0
+STRING_CONSTANT_163: db `LOCKED`, 0
+STRING_CONSTANT_164: db `unlocked thread: %i\n`, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DD 0
 nullterm: DB 0
 M_MINZERO_MEM: DQ 0x0.0p+0
 __numbercharactersbase1016: DQ "0123456789abcdef"
-mlc_head: DQ 0
 rand_next: DD 1
 mdays: DD 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-wday_name: DQ STRING_CONSTANT_143, STRING_CONSTANT_144, STRING_CONSTANT_145, STRING_CONSTANT_146, STRING_CONSTANT_147, STRING_CONSTANT_148, STRING_CONSTANT_149
-mon_name: DQ STRING_CONSTANT_150, STRING_CONSTANT_151, STRING_CONSTANT_152, STRING_CONSTANT_153, STRING_CONSTANT_154, STRING_CONSTANT_155, STRING_CONSTANT_156, STRING_CONSTANT_157, STRING_CONSTANT_158, STRING_CONSTANT_159, STRING_CONSTANT_160, STRING_CONSTANT_161
+wday_name: DQ STRING_CONSTANT_137, STRING_CONSTANT_138, STRING_CONSTANT_139, STRING_CONSTANT_140, STRING_CONSTANT_141, STRING_CONSTANT_142, STRING_CONSTANT_143
+mon_name: DQ STRING_CONSTANT_144, STRING_CONSTANT_145, STRING_CONSTANT_146, STRING_CONSTANT_147, STRING_CONSTANT_148, STRING_CONSTANT_149, STRING_CONSTANT_150, STRING_CONSTANT_151, STRING_CONSTANT_152, STRING_CONSTANT_153, STRING_CONSTANT_154, STRING_CONSTANT_155
 asctime__result_buf: DB 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 0
 __systembashpath: DQ "/bin/bash"
-__emptyenv: DQ STRING_CONSTANT_166, 0
-__systemcallargvconst: DQ STRING_CONSTANT_167, STRING_CONSTANT_168, 0
+__emptyenv: DQ STRING_CONSTANT_160, 0
+__systemcallargvconst: DQ STRING_CONSTANT_161, STRING_CONSTANT_162, 0
 clone_threadflags: DQ 17
 	section .bss
 	align 16
@@ -1846,40 +1838,45 @@ printf:
 	mov [rbp-48], r9
 	lea rbx, [rbp-104] 
 	lea rbx, [rbp-104] 
-	mov r10, qword[rbp-16]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-16]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 1
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 1
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-24]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-24]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 2
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 2
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-32]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-32]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 3
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 3
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-40]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-40]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 4
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 4
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-48]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-48]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov rdx, 1
 	lea rbx, [rbp-104]
 	mov rsi, rbx
@@ -1902,40 +1899,45 @@ eprintf:
 	mov [rbp-48], r9
 	lea rbx, [rbp-104] 
 	lea rbx, [rbp-104] 
-	mov r10, qword[rbp-16]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-16]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 1
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 1
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-24]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-24]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 2
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 2
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-32]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-32]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 3
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 3
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-40]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-40]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 4
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 4
 	lea rbx, [rbp-104] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-48]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-48]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov rdx, 2
 	lea rbx, [rbp-104]
 	mov rsi, rbx
@@ -1958,32 +1960,36 @@ fprintf:
 	mov [rbp-48], r9
 	lea rbx, [rbp-88] 
 	lea rbx, [rbp-88] 
-	mov r10, qword[rbp-24]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-24]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 1
 	lea rbx, [rbp-88] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 1
 	lea rbx, [rbp-88] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-32]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-32]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 2
 	lea rbx, [rbp-88] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 2
 	lea rbx, [rbp-88] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-40]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-40]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov r10, 3
 	lea rbx, [rbp-88] 
 	lea rbx, [rbx+r10*8]
 	mov r10, 3
 	lea rbx, [rbp-88] 
 	lea rbx, [rbx+r10*8]
-	mov r10, qword[rbp-48]
-	mov qword[rbx], r10
+	mov r11, qword[rbp-48]
+	mov r10, r11
+	mov qword[rbx], r11
 	mov rbx, qword[rbp-8]
 	mov rdx, rbx
 	lea rbx, [rbp-88]
@@ -2026,228 +2032,6 @@ _void___assert_pboolchar.intchar.:
 .L0x78:
 .L0x79:
 ___void___assert_pboolchar.intchar.__return:
-	leave
-	ret
-_mblock._scan_existing_psize_t:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rdi
-	mov rbx, mlc_head
-	test rbx, rbx
-	setz bl
-	mov al, bl
-	and al, 1
-	jz .L0x7d
-	xor rax, rax
-	jmp ___mblock._scan_existing_psize_t__return
-	jmp .L0x7e
-.L0x7d:
-.L0x7e:
-___mblock._scan_existing_psize_t__return:
-	leave
-	ret
-_void_add_block_pmblock.:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rdi
-	mov rbx, STRING_CONSTANT_138
-	mov rcx, STRING_CONSTANT_138
-	mov rdx, 35
-	and rdx, 0xffffffff
-	mov rbx, STRING_CONSTANT_137
-	mov rsi, STRING_CONSTANT_137
-	mov rbx, mlc_head
-	test rbx, rbx
-	setnz bl
-	mov dil, bl
-	and rdi, 0xff
-	xor rax, rax
-	call _void___assert_pboolchar.intchar.
-	mov rbx, mlc_head
-	lea rbx, [rbx+24]
-	mov rbx, mlc_head
-	lea rbx, [rbx+24]
-	mov r10, qword[rbp-8]
-	mov qword[rbx], r10
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov r10, mlc_head
-	mov qword[rbx], mlc_head
-	mov r10, qword[rbp-8]
-	mov rbx, r10
-	mov qword[mlc_head], r10
-___void_add_block_pmblock.__return:
-	leave
-	ret
-_void_remove_block_pmblock.:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rdi
-	mov r10, mlc_head
-	mov rbx, qword[rbp-8]
-	cmp rbx, r10
-	sete bl
-	mov al, bl
-	and al, 1
-	jz .L0x7f
-	mov r10, qword[rbp-8]
-	lea r10, [r10+8]
-	mov r10, qword[r10]
-	mov rbx, r10
-	mov qword[mlc_head], r10
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	xor r10, r10
-	mov qword[rbx], 0
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+24]
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+24]
-	xor r10, r10
-	mov qword[rbx], 0
-	jmp ___void_remove_block_pmblock.__return
-	jmp .L0x80
-.L0x7f:
-.L0x80:
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+24]
-	mov rbx, qword[rbx]
-	test rbx, rbx
-	setnz bl
-	mov al, bl
-	and al, 1
-	jz .L0x81
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+24]
-	mov r10, rbx
-	lea r10, [r10+8]
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+24]
-	mov r10, rbx
-	lea r10, [r10+8]
-	mov r11, qword[rbp-8]
-	lea r11, [r11+8]
-	mov r11, qword[r11]
-	mov rbx, r11
-	mov qword[r10], r11
-	jmp .L0x82
-.L0x81:
-.L0x82:
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov rbx, qword[rbx]
-	test rbx, rbx
-	setnz bl
-	mov al, bl
-	and al, 1
-	jz .L0x83
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov r10, rbx
-	lea r10, [r10+24]
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov r10, rbx
-	lea r10, [r10+24]
-	mov r11, qword[rbp-8]
-	lea r11, [r11+24]
-	mov r11, qword[r11]
-	mov rbx, r11
-	mov qword[r10], r11
-	jmp .L0x84
-.L0x83:
-.L0x84:
-___void_remove_block_pmblock.__return:
-	leave
-	ret
-_void._mapnew_psize_t:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rdi
-	mov rbx, STRING_CONSTANT_140
-	mov rcx, STRING_CONSTANT_140
-	mov rdx, 58
-	and rdx, 0xffffffff
-	mov rbx, STRING_CONSTANT_139
-	mov rsi, STRING_CONSTANT_139
-	xor r10, r10
-	mov rbx, qword[rbp-8]
-	cmp rbx, r10
-	setg bl
-	mov dil, bl
-	and rdi, 0xff
-	xor rax, rax
-	call _void___assert_pboolchar.intchar.
-	xor r9, r9
-	and r9, 0xffffffff
-	mov r8, -1
-	mov rcx, 34
-	mov rdx, 3
-	mov rbx, qword[rbp-8]
-	mov rsi, rbx
-	xor rdi, rdi
-	xor rax, rax
-	call _void._mmap_pvoid.size_tlonglonglongoff_t
-	jmp ___void._mapnew_psize_t__return
-___void._mapnew_psize_t__return:
-	leave
-	ret
-_void._mlc_psize_t:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 32
-	mov [rbp-8], rdi
-	mov rbx, STRING_CONSTANT_142
-	mov rcx, STRING_CONSTANT_142
-	mov rdx, 64
-	and rdx, 0xffffffff
-	mov rbx, STRING_CONSTANT_141
-	mov rsi, STRING_CONSTANT_141
-	xor r10, r10
-	mov rbx, qword[rbp-8]
-	cmp rbx, r10
-	setg bl
-	mov dil, bl
-	and rdi, 0xff
-	xor rax, rax
-	call _void___assert_pboolchar.intchar.
-	mov rbx, qword[rbp-8]
-	mov rdi, rbx
-	xor rax, rax
-	call _mblock._scan_existing_psize_t
-	mov qword[rbp-16], rax
-	mov rbx, qword[rbp-16]
-	test rbx, rbx
-	setz bl
-	mov al, bl
-	and al, 1
-	jz .L0x85
-	mov rbx, qword[rbp-8]
-	mov qword[rbp-24], rbx
-	mov r10, 4064
-	mov rbx, qword[rbp-8]
-	cmp rbx, r10
-	setle bl
-	mov al, bl
-	and al, 1
-	jz .L0x87
-	mov rbx, 4096
-	mov qword[rbp-24], 4096
-	jmp .L0x88
-.L0x87:
-.L0x88:
-	jmp .L0x86
-.L0x85:
-.L0x86:
-___void._mlc_psize_t__return:
 	leave
 	ret
 _void._malloc_psize_t:
@@ -2303,15 +2087,15 @@ _void._realloc_pvoid.size_t:
 	setz bl
 	mov al, bl
 	and al, 1
-	jz .L0x89
+	jz .L0x7d
 	mov rbx, qword[rbp-16]
 	mov rdi, rbx
 	xor rax, rax
 	call _void._malloc_psize_t
 	jmp ___void._realloc_pvoid.size_t__return
-	jmp .L0x8a
-.L0x89:
-.L0x8a:
+	jmp .L0x7e
+.L0x7d:
+.L0x7e:
 	mov r10, qword[rbp-8]
 	sub r10, 8
 	mov r11, qword[r10]
@@ -2322,13 +2106,13 @@ _void._realloc_pvoid.size_t:
 	sete r10b
 	mov al, r10b
 	and al, 1
-	jz .L0x8b
+	jz .L0x7f
 	mov r10, qword[rbp-8]
 	mov rax, r10
 	jmp ___void._realloc_pvoid.size_t__return
-	jmp .L0x8c
-.L0x8b:
-.L0x8c:
+	jmp .L0x80
+.L0x7f:
+.L0x80:
 	push rbx
 	mov r11, qword[rbp-16]
 	mov rdi, r11
@@ -2407,8 +2191,8 @@ _void_avx_memcpy_pvoid.void.size_t:
 	sar rbx, 2
 	mov qword[rbp-40], rbx
 	mov dword[rbp-48], 0
-	jmp .L0x8f
-.L0x8e:
+	jmp .L0x83
+.L0x82:
 	mov ebx, dword[rbp-48]
 	shl rbx, 3
 	add rbx, [rbp-16]
@@ -2417,12 +2201,12 @@ _void_avx_memcpy_pvoid.void.size_t:
 	shl rbx, 3
 	add rbx, [rbp-8]
 	vmovdqu [rbx], ymm0
-.L0x90:
+.L0x84:
 	mov r10d, dword[rbp-48]
 	add r10d, 4
 	mov ebx, r10d
 	mov dword[rbp-48], r10d
-.L0x8f:
+.L0x83:
 	mov r10d, dword[rbp-48]
 	mov rbx, qword[rbp-40]
 	mov r11, r10
@@ -2430,14 +2214,14 @@ _void_avx_memcpy_pvoid.void.size_t:
 	setl r11b
 	mov al, r11b
 	and al, 1
-	jnz .L0x8e
-.L0x91:
+	jnz .L0x82
+.L0x85:
 	mov ebx, dword[rbp-32]
 	test ebx, ebx
 	setnz bl
 	mov al, bl
 	and al, 1
-	jz .L0x92
+	jz .L0x86
 	mov edx, dword[rbp-32]
 	mov r10, qword[rbp-16]
 	mov rbx, qword[rbp-40]
@@ -2449,9 +2233,9 @@ _void_avx_memcpy_pvoid.void.size_t:
 	mov rdi, r10
 	xor rax, rax
 	call _void_memcpy_pvoid.void.size_t
-	jmp .L0x93
-.L0x92:
-.L0x93:
+	jmp .L0x87
+.L0x86:
+.L0x87:
 ___void_avx_memcpy_pvoid.void.size_t__return:
 	leave
 	ret
@@ -2503,7 +2287,7 @@ _void_srand_p:
 	sub rsp, 8
 	xor rax, rax
 	rdrand rax
-.L0x96:
+.L0x8a:
 	mov rbx, rax
 	mov dword[rand_next], ebx
 ___void_srand_p__return:
@@ -2528,7 +2312,7 @@ _void_usleep_plong:
 	mov rax , 35 
 	mov r10 , rcx 
 	syscall 
-.L0x99:
+.L0x8d:
 ___void_usleep_plong__return:
 	leave
 	ret
@@ -2545,14 +2329,14 @@ _clock_t_clock_p:
 	mov rax , 228 
 	mov r10 , rcx 
 	syscall 
-.L0x9c:
+.L0x90:
 	and al, 1
-	jz .L0x9e
+	jz .L0x92
 	mov rax, -1
 	jmp ___clock_t_clock_p__return
-	jmp .L0x9f
-.L0x9e:
-.L0x9f:
+	jmp .L0x93
+.L0x92:
+.L0x93:
 	mov r10, 9223372036854
 	mov rbx, qword[rbp-24]
 	cmp rbx, r10
@@ -2573,12 +2357,12 @@ _clock_t_clock_p:
 	or bl, r10b
 	mov al, bl
 	and al, 1
-	jz .L0xa0
+	jz .L0x94
 	mov rax, -1
 	jmp ___clock_t_clock_p__return
-	jmp .L0xa1
-.L0xa0:
-.L0xa1:
+	jmp .L0x95
+.L0x94:
+.L0x95:
 	mov r10, 1000000
 	mov rbx, qword[rbp-24]
 	imul rbx, r10
@@ -2618,7 +2402,7 @@ _tm._gmtime_ptime_t:
 	mov rax, rdi
 	div rsi
 	mov [rbx], rdx
-.L0xa3:
+.L0x97:
 	mov rbx, rax
 	mov qword[rbp-8], rax
 	lea r10, [rbp-40]
@@ -2632,7 +2416,7 @@ _tm._gmtime_ptime_t:
 	mov rax, rdi
 	div rsi
 	mov [rbx], rdx
-.L0xa6:
+.L0x9a:
 	mov rbx, rax
 	mov qword[rbp-8], rax
 	lea r10, [rbp-48]
@@ -2646,7 +2430,7 @@ _tm._gmtime_ptime_t:
 	mov rax, rdi
 	div rsi
 	mov [rbx], rdx
-.L0xa9:
+.L0x9d:
 	mov rbx, rax
 	mov qword[rbp-8], rax
 	mov r11, 60
@@ -2704,8 +2488,8 @@ _tm._gmtime_ptime_t:
 	mov ebx, r10d
 	mov dword[rbp-88], r10d
 	mov dword[rbp-96], 0
-	jmp .L0xac
-.L0xab:
+	jmp .L0xa0
+.L0x9f:
 	mov r10d, dword[rbp-96]
 	mov rbx, mdays
 	and r10, 0xffffffff
@@ -2717,7 +2501,7 @@ _tm._gmtime_ptime_t:
 	setg r10b
 	mov al, r10b
 	and al, 1
-	jz .L0xaf
+	jz .L0xa3
 	mov r11d, dword[rbp-96]
 	mov r10, mdays
 	and r11, 0xffffffff
@@ -2728,17 +2512,17 @@ _tm._gmtime_ptime_t:
 	sub r11d, r10d
 	mov ebx, r11d
 	mov dword[rbp-88], r11d
-	jmp .L0xb0
-.L0xaf:
-	jmp .L0xae
-.L0xb0:
-.L0xad:
+	jmp .L0xa4
+.L0xa3:
+	jmp .L0xa2
+.L0xa4:
+.L0xa1:
 	inc dword[rbp-96]
-.L0xac:
+.L0xa0:
 	mov rax, 1
 	and al, 1
-	jnz .L0xab
-.L0xae:
+	jnz .L0x9f
+.L0xa2:
 	mov r10d, dword[rbp-96]
 	inc r10d
 	mov ebx, r10d
@@ -2864,8 +2648,8 @@ _char._asctime_ptm.:
 	mov ebx, dword[rbx]
 	and rbx, 0xffffffff
 	mov rdx, rbx
-	mov rbx, STRING_CONSTANT_162
-	mov rsi, STRING_CONSTANT_162
+	mov rbx, STRING_CONSTANT_156
+	mov rsi, STRING_CONSTANT_156
 	mov rbx, asctime__result_buf
 	add rbx, 7
 	mov rdi, rbx
@@ -2894,8 +2678,8 @@ _char._asctime_ptm.:
 	mov ebx, dword[rbx]
 	and rbx, 0xffffffff
 	mov rdx, rbx
-	mov rbx, STRING_CONSTANT_163
-	mov rsi, STRING_CONSTANT_163
+	mov rbx, STRING_CONSTANT_157
+	mov rsi, STRING_CONSTANT_157
 	mov rbx, asctime__result_buf
 	add rbx, 10
 	mov rdi, rbx
@@ -2959,8 +2743,8 @@ _int_inet_aton_pchar.in_addr.:
 	mov rdx, rbx
 	mov rbx, qword[rbp-8]
 	mov rsi, rbx
-	mov rbx, STRING_CONSTANT_164
-	mov rdi, STRING_CONSTANT_164
+	mov rbx, STRING_CONSTANT_158
+	mov rdi, STRING_CONSTANT_158
 	xor rax, rax
 	call sscanf
 	mov dword[rbp-36], eax
@@ -3018,7 +2802,7 @@ _int_inet_aton_pchar.in_addr.:
 	xor rax,rax
 	bswap edi
 	mov eax, edi
-.L0xb2:
+.L0xa6:
 	mov rbx, rax
 	mov dword[r10], ebx
 	mov rax, 1
@@ -3049,7 +2833,7 @@ _int_recv_pfd_tchar.size_tint:
 	mov rax , 45 
 	mov r10 , rcx 
 	syscall 
-.L0xb5:
+.L0xa9:
 	jmp ___int_recv_pfd_tchar.size_tint__return
 ___int_recv_pfd_tchar.size_tint__return:
 	leave
@@ -3076,7 +2860,7 @@ _int_send_pfd_tchar.size_tint:
 	mov rax , 44 
 	mov r10 , rcx 
 	syscall 
-.L0xb8:
+.L0xac:
 	jmp ___int_send_pfd_tchar.size_tint__return
 ___int_send_pfd_tchar.size_tint__return:
 	leave
@@ -3097,7 +2881,7 @@ _long_execl_pchar.char..:
 	mov rax , 59 
 	mov r10 , rcx 
 	syscall 
-.L0xbb:
+.L0xaf:
 	jmp ___long_execl_pchar.char..__return
 ___long_execl_pchar.char..__return:
 	leave
@@ -3111,14 +2895,14 @@ _long_system_pchar.:
 	mov rax , 57 
 	mov r10 , rcx 
 	syscall 
-.L0xbe:
+.L0xb2:
 	mov qword[rbp-16], rax
 	mov rbx, qword[rbp-16]
 	test rbx, rbx
 	setz bl
 	mov al, bl
 	and al, 1
-	jz .L0xc0
+	jz .L0xb4
 	mov r10, 2
 	mov rbx, __systemcallargvconst
 	lea rbx, [rbx+r10*8]
@@ -3150,10 +2934,10 @@ _long_system_pchar.:
 	mov rbx, rax
 	pop rdi
 	mov rax, rbx
-.L0xc3:
-	jmp .L0xc1
-.L0xc0:
-.L0xc1:
+.L0xb7:
+	jmp .L0xb5
+.L0xb4:
+.L0xb5:
 	xor rdx, rdx
 	and rdx, 0xffffffff
 	xor rsi, rsi
@@ -3163,7 +2947,7 @@ _long_system_pchar.:
 	mov rax, 61
 	xor r8, r8
 	syscall
-.L0xc5:
+.L0xb9:
 	xor rax, rax
 	jmp ___long_system_pchar.__return
 ___long_system_pchar.__return:
@@ -3192,7 +2976,7 @@ _int_scanint_pchar.long.bool:
 	and bl, r10b
 	mov al, bl
 	and al, 1
-	jz .L0xc7
+	jz .L0xbb
 	mov rbx, 1
 	mov byte[rbp-48], bl
 	mov rbx, 1
@@ -3204,11 +2988,11 @@ _int_scanint_pchar.long.bool:
 	mov r11b, byte[r10]
 	mov bl, r11b
 	mov byte[rbp-40], r11b
-	jmp .L0xc8
-.L0xc7:
-.L0xc8:
-	jmp .L0xca
-.L0xc9:
+	jmp .L0xbc
+.L0xbb:
+.L0xbc:
+	jmp .L0xbe
+.L0xbd:
 	mov r11, 10
 	mov r10, qword[rbp-32]
 	imul r10, r11
@@ -3227,7 +3011,7 @@ _int_scanint_pchar.long.bool:
 	mov r11b, byte[r10]
 	mov bl, r11b
 	mov byte[rbp-40], r11b
-.L0xca:
+.L0xbe:
 	mov r10b, 57
 	mov bl, byte[rbp-40]
 	cmp bl, r10b
@@ -3239,14 +3023,14 @@ _int_scanint_pchar.long.bool:
 	and bl, r10b
 	mov al, bl
 	and al, 1
-	jnz .L0xc9
-.L0xcb:
+	jnz .L0xbd
+.L0xbf:
 	mov bl, byte[rbp-48]
 	cmp bl, 0
 	sete bl
 	mov al, bl
 	and al, 1
-	jz .L0xcc
+	jz .L0xc0
 	mov rbx, qword[rbp-16]
 	mov r10, rbx
 	mov rbx, qword[rbp-16]
@@ -3254,8 +3038,8 @@ _int_scanint_pchar.long.bool:
 	mov r11, qword[rbp-32]
 	mov rbx, r11
 	mov qword[r10], r11
-	jmp .L0xcd
-.L0xcc:
+	jmp .L0xc1
+.L0xc0:
 	mov rbx, qword[rbp-16]
 	mov r10, rbx
 	mov rbx, qword[rbp-16]
@@ -3265,7 +3049,7 @@ _int_scanint_pchar.long.bool:
 	sub r11, r12
 	mov rbx, r11
 	mov qword[r10], r11
-.L0xcd:
+.L0xc1:
 	mov r10, qword[rbp-56]
 	mov rbx, qword[rbp-8]
 	sub rbx, r10
@@ -3283,8 +3067,8 @@ _int_scanstr_pchar.charchar.:
 	mov [rbp-24], rdx
 	mov rbx, qword[rbp-8]
 	mov qword[rbp-32], rbx
-	jmp .L0xcf
-.L0xce:
+	jmp .L0xc3
+.L0xc2:
 	mov rbx, qword[rbp-24]
 	mov r10, rbx
 	mov rbx, qword[rbp-24]
@@ -3296,7 +3080,7 @@ _int_scanstr_pchar.charchar.:
 	mov byte[r10], r12b
 	inc qword[rbp-8]
 	inc qword[rbp-24]
-.L0xcf:
+.L0xc3:
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
 	mov r10b, byte[rbx]
@@ -3305,8 +3089,8 @@ _int_scanstr_pchar.charchar.:
 	setne r10b
 	mov al, r10b
 	and al, 1
-	jnz .L0xce
-.L0xd0:
+	jnz .L0xc2
+.L0xc4:
 	mov r10, qword[rbp-32]
 	mov rbx, qword[rbp-8]
 	sub rbx, r10
@@ -3343,7 +3127,7 @@ _int_scansd_pchar.booldouble.:
 	setne r10b
 	mov al, r10b
 	and al, 1
-	jz .L0xd1
+	jz .L0xc5
 	mov rbx, qword[rbp-24]
 	mov r10, rbx
 	mov rbx, qword[rbp-24]
@@ -3352,9 +3136,9 @@ _int_scansd_pchar.booldouble.:
 	movq qword[r10], xmm7
 	mov rax, qword[rbp-48]
 	jmp ___int_scansd_pchar.booldouble.__return
-	jmp .L0xd2
-.L0xd1:
-.L0xd2:
+	jmp .L0xc6
+.L0xc5:
+.L0xc6:
 	inc qword[rbp-8]
 	xor rdx, rdx
 	and rdx, 0xff
@@ -3415,14 +3199,14 @@ _int___SSCANF_pchar.char.void..:
 	or bl, r10b
 	mov al, bl
 	and al, 1
-	jz .L0xd3
+	jz .L0xc7
 	xor rax, rax
 	jmp ___int___SSCANF_pchar.char.void..__return
-	jmp .L0xd4
-.L0xd3:
-.L0xd4:
-	jmp .L0xd6
-.L0xd5:
+	jmp .L0xc8
+.L0xc7:
+.L0xc8:
+	jmp .L0xca
+.L0xc9:
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
 	mov r10b, byte[rbx]
@@ -3431,11 +3215,11 @@ _int___SSCANF_pchar.char.void..:
 	setne r10b
 	mov al, r10b
 	and al, 1
-	jz .L0xd8
+	jz .L0xcc
 	inc qword[rbp-8]
 	inc qword[rbp-16]
-	jmp .L0xd9
-.L0xd8:
+	jmp .L0xcd
+.L0xcc:
 	inc qword[rbp-8]
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
@@ -3447,7 +3231,7 @@ _int___SSCANF_pchar.char.void..:
 	sete bl
 	mov al, bl
 	and al, 1
-	jz .L0xda
+	jz .L0xce
 	mov rdx, 1
 	and rdx, 0xff
 	mov r11d, dword[rbp-32]
@@ -3467,15 +3251,15 @@ _int___SSCANF_pchar.char.void..:
 	add r10, rbx
 	mov qword[rbp-16], r10
 	inc qword[rbp-8]
-	jmp .L0xdb
-.L0xda:
+	jmp .L0xcf
+.L0xce:
 	mov r10b, 117
 	mov bl, byte[rbp-40]
 	cmp bl, r10b
 	sete bl
 	mov al, bl
 	and al, 1
-	jz .L0xdc
+	jz .L0xd0
 	xor rdx, rdx
 	and rdx, 0xff
 	mov r11d, dword[rbp-32]
@@ -3495,15 +3279,15 @@ _int___SSCANF_pchar.char.void..:
 	add r10, rbx
 	mov qword[rbp-16], r10
 	inc qword[rbp-8]
-	jmp .L0xdd
-.L0xdc:
+	jmp .L0xd1
+.L0xd0:
 	mov r10b, 99
 	mov bl, byte[rbp-40]
 	cmp bl, r10b
 	sete bl
 	mov al, bl
 	and al, 1
-	jz .L0xde
+	jz .L0xd2
 	mov r10d, dword[rbp-32]
 	mov rbx, qword[rbp-24]
 	and r10, 0xffffffff
@@ -3521,15 +3305,15 @@ _int___SSCANF_pchar.char.void..:
 	mov byte[r10], r12b
 	inc qword[rbp-16]
 	inc qword[rbp-8]
-	jmp .L0xdf
-.L0xde:
+	jmp .L0xd3
+.L0xd2:
 	mov r10b, 115
 	mov bl, byte[rbp-40]
 	cmp bl, r10b
 	sete bl
 	mov al, bl
 	and al, 1
-	jz .L0xe0
+	jz .L0xd4
 	inc qword[rbp-8]
 	mov r11d, dword[rbp-32]
 	mov r10, qword[rbp-24]
@@ -3552,8 +3336,8 @@ _int___SSCANF_pchar.char.void..:
 	mov r10, qword[rbp-16]
 	add r10, rbx
 	mov qword[rbp-16], r10
-	jmp .L0xe1
-.L0xe0:
+	jmp .L0xd5
+.L0xd4:
 	mov r10b, 102
 	mov bl, byte[rbp-40]
 	cmp bl, r10b
@@ -3565,7 +3349,7 @@ _int___SSCANF_pchar.char.void..:
 	or bl, r10b
 	mov al, bl
 	and al, 1
-	jz .L0xe2
+	jz .L0xd6
 	mov r11d, dword[rbp-32]
 	mov r10, qword[rbp-24]
 	and r11, 0xffffffff
@@ -3585,16 +3369,16 @@ _int___SSCANF_pchar.char.void..:
 	add r10, rbx
 	mov qword[rbp-16], r10
 	inc qword[rbp-8]
-	jmp .L0xe3
-.L0xe2:
-.L0xe3:
-.L0xe1:
-.L0xdf:
-.L0xdd:
-.L0xdb:
-	inc dword[rbp-32]
-.L0xd9:
+	jmp .L0xd7
 .L0xd6:
+.L0xd7:
+.L0xd5:
+.L0xd3:
+.L0xd1:
+.L0xcf:
+	inc dword[rbp-32]
+.L0xcd:
+.L0xca:
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
 	mov r10b, byte[rbx]
@@ -3602,8 +3386,8 @@ _int___SSCANF_pchar.char.void..:
 	setnz r10b
 	mov al, r10b
 	and al, 1
-	jnz .L0xd5
-.L0xd7:
+	jnz .L0xc9
+.L0xcb:
 	mov ebx, dword[rbp-32]
 	mov eax, ebx
 	jmp ___int___SSCANF_pchar.char.void..__return
@@ -3677,7 +3461,7 @@ _int_getInt_pchar.:
 	mov rbx, rax
 	pop rdi
 	mov rax, rbx
-.L0xe5:
+.L0xd9:
 	mov rdx, 40
 	xor rsi, rsi
 	and rsi, 0xff
@@ -3718,7 +3502,7 @@ _uint_getUint_pchar.:
 	mov rbx, rax
 	pop rdi
 	mov rax, rbx
-.L0xe7:
+.L0xdb:
 	mov rdx, 40
 	xor rsi, rsi
 	and rsi, 0xff
@@ -3787,7 +3571,7 @@ _void_getString_pchar.intchar.:
 	mov rbx, rax
 	pop rdi
 	mov rax, rbx
-.L0xe9:
+.L0xdd:
 	mov edx, dword[rbp-16]
 	mov rbx, qword[rbp-8]
 	mov rsi, rbx
@@ -3803,13 +3587,13 @@ _int_toInteger_pchar.bool:
 	sub rsp, 48
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
-	jmp .L0xeb
-.L0xea:
+	jmp .L0xdf
+.L0xde:
 	mov rbx, 1
 	mov r10, qword[rbp-8]
 	add r10, rbx
 	mov qword[rbp-8], r10
-.L0xeb:
+.L0xdf:
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
 	mov r10b, byte[rbx]
@@ -3818,8 +3602,8 @@ _int_toInteger_pchar.bool:
 	sete r10b
 	mov al, r10b
 	and al, 1
-	jnz .L0xea
-.L0xec:
+	jnz .L0xde
+.L0xe0:
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
 	mov r10b, byte[rbx]
@@ -3834,7 +3618,7 @@ _int_toInteger_pchar.bool:
 	and bl, r10b
 	mov al, bl
 	and al, 1
-	jz .L0xed
+	jz .L0xe1
 	mov rbx, 1
 	mov byte[rbp-40], bl
 	mov rbx, 1
@@ -3846,11 +3630,11 @@ _int_toInteger_pchar.bool:
 	mov r11b, byte[r10]
 	mov bl, r11b
 	mov byte[rbp-24], r11b
-	jmp .L0xee
-.L0xed:
-.L0xee:
-	jmp .L0xf0
-.L0xef:
+	jmp .L0xe2
+.L0xe1:
+.L0xe2:
+	jmp .L0xe4
+.L0xe3:
 	mov r11d, dword[rbp-32]
 	mov r10, 10
 	mov r12, r11
@@ -3870,7 +3654,7 @@ _int_toInteger_pchar.bool:
 	mov r11b, byte[r10]
 	mov bl, r11b
 	mov byte[rbp-24], r11b
-.L0xf0:
+.L0xe4:
 	mov bl, byte[rbp-24]
 	test bl, bl
 	setnz bl
@@ -3887,21 +3671,21 @@ _int_toInteger_pchar.bool:
 	and bl, r10b
 	mov al, bl
 	and al, 1
-	jnz .L0xef
-.L0xf1:
+	jnz .L0xe3
+.L0xe5:
 	mov bl, byte[rbp-40]
 	mov al, bl
 	and al, 1
-	jz .L0xf2
+	jz .L0xe6
 	mov r10d, dword[rbp-32]
 	xor rbx, rbx
 	mov r11, r10
 	sub rbx, r11
 	mov eax, ebx
 	jmp ___int_toInteger_pchar.bool__return
-	jmp .L0xf3
-.L0xf2:
-.L0xf3:
+	jmp .L0xe7
+.L0xe6:
+.L0xe7:
 	mov ebx, dword[rbp-32]
 	mov eax, ebx
 	jmp ___int_toInteger_pchar.bool__return
@@ -3918,7 +3702,7 @@ __scanf:
 	mov qword[rbp-32], 0
 	mov qword[rbp-40], 0
 	mov qword[rbp-48], 0
-.L0xf4:
+.L0xe8:
 	mov rbx, 1000
 	mov r11, qword[rbp-40]
 	add r11, rbx
@@ -3962,7 +3746,7 @@ __scanf:
 	setge bl
 	mov rax, rbx
 	and al, 1
-	jnz .L0xf4
+	jnz .L0xe8
 	mov rbx, qword[rbp-16]
 	mov rdx, rbx
 	mov rbx, qword[rbp-32]
@@ -4107,11 +3891,11 @@ _void_mutex_cmpxchg_pmutex.intint:
 	xor rax, rax
 	mov eax, [rsi]
 	lock cmpxchg dword[rdi], edx
-	jz .L0xf7__end
+	jz .L0xeb__end
 	mov eax, [rdi]
 	mov [rsi], eax
-.L0xf7__end:
-.L0xf6:
+.L0xeb__end:
+.L0xea:
 	mov rbx, qword[rbp-32]
 	and r10, 0xffffffff
 	mov r10d, dword[rbx]
@@ -4139,9 +3923,9 @@ _void_mlock_pmutex.:
 	setnz bl
 	mov al, bl
 	and al, 1
-	jz .L0xf8
-	jmp .L0xfb
-.L0xfa:
+	jz .L0xec
+	jmp .L0xef
+.L0xee:
 	mov rdx, 2
 	and rdx, 0xffffffff
 	mov rsi, 1
@@ -4162,7 +3946,7 @@ _void_mlock_pmutex.:
 	or r11b, bl
 	mov al, r11b
 	and al, 1
-	jz .L0xfd
+	jz .L0xf1
 	mov rdx, 2
 	and rdx, 0xffffffff
 	xor rsi, rsi
@@ -4187,17 +3971,17 @@ _void_mlock_pmutex.:
 	mov rax , 202 
 	mov r10 , rcx 
 	syscall 
-.L0x102:
+.L0xf6:
 	mov rbx, rax
 	pop rdx
 	pop rsi
 	pop rdi
 	mov rax, rbx
-	jmp .L0x100
-.L0x100:
-	jmp .L0xfe
-.L0xfd:
-.L0xfe:
+	jmp .L0xf4
+.L0xf4:
+	jmp .L0xf2
+.L0xf1:
+.L0xf2:
 	mov rdx, 2
 	and rdx, 0xffffffff
 	xor rsi, rsi
@@ -4213,9 +3997,9 @@ _void_mlock_pmutex.:
 	setz bl
 	mov al, bl
 	and al, 1
-	jz .L0x104
-	mov rbx, STRING_CONSTANT_169
-	mov rdi, STRING_CONSTANT_169
+	jz .L0xf8
+	mov rbx, STRING_CONSTANT_163
+	mov rdi, STRING_CONSTANT_163
 	xor rax, rax
 	push rdi
 	mov rbx, rdi
@@ -4226,19 +4010,19 @@ _void_mlock_pmutex.:
 	mov rbx, rax
 	pop rdi
 	mov rax, rbx
-.L0x107:
-	jmp .L0xfc
-	jmp .L0x105
-.L0x104:
-.L0x105:
 .L0xfb:
-	mov rax, 1
-	and al, 1
-	jnz .L0xfa
-.L0xfc:
+	jmp .L0xf0
 	jmp .L0xf9
 .L0xf8:
 .L0xf9:
+.L0xef:
+	mov rax, 1
+	and al, 1
+	jnz .L0xee
+.L0xf0:
+	jmp .L0xed
+.L0xec:
+.L0xed:
 ___void_mlock_pmutex.__return:
 	leave
 	ret
@@ -4255,7 +4039,7 @@ _void_munlock_pmutex.:
 	xor rax, rax
 	xchg eax, [rdi]
 	lock sub dword[rdi], esi
-.L0x109:
+.L0xfd:
 	mov r10, rax
 	mov rbx, 1
 	mov r11, r10
@@ -4263,14 +4047,14 @@ _void_munlock_pmutex.:
 	setne r11b
 	mov al, r11b
 	and al, 1
-	jz .L0x10b
+	jz .L0xff
 	xor rsi, rsi
 	and rsi, 0xffffffff
 	mov rbx, qword[rbp-8]
 	mov rdi, rbx
 	xor rax, rax
 	lock xchg dword[rdi], esi
-.L0x10e:
+.L0x102:
 	mov rdx, 2
 	and rdx, 0xffffffff
 	xor rsi, rsi
@@ -4295,17 +4079,17 @@ _void_munlock_pmutex.:
 	mov rax , 202 
 	mov r10 , rcx 
 	syscall 
-.L0x113:
+.L0x107:
 	mov rbx, rax
 	pop rdx
 	pop rsi
 	pop rdi
 	mov rax, rbx
-	jmp .L0x111
-.L0x111:
-	jmp .L0x10c
-.L0x10b:
-.L0x10c:
+	jmp .L0x105
+.L0x105:
+	jmp .L0x100
+.L0xff:
+.L0x100:
 ___void_munlock_pmutex.__return:
 	leave
 	ret
@@ -4322,7 +4106,7 @@ __thrdext:
 	mov rax , 60 
 	mov r10 , rcx 
 	syscall 
-.L0x117:
+.L0x10b:
 ____thrdext__return:
 	leave
 	ret
@@ -4342,14 +4126,14 @@ _long_thrdcrt_pvoid.thread_t.void.:
 	mov rax, 56
 	syscall
 	test rax, rax
-	jnz .L0x119__end
+	jnz .L0x10d__end
 	mov rdi, r15
 	mov rsi, r14
 	mov rdx, r13
 	call __enterthread
 	mov rdi, rax
 	call __thrdext
-.L0x119__end:
+.L0x10d__end:
 ___long_thrdcrt_pvoid.thread_t.void.__return:
 	leave
 	ret
@@ -4392,8 +4176,8 @@ __enterthread:
 	mov ebx, dword[rbx]
 	and rbx, 0xffffffff
 	mov rsi, rbx
-	mov rbx, STRING_CONSTANT_170
-	mov rdi, STRING_CONSTANT_170
+	mov rbx, STRING_CONSTANT_164
+	mov rdi, STRING_CONSTANT_164
 	xor rax, rax
 	call printf
 	mov rbx, qword[rbp-32]

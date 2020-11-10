@@ -137,7 +137,7 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
  * @param member the name of the next pointer of the linked list structure
  * @param listhead the first link
  */
-#define each_link(type, varname, member, listhead) (type *varname = listhead; varname->member; varname = varname->member )
+#define each_link(type, varname, member, listhead) (type *varname = listhead; varname->member != nullptr; varname = varname->member )
 
 
 /**
