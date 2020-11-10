@@ -315,7 +315,7 @@ class PreProcessor:
 
             inps.append(subinp.copy())
             tks = macro.get(inps, starttok)
-
+            
             self.tokens[startidx:self.tkidx] = tks
 
             self.tkidx = startidx
@@ -412,7 +412,6 @@ class Macro:
                 outbody[i] = None
                 outbody[i:i] = inputs[self.params.index(val)]
             i += 1
-
         return list(filter(None, outbody))
 
     def __repr__(self):

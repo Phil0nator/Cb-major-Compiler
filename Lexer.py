@@ -227,7 +227,7 @@ class Lexer:
                 advance()
                 prev = tokens[-1]
                 if prev.tok not in [T.T_INT, T.T_CHAR,
-                                    T.T_DOUBLE, T.T_ID] and self.ch in T.T_DIGITS:
+                                    T.T_DOUBLE, T.T_ID, T.T_CLSP] and self.ch in T.T_DIGITS:
                     t = self.buildNumber()
                     t.value = -t.value
                 else:

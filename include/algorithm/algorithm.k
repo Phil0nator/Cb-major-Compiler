@@ -137,4 +137,11 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
  */
 #define swap(a, b) a = a ^ b; b = a ^ b; a = a ^ b
 
+/**
+ * Take a binary value (1 or 0) a, and make it ternary.
+ * @param a an integer value, presumed to be either 1 or zero
+ * @returns -1 for 0, 1 for 1
+ */
+#define bintern(a) (((a)*2)-1)
+
 #endif

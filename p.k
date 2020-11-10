@@ -1,12 +1,11 @@
 #include "std.k"
 
-struct test{
-    int bruh = 0;
-};
-
 function int main(long argc){
     
 
+    printf("b: %b\n", bintern(argc));
 
-    return 0;
+
+    
+    return NULL;
 }
