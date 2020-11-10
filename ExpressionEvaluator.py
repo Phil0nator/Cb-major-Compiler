@@ -83,6 +83,7 @@ def bringdown_memloc(a):
         a.memory_location = False
 
 
+
     return instr
 
 # do two bringdown_memloc calls in one
@@ -1027,15 +1028,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             throw(AddressOfConstant(a.token))
         
-        instr = bringdown_memloc(a)
-
+        instr = ""
         areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
         instr += ninstr
-        
-        
 
-        return instr, a.type.down(), EC.ExpressionComponent(areg, a.type.down(),memloc=True)
-        
+
+        out= instr, a.type.down(), EC.ExpressionComponent(areg, a.type.down(),memloc=True)
+        return out
 
         
         """ 

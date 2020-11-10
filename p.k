@@ -3,11 +3,13 @@
 
 function int main(long argc){
     
+    void* ptra = new(void);
+    void* ptrb = new(int);
 
-    int *a = new(int);
-    @a = 4;
-    
-    printf("0x%x\n",a);
+    int **a = ptra;
+    @a = ptrb;
+
+    printf("%i\n", @(@a));
 
     return NULL;
 }
