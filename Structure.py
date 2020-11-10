@@ -106,6 +106,17 @@ class Structure:
                 if(self.current_token.tok == T_ENDL):
                     continue
 
+                if(self.current_token.tok == T_OPENIDX):
+                    self.advance()
+                    start = self.compiler.ctidx
+                    while(self.current_token.tok != T_CLSIDX): self.advance()
+                    exprtokens = self.compiler.currentTokens[start:self.compiler.ctidx]
+                    value = determineConstexpr(t.isflt(),exprtokens,emptyfn)
+                    size+=t.csize()*value.accessor
+                    self.advance()
+                    continue
+
+
                 # inititialized with constexpr
                 if(self.current_token.tok != T_EQUALS):
                     throw(ExpectedToken(self.current_token, '; or ='))
