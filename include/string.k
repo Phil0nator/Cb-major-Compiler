@@ -4,6 +4,9 @@
  */
 #ifndef __STRING
 #define __STRING 1
+#include "stddef.k"
+#include "memory.k"
+#include "sys/errlist.k"
 
 
 /**

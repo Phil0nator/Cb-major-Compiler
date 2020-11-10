@@ -102,8 +102,13 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
+    def normal_semiconstexprheader(self, a,b):
+        return bringdown_memlocs(a,b)
+
+
+
     def ternarypartA(self, a, b):  # op == "?"
-        newinstr = ""
+        newinstr = self.normal_semiconstexprheader(a,b)
 
         if(len(ternarystack) <= 0):
             throw(UnmatchedTernary(a.token))
@@ -119,6 +124,7 @@ class ExpressionEvaluator:
         return newinstr, b.type.copy(), b
 
     def ternarypartB(self, a, b):  # op == ':'
+        newinstr = self.normal_semiconstexprheader(a,b)
 
         if(a.type.isflt() != b.type.isflt()):
             throw(TypeMismatch(a.tok, a.type, b.type))
@@ -128,7 +134,7 @@ class ExpressionEvaluator:
         breg = setSize(breg, 8)
         resultreg = ralloc(False, size=8)
 
-        newinstr = f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
+        newinstr += f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
         ternarystack.append(
             (newinstr, EC.ExpressionComponent(
                 areg, a.type), EC.ExpressionComponent(
@@ -143,7 +149,8 @@ class ExpressionEvaluator:
         apendee = None
 
         if(canShiftmul(b.accessor)):
-            newinstr = ""
+            newinstr = self.normal_semiconstexprheader(a,b)
+
             newinstr += bringdown_memloc(a)
 
             areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
@@ -162,8 +169,7 @@ class ExpressionEvaluator:
 
     # shifting by constant value optimization
     def const_shift_optimization(self, a, b, op):
-        newinstr = ""
-        newinstr += bringdown_memloc(a)
+        newinstr = self.normal_semiconstexprheader(a,b)
 
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
@@ -177,8 +183,8 @@ class ExpressionEvaluator:
     # addition or subtraction by one optimization
 
     def inc_dec_optimization(self, a, b, op):
-        newinstr = ""
-        newinstr += bringdown_memloc(a)
+        newinstr =  bringdown_memloc(a)
+
 
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
@@ -196,6 +202,7 @@ class ExpressionEvaluator:
     def test_optimization(self, a, b, op):
 
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
+        newinstr += bringdown_memlocs(a,b)
         cmp = "z" if op == "==" else "nz"
         newinstr += f"test {setSize(areg, a.type.csize())}, {setSize(areg, a.type.csize())}\nset{cmp} {setSize(areg, 1)}\n"
 
@@ -207,6 +214,7 @@ class ExpressionEvaluator:
     def noloadOp(self, a, b, op):
 
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
+        newinstr += bringdown_memlocs(a,b)
         cmd = "add" if op == "+" else "sub"
         newinstr += f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
         return newinstr, a.type.copy(), EC.ExpressionComponent(
@@ -233,6 +241,10 @@ class ExpressionEvaluator:
             apendee = a
             newt = a.type.copy()
             a.type.ptrdepth -= 1
+
+
+
+
 
         # if can be optimized through bitshift
         # multiplication/division

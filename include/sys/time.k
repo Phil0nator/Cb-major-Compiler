@@ -4,6 +4,9 @@
 #ifndef __SYSTIME
 #define __SYSTIME 1
 
+
+
+
 #include "stddef.k"
 
 typedef unsigned long time_t;
