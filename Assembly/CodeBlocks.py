@@ -150,22 +150,23 @@ def createIntrinsicHeap(variable):
 
 
 def loadToPtr(dest, source):
+    
     if(isinstance(dest, EC.ExpressionComponent)):
 
         size = dest.type.csize()
         if(isinstance(dest.accessor, Variable)):
 
-            if(dest.accessor.glob):
-                dest.accessor = Variable(dest.accessor.t,dest.accessor.name,glob=True,isptr=False)
-
+            
             return loadToReg(dest.accessor, setSize(source, size))
-
 
         return loadToReg(
             f'{psizeoft(dest.type)}[{setSize(dest.accessor,8)}]', setSize(source, size))
 
     if(isinstance(dest, Variable)):
+        
         return loadToReg(dest, source)
+    
+    
     return loadToReg(f"[{setSize(dest,8)}]", source)
 
 # push v to the stack
@@ -308,7 +309,6 @@ def loadToReg(reg, value):
                 reg = setSize(reg, value.t.csize())
             if(isinstance(value, str) and value in normal_size):
                 reg = setSize(reg, sizeOf(value))
-
         return f"mov {reg}, {valueOf(value)}\n"
 
     elif(isinstance(reg, Variable)):

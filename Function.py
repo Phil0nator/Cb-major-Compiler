@@ -1320,7 +1320,6 @@ class Function:
         # evaluate the destination
         insters, dest = self.evaluateLeftsideExpression()
         inst += (insters)
-
         # check for early eol before rightside
         if(self.current_token.tok not in SETTERS):
 
@@ -1334,7 +1333,6 @@ class Function:
 
         setter = self.current_token
         self.advance()
-
         # register to hold assignment value
         value = ralloc(dest.type.isflt(), dest.type.csize())
 
@@ -1346,6 +1344,7 @@ class Function:
         inst += (ev)
 
         if(setter.tok == T_EQUALS):  # normal
+            
             inst += (loadToPtr(dest, value))
 
         # there is a setter shortcut of some kind. EX: +=, -=, /= etc...

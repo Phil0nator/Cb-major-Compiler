@@ -63,6 +63,11 @@ class DType:
         out.ptrdepth -= 1 * out.ptrdepth > 0
         return out
 
+    def bottom(self):
+        out = self.copy()
+        out.ptrdepth=0
+        return out
+
     def up(self):
         out = self.copy()
         out.ptrdepth += 1

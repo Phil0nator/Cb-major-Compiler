@@ -81,7 +81,8 @@ def bringdown_memloc(a):
         instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
         instr += maskset(a.accessor, a.type.csize())
         a.memory_location = False
-    
+
+
     return instr
 
 # do two bringdown_memloc calls in one
@@ -400,7 +401,6 @@ class ExpressionEvaluator:
 
                     # op == @
                     elif(e.accessor == T_DEREF):
-
                         ninster, o, apendee = evaluator.derefrence(a)
                         stack.append(apendee)
                         instr += ninster
@@ -548,6 +548,7 @@ class RightSideEvaluator(ExpressionEvaluator):
     # find the value pointed to by a. (same as a[0])
     def derefrence(self, a):
         instr = ""
+
         if(a.isconstint()):
 
             throw(AddressOfConstant(a.token))
@@ -569,6 +570,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             rfree(tmp)
             return instr, o, EC.ExpressionComponent(
                 oreg, o.copy(), token=a.token)
+        
         # a is register
         elif(a.isRegister()):
             result = ralloc(a.type.isflt(), a.type.csize())
@@ -584,6 +586,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 result, o.copy(), token=a.token)
         # a exists next on the stack
         elif(a.accessor == "pop"):
+
             result = ralloc(False, a.type.csize())
             instr += loadToReg(result, a.accessor)
             a.accessor = result
@@ -1018,11 +1021,24 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # get value pointed to by a. (same as a[0])
     def derefrence(self, a):
-        instr = ""
+        
+
         if(a.isconstint()):
 
             throw(AddressOfConstant(a.token))
+        
+        instr = bringdown_memloc(a)
 
+        areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
+        instr += ninstr
+        
+        
+
+        return instr, a.type.down(), EC.ExpressionComponent(areg, a.type.down(),memloc=True)
+        
+
+        
+        """ 
         elif(isinstance(a.accessor, Variable)):
 
             tmp = ralloc(False, a.accessor.t.csize())
@@ -1037,7 +1053,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             o.ptrdepth -= 1
             rfree(tmp)
             return instr, o, EC.ExpressionComponent(
-                oreg, o.copy(), token=a.token)
+                oreg, o.copy(), token=a.token, memloc=True)
 
         elif(a.isRegister()):
             result = ralloc(a.type.isflt(), a.type.csize())
@@ -1049,7 +1065,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             o = a.type.copy()
             o.ptrdepth -= 1
             return instr, o, EC.ExpressionComponent(
-                result, o.copy(), token=a.token)
+                result, o.copy(), token=a.token, memloc=True) """
 
     # cast a to type e
     def typecast(self, a, e, o):
@@ -1076,12 +1092,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
         return instr, o, appendee
 
     # no deposit is necessary for leftside evaluation
-    def depositFinal(self, final, o, dest):
+    def depositFinal(self, final):
+        
         return final
 
     # main wrapper
     def evaluate(self, pfix):
         out = self.evaluatePostfix(pfix, self)
-        
-
         return out
