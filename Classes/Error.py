@@ -240,10 +240,12 @@ class InvalidExpressionComponent(Error):
         self.tok = tok
         self.message = f"Invalid expression component: "
 
+
 class InvalidDestination(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Invalid assignment destination: "
+
 
 class ExpectedLValue(Error):
     def __init__(self, tok):

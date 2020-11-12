@@ -213,9 +213,9 @@ class Function:
         while(opens != 0):
             self.advance()
             if(self.current_token.tok == T_OPENSCOPE):
-                opens+=1
+                opens += 1
             elif(self.current_token.tok == T_CLSSCOPE):
-                opens-=1
+                opens -= 1
 
     def addline(self, l):                           # add a line of assembly to raw
         if(config.__oplevel__ > 1):
@@ -380,15 +380,14 @@ class Function:
 
         # Build instructions neccessary to evaluate the expression a for
         # example: if ( a ) { ... }
-        
-        
+
         preInstructions, resultant = self.evaluateExpression()
         # the resultant's register doesn't need to be reserved
         rfree(resultant.accessor)
-        
+
         if(self.current_token.tok == T_CLSP):
             self.advance()
-        
+
         # pre-determine jump labels:
         postlabel = getLogicLabel("IFPOST")
         jmpafter = getLogicLabel("IFELSE")
@@ -396,8 +395,8 @@ class Function:
         self.continues.append(postlabel)
 
         # check if the resultant will always evaluate to false
-        if(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint(): 
-        
+        if(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
+
             preInstructions += f"{checkTrue(resultant)}jz {postlabel}\n"
 
             self.addline(preInstructions)
@@ -433,12 +432,11 @@ class Function:
             else:
                 self.addline(postlabel + ":\n")
                 self.addline(jmpafter + ":\n")
-        
-        
+
         else:
             # the following is executed in an instance like this:
             # if(false) { ... }
-        
+
             self.skipBody()
 
         self.continues.pop()
@@ -464,8 +462,6 @@ class Function:
         # build the instructions neccessary to evaluate the expression b for
         # example: for (a; b; ...){ ... }
         getCondition, resultant = self.evaluateExpression()
-        
-
 
         # since these instructions are out of order, the resultant does not
         # need to remain reserved through the body of the loop.
@@ -475,15 +471,13 @@ class Function:
         self.addline(f"jmp {comparisonlabel}\n")
         self.addline(f"{toplabel}:")
 
-
         # build the instructions for the assignment c for example: for (a;b;
         # c){ ... }
         updatev, __ = self.evaluateExpression()
 
-        # The resultant can be freed here because the instructions are not in order yet.
+        # The resultant can be freed here because the instructions are not in
+        # order yet.
         rfree(__.accessor)
-
-
 
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
@@ -496,7 +490,7 @@ class Function:
         self.addline(updatev)
         self.addline(f"{comparisonlabel}:\n")
         self.addline(getCondition)
-        
+
         # check for constexpr
         if(not resultant.isconstint()):
             self.addline(f"{checkTrue(resultant)}\njnz {toplabel}\n")
@@ -504,7 +498,7 @@ class Function:
             self.addline(f"jmp {toplabel}\n")
         else:
             pass
-        
+
         self.addline(f"{endlabel}:")
         self.advance()
 
@@ -528,11 +522,10 @@ class Function:
         # build instructions to evaluate expression a for example: while( a ){
         # ... }
         cmpinst, resultant = self.evaluateExpression()
-        
+
         # the value of resultant does not need to be reserved
         rfree(resultant.accessor)
-        
-        
+
         # if the expression inside the while loop header always evaluates to False,
         # the body of the loop is not compiled.
         dontGetBody = False
@@ -542,18 +535,18 @@ class Function:
         elif(resultant.accessor != 0):
             cmpinst += f"jmp {startlabel}\n"
         else:
-            dontGetBody= True
-        
+            dontGetBody = True
+
         if(dontGetBody):
             self.skipBody()
             cmpinst = ""
-            
+
         else:
             self.advance()
             self.checkTok(T_OPENSCOPE)
             # build instructions for the body
             self.beginRecursiveCompile()
-        
+
         self.addline(f"{comparisonlabel}:")
         self.addline(cmpinst)
         self.addline(f"{endlabel}:")
@@ -704,7 +697,7 @@ class Function:
 
         # evaluate the lvalue to compare
         loadinstr, cmpvalue = self.evaluateExpression()
-        
+
         # ensure register hit
         reralloc(cmpvalue.accessor)
 
@@ -818,9 +811,9 @@ class Function:
             footerinst = f"{footerinst}{checkTrue(resultant)}jnz {startlabel}\n"
         else:
             if(resultant.accessor == 0):
-                footerinst=""
+                footerinst = ""
             else:
-                footerinst=f"jmp {startlabel}\n"
+                footerinst = f"jmp {startlabel}\n"
 
         # close up
         self.addline(footerinst)
@@ -1231,13 +1224,11 @@ class Function:
             pf.createPostfix(), LeftSideEvaluator(self))
         instructions += ins
 
-
         # for general expressions, the 'pop' exception needs to be cought:
         if(isinstance(output.accessor, str) and output.accessor == "pop"):
             newout = ralloc(output.type.isflt())
             output.accessor = newout
-            instructions+=spop(output)
-
+            instructions += spop(output)
 
         return instructions, output
 

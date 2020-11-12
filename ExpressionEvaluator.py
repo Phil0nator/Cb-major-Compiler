@@ -115,7 +115,6 @@ class ExpressionEvaluator:
         if(oneline):
 
             instrs = bringdown_memloc(b)
-            
 
             if(vardest and constright):
 
@@ -124,47 +123,46 @@ class ExpressionEvaluator:
             elif(vardest):
 
                 castlock = ralloc(a.type.isflt())
-                cst = castABD(a,b,None,b.accessor,castlock)
+                cst = castABD(a, b, None, b.accessor, castlock)
 
                 if(cst == False):
 
-                    breg, _, __, linstrs = optloadRegs(b, None, op, LONG.copy())
-                    instrs+=linstrs
+                    breg, _, __, linstrs = optloadRegs(
+                        b, None, op, LONG.copy())
+                    instrs += linstrs
                     rfree(castlock)
-                
+
                 else:
                     rfree(b.accessor)
                     breg = castlock
-                    instrs+=cst
+                    instrs += cst
 
                 instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
                 rfree(breg)
-            
+
             else:
                 if(constright):
                     instrs += f"{cmd} {psizeoft(a.type)}[{setSize(a.accessor,8)}], {valueOf(b.accessor)}\n"
                 else:
-                    
+
                     castlock = ralloc(a.type.isflt())
-                    cst = castABD(a,b,None,b.accessor,castlock)
+                    cst = castABD(a, b, None, b.accessor, castlock)
 
                     if(cst == False):
 
-                        breg, _, __, linstrs = optloadRegs(b, None, op, LONG.copy())
-                        instrs+=linstrs
+                        breg, _, __, linstrs = optloadRegs(
+                            b, None, op, LONG.copy())
+                        instrs += linstrs
                         rfree(castlock)
-                    
+
                     else:
                         rfree(b.accessor)
                         breg = castlock
-                        instrs+=cst
+                        instrs += cst
 
-                    
                     instrs += f"{cmd} [{setSize(a.accessor,8)}], {setSize(breg, a.type.csize())}\n"
                     rfree(breg)
         else:
-
-            
 
             if(vardest):
 
@@ -175,8 +173,9 @@ class ExpressionEvaluator:
                 if(not a.isRegister()):
                     throw(InvalidDestination(a.token))
 
-                avalreg, _, __, loadinst = optloadRegs(a,None,op,LONG.copy())
-                instrs+=loadinst
+                avalreg, _, __, loadinst = optloadRegs(
+                    a, None, op, LONG.copy())
+                instrs += loadinst
 
                 opinstr, _, b = evaluator.performCastAndOperation(
                     EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1], VOID.copy())
@@ -185,7 +184,6 @@ class ExpressionEvaluator:
             movinstr, a.type, b = self.doAssignment(a, b, "=", evaluator)
             instrs += movinstr
 
-        
         return instrs, a.type.copy(), a
 
     def normal_semiconstexprheader(self, a, b):
@@ -312,7 +310,7 @@ class ExpressionEvaluator:
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op not in ["/", "[","&&"] and op not in signed_comparisons):
+        if(b.accessor == 0 and op not in ["/", "[", "&&"] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
@@ -693,7 +691,10 @@ class RightSideEvaluator(ExpressionEvaluator):
     # cast a to type e
     def typecast(self, a, e, o):
         instr = ""
-        t = self.fn.compiler.getType(e.type) if isinstance(e.type, str) else e.type
+        t = self.fn.compiler.getType(
+            e.type) if isinstance(
+            e.type,
+            str) else e.type
         if(t is None):
             throw(UnkownType(e.token))
         aval = ralloc(a.type.isflt(), a.type.csize())
@@ -1108,7 +1109,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             throw(AddressOfConstant(a.token))
 
-        instr = ""
+        instr = bringdown_memloc(a)
         areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
         instr += ninstr
 
@@ -1116,41 +1117,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
             areg, a.type.down(), memloc=True)
         return out
 
-        """
-        elif(isinstance(a.accessor, Variable)):
-
-            tmp = ralloc(False, a.accessor.t.csize())
-            instr += f"mov {tmp}, {valueOf(a.accessor)}\n"
-            if(a.accessor.t.isflt()):
-                oreg = ralloc(True)
-                instr += f"movsd {oreg}, {tmp}\n"
-            else:
-                oreg = ralloc(False, a.accessor.t.csize())
-                instr += f"mov {oreg}, {tmp}\n"
-            o = a.accessor.t.copy()
-            o.ptrdepth -= 1
-            rfree(tmp)
-            return instr, o, EC.ExpressionComponent(
-                oreg, o.copy(), token=a.token, memloc=True)
-
-        elif(a.isRegister()):
-            result = ralloc(a.type.isflt(), a.type.csize())
-            if(a.type.isflt()):
-                instr += f"movsd {result}, {a.accessor}\n"
-            else:
-                instr += f"mov {result}, {a.accessor}\n"
-            rfree(a.accessor)
-            o = a.type.copy()
-            o.ptrdepth -= 1
-            return instr, o, EC.ExpressionComponent(
-                result, o.copy(), token=a.token, memloc=True) """
-
     # cast a to type e
     def typecast(self, a, e, o):
-        
-        return RightSideEvaluator(self.fn).typecast(a,e,o)
-        
-        
+
+        return RightSideEvaluator(self.fn).typecast(a, e, o)
+
         instr = ""
         tid = e.type
         t = self.fn.compiler.getType(tid)
@@ -1180,7 +1151,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # main wrapper
     def evaluate(self, pfix):
-        
+
         out = self.evaluatePostfix(pfix, self)
-        
+
         return out

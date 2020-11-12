@@ -25,6 +25,7 @@ ensure_boolean = "and al, 1\n"
 # flags enough)
 check_fortrue = f"{ensure_boolean}"
 
+
 def checkTrue(checkval):
     if(checkval.isRegister() and not checkval.type.isflt()):
         return f"test {setSize(checkval.accessor, checkval.type.csize())}, {setSize(checkval.accessor, checkval.type.csize())}\n"
@@ -551,7 +552,7 @@ def castABD(a, b, areg, breg, newbreg):
             out = maskset(newbreg, a.type.csize())
 
             out += loadToReg(newbreg, breg)
-            
+
             return out
         return False
     if(a.type.isflt() and not b.type.isflt()):
@@ -588,6 +589,5 @@ def getOnelineAssignmentOp(a, b, op):
             cmd = "shr"
         if(a.type.signed):
             cmd = cmd[0] + 'a' + cmd[2]
-
 
     return cmd, cmd != ""
