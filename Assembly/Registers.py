@@ -294,6 +294,7 @@ def ralloc(flt, size=8):
 
 
 def reralloc(r):
+    if(not isinstance(r, str)): return
     r = normal_size[r]
     if("xmm" in r):
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = True
@@ -320,6 +321,8 @@ def rfreeAll():
 
 
 def setSize(reg, size):
+
+
     if("xmm" in reg):
         return reg
     reg = normal_size[reg]
@@ -336,6 +339,9 @@ def setSize(reg, size):
 
 
 def sizeOf(reg):
+    if(isinstance(reg, Variable)): 
+        return reg.t.csize()
+
     if("xmm" in reg):
         return 8
     if(setSize(reg, 4) == reg):

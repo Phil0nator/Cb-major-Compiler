@@ -156,14 +156,14 @@ inline long wait4(pid_t upid, int*stat_addr, long options, void*ru){
 
 char* __systembashpath = "/bin/bash";
 
-char** __emptyenv = {"PATH=/bin:/usr/bin:/sbin:/usr/sbin",nullptr};
+char** __emptyenv = {"PATH=/bin:/usr/bin:/sbin:/usr/sbin",nullptr, nullptr};
 
 //default execve call
 global long execl(char* path, char** args){
     return execve(path,args,__emptyenv);
 }
 
-char** __systemcallargvconst = {"sudo", "-c", nullptr};
+char** __systemcallargvconst = {"sudo", "-c", nullptr, nullptr};
 
 /**
  * system will execute command in bash.
@@ -178,7 +178,7 @@ global long system(char* command){
         
         __systemcallargvconst[2] = command;
 
-        
+
         long err = execl(__systembashpath, __systemcallargvconst);
         printf(strerror(err));
         

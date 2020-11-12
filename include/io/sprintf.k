@@ -138,6 +138,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
 
     if(str == 0 || fmt == 0){
+        
         return 0;
     }
 

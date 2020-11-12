@@ -9,9 +9,9 @@ from Classes.Variable import Variable
 from globals import INTRINSICS, INT, CHAR, BOOL, VOID, LONG, SHORT, DOUBLE, operatorISO, typematch, canShiftmul
 from Assembly.CodeBlocks import loadToReg, castABD, doOperation
 from Assembly.CodeBlocks import valueOf, shiftInt, maskset
-from Assembly.CodeBlocks import shiftmul, getComparater, boolmath
+from Assembly.CodeBlocks import shiftmul, getComparater, boolmath, getOnelineAssignmentOp
 
-from Assembly.Instructions import signed_comparisons, Instruction
+from Assembly.Instructions import signed_comparisons, Instruction, ONELINE_ASSIGNMENTS
 from Assembly.Registers import *
 
 from Classes.Constexpr import calculateConstant
@@ -82,8 +82,6 @@ def bringdown_memloc(a):
         instr += maskset(a.accessor, a.type.csize())
         a.memory_location = False
 
-
-
     return instr
 
 # do two bringdown_memloc calls in one
@@ -105,13 +103,96 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
-    def normal_semiconstexprheader(self, a,b):
-        return bringdown_memlocs(a,b)
+    def doAssignment(self, a, b, op, evaluator):
 
+        instrs = ""
+        cmd, oneline = getOnelineAssignmentOp(a, b, op)
+        vardest = isinstance(a.accessor, Variable)
+        constright = b.isconstint()
+        if(a.isRegister() and not a.memory_location):
+            throw(InvalidDestination(a.token))
 
+        if(oneline):
+
+            instrs = bringdown_memloc(b)
+            
+
+            if(vardest and constright):
+
+                instrs += f"{cmd} {valueOf(a.accessor)}, {valueOf(b.accessor)}\n"
+
+            elif(vardest):
+
+                castlock = ralloc(a.type.isflt())
+                cst = castABD(a,b,None,b.accessor,castlock)
+
+                if(cst == False):
+
+                    breg, _, __, linstrs = optloadRegs(b, None, op, LONG.copy())
+                    instrs+=linstrs
+                    rfree(castlock)
+                
+                else:
+                    rfree(b.accessor)
+                    breg = castlock
+                    instrs+=cst
+
+                instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
+                rfree(breg)
+            
+            else:
+                if(constright):
+                    instrs += f"{cmd} {psizeoft(a.type)}[{setSize(a.accessor,8)}], {valueOf(b.accessor)}\n"
+                else:
+                    
+                    castlock = ralloc(a.type.isflt())
+                    cst = castABD(a,b,None,b.accessor,castlock)
+
+                    if(cst == False):
+
+                        breg, _, __, linstrs = optloadRegs(b, None, op, LONG.copy())
+                        instrs+=linstrs
+                        rfree(castlock)
+                    
+                    else:
+                        rfree(b.accessor)
+                        breg = castlock
+                        instrs+=cst
+
+                    
+                    instrs += f"{cmd} [{setSize(a.accessor,8)}], {setSize(breg, a.type.csize())}\n"
+                    rfree(breg)
+        else:
+
+            
+
+            if(vardest):
+
+                instrs, _, b = evaluator.performCastAndOperation(
+                    a, b, op[:-1], VOID.copy())
+
+            else:
+                if(not a.isRegister()):
+                    throw(InvalidDestination(a.token))
+
+                avalreg, _, __, loadinst = optloadRegs(a,None,op,LONG.copy())
+                instrs+=loadinst
+
+                opinstr, _, b = evaluator.performCastAndOperation(
+                    EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1], VOID.copy())
+                instrs += opinstr
+
+            movinstr, a.type, b = self.doAssignment(a, b, "=", evaluator)
+            instrs += movinstr
+
+        
+        return instrs, a.type.copy(), a
+
+    def normal_semiconstexprheader(self, a, b):
+        return bringdown_memlocs(a, b)
 
     def ternarypartA(self, a, b):  # op == "?"
-        newinstr = self.normal_semiconstexprheader(a,b)
+        newinstr = self.normal_semiconstexprheader(a, b)
 
         if(len(ternarystack) <= 0):
             throw(UnmatchedTernary(a.token))
@@ -127,7 +208,7 @@ class ExpressionEvaluator:
         return newinstr, b.type.copy(), b
 
     def ternarypartB(self, a, b):  # op == ':'
-        newinstr = self.normal_semiconstexprheader(a,b)
+        newinstr = self.normal_semiconstexprheader(a, b)
 
         if(a.type.isflt() != b.type.isflt()):
             throw(TypeMismatch(a.tok, a.type, b.type))
@@ -152,7 +233,7 @@ class ExpressionEvaluator:
         apendee = None
 
         if(canShiftmul(b.accessor)):
-            newinstr = self.normal_semiconstexprheader(a,b)
+            newinstr = self.normal_semiconstexprheader(a, b)
 
             newinstr += bringdown_memloc(a)
 
@@ -172,7 +253,7 @@ class ExpressionEvaluator:
 
     # shifting by constant value optimization
     def const_shift_optimization(self, a, b, op):
-        newinstr = self.normal_semiconstexprheader(a,b)
+        newinstr = self.normal_semiconstexprheader(a, b)
 
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
@@ -186,8 +267,7 @@ class ExpressionEvaluator:
     # addition or subtraction by one optimization
 
     def inc_dec_optimization(self, a, b, op):
-        newinstr =  bringdown_memloc(a)
-
+        newinstr = bringdown_memloc(a)
 
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
@@ -204,9 +284,9 @@ class ExpressionEvaluator:
 
     def test_optimization(self, a, b, op):
 
-        newinstr = bringdown_memlocs(a,b)
+        newinstr = bringdown_memlocs(a, b)
         areg, breg, o, ninst = optloadRegs(a, None, op, None)
-        newinstr+=ninst
+        newinstr += ninst
         cmp = "z" if op == "==" else "nz"
         newinstr += f"test {setSize(areg, a.type.csize())}, {setSize(areg, a.type.csize())}\nset{cmp} {setSize(areg, 1)}\n"
 
@@ -218,7 +298,7 @@ class ExpressionEvaluator:
     def noloadOp(self, a, b, op):
 
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
-        newinstr += bringdown_memlocs(a,b)
+        newinstr += bringdown_memlocs(a, b)
         cmd = "add" if op == "+" else "sub"
         newinstr += f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
         return newinstr, a.type.copy(), EC.ExpressionComponent(
@@ -226,13 +306,13 @@ class ExpressionEvaluator:
 
     # Check if an operation is a semiconstexpr, and if so what optimizations
     # are possible.
-    def check_semiconstexpr_optimization(self, a, b, op):
+    def check_semiconstexpr_optimization(self, a, b, op, evaluator):
         newinstr = None
         newt = None
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op not in ["/", "["] and op not in signed_comparisons):
+        if(b.accessor == 0 and op not in ["/", "[","&&"] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
@@ -245,10 +325,6 @@ class ExpressionEvaluator:
             apendee = a
             newt = a.type.copy()
             a.type.ptrdepth -= 1
-
-
-
-
 
         # if can be optimized through bitshift
         # multiplication/division
@@ -293,6 +369,9 @@ class ExpressionEvaluator:
         elif(op == "?"):
             return self.ternarypartA(a, b)
 
+        elif(op in SETTERS):
+            return self.doAssignment(a, b, op, evaluator)
+
         return newinstr, newt, apendee
 
     # evaluate a generated postfix list of EC's
@@ -333,7 +412,7 @@ class ExpressionEvaluator:
 
                         # check for and do any possible optimizations
                         newinstr, newt, apendee = self.check_semiconstexpr_optimization(
-                            a, b, op)
+                            a, b, op, evaluator)
 
                         # if no valid optimizations couild be made:
                         #       do the normal evaluation
@@ -348,8 +427,13 @@ class ExpressionEvaluator:
 
                     else:  # no optimizations can be made:
 
+                        if (op in SETTERS):
+                            ninster, o, apendee = self.doAssignment(
+                                a, b, op, evaluator)
+                            instr += ninster
+                            stack.append(apendee)
                         # op is -> or .
-                        if(op == T_PTRACCESS or op == T_DOT):
+                        elif(op == T_PTRACCESS or op == T_DOT):
                             ninster, o, apendee = evaluator.memberAccess(a, b)
                             instr += ninster
                             stack.append(apendee)
@@ -571,7 +655,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             rfree(tmp)
             return instr, o, EC.ExpressionComponent(
                 oreg, o.copy(), token=a.token)
-        
+
         # a is register
         elif(a.isRegister()):
             result = ralloc(a.type.isflt(), a.type.csize())
@@ -609,8 +693,7 @@ class RightSideEvaluator(ExpressionEvaluator):
     # cast a to type e
     def typecast(self, a, e, o):
         instr = ""
-        tid = e.type
-        t = self.fn.compiler.getType(tid)
+        t = self.fn.compiler.getType(e.type) if isinstance(e.type, str) else e.type
         if(t is None):
             throw(UnkownType(e.token))
         aval = ralloc(a.type.isflt(), a.type.csize())
@@ -719,10 +802,9 @@ class RightSideEvaluator(ExpressionEvaluator):
                 tmp = creg
                 creg = newcoreg
                 newcoreg = tmp
-
             instr += doOperation(caster.type, creg,
                                  newcoreg, op, caster.type.signed)
-            
+
             # handle float comparison
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
 
@@ -961,7 +1043,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
         rfree(a.accessor)
         return instr, o, EC.ExpressionComponent(
-            tmpaddr, memv.t.copy(), token=b.token)
+            tmpaddr, memv.t.copy(), token=b.token, memloc=True)
 
     # evaluate logical NOT
     def evalNot(self, a):
@@ -1007,7 +1089,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
-        
+
         elif(isinstance(a.accessor, Variable)):
 
             result = ralloc(False)
@@ -1016,28 +1098,25 @@ class LeftSideEvaluator(ExpressionEvaluator):
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
 
-
         else:
             throw(AddressOfConstant(a.token))
 
     # get value pointed to by a. (same as a[0])
     def derefrence(self, a):
-        
 
         if(a.isconstint()):
 
             throw(AddressOfConstant(a.token))
-        
+
         instr = ""
         areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
         instr += ninstr
 
-
-        out= instr, a.type.down(), EC.ExpressionComponent(areg, a.type.down(),memloc=True)
+        out = instr, a.type.down(), EC.ExpressionComponent(
+            areg, a.type.down(), memloc=True)
         return out
 
-        
-        """ 
+        """
         elif(isinstance(a.accessor, Variable)):
 
             tmp = ralloc(False, a.accessor.t.csize())
@@ -1068,6 +1147,10 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # cast a to type e
     def typecast(self, a, e, o):
+        
+        return RightSideEvaluator(self.fn).typecast(a,e,o)
+        
+        
         instr = ""
         tid = e.type
         t = self.fn.compiler.getType(tid)
@@ -1092,10 +1175,12 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # no deposit is necessary for leftside evaluation
     def depositFinal(self, final):
-        
+        print(final)
         return final
 
     # main wrapper
     def evaluate(self, pfix):
+        
         out = self.evaluatePostfix(pfix, self)
+        
         return out

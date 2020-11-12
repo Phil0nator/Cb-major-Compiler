@@ -22,8 +22,6 @@
 */'''
 
 
-
-
 ##############################################
 #   compile.py is the entrypoint of the compiler.
 #
