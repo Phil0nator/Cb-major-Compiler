@@ -62,6 +62,11 @@ def function_allocator(amt):
 def zeroize(reg):
     return Instruction("xor", [reg, reg])
 
+
+def allocate_readonly(value):
+    return createIntrinsicConstant(value)
+
+
 # make name a label
 
 

@@ -16,6 +16,7 @@
 #define __ASSERT 1
 
 #include "io/printf.k"
+#include "sys/pth.k"
 
 #ifndef NDEBUG
 /**

@@ -3,6 +3,7 @@
 #define __PRINTF
 
 #include "sprintf.k"
+#include "sys/files.k"
 #include "filesystem.k"
 #include "stddef.k"
 #include "memory.k"

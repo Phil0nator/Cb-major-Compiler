@@ -522,10 +522,10 @@ class Compiler:
 
                     self.createFunction()
                     fn = self.functions[-1]
+                    fn.extern = True
                     # apply new properties to generated function:
                     config.__CEXTERNS__ += "global " + \
                         functionlabel(fn)[:-1] + "\n"
-                    fn.extern = True
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
 

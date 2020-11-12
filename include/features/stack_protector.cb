@@ -1,0 +1,6 @@
+#include "sys/files.k"
+
+__cdecl void __stack_chk_fail(char* errmsg, long len){
+    write(STDOUT, errmsg, len);
+    syscall(60)
+}

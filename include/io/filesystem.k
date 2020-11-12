@@ -11,7 +11,7 @@
 #include "sys/stat.k"
 
 
-typedef fd_t FILE;
+typedef unsigned long FILE;
 
 #define _fopen_readonly 114
 #define _fopen_writeonly 119
@@ -88,7 +88,7 @@ function FILE fopen(char* fname, char* mode){
  */
 
 
-function int fputs(fd_t fd, char* text){
+function int fputs(FILE fd, char* text){
     long l = strlen(text);
     long out = write(fd, text, l);
     return out;
@@ -102,7 +102,7 @@ function int fputs(fd_t fd, char* text){
  * @returns number of bytes read
  */
 
-function long fgets(fd_t fd, char* buffer, size_t amt){
+function long fgets(FILE fd, char* buffer, size_t amt){
     long out = read(fd, buffer, amt);
     return out;
 }
@@ -113,7 +113,7 @@ function long fgets(fd_t fd, char* buffer, size_t amt){
  * @param fd the file to load from
  * @returns a char buffer containing the file data, or an error code.
  */
-function void* floads(fd_t fd){
+function void* floads(FILE fd){
 
     int fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0-fsize, SEEK_END);

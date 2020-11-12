@@ -74,16 +74,6 @@ ExtraFeatures = {
 }
 
 
-__features__ = args.use if args.use is not None else []
-
-# ensure that all features listed exist
-for feature in __features__:
-    if(feature not in ExtraFeatures):
-        print(
-            f"{Fore.RED}{Style.BRIGHT}Cbm{Style.RESET_ALL}: Unkown commandline argument '{feature}'.")
-        exit(1)
-    ExtraFeatures[feature] = True
-
 # load arguments to variables
 __fileinput__ = args.input
 __fileoutput__ = args.output
@@ -96,6 +86,8 @@ __oplevel__ = 1
 __executable__ = not args.object
 __linkables__ = args.link if args.link is not None else []
 __nowarn__ = args.nowarn
+
+__features__ = args.use if args.use is not None else []
 
 
 __preprocessonly__ = args.preprocess
@@ -153,3 +145,17 @@ raw_filedata = []
 
 # debugging
 LAST_RALLOC = None
+
+
+# ensure that all features listed exist
+for feature in __features__:
+    if(feature not in ExtraFeatures):
+        print(
+            f"{Fore.RED}{Style.BRIGHT}Cbm{Style.RESET_ALL}: Unkown commandline argument '{feature}'.")
+        exit(1)
+    ExtraFeatures[feature] = True
+
+    # feature specific operations:
+    if(feature == "stack-protection"):
+        __linkables__.append(f"{includepath}features/stackprotection.o")
+        __CEXTERNS__ += "extern __stack_chk_fail\n"

@@ -1,5 +1,5 @@
 import time
-
+import random
 import Assembly.AVX as AVX
 import Assembly.CodeBlocks as CodeBlocks
 import Assembly.TypeSizes as TypeSizes
@@ -12,7 +12,8 @@ from Assembly.CodeBlocks import (doFloatOperation,
                                  doIntOperation, fncall, function_allocator,
                                  function_closer, functionlabel, getLogicLabel,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
-                                 movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue)
+                                 movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue,
+                                 allocate_readonly)
 from Assembly.Instructions import Instruction, Peephole
 from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat
@@ -151,6 +152,12 @@ class Function:
         # assembly of a function. It will be different for an inline vs regular
         # function.
         self.closinglabel = self.getClosingLabel()
+
+        # Features
+
+        # the value used in the stack protection variable to check for
+        # integrity.
+        self.stackProtection_value = random.randint(0, 9999999999)
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -360,8 +367,7 @@ class Function:
                     countn += 1
 
     def createClosing(self):                    # create end of the function
-        if(self.destructor_text != ""):
-            self.destructor_text = f'{Instruction("push", [rax])}{self.destructor_text}{Instruction("pop", [rax])}'
+
         self.addline(function_closer(
             self.getCallingLabel(), self.destructor_text))
 
@@ -1503,6 +1509,71 @@ class Function:
         # stack allocator (size undetermined at this point)
         self.addline("/*ALLOCATOR*/")
 
+        # additional feature-specific operations
+        if(config.ExtraFeatures["stack-protection"] and not self.inline):
+            self.addline(self.doStackProtection())
+
+    # setup stack protector
+
+    def doStackProtection(self):
+
+        # a variable is used to check if the stack has been changed in places
+        # where it should not.
+        protector = Variable(
+            VOID.copy(), f"/*stack-protection-{self.name}*/")
+        self.addVariable(protector)
+        protector.referenced = True
+        feature_instructions = loadToReg(
+            protector, str(self.stackProtection_value))
+
+        return feature_instructions
+
+    # perform closing check of the stack
+
+    def closeStackProtection(self):
+
+        # an error message is reserved in the .text read only section:
+        errmsg = f"Stack protection failed in function '{self.getCallingLabel()}'."
+        errmsgl = len(errmsg)
+        errmsglabel = getLogicLabel("stackprotection")
+        errmsgv = Variable(
+            CHAR,
+            errmsglabel,
+            glob=True,
+            isptr=True,
+            initializer=f"\"{errmsg}\"")
+        self.suffix += allocate_readonly(errmsgv)
+
+        # the destructor text (or ending text) of the function must check the variable for damage by
+        # comparing it to its original value stored in self.stackProtection_value.
+        # If it is not the same, the program will jumo to __stack_chk_fail, which is defined in an object
+        # file that will be automatically linked with any programs compiled with the -Ustack-protection option
+        # in config.py.
+        self.destructor_text += (Instruction("mov", ["rdi", errmsglabel]))
+        self.destructor_text += (Instruction("mov", ["rsi", str(errmsgl)]))
+        self.destructor_text += (Instruction("cmp",
+                                             [valueOf(self.variables[0]),
+                                              str(self.stackProtection_value)]))
+        self.destructor_text += (Instruction("jne", ["__stack_chk_fail"]))
+
+    # ending feature statements
+    def closeFeatures(self):
+        if(config.ExtraFeatures["stack-protection"] and not self.inline):
+            self.closeStackProtection()
+
+    def buildAllocator(self):
+
+        # handle addition features
+        feature_instructions = ""
+
+        realValue = function_allocator(
+            self.stackCounter) if self.stackCounter > 0 or not self.inline else ""
+        realValue += feature_instructions
+
+        # fill in allocator with real value
+        self.asm = self.asm.replace(
+            "/*ALLOCATOR*/", realValue)
+
     def compile(self):      # main
         if(self.current_token is None):
             return
@@ -1513,17 +1584,16 @@ class Function:
 
         self.beginRecursiveCompile()      # body
 
-        # fill in allocator with real value
-        self.asm = self.asm.replace(
-            "/*ALLOCATOR*/", function_allocator(self.stackCounter)) if self.stackCounter > 0 else self.asm.replace("/*ALLOCATOR*/", "")
+        self.buildAllocator()
 
-        # self.addline(self.destructor_text)
         # return, destructors, stack frame closing
         if(self.inline):
             self.addline(self.closinglabel)
             if(self.stackCounter):
                 self.addline("leave")
         elif not self.inline:
+
+            self.closeFeatures()
             self.createClosing()
 
         self.asm += self.suffix           # readonly memory
