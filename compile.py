@@ -22,8 +22,6 @@
 */'''
 
 
-
-
 ##############################################
 #   compile.py is the entrypoint of the compiler.
 #
@@ -41,8 +39,7 @@
 #           - run
 #           etc...
 #######################################################
-# lc 6440
-# lct 9144
+
 import time
 import traceback
 import re

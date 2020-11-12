@@ -10,7 +10,7 @@ import re
 
 #ambiguous_regex = re.compile("(?!([a-Z]|[_]|[0-9]))")
 ambiguous_regex = re.compile(r"\W", flags=re.ASCII)
-number_regex = re.compile("(?!([0-9]|[.e\-]))", flags=re.ASCII)
+number_regex = re.compile(r"(?!([0-9]|[.e\-]))", flags=re.ASCII)
 
 ##########################
 #
@@ -208,8 +208,8 @@ class Lexer:
                     # find and jump to next instance of '*/' in raw text
                     olchdx = self.chidx
                     self.chidx = self.raw.find("*/", self.chidx) + 1
-                    self.loc.ch += self.chidx-olchdx
-                    self.loc.line += self.raw.count("\n",olchdx,self.chidx)
+                    self.loc.ch += self.chidx - olchdx
+                    self.loc.line += self.raw.count("\n", olchdx, self.chidx)
                     advance()
 
                 # not a comment
@@ -218,7 +218,7 @@ class Lexer:
                     advance()
                     tokens.append(self.buildMultichar())
 
-            elif (self.ch in "()}{[],^@%~:?"):
+            elif (self.ch in "()}{[],@~:?"):
                 tokens.append(
                     Token(self.ch, self.ch, self.loc.copy(), self.loc.copy()))
                 advance()

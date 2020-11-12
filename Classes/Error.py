@@ -241,6 +241,12 @@ class InvalidExpressionComponent(Error):
         self.message = f"Invalid expression component: "
 
 
+class InvalidDestination(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Invalid assignment destination: "
+
+
 class ExpectedLValue(Error):
     def __init__(self, tok):
         self.tok = tok
@@ -287,6 +293,7 @@ class UnmatchedTernary(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unmatched ternary operator: "
+
 
 class UseOfIncompleteType(Error):
     def __init__(self, tok, t):

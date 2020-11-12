@@ -1,6 +1,7 @@
 import config
 from Classes.Token import isdigit
 from Assembly.Registers import REGISTERS
+import Classes.ExpressionComponent as EC
 import re
 
 
@@ -68,7 +69,8 @@ class Peephole:
     def parseLine(self, l, i):
 
         spo = l.strip().split(",")
-        sp = spo[0].split(" ") + spo[1].strip().split(" ") if len(spo) > 1 else spo[0].split(" ")
+        sp = spo[0].split(
+            " ") + spo[1].strip().split(" ") if len(spo) > 1 else spo[0].split(" ")
         opcount = len(sp)
         op = sp[0]
         dest = sp[1].replace(",", "").strip() if opcount > 1 else None
@@ -174,6 +176,28 @@ unsigned_comparisons = {
     ">=": "ae"
 
 }
+
+# these are assignment operators that can be
+# performed in one line (for integers specifically)
+ONELINE_ASSIGNMENTS = {
+    # format: "operator": ["integer opcode", "float opcode"]
+    "=": ["mov", "movsd"],
+    "+=": ["add", "addsd"],
+    "-=": ["sub", "subsd"],
+    "|=": ["or", "orpd"],
+    "&=": ["and", "andpd"],
+    "^=": ["xor", "xorpd"],
+}
+
+# get the assignment opcode based on an operator and a destination.
+# float assignments that include arithmetic cannot be done on one line.
+
+
+def onelineAssignment(op, dest):
+    assert isinstance(dest, EC.ExpressionComponent)
+    if(not dest.type.isflt() or op == "="):
+        return ONELINE_ASSIGNMENTS[op][dest.type.isflt()]
+    return ""
 
 # get the comparison specifier for op, with sign signed
 

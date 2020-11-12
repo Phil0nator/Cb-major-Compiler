@@ -29,7 +29,7 @@ if missing:
 ###################################
 
 parser = arg.ArgumentParser(
-    description='Compile, link, and debug .k programs.')
+    description='Compile, link, and debug Cb major programs.')
 parser.add_argument("-o", "--output", required=True,
                     help="Name of output file")
 parser.add_argument("-i", "--input", required=True, help="Name of input file")
@@ -59,8 +59,32 @@ parser.add_argument(
 parser.add_argument("-E", "--preprocess", action="store_true", default=False,
                     help="Only run the preprocessor, and output a single compile-ready file.")
 
+parser.add_argument(
+    "-U",
+    "--use",
+    action="append",
+    help="Specify the use of additional features like address sanitizing, or stack protection.")
 
 args = parser.parse_args()
+
+# extra compiler features that the user can specify
+ExtraFeatures = {
+    "stack-protection": False,
+    "address-sanitizing": False
+}
+
+
+__features__ = args.use if args.use is not None else []
+
+# ensure that all features listed exist
+for feature in __features__:
+    if(feature not in ExtraFeatures):
+        print(
+            f"{Fore.RED}{Style.BRIGHT}Cbm{Style.RESET_ALL}: Unkown commandline argument '{feature}'.")
+        exit(1)
+    ExtraFeatures[feature] = True
+
+# load arguments to variables
 __fileinput__ = args.input
 __fileoutput__ = args.output
 __tonasm__ = args.assembly
@@ -77,20 +101,23 @@ __nowarn__ = args.nowarn
 __preprocessonly__ = args.preprocess
 
 __macros__ = []
+
+# text that will sit at the top of the assembly
 __macrotext__ = ""
 
 
 __CEXTERNS__ = ""
 
-
+# optimization level
 if(args.optimize2):
     __oplevel__ = 2
 elif(args.optimize3):
     __oplevel__ = 3
 
-
+# future location for the compiler to be accessed globally
 GlobalCompiler = None
 
+# directories
 compilepath = (sys.path[0])
 callpath = os.getcwd()
 includepath = f"{compilepath}/include/" if compilepath != "" else f"include/"
@@ -124,5 +151,5 @@ def loadRawFile(path, token):
 
 raw_filedata = []
 
-
+# debugging
 LAST_RALLOC = None

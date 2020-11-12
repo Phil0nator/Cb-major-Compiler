@@ -57,7 +57,7 @@ def psizeoft(t, lvl=0):
 
 
 # bss / data reservers
-constantReservers = {"1":"DB", "2":"DW", "4":"DD", "8":"DQ"}
+constantReservers = {"1": "DB", "2": "DW", "4": "DD", "8": "DQ"}
 heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 
 

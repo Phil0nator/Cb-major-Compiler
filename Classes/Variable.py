@@ -31,7 +31,6 @@ class Variable:
         self.referenced = False         # for warnings
         self.dtok = None
 
-
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and
         # self.isptr == False

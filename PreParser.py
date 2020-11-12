@@ -267,7 +267,8 @@ class PreProcessor:
                 opens += 1
             elif(self.current_token.tok == T_CLSP):
                 opens -= 1
-            if(self.current_token.value == "\\n"): self.current_token.value = "\n"
+            if(self.current_token.value == "\\n"):
+                self.current_token.value = "\n"
             output = f"{output} {self.current_token.value}" if opens else output
             self.delmov()
         return output[1:]
@@ -314,13 +315,12 @@ class PreProcessor:
 
             inps.append(subinp.copy())
             tks = macro.get(inps, starttok)
-            
+
             self.tokens[startidx] = None
             self.tokens[startidx:self.tkidx] = tks
 
             self.tkidx = startidx
             self.update()
-
 
     def addobject(self):
         self.delmov()

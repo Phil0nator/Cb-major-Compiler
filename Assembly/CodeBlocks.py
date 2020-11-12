@@ -9,20 +9,31 @@
 ######################################################
 
 
-from Assembly.Instructions import Instruction, getComparater
-from Assembly.Registers import *
-from Classes.Variable import Variable
-import Classes.ExpressionComponent as EC
-from Assembly.TypeSizes import isfloat, psizeof, psizeoft, getConstantReserver, getHeapReserver, maskset
 import math
 
+import Classes.ExpressionComponent as EC
+from Classes.Error import *
+from Classes.Variable import Variable
+
+from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
+                                   getComparater, onelineAssignment)
+from Assembly.Registers import *
+from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
+                                maskset, psizeof, psizeoft)
 
 # bitmasks for boolean values
 ensure_boolean = "and al, 1\n"
 
-# check if a value is true, (same as ensure_boolean because 'and' will set
-# flags enough)
-check_fortrue = f"{ensure_boolean}"
+# check if a value is true
+
+
+def checkTrue(checkval: EC.ExpressionComponent):
+    if(checkval.isRegister() and not checkval.type.isflt()):
+        return f"test {setSize(checkval.accessor, checkval.type.csize())}, {setSize(checkval.accessor, checkval.type.csize())}\n"
+    elif(checkval.type.isflt()):
+        return f"movq rax, {valueOf(checkval.accessor)}\ntest rax, rax\n"
+    else:
+        return f"mov {setSize(rax, sizeOf(checkval.accessor))}, {valueOf(checkval.accessor)}\ntest {setSize(rax, sizeOf(checkval.accessor))}, {setSize(rax, sizeOf(checkval.accessor))}\n"
 
 # get calling label for function based on name mangling scheme
 
@@ -150,23 +161,21 @@ def createIntrinsicHeap(variable):
 
 
 def loadToPtr(dest, source):
-    
+
     if(isinstance(dest, EC.ExpressionComponent)):
 
         size = dest.type.csize()
         if(isinstance(dest.accessor, Variable)):
 
-            
             return loadToReg(dest.accessor, setSize(source, size))
 
         return loadToReg(
             f'{psizeoft(dest.type)}[{setSize(dest.accessor,8)}]', setSize(source, size))
 
     if(isinstance(dest, Variable)):
-        
+
         return loadToReg(dest, source)
-    
-    
+
     return loadToReg(f"[{setSize(dest,8)}]", source)
 
 # push v to the stack
@@ -543,7 +552,8 @@ def castABD(a, b, areg, breg, newbreg):
         if(a.type.csize() != b.type.csize()):
             out = maskset(newbreg, a.type.csize())
 
-            out += f"mov {newbreg}, {setSize( breg, sizeOf(newbreg) ) }\n"
+            out += loadToReg(newbreg, breg)
+
             return out
         return False
     if(a.type.isflt() and not b.type.isflt()):
@@ -564,3 +574,24 @@ def raw_regmov(a, b):
     if("xmm" in a + b):
         return f"movq {a}, {b}\n"
     return f"mov {a}, {b}\n"
+
+# get the assignment operator for a given operation, and/or if it can be done
+# in one line.
+
+
+def getOnelineAssignmentOp(a, b, op):
+    cmd = ""
+    if(op in ONELINE_ASSIGNMENTS):
+        cmd = onelineAssignment(op, a)
+    elif(op in [">>=", "<<="]):
+
+        if (a.type.isflt()):
+            throw(InvalidOperationOperands(a.token, a, b, op))
+
+        cmd = "shl"
+        if(op.startswith(">")):
+            cmd = "shr"
+        if(a.type.signed):
+            cmd = cmd[0] + 'a' + cmd[2]
+
+    return cmd, cmd != ""

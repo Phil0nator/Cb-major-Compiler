@@ -8,11 +8,11 @@ import Classes.Optimizer
 import config
 from Assembly.AVX import (avx_correctSize, avx_doToReg, avx_dropToAddress,
                           avx_loadToReg, avx_ralloc, avx_rfree)
-from Assembly.CodeBlocks import (check_fortrue, doFloatOperation,
+from Assembly.CodeBlocks import (doFloatOperation,
                                  doIntOperation, fncall, function_allocator,
                                  function_closer, functionlabel, getLogicLabel,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
-                                 movVarToReg, spop, spush, valueOf, raw_regmov)
+                                 movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue)
 from Assembly.Instructions import Instruction, Peephole
 from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat
@@ -21,10 +21,10 @@ from Classes.DType import DType
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
-from ExpressionEvaluator import (LeftSideEvaluator, RightSideEvaluator,
+from ExpressionEvaluator import (LeftSideEvaluator, RightSideEvaluator, ExpressionEvaluator,
                                  optloadRegs)
 from globals import (BOOL, CHAR, DOUBLE, INT, LONG, SHORT, VOID, TsCompatible,
-                     isIntrinsic)
+                     isIntrinsic, OPERATORS)
 from Postfixer import Postfixer
 
 # multiply all items in an array
@@ -100,6 +100,7 @@ class Function:
         # stored in .text
         self.suffix = ""
 
+        # \see Assembly.Instructions.Peephole
         self.peephole = Peephole()              # optimizer
 
         # remaining available register declarations (normal regs)
@@ -207,6 +208,24 @@ class Function:
                 v.stackarrsize = v.t.csize()
         self.variables.append(v)
 
+    # skip a open and close scope body. Example:
+    # if ( ... ) { ... }
+    #            ^-----^
+    #
+    # This is used when the compiler can determine that
+    # a control structure will never be executed, so its
+    # body is skipped.
+    #
+    def skipBody(self):
+        self.advance()
+        opens = 1
+        while(opens != 0):
+            self.advance()
+            if(self.current_token.tok == T_OPENSCOPE):
+                opens += 1
+            elif(self.current_token.tok == T_CLSSCOPE):
+                opens -= 1
+
     def addline(self, l):                           # add a line of assembly to raw
         if(config.__oplevel__ > 1):
             self.peephole.addline(l)
@@ -306,7 +325,6 @@ class Function:
             return Token(T_INT, final.type.csize(),
                          stp.start, stp.end)
 
-
     # load parameters into memory (first instructions)
 
     def loadParameters(self):
@@ -371,8 +389,11 @@ class Function:
 
         # Build instructions neccessary to evaluate the expression a for
         # example: if ( a ) { ... }
-        preInstructions = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
+
+        preInstructions, resultant = self.evaluateExpression()
+        # the resultant's register doesn't need to be reserved
+        rfree(resultant.accessor)
+
         if(self.current_token.tok == T_CLSP):
             self.advance()
 
@@ -382,41 +403,50 @@ class Function:
 
         self.continues.append(postlabel)
 
-        preInstructions += f"{check_fortrue}jz {postlabel}\n"
+        # check if the resultant will always evaluate to false
+        if(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
 
-        self.addline(preInstructions)
-        self.checkTok(T_OPENSCOPE)
+            preInstructions += f"{checkTrue(resultant)}jz {postlabel}\n"
 
-        # compile the body
-        self.beginRecursiveCompile()
-        self.addline(f"jmp {jmpafter}")
-        self.advance()
+            self.addline(preInstructions)
+            self.checkTok(T_OPENSCOPE)
 
-        # check for else
-        if(self.current_token.tok == T_KEYWORD):
+            # compile the body
+            self.beginRecursiveCompile()
+            self.addline(f"jmp {jmpafter}")
+            self.advance()
 
-            if(self.current_token.value == "else"):
+            # check for else
+            if(self.current_token.tok == T_KEYWORD):
 
-                self.addline(postlabel + ":\n")
+                if(self.current_token.value == "else"):
 
-                self.advance()
-                if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
-                    self.buildIfStatement()
-                elif(self.current_token.tok == T_OPENSCOPE):
+                    self.addline(postlabel + ":\n")
+
                     self.advance()
-                    self.beginRecursiveCompile()
+                    if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
+                        self.buildIfStatement()
+                    elif(self.current_token.tok == T_OPENSCOPE):
+                        self.advance()
+                        self.beginRecursiveCompile()
+                    else:
+                        throw(ExpectedToken(self.current_token, "{"))
+                    if(self.current_token.tok == T_CLSSCOPE):
+                        self.advance()
+                    self.addline(jmpafter + ":\n")
+
                 else:
-                    throw(ExpectedToken(self.current_token, "{"))
-                if(self.current_token.tok == T_CLSSCOPE):
-                    self.advance()
-                self.addline(jmpafter + ":\n")
-
+                    self.addline(postlabel + ":\n")
+                    self.addline(jmpafter + ":\n")
             else:
                 self.addline(postlabel + ":\n")
                 self.addline(jmpafter + ":\n")
+
         else:
-            self.addline(postlabel + ":\n")
-            self.addline(jmpafter + ":\n")
+            # the following is executed in an instance like this:
+            # if(false) { ... }
+
+            self.skipBody()
 
         self.continues.pop()
 
@@ -440,23 +470,23 @@ class Function:
 
         # build the instructions neccessary to evaluate the expression b for
         # example: for (a; b; ...){ ... }
-        getCondition = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
+        getCondition, resultant = self.evaluateExpression()
+
+        # since these instructions are out of order, the resultant does not
+        # need to remain reserved through the body of the loop.
+        rfree(resultant.accessor)
         self.checkSemi()
 
         self.addline(f"jmp {comparisonlabel}\n")
         self.addline(f"{toplabel}:")
 
-        self.addline(f"##FLPCONTENT##")
-
         # build the instructions for the assignment c for example: for (a;b;
         # c){ ... }
-        self.buildAssignment()
+        updatev, __ = self.evaluateExpression()
 
-        # use ##FLPCONTENT## marker to re-order the instructions
-        updatev = self.asm[self.asm.find("##FLPCONTENT##"):len(self.asm) - 1]
-        self.asm = self.asm.replace(updatev, "")
-        updatev = updatev.replace("##FLPCONTENT##", "")
+        # The resultant can be freed here because the instructions are not in
+        # order yet.
+        rfree(__.accessor)
 
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
@@ -469,7 +499,15 @@ class Function:
         self.addline(updatev)
         self.addline(f"{comparisonlabel}:\n")
         self.addline(getCondition)
-        self.addline(f"{check_fortrue}\njnz {toplabel}\n")
+
+        # check for constexpr
+        if(not resultant.isconstint()):
+            self.addline(f"{checkTrue(resultant)}\njnz {toplabel}\n")
+        elif(resultant.accessor != 0):
+            self.addline(f"jmp {toplabel}\n")
+        else:
+            pass
+
         self.addline(f"{endlabel}:")
         self.advance()
 
@@ -492,19 +530,36 @@ class Function:
 
         # build instructions to evaluate expression a for example: while( a ){
         # ... }
-        cmpinst = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(rax, BOOL.copy(), token=self.current_token))
-        cmpinst += f"{check_fortrue}jnz {startlabel}\n"
-        self.advance()
-        self.checkTok(T_OPENSCOPE)
+        cmpinst, resultant = self.evaluateExpression()
 
-        # build instructions for the body
-        self.beginRecursiveCompile()
+        # the value of resultant does not need to be reserved
+        rfree(resultant.accessor)
+
+        # if the expression inside the while loop header always evaluates to False,
+        # the body of the loop is not compiled.
+        dontGetBody = False
+
+        if(not resultant.isconstint()):
+            cmpinst += f"{checkTrue(resultant)}jnz {startlabel}\n"
+        elif(resultant.accessor != 0):
+            cmpinst += f"jmp {startlabel}\n"
+        else:
+            dontGetBody = True
+
+        if(dontGetBody):
+            self.skipBody()
+            cmpinst = ""
+
+        else:
+            self.advance()
+            self.checkTok(T_OPENSCOPE)
+            # build instructions for the body
+            self.beginRecursiveCompile()
+
         self.addline(f"{comparisonlabel}:")
         self.addline(cmpinst)
         self.addline(f"{endlabel}:")
         self.advance()
-
         # clean up var
         self.continues.pop()
         self.breaks.pop()
@@ -650,11 +705,10 @@ class Function:
         self.breaks.append(endlabel)
 
         # evaluate the lvalue to compare
-        cmpvalue = ralloc(o.isflt(), o.csize())
-        loadinstr = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(cmpvalue, o, token=self.current_token))
+        loadinstr, cmpvalue = self.evaluateExpression()
+
         # ensure register hit
-        reralloc(cmpvalue)
+        reralloc(cmpvalue.accessor)
 
         # mark position for topcode
         topmarker = f"##SWITCHTOP##{len(self.asm)}"
@@ -699,7 +753,7 @@ class Function:
 
         # make comparisons
         for logic in logictable:
-            topinstr += f"cmp {cmpvalue}, {logic[0]}\nje {logic[1]}\n"
+            topinstr += f"cmp {valueOf(cmpvalue.accessor)}, {logic[0]}\nje {logic[1]}\n"
 
         # else: jmp to end
         topinstr += f"jmp {endlabel}\n"
@@ -717,7 +771,7 @@ class Function:
         self.advance()
         self.breaks.pop()
 
-        rfree(cmpvalue)
+        rfree(cmpvalue.accessor)
 
     def buildRegdecl(self):
         if(self.regdeclremain_norm < 0 or self.regdeclremain_sse < 0):
@@ -759,9 +813,16 @@ class Function:
             throw(ExpectedToken(self.tokens[self.ctidx - 1], "while"))
 
         # compile while comparison instructions
-        footerinst = self.evaluateRightsideExpression(
-            EC.ExpressionComponent("rax", LONG.copy()))
-        footerinst = f"{footerinst}{check_fortrue}jnz {startlabel}\n"
+        footerinst, resultant = self.evaluateExpression()
+        rfree(resultant.accessor)
+        if(not resultant.isconstint()):
+
+            footerinst = f"{footerinst}{checkTrue(resultant)}jnz {startlabel}\n"
+        else:
+            if(resultant.accessor == 0):
+                footerinst = ""
+            else:
+                footerinst = f"jmp {startlabel}\n"
 
         # close up
         self.addline(footerinst)
@@ -1031,7 +1092,7 @@ class Function:
 
         # The tokens: ; , = += -= *= /= etc... will mark the end of an
         # expression
-        while opens > 0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_OPENSCOPE and self.current_token.tok != T_COMMA and self.current_token.tok not in SETTERS:
+        while opens > 0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_OPENSCOPE and self.current_token.tok != T_COMMA:
 
             # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):
@@ -1044,8 +1105,12 @@ class Function:
 
             # since function calls have the highest precedence in an expression, they can be called
             #   before the rest of the expression is evaluated.
-            #   Their return values will be pushed tot he stack, and the ExpressionEvaluator will be able to pop
+            #   Their return values will be pushed to the stack, and the ExpressionEvaluator will be able to pop
             #   these off later into the ralloc'd scratch registers.
+            #
+            # If the push and pop operations are adjacent, the peephole optimizer will replace them with a
+            # faster mov operation, but it can be noted that with a good cache hit a push/pop will not be
+            # too much slower than a mov.
             elif(self.current_token.tok == T_ID):
                 if(self.tokens[self.ctidx + 1].tok == "("):
                     wasfunc = True
@@ -1053,9 +1118,10 @@ class Function:
                     if(self.current_token.value in predefs):
                         exprtokens.append(self.buildPredef())
                         # ensure correct closing
-                        exprtokens.append(self.current_token) if self.current_token.tok == T_CLSP else None
+                        exprtokens.append(
+                            self.current_token) if self.current_token.tok == T_CLSP else None
                         continue
-                    
+
                     start = self.current_token.start.copy()
                     fninstr, fn = self.buildFunctionCall()
 
@@ -1148,6 +1214,34 @@ class Function:
         ev = LeftSideEvaluator(self)
         ins, output = ev.evaluate(pf.createPostfix())
         instructions += ins
+
+        return instructions, output
+
+    def evaluateExpression(self):
+        instructions = ""
+        comment = ""
+        exprtokens = []
+        # basically the same as rightside evaluator, but uses LeftSideEvaluator class for the actual
+        #   instruction building
+
+        exprtokens, instructions = self.buildExpressionComponents()
+
+        comment = exprtokens
+        pf = Postfixer(exprtokens, self)
+
+        if(config.DO_DEBUG):
+            instructions += f";{comment}\n"
+
+        ev = ExpressionEvaluator(self)
+        ins, output = ev.evaluatePostfix(
+            pf.createPostfix(), LeftSideEvaluator(self))
+        instructions += ins
+
+        # for general expressions, the 'pop' exception needs to be cought:
+        if(isinstance(output.accessor, str) and output.accessor == "pop"):
+            newout = ralloc(output.type.isflt())
+            output.accessor = newout
+            instructions += spop(output)
 
         return instructions, output
 
@@ -1303,7 +1397,7 @@ class Function:
         self.checkSemi()
 
     # build function call not in an expression
-
+    @DeprecationWarning
     def buildBlankfnCall(self):
         # \see self.buildFunctionCall()
         instructions, fn = self.buildFunctionCall()
@@ -1313,69 +1407,17 @@ class Function:
 
         self.addline(instructions)
 
-    def buildAssignment(self):                  # assign a variable
+    # evaluate an ambiguous expression.
+    # \see ExpressionEvaluator
+    def buildAssignment(self):
 
-        inst = ""
-
-        # evaluate the destination
-        insters, dest = self.evaluateLeftsideExpression()
-        inst += (insters)
-        # check for early eol before rightside
-        if(self.current_token.tok not in SETTERS):
-
-            if(self.current_token.tok == T_ENDL):
-                self.advance()
-            if(dest.accessor == "pop"):
-                inst += ("pop rax\n")
-            self.addline(inst)
-            rfree(dest.accessor)
-            return
-
-        setter = self.current_token
+        # buildAssignment is now just a wrapper for general expression evaluation
+        # because assignment operators are now included in the normal expression
+        # evaluation.
+        insters, out = self.evaluateExpression()
+        self.addline(insters)
         self.advance()
-        # register to hold assignment value
-        value = ralloc(dest.type.isflt(), dest.type.csize())
-
-        # evaluate assignment value into 'value' register
-        ev = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(value, dest.type, token=dest.token))
-
-        inst += (inst)
-        inst += (ev)
-
-        if(setter.tok == T_EQUALS):  # normal
-            
-            inst += (loadToPtr(dest, value))
-
-        # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
-        else:
-            op = setter.tok[:-1]
-            x = ralloc(dest.type.isflt(), dest.type.csize())
-            areg = ralloc(dest.type.isflt(), dest.type.csize())
-
-            inst += (loadToReg(areg, dest.accessor))
-
-            if(dest.type.isflt()):
-                inst += (doFloatOperation(areg, value, op))
-            else:
-                inst += (
-                    doIntOperation(
-                        setSize(areg, dest.type.csize()),
-                        setSize(value, dest.type.csize()),
-                        op,
-                        dest.type.signed))
-
-            inst += (loadToPtr(dest.accessor, areg))
-
-            rfree(areg)
-            rfree(x)
-
-        rfree(value)
-        rfree(dest.accessor)
-        if(self.current_token.tok == T_ENDL):
-            self.advance()
-
-        self.addline(inst)
+        rfree(out.accessor)
 
     def buildLabel(self):
         name = self.current_token.value
@@ -1435,7 +1477,7 @@ class Function:
                 # ID initiated statement
                 self.buildIDStatement()
 
-            elif(self.current_token.tok in [T_DEREF, T_OPENP]):
+            elif(self.current_token.tok in OPERATORS):
                 self.buildAssignment()
 
             else:

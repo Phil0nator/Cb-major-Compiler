@@ -65,7 +65,7 @@ class DType:
 
     def bottom(self):
         out = self.copy()
-        out.ptrdepth=0
+        out.ptrdepth = 0
         return out
 
     def up(self):
@@ -115,14 +115,13 @@ type_precedence = {
 def determinePrecedence(a, b, fn):
     # preq : must have typematch
     if(a.name not in type_precedence) or (b.name not in type_precedence):
-        if(  a.ptrdepth+b.ptrdepth == 0):
+        if(a.ptrdepth + b.ptrdepth == 0):
             throw(TypeMismatch(fn.current_token, a, b))
 
         if(a.ptrdepth > 0 and b.ptrdepth == 0 and not b.isflt()):
-            return a,b
+            return a, b
         else:
-            return b,a
-
+            return b, a
 
     if(type_precedence[a.name] > type_precedence[b.name] and a.ptrdepth == b.ptrdepth):
 
