@@ -9,24 +9,25 @@
 ######################################################
 
 
-from Assembly.Instructions import Instruction, getComparater, ONELINE_ASSIGNMENTS, onelineAssignment
-from Classes.Error import *
-from Assembly.Registers import *
-from Classes.Variable import Variable
-import Classes.ExpressionComponent as EC
-from Assembly.TypeSizes import isfloat, psizeof, psizeoft, getConstantReserver, getHeapReserver, maskset
 import math
 
+import Classes.ExpressionComponent as EC
+from Classes.Error import *
+from Classes.Variable import Variable
+
+from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
+                                   getComparater, onelineAssignment)
+from Assembly.Registers import *
+from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
+                                maskset, psizeof, psizeoft)
 
 # bitmasks for boolean values
 ensure_boolean = "and al, 1\n"
 
-# check if a value is true, (same as ensure_boolean because 'and' will set
-# flags enough)
-check_fortrue = f"{ensure_boolean}"
+# check if a value is true
 
 
-def checkTrue(checkval):
+def checkTrue(checkval: EC.ExpressionComponent):
     if(checkval.isRegister() and not checkval.type.isflt()):
         return f"test {setSize(checkval.accessor, checkval.type.csize())}, {setSize(checkval.accessor, checkval.type.csize())}\n"
     elif(checkval.type.isflt()):
@@ -573,6 +574,9 @@ def raw_regmov(a, b):
     if("xmm" in a + b):
         return f"movq {a}, {b}\n"
     return f"mov {a}, {b}\n"
+
+# get the assignment operator for a given operation, and/or if it can be done
+# in one line.
 
 
 def getOnelineAssignmentOp(a, b, op):

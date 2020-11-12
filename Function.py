@@ -8,7 +8,7 @@ import Classes.Optimizer
 import config
 from Assembly.AVX import (avx_correctSize, avx_doToReg, avx_dropToAddress,
                           avx_loadToReg, avx_ralloc, avx_rfree)
-from Assembly.CodeBlocks import (check_fortrue, doFloatOperation,
+from Assembly.CodeBlocks import (doFloatOperation,
                                  doIntOperation, fncall, function_allocator,
                                  function_closer, functionlabel, getLogicLabel,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
@@ -24,7 +24,7 @@ from Classes.Variable import *
 from ExpressionEvaluator import (LeftSideEvaluator, RightSideEvaluator, ExpressionEvaluator,
                                  optloadRegs)
 from globals import (BOOL, CHAR, DOUBLE, INT, LONG, SHORT, VOID, TsCompatible,
-                     isIntrinsic)
+                     isIntrinsic, OPERATORS)
 from Postfixer import Postfixer
 
 # multiply all items in an array
@@ -100,6 +100,7 @@ class Function:
         # stored in .text
         self.suffix = ""
 
+        # \see Assembly.Instructions.Peephole
         self.peephole = Peephole()              # optimizer
 
         # remaining available register declarations (normal regs)
@@ -207,6 +208,14 @@ class Function:
                 v.stackarrsize = v.t.csize()
         self.variables.append(v)
 
+    # skip a open and close scope body. Example:
+    # if ( ... ) { ... }
+    #            ^-----^
+    #
+    # This is used when the compiler can determine that
+    # a control structure will never be executed, so its
+    # body is skipped.
+    #
     def skipBody(self):
         self.advance()
         opens = 1
@@ -1394,74 +1403,17 @@ class Function:
 
         self.addline(instructions)
 
-    def buildAssignment(self):                  # assign a variable
+    # evaluate an ambiguous expression.
+    # \see ExpressionEvaluator
+    def buildAssignment(self):
+
+        # buildAssignment is now just a wrapper for general expression evaluation
+        # because assignment operators are now included in the normal expression
+        # evaluation.
         insters, out = self.evaluateExpression()
         self.addline(insters)
         self.advance()
         rfree(out.accessor)
-        '''
-        inst = ""
-
-        # evaluate the destination
-        insters, dest = self.evaluateLeftsideExpression()
-        inst += (insters)
-        # check for early eol before rightside
-        if(self.current_token.tok not in SETTERS):
-
-            if(self.current_token.tok == T_ENDL):
-                self.advance()
-            if(dest.accessor == "pop"):
-                inst += ("pop rax\n")
-            self.addline(inst)
-            rfree(dest.accessor)
-            return
-
-        setter = self.current_token
-        self.advance()
-        # register to hold assignment value
-        value = ralloc(dest.type.isflt(), dest.type.csize())
-
-        # evaluate assignment value into 'value' register
-        ev = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(value, dest.type, token=dest.token))
-
-        inst += (inst)
-        inst += (ev)
-
-        if(setter.tok == T_EQUALS):  # normal
-
-            inst += (loadToPtr(dest, value))
-
-        # there is a setter shortcut of some kind. EX: +=, -=, /= etc...
-        else:
-            op = setter.tok[:-1]
-            x = ralloc(dest.type.isflt(), dest.type.csize())
-            areg = ralloc(dest.type.isflt(), dest.type.csize())
-
-            inst += (loadToReg(areg, dest.accessor))
-
-            if(dest.type.isflt()):
-                inst += (doFloatOperation(areg, value, op))
-            else:
-                inst += (
-                    doIntOperation(
-                        setSize(areg, dest.type.csize()),
-                        setSize(value, dest.type.csize()),
-                        op,
-                        dest.type.signed))
-
-            inst += (loadToPtr(dest.accessor, areg))
-
-            rfree(areg)
-            rfree(x)
-
-        rfree(value)
-        rfree(dest.accessor)
-        if(self.current_token.tok == T_ENDL):
-            self.advance()
-
-        self.addline(inst)
-        '''
 
     def buildLabel(self):
         name = self.current_token.value
@@ -1521,7 +1473,7 @@ class Function:
                 # ID initiated statement
                 self.buildIDStatement()
 
-            elif(self.current_token.tok in [T_DEREF, T_OPENP]):
+            elif(self.current_token.tok in OPERATORS):
                 self.buildAssignment()
 
             else:

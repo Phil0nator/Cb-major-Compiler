@@ -177,7 +177,10 @@ unsigned_comparisons = {
 
 }
 
+# these are assignment operators that can be
+# performed in one line (for integers specifically)
 ONELINE_ASSIGNMENTS = {
+    # format: "operator": ["integer opcode", "float opcode"]
     "=": ["mov", "movsd"],
     "+=": ["add", "addsd"],
     "-=": ["sub", "subsd"],
@@ -185,6 +188,9 @@ ONELINE_ASSIGNMENTS = {
     "&=": ["and", "andpd"],
     "^=": ["xor", "xorpd"],
 }
+
+# get the assignment opcode based on an operator and a destination.
+# float assignments that include arithmetic cannot be done on one line.
 
 
 def onelineAssignment(op, dest):

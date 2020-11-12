@@ -1,21 +1,20 @@
 # used to store out-of-order instructions for ternary operator
-from Classes.Constexpr import ternarystack
+import Classes.ExpressionComponent as EC
+from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
+                                 getOnelineAssignmentOp, loadToReg, maskset,
+                                 shiftInt, shiftmul, valueOf)
+from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
+                                   signed_comparisons)
+from Assembly.Registers import *
+from Assembly.Registers import ralloc, rfree, rfreeAll
+from Assembly.TypeSizes import psizeof, psizeoft
+from Classes.Constexpr import calculateConstant, ternarystack
+from Classes.DType import *
 from Classes.Error import *
 from Classes.Token import *
-from Classes.DType import *
-import Classes.ExpressionComponent as EC
-from Assembly.Registers import ralloc, rfree, rfreeAll
 from Classes.Variable import Variable
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, LONG, SHORT, DOUBLE, operatorISO, typematch, canShiftmul
-from Assembly.CodeBlocks import loadToReg, castABD, doOperation
-from Assembly.CodeBlocks import valueOf, shiftInt, maskset
-from Assembly.CodeBlocks import shiftmul, getComparater, boolmath, getOnelineAssignmentOp
-
-from Assembly.Instructions import signed_comparisons, Instruction, ONELINE_ASSIGNMENTS
-from Assembly.Registers import *
-
-from Classes.Constexpr import calculateConstant
-from Assembly.TypeSizes import psizeof, psizeoft
+from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID,
+                     canShiftmul, operatorISO, typematch)
 
 #############################
 # optloadRegs is used to load
@@ -95,6 +94,7 @@ def bringdown_memlocs(a, b):
 The ExpressionEvaluator abstract class contains functions shared by
     Leftside and Rightside evaluators. This is mostly functions for
     semi-constexpr optimizations (int operations with one constant and one var).
+    Assignments are also layed out in depth in the normal ExpressionEvaluator class.
 '''
 
 
@@ -103,84 +103,112 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
+    # Any assignments will be handled in this function.
+    # This includes operators like '+=', '-=', etc...
+
     def doAssignment(self, a, b, op, evaluator):
 
         instrs = ""
+
+        # get the necessary opcode for the operation,
+        # and determine if it can be done in one line.
+
         cmd, oneline = getOnelineAssignmentOp(a, b, op)
+
+        # is the destination a variable...
         vardest = isinstance(a.accessor, Variable)
-        constright = b.isconstint()
+        constright = b.isconstint()  # is the right side of the equation constant
+
+        # invalid leftside
         if(a.isRegister() and not a.memory_location):
             throw(InvalidDestination(a.token))
 
+        # if the equation can be done in one 'line'
         if(oneline):
 
             instrs = bringdown_memloc(b)
 
+            # if the destination is a variable, and the rightside is a constant
             if(vardest and constright):
 
                 instrs += f"{cmd} {valueOf(a.accessor)}, {valueOf(b.accessor)}\n"
-
+            # if the destination is a variable, and the rightside is not a
+            # constant
             elif(vardest):
 
+                # check if implicit casting is needed
                 castlock = ralloc(a.type.isflt())
                 cst = castABD(a, b, None, b.accessor, castlock)
 
+                # no casting
                 if(cst == False):
 
                     breg, _, __, linstrs = optloadRegs(
                         b, None, op, LONG.copy())
                     instrs += linstrs
                     rfree(castlock)
-
+                # casting
                 else:
                     rfree(b.accessor)
                     breg = castlock
                     instrs += cst
-
+                # perform operation
                 instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
                 rfree(breg)
-
+            # the destination is a pointer held in a register
             else:
+                # the rightside is a constant
                 if(constright):
                     instrs += f"{cmd} {psizeoft(a.type)}[{setSize(a.accessor,8)}], {valueOf(b.accessor)}\n"
+                # the rightside is not a constant
                 else:
 
+                    # check if implicit casting is needed
                     castlock = ralloc(a.type.isflt())
                     cst = castABD(a, b, None, b.accessor, castlock)
 
+                    # casting
                     if(cst == False):
 
                         breg, _, __, linstrs = optloadRegs(
                             b, None, op, LONG.copy())
                         instrs += linstrs
                         rfree(castlock)
-
+                    # no casting
                     else:
                         rfree(b.accessor)
                         breg = castlock
                         instrs += cst
-
+                    # perform operation
                     instrs += f"{cmd} [{setSize(a.accessor,8)}], {setSize(breg, a.type.csize())}\n"
                     rfree(breg)
+        # the operation cannot be done in one 'line'
         else:
 
+            # the destination is a variable
             if(vardest):
-
+                # do calculation with implicit cast, and store result in b
                 instrs, _, b = evaluator.performCastAndOperation(
                     a, b, op[:-1], VOID.copy())
-
+            # the destination is a pointer held by a register
             else:
+                # if a is not a register, the destination must be invalid (a
+                # constant probably)
                 if(not a.isRegister()):
                     throw(InvalidDestination(a.token))
 
                 avalreg, _, __, loadinst = optloadRegs(
                     a, None, op, LONG.copy())
                 instrs += loadinst
-
+                # do calculation with implicit cast, and store result in b
                 opinstr, _, b = evaluator.performCastAndOperation(
                     EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1], VOID.copy())
                 instrs += opinstr
 
+            # at this point any arithmatic has been done, and the result
+            # is stored in b. So, a recursive call the self.doAssignment with the same
+            # a argument, and the new calculated b argument, and the plain "=" argument
+            # should correctly move the new value into place.
             movinstr, a.type, b = self.doAssignment(a, b, "=", evaluator)
             instrs += movinstr
 
@@ -525,7 +553,10 @@ class ExpressionEvaluator:
 ############################################
 #
 #   The RightSideEvaluator is used to evaluate expressions
-#       for a final value (as opposed to an address).
+#       for a final value (as opposed to an address). The RightSizeEvaluator
+#       is specially designed for specific expressions. The LeftsizeEvaluator
+#       is the default for general expressions.
+#
 #
 #   For example:
 #       int a = 210 / x + y;
@@ -958,6 +989,11 @@ class RightSideEvaluator(ExpressionEvaluator):
 #       as a postfix of Expression Components:
 #
 #   [ array, 0, [, chars, 36, [, -> ]
+#
+#
+#   LeftSideEvaluator is also the default for general expressions
+#   that will include a SETTER ("=", "+=", etc...) operator.
+#   It is specialized for that purpose.
 #
 ###############################################
 class LeftSideEvaluator(ExpressionEvaluator):
