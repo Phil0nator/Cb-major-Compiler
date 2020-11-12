@@ -557,6 +557,8 @@ class ExpressionEvaluator:
 #       is specially designed for specific expressions. The LeftsizeEvaluator
 #       is the default for general expressions.
 #
+#   In most situations a general ExpressionEvaluator is fine, but a RightSideEvaluator
+#       can also be used in special cases.
 #
 #   For example:
 #       int a = 210 / x + y;

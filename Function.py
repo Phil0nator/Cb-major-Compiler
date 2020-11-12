@@ -1105,8 +1105,12 @@ class Function:
 
             # since function calls have the highest precedence in an expression, they can be called
             #   before the rest of the expression is evaluated.
-            #   Their return values will be pushed tot he stack, and the ExpressionEvaluator will be able to pop
+            #   Their return values will be pushed to the stack, and the ExpressionEvaluator will be able to pop
             #   these off later into the ralloc'd scratch registers.
+            #
+            # If the push and pop operations are adjacent, the peephole optimizer will replace them with a
+            # faster mov operation, but it can be noted that with a good cache hit a push/pop will not be
+            # too much slower than a mov.
             elif(self.current_token.tok == T_ID):
                 if(self.tokens[self.ctidx + 1].tok == "("):
                     wasfunc = True
@@ -1393,7 +1397,7 @@ class Function:
         self.checkSemi()
 
     # build function call not in an expression
-
+    @DeprecationWarning
     def buildBlankfnCall(self):
         # \see self.buildFunctionCall()
         instructions, fn = self.buildFunctionCall()
