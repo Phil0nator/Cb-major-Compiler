@@ -32,7 +32,7 @@ class ExpressionComponent:
         return self.accessor == "pop"
 
     def isconstint(self):  # bool
-        return self.constint != False
+        return isinstance(self.accessor, int)
 
     def __repr__(self):  # pretty print
         if(not self.isoperation):

@@ -19,7 +19,7 @@ from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    getComparater, onelineAssignment)
 from Assembly.Registers import *
 from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
-                                maskset, psizeof, psizeoft)
+                                maskset, psizeof, psizeoft, dwordImmediate)
 
 # bitmasks for boolean values
 ensure_boolean = "and al, 1\n"
@@ -180,7 +180,6 @@ def loadToPtr(dest, source):
     if(isinstance(dest, Variable)):
 
         return loadToReg(dest, source)
-
     return loadToReg(f"[{setSize(dest,8)}]", source)
 
 # push v to the stack
@@ -251,6 +250,7 @@ def movVarToReg(reg, var):
     else:
         if isfloat(reg):
             return f"cvtsi2sd {reg}, {valueOf(var)}\n"
+        
         else:
             return f"mov {reg},  {valueOf(var)}\n"
 #
@@ -305,7 +305,7 @@ def loadToReg(reg, value):
     if(isinstance(reg, str)):
         if("xmm" in reg):
 
-            if(isinstance(value, Variable) and value.t.isflt()):
+            if(isinstance(value, Variable) and value.t.isflt()) and (isfloat(reg)):
                 return f"movsd {reg}, {valueOf(value)}\n"
             elif(isinstance(value, str) and "xmm" in value):
                 return f"movsd {reg}, {value}\n"
@@ -316,6 +316,7 @@ def loadToReg(reg, value):
             return f"lea {setSize(reg,8)}, [rbp-{value.offset+value.stackarrsize}] \n"
 
         if(isfloat(value)):
+
             return f"movq {reg}, {valueOf(value)}\n"
 
         if(reg in normal_size):
@@ -323,16 +324,26 @@ def loadToReg(reg, value):
                 reg = setSize(reg, value.t.csize())
             if(isinstance(value, str) and value in normal_size):
                 reg = setSize(reg, sizeOf(value))
+        
+        if(isinstance(value, int)):
+            if(not dwordImmediate(value) and isinstance(reg, Variable)):
+                return f"mov rax, {valueOf(value)}\nmov {valueOf(reg)}, rax\n"
+        
         return f"mov {reg}, {valueOf(value)}\n"
+
 
     elif(isinstance(reg, Variable)):
 
         if(reg.t.isflt()):
-
-            return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+            if(isfloat(value)):            
+                return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+            else:
+                return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
         if (isinstance(value, str) and value in normal_size):
             value = setSize(value, reg.t.csize())
+        if(isinstance(value, int) and not dwordImmediate(value) and reg.t.csize() == 8):
+            return f"mov rax, {valueOf(value)}\nmov {valueOf(reg)}, rax\n"
 
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 

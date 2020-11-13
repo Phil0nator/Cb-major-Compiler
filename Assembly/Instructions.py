@@ -31,8 +31,7 @@ class Line:
         self.idx = idx
 
     def hasAddr(self):
-        return '[' in self.dest + \
-            (self.source if self.source is not None else '')
+        return '[' in self.dest + str(self.source)
 
     def contains(self, c):
         return c in self.__repr__()
@@ -131,7 +130,7 @@ class Peephole:
                 # redundant mov's
                 if (line.op in MOV_INST and prev.op == line.op):
                     # if same source  ->  destination, but both not addresses
-                    if(line.source == prev.dest and not prev.hasAddr()):
+                    if(line.source == prev.dest and not prev.hasAddr() and not line.hasAddr()):
                         splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
 
                         #optims +=1
@@ -213,7 +212,7 @@ def floatTo64h(flt):
     if isinstance(flt, float):
 
         o =  bytearray(struct.pack("!d", flt))
-        return "0x" + o.hex()
+        return int("0x" + o.hex(), 16)
     return floatTo64h(float(flt))
 
 # format an instruction

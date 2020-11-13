@@ -22,4 +22,4 @@ def linkonly(i, o):
 
 
 def assemble(o):
-    return f"nasm -felf64 -g {o}.asm -w-number-overflow"
+    return f"nasm -felf64 -g {o}.asm "

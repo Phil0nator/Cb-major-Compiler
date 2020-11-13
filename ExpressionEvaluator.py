@@ -7,7 +7,7 @@ from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
 from Assembly.Registers import ralloc, rfree, rfreeAll
-from Assembly.TypeSizes import psizeof, psizeoft
+from Assembly.TypeSizes import psizeof, psizeoft, dwordImmediate
 from Classes.Constexpr import calculateConstant, ternarystack
 from Classes.DType import *
 from Classes.Error import *
@@ -117,6 +117,13 @@ class ExpressionEvaluator:
 
         # is the destination a variable...
         vardest = isinstance(a.accessor, Variable)
+
+
+        if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)):
+            b.accessor, _, __, qwordinstr = optloadRegs(b, None, "", VOID.copy())
+            b.constint = False
+            instrs+=qwordinstr
+
         constright = b.isconstint()  # is the right side of the equation constant
 
         # invalid leftside
@@ -126,11 +133,10 @@ class ExpressionEvaluator:
         # if the equation can be done in one 'line'
         if(oneline):
 
-            instrs = bringdown_memloc(b)
+            instrs += bringdown_memloc(b)
 
             # if the destination is a variable, and the rightside is a constant
             if(vardest and constright):
-
                 instrs += f"{cmd} {valueOf(a.accessor)}, {valueOf(b.accessor)}\n"
             # if the destination is a variable, and the rightside is not a
             # constant

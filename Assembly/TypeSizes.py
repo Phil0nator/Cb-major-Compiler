@@ -85,9 +85,13 @@ def maskset(reg, size):
     if(size == 8):
         return ""
     if(size == 4):
-        return f"and {reg}, 0xffffffff\n"
+        return f"and {reg}, 0x7fffffff\n"
     if(size == 2):
         return f"and {reg}, 0xffff\n"
     if(size == 1):
         return f"and {reg}, 0xff\n"
     return ""
+
+
+def dwordImmediate(number):
+    return number < 4294967295 if isinstance(number, int) else 0
