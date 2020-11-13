@@ -160,4 +160,14 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
  */
 #define bintern(a) (((a)*2)-1)
 
+
+
+inline void* alloca(size_t size){
+    __asm{"
+    sub rsp, rdi
+    mov rax, rsp
+    "}
+}
+
+
 #endif

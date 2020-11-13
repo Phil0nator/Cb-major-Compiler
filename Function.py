@@ -1525,13 +1525,11 @@ class Function:
         protector.referenced = True
         feature_instructions = loadToReg(
             protector, str(self.stackProtection_value))
-
         return feature_instructions
 
     # perform closing check of the stack
 
     def closeStackProtection(self):
-
         # an error message is reserved in the .text read only section:
         errmsg = f"Stack protection failed in function '{self.getCallingLabel()}'."
         errmsgl = len(errmsg)

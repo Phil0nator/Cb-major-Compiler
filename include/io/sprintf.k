@@ -75,7 +75,6 @@ function long toStr(long val, char* buffer, bool signed, short base){
         len+=1;
 
     }
-
     for(int i = len;i>0;i--){
         buffer[i]=tmpbuf[len-i];
     }
