@@ -14,10 +14,10 @@ from Assembly.CodeBlocks import (doFloatOperation,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
                                  movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue,
                                  allocate_readonly)
-from Assembly.Instructions import Instruction, Peephole
+from Assembly.Instructions import Instruction, Peephole, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat
-from Classes.Constexpr import determineConstexpr
+from Classes.Constexpr import determineConstexpr, buildConstantSet
 from Classes.DType import DType
 from Classes.Error import *
 from Classes.Token import *
@@ -1317,46 +1317,6 @@ class Function:
                     print("Non-Variable member error")
                     exit(1)
 
-            # if the declaration includes a constructor, call it with the
-            # correct parameters
-            if(self.current_token.tok == T_OPENP):
-                # constructor
-                self.advance()
-                fnt = var.t.constructor
-                if(fnt is None):
-                    throw(UnkownFunction(self.current_token,
-                                         f"{var.t.name}.constructor", [None]))
-
-                # similar steps as for function calls, just taking first parameter as (DType* this)
-                # \see self.buildFunctionCall
-
-                call_label = fncall(fnt)
-                self.addline(
-                    Instruction(
-                        "lea", [
-                            rdi, f"[rbp-{var.offset+var.t.csize()}]"]))
-                normsused = 1
-                sseused = 0
-                for p in fnt.parameters[1:]:
-                    if(p.t.isflt()):
-                        self.addline(self.evaluateRightsideExpression(
-                            EC.ExpressionComponent(sse_parameter_registers[sseused], p.t.copy())))
-
-                        sseused += 1
-                    else:
-                        self.addline(self.evaluateRightsideExpression(
-                            EC.ExpressionComponent(norm_parameter_registers[normsused], p.t.copy())))
-                        normsused += 1
-                    self.advance()
-                self.ctidx -= 2
-                self.advance()
-                self.checkTok(T_CLSP)
-
-                self.addline(call_label)
-                self.checkSemi()
-                self.destructor_text += self.createDestructor(var)
-                return
-
         sizes = [1]
         isarr = False
 
@@ -1370,22 +1330,26 @@ class Function:
         while self.current_token.tok == "[":
             isarr = True
             self.advance()
-            if self.current_token.tok != T_INT:
-                throw(ExpectedToken(self.current_token, "constexpr"))
-            size = self.current_token.value
-            sizes.append(size)
+            exprtokens = [self.current_token]
             self.advance()
+            while self.current_token.tok != T_CLSIDX:
+                exprtokens.append(self.current_token)
+                self.advance()
+
+            size = determineConstexpr(False, exprtokens,self)
+            if isinstance(size.accessor, Variable):
+                throw(ExpectedToken(self.current_token, "constexpr"))
+            sizes.append(size.accessor)
             self.checkTok(T_CLSIDX)
 
         if(isarr):
-            totalsize = product(sizes) * t.size(0)
+            totalsize = product(sizes) * t.csize()
             var.stackarrsize = totalsize
             var.isStackarr = True
             var.stacksizes = sizes
             var.t.stackarr = True
             self.stackCounter += totalsize
-            if(self.current_token.tok != T_ENDL):
-                throw(ExpectedToken(self.current_token, ";"))
+            
 
         # check for same-line assignment, or not
         if(self.current_token.tok == T_ENDL):
@@ -1397,8 +1361,62 @@ class Function:
 
         self.advance()
 
-        self.addline(self.evaluateRightsideExpression(
-            EC.ExpressionComponent(var, var.t, token=self.current_token)))
+        # normal inline assignment
+        if(not isarr):
+
+            self.addline(self.evaluateRightsideExpression(
+                EC.ExpressionComponent(var, var.t, token=self.current_token)))
+        
+        # array assignment
+        else:
+
+            # itervar is used to iterate over the contents of the array
+            # in order to place values in indexes.
+            itervar = Variable(var.t,var.name,isStackarr=True)
+            itervar.offset = var.offset
+            itervar.stackarrsize = var.stackarrsize
+
+            # set literal is used
+            if(self.current_token.tok == T_OPENSCOPE):
+                
+                # find the bounds of the literal
+                startok = self.ctidx
+                self.skipBody()
+                endtok = self.ctidx+1
+
+                # load to a list
+                setval = buildConstantSet(var.t.isflt(),self.tokens[startok:endtok],self)
+                
+                # check for size mismatch
+                if(len(setval.accessor) != sizes[1]):
+                    throw(SetLiteralSizeMismatch(self.tokens[startok]))
+                
+                
+                # load values
+                self.advance()
+                for value in setval.accessor:
+                    if isinstance(value.accessor, int):
+                        if(var.t.isfltarr()):
+                            self.addline(loadToReg(itervar, floatTo64h(value.accessor)))
+                        else:
+                            self.addline(loadToReg(itervar, value.accessor))
+                    
+                    else:
+                        self.addline(loadToReg(itervar, floatTo64h(value.accessor.initializer)))
+                    itervar.offset -= var.t.csize()
+
+            # single value to fill accross
+            else:
+
+                # evaluate the new value
+                evaluation, value = self.evaluateExpression()
+                self.addline(evaluation)
+                
+                # load value into each index of the array
+                for i in range(sizes[1]):
+                    self.addline( loadToReg(itervar, value.accessor) )
+                    itervar.offset -= var.t.csize()
+
 
         self.checkSemi()
 

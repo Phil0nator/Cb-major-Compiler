@@ -161,7 +161,13 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
 #define bintern(a) (((a)*2)-1)
 
 
-
+/**
+ * alloca is a way to allocate additional space on the stack, semi-dynamically.
+ * alloca is very prone to causing errors, and should only be used in very controlled
+ * circumstances.
+ * @param size the number of bytes to allocate
+ * @returns a pointer to the allocated space
+ */
 inline void* alloca(size_t size){
     __asm{"
     sub rsp, rdi

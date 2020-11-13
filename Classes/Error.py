@@ -234,6 +234,11 @@ class TokenMismatch(Error):
         self.tok = tok
         self.message = f"Unmatched token: "
 
+class SetLiteralSizeMismatch(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Set literal size mismatch: "
+
 
 class InvalidExpressionComponent(Error):
     def __init__(self, tok):

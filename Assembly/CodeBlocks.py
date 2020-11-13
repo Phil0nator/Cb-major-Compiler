@@ -541,6 +541,7 @@ def doOperation(t, areg, breg, op, signed=False):
         return doIntOperation(setSize(areg, t.csize()), setSize(
             breg, t.csize()), op, signed, size=t.size(0))
     else:
+        print(t, areg, breg, op, signed)
         print("fatal type mismatch: unkown.")
         exit(1)
 
