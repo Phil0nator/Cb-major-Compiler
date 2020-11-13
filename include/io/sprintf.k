@@ -49,7 +49,7 @@ function long toStr(long val, char* buffer, bool signed, short base){
 
 char* __numbercharactersbase1016 = "0123456789abcdef";
 
-function long toStr(long val, char* buffer, bool signed, short base){
+function long toStr(long val, char* buffer, bool signed, long base){
     if(val == 0){
         @buffer = '0';
         return 1;
@@ -69,12 +69,17 @@ function long toStr(long val, char* buffer, bool signed, short base){
     int len = 0;
     while(val != 0){
 
-        char mod;
-        val = divmod(val, base, &mod);
+        long mod;
+
+        mod = val%base;
+        val /= base;
+
+
         tmpbuf[len] = __numbercharactersbase1016[mod];
-        len+=1;
+        len++;
 
     }
+
     for(int i = len;i>0;i--){
         buffer[i]=tmpbuf[len-i];
     }

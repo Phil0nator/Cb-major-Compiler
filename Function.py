@@ -1048,9 +1048,9 @@ class Function:
                 # fn.parameters[i].t.csize()), setSize(result,
                 # fn.parameters[i].t.csize())]))
 
-                inst += (maskset(
-                    norm_parameter_registers[normused],
-                    fn.parameters[i].t.csize()))
+                #inst += (maskset(
+                #    norm_parameter_registers[normused],
+                #    fn.parameters[i].t.csize()))
                 #    rfree(result)
                 normused += 1
             paraminst = f"{inst}{paraminst}"
@@ -1336,7 +1336,7 @@ class Function:
                 exprtokens.append(self.current_token)
                 self.advance()
 
-            size = determineConstexpr(False, exprtokens,self)
+            size = determineConstexpr(False, exprtokens, self)
             if isinstance(size.accessor, Variable):
                 throw(ExpectedToken(self.current_token, "constexpr"))
             sizes.append(size.accessor)
@@ -1349,7 +1349,6 @@ class Function:
             var.stacksizes = sizes
             var.t.stackarr = True
             self.stackCounter += totalsize
-            
 
         # check for same-line assignment, or not
         if(self.current_token.tok == T_ENDL):
@@ -1366,43 +1365,49 @@ class Function:
 
             self.addline(self.evaluateRightsideExpression(
                 EC.ExpressionComponent(var, var.t, token=self.current_token)))
-        
+
         # array assignment
         else:
 
             # itervar is used to iterate over the contents of the array
             # in order to place values in indexes.
-            itervar = Variable(var.t,var.name,isStackarr=True)
+            itervar = Variable(var.t, var.name, isStackarr=True)
             itervar.offset = var.offset
             itervar.stackarrsize = var.stackarrsize
 
             # set literal is used
             if(self.current_token.tok == T_OPENSCOPE):
-                
+
                 # find the bounds of the literal
                 startok = self.ctidx
                 self.skipBody()
-                endtok = self.ctidx+1
+                endtok = self.ctidx + 1
 
                 # load to a list
-                setval = buildConstantSet(var.t.isflt(),self.tokens[startok:endtok],self)
-                
+                setval = buildConstantSet(
+                    var.t.isflt(), self.tokens[startok:endtok], self)
+
                 # check for size mismatch
                 if(len(setval.accessor) != sizes[1]):
                     throw(SetLiteralSizeMismatch(self.tokens[startok]))
-                
-                
+
                 # load values
                 self.advance()
                 for value in setval.accessor:
                     if isinstance(value.accessor, int):
                         if(var.t.isfltarr()):
-                            self.addline(loadToReg(itervar, floatTo64h(value.accessor)))
+                            self.addline(
+                                loadToReg(
+                                    itervar, floatTo64h(
+                                        value.accessor)))
                         else:
                             self.addline(loadToReg(itervar, value.accessor))
-                    
+
                     else:
-                        self.addline(loadToReg(itervar, floatTo64h(value.accessor.initializer)))
+                        self.addline(
+                            loadToReg(
+                                itervar, floatTo64h(
+                                    value.accessor.initializer)))
                     itervar.offset -= var.t.csize()
 
             # single value to fill accross
@@ -1411,12 +1416,22 @@ class Function:
                 # evaluate the new value
                 evaluation, value = self.evaluateExpression()
                 self.addline(evaluation)
-                
+
+                # determine value to load into memory
+                loadval = value.accessor if isinstance(
+                    value.accessor,
+                    int) else (
+                    floatTo64h(
+                        value.accessor) if isinstance(
+                        value.accessor,
+                        float) else floatTo64h(
+                        value.accessor.initializer))
+
                 # load value into each index of the array
                 for i in range(sizes[1]):
-                    self.addline( loadToReg(itervar, value.accessor) )
-                    itervar.offset -= var.t.csize()
 
+                    self.addline(loadToReg(itervar, loadval))
+                    itervar.offset -= var.t.csize()
 
         self.checkSemi()
 

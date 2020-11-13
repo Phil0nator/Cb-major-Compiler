@@ -9,15 +9,15 @@
 #include "memory.k"
 
 #define __PRINTF_MAXNORMUSE 10000
+void __printf__space;
 // printf is just a __sprintf wrapper
 global void __printf(char* fmt, void* args, fd_t ostream){
 
-    char *normform = qmmap(__PRINTF_MAXNORMUSE);
-    int l = __sprintf(normform,fmt,args);
-    write(ostream, normform, l);
-
-    munmap(normform, __PRINTF_MAXNORMUSE);
-
+    if(!__printf__space){
+        __printf__space = qmmap(__PRINTF_MAXNORMUSE);
+    }
+    int l = __sprintf(__printf__space,fmt,args);
+    write(ostream, __printf__space, l);
 }
 /**
  * Printf will print fmt into stdout, formatting it with the additional arguments.

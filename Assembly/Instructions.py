@@ -31,7 +31,8 @@ class Line:
         self.idx = idx
 
     def hasAddr(self):
-        return '[' in self.dest + (self.source if self.source is not None else '')
+        return '[' in self.dest + \
+            (self.source if self.source is not None else '')
 
     def contains(self, c):
         return c in self.__repr__()
@@ -119,7 +120,7 @@ class Peephole:
             for line in lines[1:]:
 
                 # redundant push/pop operations
-                if (line.op == "pop" and prev.op == "push" and (line.hasAddr()^prev.hasAddr())):
+                if (line.op == "pop" and prev.op == "push"):
                     if(line.dest != prev.dest):
                         splitted[line.idx] = f"mov {line.dest}, {prev.dest}"
                     else:
@@ -200,9 +201,6 @@ def onelineAssignment(op, dest):
     return ""
 
 
-
-
-
 # get the comparison specifier for op, with sign signed
 def getComparater(signed, op):
     if(signed):
@@ -210,15 +208,17 @@ def getComparater(signed, op):
     else:
         return unsigned_comparisons[op]
 
+
 def floatTo64h(flt):
     if isinstance(flt, float):
-    
-        
-        return "0x"+bytearray(struct.pack("!d", flt)).hex()
 
+        o =  bytearray(struct.pack("!d", flt))
+        return "0x" + o.hex()
     return floatTo64h(float(flt))
 
 # format an instruction
+
+
 def Instruction(op, operands=[]):
     out = f"{op} "
     for operand in operands:

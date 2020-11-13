@@ -85,7 +85,7 @@ class Lexer:
             self.advance()
             if("e" in num):
                 pchars += "-"
-        
+
         if(self.ch == "b"):
             base = 2
             self.advance()

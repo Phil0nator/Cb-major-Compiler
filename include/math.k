@@ -284,5 +284,18 @@ inline long divmod(long dividend, long divisor, long* modulus ){
 }
 
 
+/**
+ * 
+ */
+inline long divmods(long dividend, long divisor, long* modulus){
+  __asm{"
+  mov rbx, rdx
+  xor rdx, rdx
+  mov rax, rdi
+  idiv rsi
+  mov [rbx], rdx
+  "}
+}
+
 
 #endif

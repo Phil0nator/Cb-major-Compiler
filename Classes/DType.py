@@ -53,9 +53,10 @@ class DType:
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
         return config.GlobalCompiler.Tequals(
             self.name, "double") and self.ptrdepth == 0 and not self.stackarr
+
     def isfltarr(self):
         return config.GlobalCompiler.Tequals(
-            self.name, "double") and self.ptrdepth == 0 
+            self.name, "double") and self.ptrdepth == 0
 
     def isfltdepth(self, depth):  # determine if the type is a double/float at a given depth
         return depth >= self.ptrdepth and config.GlobalCompiler.Tequals(
