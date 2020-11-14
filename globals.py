@@ -37,9 +37,9 @@ CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
 VOID = DType("void", 8, signed=True)
 BOOL = DType("bool", 1, signed=True)
+LITERAL = DType("&LITERAL&", 8,signed=True)
 
-
-INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT]
+INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT, LITERAL]
 
 
 # Operator priority (complicated pemdas)
@@ -193,6 +193,8 @@ def TsCompatible(typea, typeb, fni):
 def typematch(a, b):
     if(isinstance(a, DType) and isinstance(b, DType)):
 
+        if(a.name == LITERAL.name or b.name == LITERAL.name):
+            return True
         # anything can be cast to or from void
         if(config.GlobalCompiler.Tequals(a.name, "void") or config.GlobalCompiler.Tequals(b.name, "void")):
             return True

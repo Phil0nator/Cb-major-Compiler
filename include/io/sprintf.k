@@ -151,6 +151,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
 
         
+        
         if(@fmt != FORMAT_START){
             
             
@@ -229,13 +230,14 @@ global int __sprintf(char* str, char* fmt, void* args){
             }
 
 
-            argc+=1;
+            argc++;
 
 
         }
 
-        fmt+=1;
-        str+=1;
+
+        fmt++;
+        str++;
 
     }
 

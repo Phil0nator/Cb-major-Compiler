@@ -140,6 +140,9 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
 #define each_link(type, varname, member, listhead) (type *varname = listhead; varname->member != nullptr; varname = varname->member )
 
 
+#define range(name, max) (size_t name = 0; name < (max); name++)
+
+
 /**
  * Perminantly halt the calling process until it is stopped by a signal.
  */

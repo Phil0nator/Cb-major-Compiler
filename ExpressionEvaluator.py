@@ -35,13 +35,13 @@ def optloadRegs(a, b, op, o, constvalok=False):
 
     overrideAload = False
 
-    if (constvalok and isinstance(a.accessor, int)):
+    if (constvalok and isinstance(a.accessor, int) and dwordImmediate(a.accessor)):
         areg = a.accessor
         if b is None:
             return areg, None, o, ""
         overrideAload = True
 
-    if (b is not None and constvalok and isinstance(b.accessor, int)):
+    if (b is not None and constvalok and isinstance(b.accessor, int) and dwordImmediate(a.accessor)):
         breg = b.accessor
         return areg, breg, o, instr
 
@@ -52,6 +52,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
         areg = ralloc(a.type.isflt(), size=a.type.csize())
 
     if(b is not None):
+        if (b.isconstint()):
+            b.type.s = a.type.s
+            
         if(b.isRegister()):
             breg = b.accessor
             needLoadB = False
