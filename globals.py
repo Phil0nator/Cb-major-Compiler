@@ -37,7 +37,7 @@ CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
 VOID = DType("void", 8, signed=True)
 BOOL = DType("bool", 1, signed=True)
-LITERAL = DType("&LITERAL&", 8,signed=True)
+LITERAL = DType("&LITERAL&", 8, signed=True)
 
 INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT, LITERAL]
 

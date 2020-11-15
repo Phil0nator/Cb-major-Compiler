@@ -35,13 +35,15 @@ def optloadRegs(a, b, op, o, constvalok=False):
 
     overrideAload = False
 
-    if (constvalok and isinstance(a.accessor, int) and dwordImmediate(a.accessor)):
+    if (constvalok and isinstance(a.accessor, int)
+            and dwordImmediate(a.accessor)):
         areg = a.accessor
         if b is None:
             return areg, None, o, ""
         overrideAload = True
 
-    if (b is not None and constvalok and isinstance(b.accessor, int) and dwordImmediate(a.accessor)):
+    if (b is not None and constvalok and isinstance(
+            b.accessor, int) and dwordImmediate(a.accessor)):
         breg = b.accessor
         return areg, breg, o, instr
 
@@ -54,7 +56,7 @@ def optloadRegs(a, b, op, o, constvalok=False):
     if(b is not None):
         if (b.isconstint()):
             b.type.s = a.type.s
-            
+
         if(b.isRegister()):
             breg = b.accessor
             needLoadB = False
@@ -121,11 +123,11 @@ class ExpressionEvaluator:
         # is the destination a variable...
         vardest = isinstance(a.accessor, Variable)
 
-
         if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)):
-            b.accessor, _, __, qwordinstr = optloadRegs(b, None, "", VOID.copy())
+            b.accessor, _, __, qwordinstr = optloadRegs(
+                b, None, "", VOID.copy())
             b.constint = False
-            instrs+=qwordinstr
+            instrs += qwordinstr
 
         constright = b.isconstint()  # is the right side of the equation constant
 

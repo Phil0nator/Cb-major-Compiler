@@ -30,25 +30,25 @@ class Line:
         self.source = source
         self.flags = flags
         self.idx = idx
-    
+
     def constSource(self):
-        try:
-            val = int(self.source)
-            return dwordImmediate(val)
-        except:
-            return False
+        if(self.source.isdigit()):
+            return dwordImmediate(int(self.source))
+        return False
 
     def threePart(self):
         return self.dest is not None and self.source is not None
 
     def noRelation(self, other):
-        return ((self.dest is not None ) and self.dest not in str(other)) and self.source is not None and self.source not in str(other)
+        return ((self.dest is not None) and self.dest not in str(other)
+                ) and self.source is not None and self.source not in str(other)
 
     def hasAddr(self):
         return '[' in self.dest + str(self.source)
 
     def contains(self, c):
-        return c in (self.dest if self.dest is not None else "") or c in (self.source if self.source is not None else "")
+        return c in (self.dest if self.dest is not None else "") or c in (
+            self.source if self.source is not None else "")
 
     def __repr__(self):
         return f"{self.op} {self.dest}, {self.source if self.source is not None else ''} {self.flags if self.flags is not None else ''} : {self.idx}"
@@ -110,7 +110,8 @@ class Peephole:
     #
     ####################################
     def opl3_parser(self, lineget=[]):
-        optims = 0
+
+        optims = 0  # optimizations made
         splitted = self.instructions.split("\n")
         lines = []
         for i in range(len(splitted)):
@@ -118,43 +119,72 @@ class Peephole:
 
         lines = list(filter(line_filter, lines))
         linecount = len(lines)
+
         if(linecount > 1):
 
             prev = lines[0]
             for line in lines[1:]:
-                nxtidx = lines.index(line)+1
+                nxtidx = lines.index(line) + 1
                 nextline = lines[nxtidx] if nxtidx < linecount else None
-                
+
                 if(line.threePart() and prev.threePart() and nextline is not None):
 
                     # cmp instructions that compare a register with zero, can be replaced with the faster and smaller
                     # test instruction.
                     if(line.op == "cmp" and line.constSource() and not int(line.source) and not line.hasAddr()
-                        and nextline.op in ["jz", "jnz", "je", "jne","setz","setnz","sete","setne"]):
+                            and nextline.op in ["jz", "jnz", "je", "jne", "setz", "setnz", "sete", "setne"]):
+
                         splitted[line.idx] = f"test {line.dest}, {line.dest}\n"
                         splitted[nextline.idx] = f"{nextline.op[:-1]}z {nextline.dest}\n"
-                        optims+=1
+                        optims += 1
 
-                if(prev.op.startswith("set") and line.op == "test" and 
-                    ( nextline.op.startswith("j") or nextline.op.startswith("set"))):
-                    
+                    # in instances where the compiler creates code to evaluate an or, and, or xor operation for use
+                    # in a conditional operation, the subsequent test
+                    # instruction that will be emitted will be redundant.
+                    if(line.op == "test" and prev.op in ["or", "and", "xor"] and line.dest == line.source):
+                        # ommit line
+                        splitted[line.idx] = ""
+
+                # additions or subtractions by one can be substituted for their
+                # faster counterparts in 'inc' or 'dec' respectively
+                if(line.op == "add" or line.op == "sub") and line.constSource() and int(line.source) == 1:
+                    splitted[line.idx] = f"{shorthand_incrementation[line.op]} {line.dest}\n"
+
+                # The compiler naturally will produce structures like the following in the generation of control
+                # structures. Example:
+                #
+                #   cmp a, b
+                #   sete c
+                #   test c, c
+                #   jz .L0x0
+                #
+                # This type of structure is optimized in this section to the following:
+                #
+                #   cmp a, b
+                #   je .L0x0
+                #
+                #
+                if(prev.op.startswith("set") and line.op == "test" and
+                        (nextline.op.startswith("j") or nextline.op.startswith("set"))):
+
+                    # condition of the previous op
                     conda = prev.op[3:]
+                    # conditions of the next op
                     condb = nextline.op[1:] if nextline.op[0] == "j" else nextline.op[3:]
-                    
+
+                    # new condition
                     newcond = conda if condb == "nz" else reversed_comparisons[conda]
 
                     splitted[prev.idx] = ""
                     splitted[line.idx] = ""
                     splitted[nextline.idx] = f"{nextline.op.replace(condb, newcond)} {nextline.dest}\n"
-                    
-
+                    optims += 1
 
                 prev = line
 
         self.instructions = '\n'.join(splitted)
 
         return optims
-
 
     def opl3(self):
         self.opl2()
@@ -203,6 +233,11 @@ class Peephole:
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
 
+                # ensure that there are no redundant movs like:
+                # e.g: mov rax, rax
+                if (line.op == "mov" and line.dest == line.source):
+                    splitted[line.idx] = ""
+
                 prev = line
 
         self.instructions = '\n'.join(splitted)
@@ -242,20 +277,29 @@ unsigned_comparisons = {
 
 reversed_comparisons = {
 
-    "e" : "ne",
+    "e": "ne",
     "ne": "e",
-    "g" : "le",
+    "g": "le",
     "le": "g",
-    "l" : "ge",
+    "l": "ge",
     "ge": "l",
-    "z" : "nz",
+    "z": "nz",
     "nz": "z",
-    "b" : "ae",
+    "b": "ae",
     "ae": "b",
-    "a" : "be",
+    "a": "be",
     "be": "a"
 
 }
+
+
+# the faster and smaller inc and dec instructions can be used in place
+# of the larger add, or sub instructions respectively.
+shorthand_incrementation = {
+    "add": "inc",
+    "sub": "dec"
+}
+
 
 # these are assignment operators that can be
 # performed in one line (for integers specifically)
@@ -291,7 +335,7 @@ def getComparater(signed, op):
 def floatTo64h(flt):
     if isinstance(flt, float):
 
-        o =  bytearray(struct.pack("!d", flt))
+        o = bytearray(struct.pack("!d", flt))
         return int("0x" + o.hex(), 16)
     return floatTo64h(float(flt))
 

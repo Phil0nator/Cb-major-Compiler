@@ -250,7 +250,7 @@ def movVarToReg(reg, var):
     else:
         if isfloat(reg):
             return f"cvtsi2sd {reg}, {valueOf(var)}\n"
-        
+
         else:
             return f"mov {reg},  {valueOf(var)}\n"
 #
@@ -324,18 +324,17 @@ def loadToReg(reg, value):
                 reg = setSize(reg, value.t.csize())
             if(isinstance(value, str) and value in normal_size):
                 reg = setSize(reg, sizeOf(value))
-        
+
         if(isinstance(value, int)):
             if(not dwordImmediate(value) and isinstance(reg, Variable)):
                 return f"mov rax, {valueOf(value)}\nmov {valueOf(reg)}, rax\n"
-        
-        return f"mov {reg}, {valueOf(value)}\n"
 
+        return f"mov {reg}, {valueOf(value)}\n"
 
     elif(isinstance(reg, Variable)):
 
         if(reg.t.isflt()):
-            if(isfloat(value)):            
+            if(isfloat(value)):
                 return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
             else:
                 return f"mov {valueOf(reg)}, {valueOf(value)}\n"

@@ -155,8 +155,6 @@ class Function:
 
         # Features
 
-
-
     def advance(self):                              # advance token
         self.ctidx += 1
         if(self.ctidx == self.maxtokens):
@@ -1046,7 +1044,7 @@ class Function:
                 # fn.parameters[i].t.csize()), setSize(result,
                 # fn.parameters[i].t.csize())]))
 
-                #inst += (maskset(
+                # inst += (maskset(
                 #    norm_parameter_registers[normused],
                 #    fn.parameters[i].t.csize()))
                 #    rfree(result)
@@ -1554,8 +1552,9 @@ class Function:
             VOID.copy(), f"/*stack-protection-{self.name}*/")
         self.addVariable(protector)
         protector.referenced = True
-        feature_instructions = Instruction("pop", [valueOf(protector)]) + Instruction("push", [valueOf(protector)])
-        
+        feature_instructions = Instruction(
+            "pop", [valueOf(protector)]) + Instruction("push", [valueOf(protector)])
+
         return feature_instructions
 
     # perform closing check of the stack
