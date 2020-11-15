@@ -66,7 +66,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
-    int len = 0;
+    long len = 0;
     while(val != 0){
 
         long mod;
@@ -88,7 +88,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
 
 
-    return len+1+signspace;
+    return (len+signspace)++;
 
 
 }
@@ -161,7 +161,7 @@ global int __sprintf(char* str, char* fmt, void* args){
         
         }else{
 
-            fmt+=1;
+            fmt++;
             char c = @fmt;
 
 

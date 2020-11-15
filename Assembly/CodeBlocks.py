@@ -567,9 +567,9 @@ def castABD(a, b, areg, breg, newbreg):
 
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
-            #out = maskset(newbreg, a.type.csize())
+            out = maskset(newbreg, a.type.csize())
 
-            out = loadToReg(newbreg, breg)
+            out += loadToReg(newbreg, breg)
 
             return out
         return False

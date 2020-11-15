@@ -81,7 +81,7 @@ def bringdown_memloc(a):
     instr = ""
     if(a.memory_location):
         instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-        #instr += maskset(a.accessor, a.type.csize())
+        instr += maskset(a.accessor, a.type.csize())
         a.memory_location = False
 
     return instr
