@@ -1,5 +1,6 @@
 import config
 from Classes.Token import isdigit
+from Assembly.TypeSizes import dwordImmediate
 from Assembly.Registers import REGISTERS
 import Classes.ExpressionComponent as EC
 import re
@@ -29,12 +30,25 @@ class Line:
         self.source = source
         self.flags = flags
         self.idx = idx
+    
+    def constSource(self):
+        try:
+            val = int(self.source)
+            return dwordImmediate(val)
+        except:
+            return False
+
+    def threePart(self):
+        return self.dest is not None and self.source is not None
+
+    def noRelation(self, other):
+        return ((self.dest is not None ) and self.dest not in str(other)) and self.source is not None and self.source not in str(other)
 
     def hasAddr(self):
         return '[' in self.dest + str(self.source)
 
     def contains(self, c):
-        return c in self.__repr__()
+        return c in (self.dest if self.dest is not None else "") or c in (self.source if self.source is not None else "")
 
     def __repr__(self):
         return f"{self.op} {self.dest}, {self.source if self.source is not None else ''} {self.flags if self.flags is not None else ''} : {self.idx}"
@@ -95,9 +109,58 @@ class Peephole:
     #   (https://www.agner.org/optimize/microarchitecture.pdf)
     #
     ####################################
+    def opl3_parser(self, lineget=[]):
+        optims = 0
+        splitted = self.instructions.split("\n")
+        lines = []
+        for i in range(len(splitted)):
+            lines.append(self.parseLine(splitted[i], i))
+
+        lines = list(filter(line_filter, lines))
+        linecount = len(lines)
+        if(linecount > 1):
+
+            prev = lines[0]
+            for line in lines[1:]:
+                nxtidx = lines.index(line)+1
+                nextline = lines[nxtidx] if nxtidx < linecount else None
+                
+                if(line.threePart() and prev.threePart() and nextline is not None):
+
+                    # cmp instructions that compare a register with zero, can be replaced with the faster and smaller
+                    # test instruction.
+                    if(line.op == "cmp" and line.constSource() and not int(line.source) and not line.hasAddr()
+                        and nextline.op in ["jz", "jnz", "je", "jne","setz","setnz","sete","setne"]):
+                        splitted[line.idx] = f"test {line.dest}, {line.dest}\n"
+                        splitted[nextline.idx] = f"{nextline.op[:-1]}z {nextline.dest}\n"
+                        optims+=1
+
+                if(prev.op.startswith("set") and line.op == "test" and 
+                    ( nextline.op.startswith("j") or nextline.op.startswith("set"))):
+                    
+                    conda = prev.op[3:]
+                    condb = nextline.op[1:] if nextline.op[0] == "j" else nextline.op[3:]
+                    
+                    newcond = conda if condb == "nz" else reversed_comparisons[conda]
+
+                    splitted[prev.idx] = ""
+                    splitted[line.idx] = ""
+                    splitted[nextline.idx] = f"{nextline.op.replace(condb, newcond)} {nextline.dest}\n"
+                    
+
+
+                prev = line
+
+        self.instructions = '\n'.join(splitted)
+
+        return optims
+
 
     def opl3(self):
         self.opl2()
+
+        while self.opl3_parser() > 0:
+            pass
 
     def opl2(self):
         while self.opl2_parser() > 0:
@@ -174,6 +237,23 @@ unsigned_comparisons = {
     ">": "a",
     "<=": "be",
     ">=": "ae"
+
+}
+
+reversed_comparisons = {
+
+    "e" : "ne",
+    "ne": "e",
+    "g" : "le",
+    "le": "g",
+    "l" : "ge",
+    "ge": "l",
+    "z" : "nz",
+    "nz": "z",
+    "b" : "ae",
+    "ae": "b",
+    "a" : "be",
+    "be": "a"
 
 }
 

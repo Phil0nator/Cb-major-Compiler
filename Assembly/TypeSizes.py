@@ -2,6 +2,9 @@ import Classes.Token as T
 import Classes.Variable as V
 import Assembly.Registers as R
 
+INTMAX = 4294967295
+
+
 # determine if a value (can be multiple types) is a float
 #   for tokens, return if value is sse register
 #   for strings, return if they are a sse register
@@ -94,4 +97,4 @@ def maskset(reg, size):
 
 
 def dwordImmediate(number):
-    return number < 4294967295 if isinstance(number, int) else 0
+    return number < INTMAX if isinstance(number, int) else 0

@@ -16,7 +16,7 @@ from Assembly.CodeBlocks import (doFloatOperation,
                                  allocate_readonly)
 from Assembly.Instructions import Instruction, Peephole, floatTo64h
 from Assembly.Registers import *
-from Assembly.TypeSizes import isfloat
+from Assembly.TypeSizes import isfloat, INTMAX
 from Classes.Constexpr import determineConstexpr, buildConstantSet
 from Classes.DType import DType
 from Classes.Error import *
@@ -155,9 +155,7 @@ class Function:
 
         # Features
 
-        # the value used in the stack protection variable to check for
-        # integrity.
-        self.stackProtection_value = random.randint(0, 9999999999)
+
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -1556,8 +1554,8 @@ class Function:
             VOID.copy(), f"/*stack-protection-{self.name}*/")
         self.addVariable(protector)
         protector.referenced = True
-        feature_instructions = loadToReg(
-            protector, str(self.stackProtection_value))
+        feature_instructions = Instruction("pop", [valueOf(protector)]) + Instruction("push", [valueOf(protector)])
+        
         return feature_instructions
 
     # perform closing check of the stack
@@ -1577,14 +1575,16 @@ class Function:
 
         # the destructor text (or ending text) of the function must check the variable for damage by
         # comparing it to its original value stored in self.stackProtection_value.
-        # If it is not the same, the program will jumo to __stack_chk_fail, which is defined in an object
+        # If it is not the same, the program will jump to __stack_chk_fail, which is defined in an object
         # file that will be automatically linked with any programs compiled with the -Ustack-protection option
         # in config.py.
         self.destructor_text += (Instruction("mov", ["rdi", errmsglabel]))
         self.destructor_text += (Instruction("mov", ["rsi", str(errmsgl)]))
+        self.destructor_text += (Instruction("pop", ["rax"]))
+        self.destructor_text += (Instruction("push", ["rax"]))
         self.destructor_text += (Instruction("cmp",
                                              [valueOf(self.variables[0]),
-                                              str(self.stackProtection_value)]))
+                                              "rax"]))
         self.destructor_text += (Instruction("jne", ["__stack_chk_fail"]))
 
     # ending feature statements

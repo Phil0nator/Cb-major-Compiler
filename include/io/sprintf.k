@@ -71,8 +71,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
         long mod;
 
-        mod = val%base;
-        val /= base;
+        val = divmod(val, base,&mod);
 
 
         tmpbuf[len] = __numbercharactersbase1016[mod];
