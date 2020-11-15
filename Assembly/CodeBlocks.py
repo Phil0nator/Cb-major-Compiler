@@ -127,7 +127,7 @@ def createStringConstant(s):
     global stringconstant_counter
     out = []
     name = ("STRING_CONSTANT_%s" % stringconstant_counter)
-    out.append("%s: db `%s`, 0\n" % (name, s))
+    out.append("%s: db `%s`, 0\n" % (name, s.replace("\n", "")))
     out.append(name)
     stringconstant_counter += 1
     return out

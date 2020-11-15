@@ -859,6 +859,59 @@ class Function:
         self.advance()
         
 
+    def buildInlineFunction(self):
+        self.advance()
+        rettype = self.checkForType()
+        parameters = []
+        self.checkTok(T_OPENP)
+
+        while self.current_token.tok != T_CLSP:
+
+
+
+            t = self.checkForType()
+
+            if(self.current_token.tok != T_ID):
+                throw(ExpectedIdentifier(self.current_token))
+
+            varname = self.current_token.value
+
+            self.advance()
+
+            parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
+            if (self.current_token.tok == T_CLSP):
+
+                break
+
+            if(self.current_token.tok != T_COMMA):
+                throw(ExpectedComma(self.current_token))
+
+            self.advance()
+
+        self.advance()
+        firsttok = self.ctidx+1
+        
+        self.skipBody()
+        end = self.ctidx+1
+        tokens = (self.tokens[firsttok:end])
+        label = getLogicLabel("FORWARD")[1:]
+        fun = Function(label,parameters,rettype,self.compiler, tokens, extern=True)
+        self.compiler.functions.append(fun)
+        
+        self.compiler.globals.append(
+            Variable(
+                rettype.up(),
+                label,
+                glob=True,
+                isptr=True,
+                mutable=False,
+                signed=rettype.signed
+            )
+        )
+
+        return label
+
+
     # build a statement that starts with a keyword
 
     def buildKeywordStatement(self):
@@ -869,6 +922,9 @@ class Function:
             self.buildASMBlock()
         elif(word == "return"):
             self.buildReturnStatement()
+
+        elif (word == "function"):
+            self.buildInlineFunction()
 
         # wrapper for declaration with unsigned type
         elif(word == "unsigned"):
@@ -1127,7 +1183,7 @@ class Function:
 
         # The tokens: ; , = += -= *= /= etc... will mark the end of an
         # expression
-        while opens > 0 and self.current_token.tok != T_ENDL and self.current_token.tok != T_OPENSCOPE and self.current_token.tok != T_COMMA:
+        while opens > 0 and self.current_token.tok not in [T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL]:
 
             # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):
@@ -1188,6 +1244,17 @@ class Function:
                     offset = memvar.offset
                     exprtokens.append(
                         Token(T_ID, f"{var.name}.{memvar.name}", start, self.current_token.end))
+            elif (self.current_token.tok == T_KEYWORD):
+                if(self.current_token.value == "function"):
+                    start = self.current_token.start
+                    label = self.buildInlineFunction()
+                    wasfunc = True
+                    exprtokens.append(Token(T_ID, label, start,self.current_token.end))
+                    self.advance()
+                    break
+                else:
+                    throw(UnexpectedToken(self.current_token))
+
 
             # if one of the above special conditions was true, there is no need to add the actual
             #   current token.
