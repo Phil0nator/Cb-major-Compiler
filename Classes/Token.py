@@ -144,7 +144,7 @@ KEYWORDS = [
     "typedef",
     "switch",
     "case",
-    "register",
+    
     "del",
     "do",
     "goto",
@@ -153,7 +153,10 @@ KEYWORDS = [
     "cextern",
     "__cdecl",
     "global",
-    "inline"
+    "inline",
+    
+    "register",
+    "static"
 
 
 

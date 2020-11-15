@@ -13,7 +13,7 @@ from Assembly.CodeBlocks import (doFloatOperation,
                                  function_closer, functionlabel, getLogicLabel,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
                                  movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue,
-                                 allocate_readonly)
+                                 allocate_readonly, createIntrinsicHeap)
 from Assembly.Instructions import Instruction, Peephole, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat, INTMAX
@@ -111,6 +111,13 @@ class Function:
         # ExpressionComponents to keep track of register declarations
         self.regdecls = []
 
+        # Static variables will not inherit their actual name in the final assembly,
+        # this is where their actual labels can be associated with their given names.
+        self.staticnameref = {
+
+        }
+
+
         # monitoring:
 
         # hasReturned keeps track of if a function has made a guarenteed return.
@@ -192,7 +199,7 @@ class Function:
 
     def getVariable(self, q):
 
-        return next((v for v in self.variables if v.name == q),
+        return next((v for v in self.variables if (v.name if not v.static else self.staticnameref[v.name]) == q),
                     self.compiler.getGlob(q))
 
     # add a given variable, and set its stack offset
@@ -830,6 +837,28 @@ class Function:
         self.addline(footerinst)
         self.checkSemi()
 
+
+    def buildStaticdecl(self):
+        self.advance()
+        t = self.checkForType()
+        name = self.checkTok(T_ID)
+        label = name+getLogicLabel(name)
+        var = Variable(t,name,True,signed=t.signed, static=True)
+
+
+        if (self.getVariable(name) is not None or self.compiler.getType(name) is not None):
+            throw(VariableRedeclaration(self.tokens[self.ctidx-1],var))
+
+        var.name = label
+        self.staticnameref[label] = name
+
+        self.compiler.heap += createIntrinsicHeap(var)
+        self.variables.append(var)
+
+        self.ctidx-=2
+        self.advance()
+        
+
     # build a statement that starts with a keyword
 
     def buildKeywordStatement(self):
@@ -856,6 +885,10 @@ class Function:
         elif(word == "register"):
 
             self.buildRegdecl()
+
+        elif (word == "static"):
+
+            self.buildStaticdecl()
 
         elif(word == "if"):
             self.buildIfStatement()

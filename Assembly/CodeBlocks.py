@@ -26,7 +26,6 @@ ensure_boolean = "and al, 1\n"
 
 # check if a value is true
 
-
 def checkTrue(checkval: EC.ExpressionComponent):
     if(checkval.isRegister() and not checkval.type.isflt()):
         return f"test {setSize(checkval.accessor, checkval.type.csize())}, {setSize(checkval.accessor, checkval.type.csize())}\n"
@@ -36,7 +35,6 @@ def checkTrue(checkval: EC.ExpressionComponent):
         return f"mov {setSize(rax, sizeOf(checkval.accessor))}, {valueOf(checkval.accessor)}\ntest {setSize(rax, sizeOf(checkval.accessor))}, {setSize(rax, sizeOf(checkval.accessor))}\n"
 
 # get calling label for function based on name mangling scheme
-
 
 def functionlabel(fn):
     if(fn.extern):  # externs have no mangling
@@ -51,13 +49,11 @@ def functionlabel(fn):
 
 # get the code block to allocate a stack frame at the begining of a function
 
-
 def function_allocator(amt):
 
     return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % ((amt))
 
 # set a register to zero using the faster 'xor' instruction
-
 
 def zeroize(reg):
     return Instruction("xor", [reg, reg])
@@ -69,13 +65,10 @@ def allocate_readonly(value):
 
 # make name a label
 
-
 def label(name):
     return "%s:\n" % name
 
 # generate the closing for a function (exit stack frame, and return)
-
-
 def function_closer(name, destructions):
     return """__%s__return:
 %s

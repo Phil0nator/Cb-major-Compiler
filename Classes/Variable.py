@@ -12,7 +12,7 @@
 ###################################
 class Variable:
     def __init__(self, t, name, glob=False, offset=0, initializer=0,
-                 isptr=False, mutable=True, signed=True, isStackarr=False):
+                 isptr=False, mutable=True, signed=True, isStackarr=False, static=False):
         self.t = t                      # data type
         self.name = name                  # str: name
         self.glob = glob                  # bool: is global
@@ -20,6 +20,7 @@ class Variable:
         self.initializer = initializer  # original value for globals
         self.isptr = isptr              # bool: is pointer value
         self.mutable = mutable          # bool: is constant or mutable
+        self.static = static            # bool: static declarations
         # bool: is signed (redundant to DType.signed)
         self.signed = signed
         self.isStackarr = isStackarr    # bool: is stack based array
@@ -30,6 +31,7 @@ class Variable:
         self.register = None            # register declaration
         self.referenced = False         # for warnings
         self.dtok = None
+
 
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and
