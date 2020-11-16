@@ -3,7 +3,7 @@
  */
 #ifndef __MALLOC
 #define __MALLOC 1
-#include "memory.k"
+#include "sys/mman.cb"
 #include "algorithm/algorithm.k"
 #include "assert/assert.k"
 
@@ -12,6 +12,8 @@
 #define MALLOC_PAGESIZE_ADJUSTED (MALLOC_PAGESIZE-sizeof(mblock))
 #define MALLOC_USERPTR(localptr) ((localptr)+sizeof(mblock))
 #define MALLOC_LOCALPTR(userptr) ((userptr)-sizeof(mblock))
+#define MALLOC_MAXCACHE (MALLOC_PAGESIZE * 128)
+
 
 struct mblock{
 
@@ -22,13 +24,21 @@ struct mblock{
 };
 
 mblock* free_head = nullptr;
+size_t cached_size = NULL;
 
-global void remove_block(mblock* block){
 
-    if(block->next){
+void remove_block(mblock* block){
+    assert(block != nullptr);
+    cached_size-=block->size;
+
+    if (block == free_head){
+        free_head = nullptr;
+    }
+
+    if(block->next != nullptr){
         block->next->prev = block->prev;
     }
-    if(block->prev){
+    if(block->prev != nullptr){
         block->prev->next = block->next;
     }
     block->prev=nullptr;
@@ -36,23 +46,109 @@ global void remove_block(mblock* block){
 
 }
 
-global void add_block(mblock* block){
+bool scan_merge(mblock* b){
+
+    for each_link(mblock, block, next, free_head) {
+
+        if(block->size + block + sizeof(mblock) == b){
+            block->size += b->size + sizeof(mblock);
+            return false;
+        }
+
+    }
+
+    return true;
+}
+
+void add_block(mblock* block){
+    
+    assert(block != nullptr);
+
+
+    cached_size += block->size;
     if(!free_head){
         free_head = block;
         return;
     }
 
-    free_head->prev = block;
-    block->next = free_head;
-    free_head = block;
+    if(scan_merge(block)){
+
+        free_head->prev = block;
+        block->next = free_head;
+        free_head = block;
+
+    }
+}
+
+mblock* scan_existing(size_t request){
+
+    if(free_head == nullptr){
+        return nullptr;
+    }
+    for each_link(mblock,block,next,free_head){
+        if(block->size >= request){
+            remove_block(block);
+            split_block(block, request);
+            return block;
+        }
+
+    }
+
+    return nullptr;
 
 }
 
 
 
+inline mblock* create_ptr(size_t size){
+    return qmmap(size);
+}
+
+void split_block(mblock* block, size_t destsize){
+
+    assert(destsize <= block->size);
+
+    if(block->size == destsize){
+        return;
+    }
+
+    size_t othersize = block->size - destsize;
+    if(othersize < sizeof(mblock)){
+        return;
+    }
+    mblock* newblock = ($mblock* MALLOC_USERPTR(block + destsize));
+    newblock->size = othersize;
+    newblock->next = nullptr;
+    newblock->prev = nullptr;
+
+    block->size = destsize;
+
+    add_block(newblock);
+
+}
+
+global void fr(void* usrptr){
+
+    mblock* block = MALLOC_LOCALPTR(usrptr);
+    add_block(block);
+
+}
+
+
 global void* mlc(size_t size){
 
+    mblock* block = scan_existing(size);
 
+    if(block != nullptr){
+        return MALLOC_USERPTR(block);
+    }
+    size_t newsize = size < MALLOC_PAGESIZE_ADJUSTED ? MALLOC_PAGESIZE : size;
+    block = create_ptr(newsize);
+    block->size = newsize;
+    block->prev = nullptr;
+    block->next = nullptr;
+    split_block(block, size);
+    return MALLOC_USERPTR(block);
 }
 
 

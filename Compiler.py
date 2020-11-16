@@ -172,12 +172,20 @@ class Compiler:
     # create an arbitrary constant in self.constants
     def createConstant(self, extern=False):
         # dtype
+        startidx = self.ctidx
         intr = self.checkType()
         if (self.current_token.tok != T_ID):
             throw(ExpectedIdentifier(self.current_token))
         name = self.current_token.value
 
         self.advance()
+
+        # check for simple C style function declarations
+        if(self.current_token.tok == T_OPENP):
+            self.ctidx = startidx - 1
+            self.advance()
+            self.createFunction()
+            return
 
         # variables declared with extern are not placed in the data section, and are simply
         # recorded for use by the compiler.
@@ -227,13 +235,13 @@ class Compiler:
             "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], LONG.copy(), self, exprtokens))
 
-        isptr=False
+        isptr = False
         # if the final value is a variable, the initializer to that variable is
         # taken
         if(isinstance(value.accessor, Variable)):
             value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
                 1 else value.accessor.initializer
-            isptr=True
+            isptr = True
 
         self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor, isptr=isptr))

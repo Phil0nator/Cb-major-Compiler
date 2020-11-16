@@ -65,7 +65,7 @@ heapReservers = ["RESB", "RESW", "RESD", "RESQ"]
 
 
 def getConstantReserver(t):
-    return constantReservers[str(t.csize())] 
+    return constantReservers[str(t.csize())]
 
 
 def getHeapReserver(t):

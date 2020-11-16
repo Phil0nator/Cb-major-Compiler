@@ -1182,7 +1182,7 @@ class Function:
         instructions = ""
         wasfunc = False
 
-        # The tokens: ; , = += -= *= /= etc... will mark the end of an
+        # The tokens: ; , } ) etc... will mark the end of an
         # expression
         while opens > 0 and self.current_token.tok not in [
                 T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL]:
@@ -1329,7 +1329,7 @@ class Function:
 
         return instructions, output
 
-    def evaluateExpression(self):
+    def evaluateExpression(self, destination=True):
         instructions = ""
         comment = ""
         exprtokens = []
@@ -1351,9 +1351,27 @@ class Function:
 
         # for general expressions, the 'pop' exception needs to be cought:
         if(isinstance(output.accessor, str) and output.accessor == "pop"):
-            newout = ralloc(output.type.isflt())
-            output.accessor = newout
-            instructions += spop(output)
+
+            # for instances that require an output, the value on the stack needs to be preserved
+            # in a new ralloc'd register for some other use.
+            if(destination):
+                newout = ralloc(output.type.isflt())
+                output.accessor = newout
+                instructions += spop(output)
+
+            # in instances that do not require an output, the value on the stack can be popped into
+            # RAX, which will eventually be omitted alltogether by the optimizer because the resulting code
+            # would look like the following: e.g
+            #
+            #   push rax
+            #   pop rax
+            #
+            # The peephole optimizer will remove any structures like this with optimization levels
+            # -O2 or higher.
+            else:
+                instructions += spop(
+                    EC.ExpressionComponent(
+                        norm_return_register, LONG))
 
         return instructions, output
 
@@ -1559,7 +1577,9 @@ class Function:
         # buildAssignment is now just a wrapper for general expression evaluation
         # because assignment operators are now included in the normal expression
         # evaluation.
-        insters, out = self.evaluateExpression()
+        # destination is false because the overall expression has no
+        # destination
+        insters, out = self.evaluateExpression(destination=False)
         self.addline(insters)
         self.advance()
         rfree(out.accessor)
