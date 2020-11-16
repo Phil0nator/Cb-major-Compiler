@@ -112,11 +112,11 @@ class Function:
         self.regdecls = []
 
         # Static variables will not inherit their actual name in the final assembly,
-        # this is where their actual labels can be associated with their given names.
+        # this is where their actual labels can be associated with their given
+        # names.
         self.staticnameref = {
 
         }
-
 
         # monitoring:
 
@@ -837,17 +837,16 @@ class Function:
         self.addline(footerinst)
         self.checkSemi()
 
-
     def buildStaticdecl(self):
         self.advance()
         t = self.checkForType()
         name = self.checkTok(T_ID)
-        label = name+getLogicLabel(name)
-        var = Variable(t,name,True,signed=t.signed, static=True)
+        label = name + getLogicLabel(name)
+        var = Variable(t, name, True, signed=t.signed, static=True)
 
-
-        if (self.getVariable(name) is not None or self.compiler.getType(name) is not None):
-            throw(VariableRedeclaration(self.tokens[self.ctidx-1],var))
+        if (self.getVariable(name)
+                is not None or self.compiler.getType(name) is not None):
+            throw(VariableRedeclaration(self.tokens[self.ctidx - 1], var))
 
         var.name = label
         self.staticnameref[label] = name
@@ -855,9 +854,8 @@ class Function:
         self.compiler.heap += createIntrinsicHeap(var)
         self.variables.append(var)
 
-        self.ctidx-=2
+        self.ctidx -= 2
         self.advance()
-        
 
     def buildInlineFunction(self):
         self.advance()
@@ -866,8 +864,6 @@ class Function:
         self.checkTok(T_OPENP)
 
         while self.current_token.tok != T_CLSP:
-
-
 
             t = self.checkForType()
 
@@ -889,15 +885,21 @@ class Function:
             self.advance()
 
         self.advance()
-        firsttok = self.ctidx+1
-        
+        firsttok = self.ctidx + 1
+
         self.skipBody()
-        end = self.ctidx+1
+        end = self.ctidx + 1
         tokens = (self.tokens[firsttok:end])
         label = getLogicLabel("FORWARD")[1:]
-        fun = Function(label,parameters,rettype,self.compiler, tokens, extern=True)
+        fun = Function(
+            label,
+            parameters,
+            rettype,
+            self.compiler,
+            tokens,
+            extern=True)
         self.compiler.functions.append(fun)
-        
+
         self.compiler.globals.append(
             Variable(
                 rettype.up(),
@@ -910,7 +912,6 @@ class Function:
         )
 
         return label
-
 
     # build a statement that starts with a keyword
 
@@ -1183,7 +1184,8 @@ class Function:
 
         # The tokens: ; , = += -= *= /= etc... will mark the end of an
         # expression
-        while opens > 0 and self.current_token.tok not in [T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL]:
+        while opens > 0 and self.current_token.tok not in [
+                T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL]:
 
             # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):
@@ -1245,16 +1247,24 @@ class Function:
                     exprtokens.append(
                         Token(T_ID, f"{var.name}.{memvar.name}", start, self.current_token.end))
             elif (self.current_token.tok == T_KEYWORD):
+
+                # forward function declarations are detected and parsed here. The label used
+                # to declare the function is returned by self.buildInineFunction() and used
+                # as a global variable in the context of this expression.
                 if(self.current_token.value == "function"):
                     start = self.current_token.start
                     label = self.buildInlineFunction()
                     wasfunc = True
-                    exprtokens.append(Token(T_ID, label, start,self.current_token.end))
+                    exprtokens.append(
+                        Token(
+                            T_ID,
+                            label,
+                            start,
+                            self.current_token.end))
                     self.advance()
                     break
                 else:
                     throw(UnexpectedToken(self.current_token))
-
 
             # if one of the above special conditions was true, there is no need to add the actual
             #   current token.

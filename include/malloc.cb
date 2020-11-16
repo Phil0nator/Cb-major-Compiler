@@ -21,6 +21,40 @@ struct mblock{
 
 };
 
+mblock* free_head = nullptr;
+
+global void remove_block(mblock* block){
+
+    if(block->next){
+        block->next->prev = block->prev;
+    }
+    if(block->prev){
+        block->prev->next = block->next;
+    }
+    block->prev=nullptr;
+    block->next=nullptr;
+
+}
+
+global void add_block(mblock* block){
+    if(!free_head){
+        free_head = block;
+        return;
+    }
+
+    free_head->prev = block;
+    block->next = free_head;
+    free_head = block;
+
+}
+
+
+
+global void* mlc(size_t size){
+
+
+}
+
 
 
 

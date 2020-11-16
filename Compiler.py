@@ -227,15 +227,16 @@ class Compiler:
             "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], LONG.copy(), self, exprtokens))
 
+        isptr=False
         # if the final value is a variable, the initializer to that variable is
         # taken
         if(isinstance(value.accessor, Variable)):
-
             value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
                 1 else value.accessor.initializer
+            isptr=True
 
         self.globals.append(Variable(intr.copy(), name,
-                                     glob=True, initializer=value.accessor, isptr=intr.ptrdepth > 0))
+                                     glob=True, initializer=value.accessor, isptr=isptr))
 
         # add .data instructions to self.constants
         self.constants += createIntrinsicConstant(self.globals[-1])
