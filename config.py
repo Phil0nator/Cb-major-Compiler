@@ -115,7 +115,13 @@ callpath = os.getcwd()
 includepath = f"{compilepath}/include/" if compilepath != "" else f"include/"
 
 
-include_directories = ["", compilepath, callpath, includepath]
+include_directories = [
+    "",
+    compilepath,
+    callpath,
+    includepath,
+    "/usr/include/",
+    "/usr/lib"]
 
 # load raw file is used in the preprocessor to load object files and code files
 # from any of the includepaths specified in either the code or commandline

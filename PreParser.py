@@ -333,7 +333,7 @@ class PreProcessor:
                 self.delmov()
                 return
 
-        throw(FileNotFound(self.current_token))
+        throw(FileNotFound(self.current_token, q))
 
     # main function
 

@@ -120,6 +120,24 @@ class Lexer:
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
+    def buildIncluder(self):
+        self.advance()
+        begin = self.loc.copy()
+        if(self.ch == ">"):
+            self.advance()
+            return Token(T.T_STRING, "", begin, self.loc.copy())
+        #content = self.ch
+        #ch = self.advance()
+
+        end = self.raw.find(">", self.chidx)
+        if(end == -1 or end >= len(self.raw)):
+            throw(TokenMismatch(Token("<", ">", begin, begin)))
+        content = self.raw[self.chidx:end]
+        self.chidx = end
+
+        self.advance()
+        return Token(T.T_STRING, content, begin, self.loc.copy())
+
     def buildChar(self):  # build a char token with one char
         self.advance()
         begin = self.loc.copy()
@@ -139,15 +157,7 @@ class Lexer:
         end = ambiguous_regex.search(raw, chidx).end() - 1
         value = (raw[chidx - 1:end])
         lv = len(value) - 1
-        """ for ch in raw[chidx:]:
-            char = ord(ch)
-            if(T.isidchar(char) or T.isdigit(char)):
-                count += 1
-            else:
-                break """
 
-        #value = f"{value}{raw[chidx:chidx+count]}"
-        #lv = len(value) - 2
         self.chidx += lv - 1
         self.loc.ch += lv - 1
         self.advance()
@@ -177,10 +187,17 @@ class Lexer:
                 advance()
 
             elif (self.ch == "#"):
+
                 advance()
+                while(self.ch == " "):
+                    advance()
+
                 t = self.buildAmbiguous()
                 t.tok = T.T_DIRECTIVE
                 tokens.append(t)
+                if(self.chidx < self.size - 1):
+                    if(self.raw[self.chidx + 1] == "<"):
+                        self.buildIncluder()
 
             elif(self.ch == "$"):
                 advance()

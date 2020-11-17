@@ -13,7 +13,7 @@ def link(i, o):
 
     else:
         linktext = f"\"{i}.o\""
-    return f"gcc \"{config.includepath}/macro.c\" {linktext} -g  -no-pie -lm -o \"{o}\""
+    return f"gcc \"{config.includepath}/macro.c\" {linktext} -g -no-pie -lm -o \"{o}\""
 
 
 def linkonly(i, o):

@@ -63,7 +63,6 @@ inline void avx_memzeraligned(void* dest, size_t qqwords){
 global void avx_memzer(void* dest, size_t bytes){
     int offset = bytes%32;
     size_t avxcount = (bytes-offset)/4;
-    long copyloc[4] = {0,0,0,0};
     
     
     avx_memzeraligned(dest, avxcount);

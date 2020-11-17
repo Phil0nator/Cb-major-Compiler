@@ -1878,7 +1878,7 @@ _void_remove_block_pmblock.:
 	mov [rbp-8], rdi
 	mov rbx, STRING_CONSTANT_142
 	mov rcx, STRING_CONSTANT_142
-	mov rdx, 60
+	mov rdx, 83
 	mov rbx, STRING_CONSTANT_141
 	mov rsi, STRING_CONSTANT_141
 	mov rbx, qword[rbp-8]
@@ -2043,7 +2043,7 @@ _void_add_block_pmblock.:
 	mov [rbp-8], rdi
 	mov rbx, STRING_CONSTANT_144
 	mov rcx, STRING_CONSTANT_144
-	mov rdx, 129
+	mov rdx, 152
 	mov rbx, STRING_CONSTANT_143
 	mov rsi, STRING_CONSTANT_143
 	mov rbx, qword[rbp-8]
@@ -2223,7 +2223,7 @@ _void_split_block_pmblock.size_t:
 	mov [rbp-16], rsi
 	mov rbx, STRING_CONSTANT_150
 	mov rcx, STRING_CONSTANT_150
-	mov rdx, 224
+	mov rdx, 247
 	mov rbx, STRING_CONSTANT_149
 	mov rsi, STRING_CONSTANT_149
 	mov rbx, qword[rbp-8]
@@ -2547,7 +2547,7 @@ ___void_avx_memcpy_pvoid.void.size_t__return:
 _void_avx_memzer_pvoid.size_t:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 80
+	sub rsp, 40
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov r10, 32
@@ -2563,10 +2563,6 @@ _void_avx_memzer_pvoid.size_t:
 	sub rbx, r11
 	sar rbx, 2
 	mov qword[rbp-32], rbx
-	mov qword[rbp-72], 0
-	mov qword[rbp-64], 0
-	mov qword[rbp-56], 0
-	mov qword[rbp-48], 0
 	mov rbx, qword[rbp-32]
 	mov rsi, rbx
 	mov rbx, qword[rbp-8]
