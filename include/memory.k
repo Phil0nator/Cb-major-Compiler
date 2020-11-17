@@ -13,29 +13,17 @@
 
 /* Temporary memory macros until proper malloc is implimented */
 
-global void* malloc(size_t size){
-    register void* out = qmmap(size+8);
-    @out = size;
-    return out+8;
-}
-global void free(void* addr){
-    return munmap(addr-0x8, @(addr-0x8));
-}
-global void* realloc(void* addr, size_t newsize){
-    
-    if(addr == nullptr){
-        return malloc(newsize);
-    }
-    register size_t oldsize = @(addr-0x8);
-    if(oldsize == newsize){
-        return addr;
-    }
-    register void* out = malloc(newsize);
-    avx_memcpy(out, addr,newsize);
-    free(addr);
-    return out;
+// global void* malloc(size_t size){
+//     register void* out = qmmap(size+8);
+//     @out = size;
+//     return out+8;
+// }
+// global void free(void* addr){
+//     return munmap(addr-0x8, @(addr-0x8));
+// }
 
-}
+
+
 
 
 

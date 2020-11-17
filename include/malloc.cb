@@ -32,7 +32,7 @@ void remove_block(mblock* block){
     cached_size-=block->size;
 
     if (block == free_head){
-        free_head = nullptr;
+        free_head = block->next;
     }
 
     if(block->next != nullptr){
@@ -48,16 +48,40 @@ void remove_block(mblock* block){
 
 bool scan_merge(mblock* b){
 
-    for each_link(mblock, block, next, free_head) {
+    if(cached_size > MALLOC_MAXCACHE){
+        cached_size-=b->size;
+        destroy_ptr(b);
+        return false;
+    }
 
-        if(block->size + block + sizeof(mblock) == b){
-            block->size += b->size + sizeof(mblock);
-            return false;
+    for each_link(mblock, block, next, free_head) {
+        if( (b + b->size + mblock) == block){
+            // b->size += block->size + mblock;
+            // printstate();
+
+            // printf("Newsize: %u\n Newstate:", b->size);
+            // remove_block(block);
+            // simple_add(b);
+            // printstate();
+            // return false;
         }
 
     }
 
     return true;
+}
+
+void simple_add(mblock* block){
+    if(free_head == nullptr){
+        free_head = block;
+        return;
+    }
+
+
+    free_head->prev = block;
+    block->next = free_head;
+    free_head = block;
+
 }
 
 void add_block(mblock* block){
@@ -66,18 +90,12 @@ void add_block(mblock* block){
 
 
     cached_size += block->size;
-    if(!free_head){
+    if(free_head == nullptr){
         free_head = block;
         return;
     }
 
-    if(scan_merge(block)){
-
-        free_head->prev = block;
-        block->next = free_head;
-        free_head = block;
-
-    }
+    simple_add(block);
 }
 
 mblock* scan_existing(size_t request){
@@ -98,10 +116,28 @@ mblock* scan_existing(size_t request){
 
 }
 
+void printstate(){
+    printf("=======================\n");
+    if(free_head == nullptr){
+        printf("EMPTY\n");
+    }else{
+        for each_link(mblock, block, next, free_head){
+            printf("BLOCK: %i @ %x\n", block->size, block);
+        }
+    }
+
+
+
+
+    printf("=======================\n");
+}
 
 
 inline mblock* create_ptr(size_t size){
     return qmmap(size);
+}
+inline void destroy_ptr(mblock* ptr){
+    return munmap(ptr, ptr->size+sizeof(mblock));
 }
 
 void split_block(mblock* block, size_t destsize){
@@ -117,17 +153,17 @@ void split_block(mblock* block, size_t destsize){
         return;
     }
     mblock* newblock = ($mblock* MALLOC_USERPTR(block + destsize));
-    newblock->size = othersize;
+    newblock->size = othersize - sizeof(mblock);
     newblock->next = nullptr;
     newblock->prev = nullptr;
 
-    block->size = destsize;
+    block->size = destsize ;
 
     add_block(newblock);
 
 }
 
-global void fr(void* usrptr){
+global void free(void* usrptr){
 
     mblock* block = MALLOC_LOCALPTR(usrptr);
     add_block(block);
@@ -135,10 +171,9 @@ global void fr(void* usrptr){
 }
 
 
-global void* mlc(size_t size){
+global void* malloc(size_t size){
 
     mblock* block = scan_existing(size);
-
     if(block != nullptr){
         return MALLOC_USERPTR(block);
     }
@@ -149,6 +184,27 @@ global void* mlc(size_t size){
     block->next = nullptr;
     split_block(block, size);
     return MALLOC_USERPTR(block);
+}
+
+
+global void* realloc(void* addr, size_t newsize){
+    
+    if(addr == nullptr){
+        return malloc(newsize);
+    }
+    mblock* block = MALLOC_LOCALPTR(addr);
+    size_t oldsize = block->size;
+    if(oldsize == newsize){
+        return addr;
+    }
+    add_block(block);
+    
+    void* out = malloc(newsize);
+    
+    avx_memcpy(out, addr, oldsize);
+    memset(out+oldsize, 0, newsize-oldsize);
+    return out;
+
 }
 
 
