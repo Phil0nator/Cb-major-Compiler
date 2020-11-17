@@ -13,21 +13,13 @@
 
 /* Temporary memory macros until proper malloc is implimented */
 
-// global void* malloc(size_t size){
-//     register void* out = qmmap(size+8);
-//     @out = size;
-//     return out+8;
-// }
-// global void free(void* addr){
-//     return munmap(addr-0x8, @(addr-0x8));
-// }
 
 
 
 
 
 
-function void memcpy(void *dest, void* source, size_t bytes){
+global void memcpy(void *dest, void* source, size_t bytes){
 
     __asm{"
     ; rax = final dest:
@@ -45,8 +37,7 @@ function void memcpy(void *dest, void* source, size_t bytes){
 
 }
 
-#ifdef __AVX
-function void avx_memcpy(void* dest, void* source, size_t bytes){
+global void avx_memcpy(void* dest, void* source, size_t bytes){
 
     int offset = bytes%32;
     size_t avxcount = (bytes-offset)/4;
@@ -57,9 +48,35 @@ function void avx_memcpy(void* dest, void* source, size_t bytes){
         memcpy(dest+avxcount, source+avxcount, offset);
     }
 }
-#endif
 
-function void memset(void* dest, unsigned char value, size_t bytes){
+inline void avx_memzeraligned(void* dest, size_t qqwords){
+    __asm{"
+    vxorpd ymm0, ymm0, ymm0
+    %Lavxmemzeraligned_lp:
+    vmovdqu [rdi], ymm0
+    add rdi, 4
+    sub rsi, 4
+    jnz %Lavxmemzeraligned_lp
+    "}
+}
+
+global void avx_memzer(void* dest, size_t bytes){
+    int offset = bytes%32;
+    size_t avxcount = (bytes-offset)/4;
+    long copyloc[4] = {0,0,0,0};
+    
+    
+    avx_memzeraligned(dest, avxcount);
+
+    if(offset != 0){
+        memset(dest+avxcount, 0, offset);
+    }
+}
+
+
+
+
+global void memset(void* dest, unsigned char value, size_t bytes){
     __asm{"
     
     _void_memset_pvoid.ucharsize_t_flp:

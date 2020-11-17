@@ -251,14 +251,13 @@ global int __sprintf(char* str, char* fmt, void* args){
 
 global int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4){
 
-    void* args = malloc(4*void);
+    void args[4];
 
     args[0]=arg1;
     args[1]=arg2;
     args[2]=arg3;
     args[3]=arg4;
-    int l = __sprintf(dest,fmt,args);
-    free(args);
+    int l = __sprintf(dest,fmt,&args);
     return l;
 }
 

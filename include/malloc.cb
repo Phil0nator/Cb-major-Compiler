@@ -1,5 +1,28 @@
+/*
+    MIT License
+    Copyright (c) 2020 Philo Kaulkin
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+    OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 /**
- * malloc provides higher level memory management.
+ * malloc.cb provides a high level memory management system similar to C's malloc. 
  */
 #ifndef __MALLOC
 #define __MALLOC 1
@@ -12,21 +35,50 @@
 #define MALLOC_PAGESIZE_ADJUSTED (MALLOC_PAGESIZE-sizeof(mblock))
 #define MALLOC_USERPTR(localptr) ((localptr)+sizeof(mblock))
 #define MALLOC_LOCALPTR(userptr) ((userptr)-sizeof(mblock))
-#define MALLOC_MAXCACHE (MALLOC_PAGESIZE * 128)
 
+/**
+ * malloc_maxcache determines the maximum amount of memory to keep in the free_head
+ * linked list. Once the amount of memory held in the free_head is greater than this,
+ * the addresses being freed will be unmapped instead of added to free_head.
+ * If malloc is called with a value larger than malloc_maxcache, it will be added to
+ * malloc_maxcache to make the program smoother for massive memory segments.
+ */
+size_t malloc_maxcache = (MALLOC_PAGESIZE * 128);
 
+/**
+ * mblock's form the metadata used at the begining of malloc'd blocks of memory.
+ */
 struct mblock{
-
+    /**
+     * Size refers to the size of the allocated area, minus the meta data.
+     * e.g:
+     *   malloc(100) -> mblock.size of 100,
+     *  even though the actual mapped area will be 100 + sizeof(mblock)
+     */
     size_t size;
+    /**
+     * next and prev are used as linked list pointers because mblocks are stored in a 
+     * linked list which is started in free_head. 
+     */
     mblock* next;
     mblock* prev;
 
 };
 
+/**
+ * free_head marks the begining of the linked list of mblocks.
+ */
 mblock* free_head = nullptr;
+/**
+ * cached_size keeps track of the number of bytes of memory cached in free_head.
+ */
 size_t cached_size = NULL;
 
-
+/**
+ * remove_block removes a given block from the linked list.
+ * @param block a valid block to remove
+ * @returns None
+ */
 void remove_block(mblock* block){
     assert(block != nullptr);
     cached_size-=block->size;
@@ -46,9 +98,16 @@ void remove_block(mblock* block){
 
 }
 
+/**
+ * scan_merge is responsible for searching through cached mblocks to see if a newly
+ * added block can be simply merged with an existing one instead of adding it on the end.
+ * scan_merge will also perform address unmapping if the cached data exceeds malloc_maxcache.
+ * @param b a mblock to test
+ * @returns weather or not b needs to be added to the linked list
+ */
 bool scan_merge(mblock* b){
 
-    if(cached_size > MALLOC_MAXCACHE){
+    if(cached_size > malloc_maxcache){
         cached_size-=b->size;
         destroy_ptr(b);
         return false;
@@ -56,14 +115,7 @@ bool scan_merge(mblock* b){
 
     for each_link(mblock, block, next, free_head) {
         if( (b + b->size + mblock) == block){
-            // b->size += block->size + mblock;
-            // printstate();
 
-            // printf("Newsize: %u\n Newstate:", b->size);
-            // remove_block(block);
-            // simple_add(b);
-            // printstate();
-            // return false;
         }
 
     }
@@ -71,6 +123,12 @@ bool scan_merge(mblock* b){
     return true;
 }
 
+/**
+ * The most simple way to add a block to the linked list without scanning for a
+ * merge.
+ * @param block the block to add
+ * @returns None
+ */
 void simple_add(mblock* block){
     if(free_head == nullptr){
         free_head = block;
@@ -83,7 +141,12 @@ void simple_add(mblock* block){
     free_head = block;
 
 }
-
+/**
+ * A more complex way to add a block to the linked list, which includes
+ * the merge scan.
+ * @param block block to add
+ * @returns None
+ */
 void add_block(mblock* block){
     
     assert(block != nullptr);
@@ -94,10 +157,18 @@ void add_block(mblock* block){
         free_head = block;
         return;
     }
-
-    simple_add(block);
+    if(scan_merge(block)){
+        simple_add(block);
+    }
 }
 
+/**
+ * scan_existing searches through existing mblocks based on a size request.
+ * Any blocks with a size greater than or equal to request, will be split and returned.
+ * On failure, scan_existing returns nullptr;
+ * @param request minimum number of bytes needed
+ * @returns A removed mblock with a size of exactly request, or nullptr if none are available 
+ */
 mblock* scan_existing(size_t request){
 
     if(free_head == nullptr){
@@ -116,6 +187,9 @@ mblock* scan_existing(size_t request){
 
 }
 
+/**
+ * A debugging function to view the contents of the cached blocks
+ */
 void printstate(){
     printf("=======================\n");
     if(free_head == nullptr){
@@ -132,14 +206,42 @@ void printstate(){
     printf("=======================\n");
 }
 
-
+/**
+ * Map memory for a new pointer.
+ * @param size number of bytes to allocate
+ * @returns a newly mapped pointer of size bytes
+ */
 inline mblock* create_ptr(size_t size){
     return qmmap(size);
 }
+/**
+ * Unmap memory of an old pointer.
+ * @param ptr a valid block to unmap
+ * @returns None
+ */
 inline void destroy_ptr(mblock* ptr){
     return munmap(ptr, ptr->size+sizeof(mblock));
 }
 
+/**
+ * split_block is responsible for taking a large mblock and splitting its data into two parts.
+ * For example, splitting a block of size 1024 into a 256 byte block e.g:
+ *  | {1024 , next, prev} | -----------------------|
+ *  ^
+ * Given pointer
+ *                       new space
+ *                           \/
+ *  | {256, next, prev}   | ---- | {1024 - 256 - sizeof(mblock), next, prev } | ------------| 
+ *  ^                            ^
+ * Given pointer     Added block to cache
+ * 
+ * Because a new block would require an new mblock region, there is an inhearent memory cost of (sizeof(mblock))
+ * for every split. So, if the destination size is less than sizeof(mblock) in difference from the original size,
+ * No changes are made to the block.
+ * @param block a block to split
+ * @param destsize the new size for the block
+ * @returns None
+ */
 void split_block(mblock* block, size_t destsize){
 
     assert(destsize <= block->size);
@@ -163,6 +265,11 @@ void split_block(mblock* block, size_t destsize){
 
 }
 
+/**
+ * Deallocate a malloc'd pointer
+ * @param usrptr the pointer to deallocate
+ * @returns None
+ */
 global void free(void* usrptr){
 
     mblock* block = MALLOC_LOCALPTR(usrptr);
@@ -170,14 +277,27 @@ global void free(void* usrptr){
 
 }
 
-
+/**
+ * Allocate a block of memory of a given size.
+ * @param size minimum number of bytes to allocate
+ * @returns a pointer with at least (size) bytes of free space
+ */
 global void* malloc(size_t size){
-
+    if (size > malloc_maxcache){
+        malloc_maxcache += size;
+    }
     mblock* block = scan_existing(size);
     if(block != nullptr){
         return MALLOC_USERPTR(block);
     }
-    size_t newsize = size < MALLOC_PAGESIZE_ADJUSTED ? MALLOC_PAGESIZE : size;
+
+    size_t newsize;
+    if(size < MALLOC_PAGESIZE_ADJUSTED) {
+        newsize = MALLOC_PAGESIZE;
+    }else{
+        newsize = size + sizeof(mblock);
+    }
+        
     block = create_ptr(newsize);
     block->size = newsize;
     block->prev = nullptr;
@@ -186,7 +306,12 @@ global void* malloc(size_t size){
     return MALLOC_USERPTR(block);
 }
 
-
+/**
+ * Reallocate a malloc'd pointer with a new size.
+ * @param addr the address to reallocate
+ * @param newsize the new size for the addr
+ * @returns a new pointer of size (newsize). (Can be the same as addr).
+ */
 global void* realloc(void* addr, size_t newsize){
     
     if(addr == nullptr){
@@ -206,7 +331,16 @@ global void* realloc(void* addr, size_t newsize){
     return out;
 
 }
-
+/**
+ * Allocate at least size bytes, and zero out the entire block.
+ * @param size number of bytes to allocate
+ * @returns a malloc'd block of memory containing only zeros, with a size of at least (size).
+ */
+global void* calloc(size_t size){
+    void* out = malloc(size);
+    avx_memzer(out, size);
+    return out;
+}
 
 
 
