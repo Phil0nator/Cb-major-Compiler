@@ -7,7 +7,7 @@
 #       to the ExpressionEvaluators, in that it will only call the
 #       "calculateConstant" function of globals.py for the evaluation.
 #####################################################
-from globals import LONG, operatorISO, DOUBLE
+from globals import LONG, operatorISO, DOUBLE, LITERAL
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
@@ -20,58 +20,58 @@ ternarystack = []  # ternary operator -- extra storage
 def calculateConstant(a, b, op, c=None):
     if(op == "*"):
         return EC.ExpressionComponent(
-            int(a.accessor * b.accessor), LONG.copy(), constint=True)
+            int(a.accessor * b.accessor), LITERAL.copy(), constint=True)
     elif(op == "/"):
         return EC.ExpressionComponent(
-            int(a.accessor / b.accessor), LONG.copy(), constint=True)
+            int(a.accessor / b.accessor), LITERAL.copy(), constint=True)
     elif(op == "+"):
         return EC.ExpressionComponent(
-            int(a.accessor + b.accessor), LONG.copy(), constint=True)
+            int(a.accessor + b.accessor), LITERAL.copy(), constint=True)
     elif(op == "-"):
         return EC.ExpressionComponent(
-            int(a.accessor - b.accessor), LONG.copy(), constint=True)
+            int(a.accessor - b.accessor), LITERAL.copy(), constint=True)
     elif(op == "=="):
         return EC.ExpressionComponent(
-            int(a.accessor == b.accessor), LONG.copy(), constint=True)
+            int(a.accessor == b.accessor), LITERAL.copy(), constint=True)
     elif(op == "!="):
         return EC.ExpressionComponent(
-            int(a.accessor != b.accessor), LONG.copy(), constint=True)
+            int(a.accessor != b.accessor), LITERAL.copy(), constint=True)
     elif(op == "<="):
         return EC.ExpressionComponent(
-            int(a.accessor <= b.accessor), LONG.copy(), constint=True)
+            int(a.accessor <= b.accessor), LITERAL.copy(), constint=True)
     elif(op == ">="):
         return EC.ExpressionComponent(
-            int(a.accessor >= b.accessor), LONG.copy(), constint=True)
+            int(a.accessor >= b.accessor), LITERAL.copy(), constint=True)
     elif(op == ">"):
         return EC.ExpressionComponent(
-            int(a.accessor > b.accessor), LONG.copy(), constint=True)
+            int(a.accessor > b.accessor), LITERAL.copy(), constint=True)
     elif(op == "<"):
         return EC.ExpressionComponent(
-            int(a.accessor < b.accessor), LONG.copy(), constint=True)
+            int(a.accessor < b.accessor), LITERAL.copy(), constint=True)
     elif(op == "%"):
         return EC.ExpressionComponent(
-            int(a.accessor % b.accessor), LONG.copy(), constint=True)
+            int(a.accessor % b.accessor), LITERAL.copy(), constint=True)
     elif(op == ">>"):
         return EC.ExpressionComponent(
-            int(a.accessor >> b.accessor), LONG.copy(), constint=True)
+            int(a.accessor >> b.accessor), LITERAL.copy(), constint=True)
     elif(op == "<<"):
         return EC.ExpressionComponent(
-            int(a.accessor << b.accessor), LONG.copy(), constint=True)
+            int(a.accessor << b.accessor), LITERAL.copy(), constint=True)
     elif(op == "||"):
         return EC.ExpressionComponent(
-            int(a.accessor or b.accessor), LONG.copy(), constint=True)
+            int(a.accessor or b.accessor), LITERAL.copy(), constint=True)
     elif(op == "&&"):
         return EC.ExpressionComponent(
-            int(a.accessor and b.accessor), LONG.copy(), constint=True)
+            int(a.accessor and b.accessor), LITERAL.copy(), constint=True)
     elif(op == "&"):
         return EC.ExpressionComponent(
-            int(a.accessor & b.accessor), LONG.copy(), constint=True)
+            int(a.accessor & b.accessor), LITERAL.copy(), constint=True)
     elif(op == "|"):
         return EC.ExpressionComponent(
-            int(a.accessor | b.accessor), LONG.copy(), constint=True)
+            int(a.accessor | b.accessor), LITERAL.copy(), constint=True)
     elif(op == "^"):
         return EC.ExpressionComponent(
-            int(a.accessor ^ b.accessor), LONG.copy(), constint=True)
+            int(a.accessor ^ b.accessor), LITERAL.copy(), constint=True)
     elif (op == ":"):
         ternarystack.append(("", a, b))
         if (c is not None):
@@ -154,9 +154,9 @@ def evaluate(a, b, op):
         a.accessor = a.accessor.initializer
     if(b is not None and isinstance(b.accessor, Variable)):
         b.accessor = b.accessor.initializer
-
-        return calculateConstant(a, b, op) if isinstance(
-            a.accessor, int) and isinstance(b.accessor, int) else calculateCfloat(a, b, op)
+    
+    if(b is not None):
+        return calculateConstant(a, b, op) if a.isconstint() and b.isconstint() else calculateCfloat(a, b, op)
     return a
 
 
@@ -193,7 +193,7 @@ def determineConstexpr(flt, tokens, fn):
                 if(op == "-"):
                     if(len(stack) == 0):
                         stack.append(
-                            evaluate(EC.ExpressionComponent(0, LONG.copy()), a, op))
+                            evaluate(EC.ExpressionComponent(0, LITERAL.copy()), a, op))
                         continue
                 b = stack.pop()
                 stack.append(evaluate(a, b, op))

@@ -235,6 +235,7 @@ class Compiler:
             "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], LONG.copy(), self, exprtokens))
 
+
         isptr = False
         # if the final value is a variable, the initializer to that variable is
         # taken

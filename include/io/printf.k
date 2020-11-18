@@ -12,10 +12,10 @@
 // printf is just a __sprintf wrapper
 global void __printf(char* fmt, void* args, fd_t ostream){
 
-    char* tmp = malloc(__PRINTF_MAXNORMUSE);
+    char* tmp = qmmap(__PRINTF_MAXNORMUSE);
     int l = __sprintf(tmp,fmt,args);
     write(ostream, tmp, l);
-    free(tmp);
+    munmap(tmp, __PRINTF_MAXNORMUSE);
     
 }
 /**

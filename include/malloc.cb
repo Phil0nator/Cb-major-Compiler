@@ -82,7 +82,7 @@ size_t cached_size = NULL;
 void remove_block(mblock* block){
     assert(block != nullptr);
     cached_size-=block->size;
-
+    deletions++;
     if (block == free_head){
         free_head = block->next;
     }
@@ -90,9 +90,12 @@ void remove_block(mblock* block){
     if(block->next != nullptr){
         block->next->prev = block->prev;
     }
+    
     if(block->prev != nullptr){
         block->prev->next = block->next;
     }
+
+    
     block->prev=nullptr;
     block->next=nullptr;
 
@@ -113,12 +116,7 @@ bool scan_merge(mblock* b){
         return false;
     }
 
-    for each_link(mblock, block, next, free_head) {
-        if( (b + b->size + mblock) == block){
 
-        }
-
-    }
 
     return true;
 }
@@ -130,11 +128,18 @@ bool scan_merge(mblock* b){
  * @returns None
  */
 void simple_add(mblock* block){
+    
+    if(block->size == NULL){
+        return;
+    }
+    
     if(free_head == nullptr){
         free_head = block;
         return;
     }
 
+
+    assert(block != nullptr);
 
     free_head->prev = block;
     block->next = free_head;
@@ -150,8 +155,10 @@ void simple_add(mblock* block){
 void add_block(mblock* block){
     
     assert(block != nullptr);
-
-
+    if(block->size == NULL){
+        return;
+    }
+    appends++;
     cached_size += block->size;
     if(free_head == nullptr){
         free_head = block;
@@ -174,18 +181,26 @@ mblock* scan_existing(size_t request){
     if(free_head == nullptr){
         return nullptr;
     }
+    printf("Start loop with request: %i\n", request);
     for each_link(mblock,block,next,free_head){
         if(block->size >= request){
+            printf("BLOCK: Size: %i, Addr %x\n", block->size, block);
             remove_block(block);
             split_block(block, request);
+            printf("Return end loop\n");
             return block;
         }
 
     }
+    printf("End loop\n");
+
 
     return nullptr;
 
 }
+
+size_t appends = 0;
+size_t deletions = 0;
 
 /**
  * A debugging function to view the contents of the cached blocks
@@ -195,12 +210,13 @@ void printstate(){
     if(free_head == nullptr){
         printf("EMPTY\n");
     }else{
+        int i  =0;
         for each_link(mblock, block, next, free_head){
             printf("BLOCK: %i @ %x\n", block->size, block);
         }
     }
 
-
+    printf("Appends: %i, Deletions %i\n",appends,deletions);
 
 
     printf("=======================\n");
@@ -232,8 +248,8 @@ inline void destroy_ptr(mblock* ptr){
  *                       new space
  *                           \/
  *  | {256, next, prev}   | ---- | {1024 - 256 - sizeof(mblock), next, prev } | ------------| 
- *  ^                            ^
- * Given pointer     Added block to cache
+ *  ^                            ^                                            ^
+ * Given pointer     Added block to cache                               cached space
  * 
  * Because a new block would require an new mblock region, there is an inhearent memory cost of (sizeof(mblock))
  * for every split. So, if the destination size is less than sizeof(mblock) in difference from the original size,
@@ -251,7 +267,7 @@ void split_block(mblock* block, size_t destsize){
     }
 
     size_t othersize = block->size - destsize;
-    if(othersize < sizeof(mblock)){
+    if(othersize <= sizeof(mblock)){
         return;
     }
     mblock* newblock = ($mblock* MALLOC_USERPTR(block + destsize));
@@ -260,7 +276,6 @@ void split_block(mblock* block, size_t destsize){
     newblock->prev = nullptr;
 
     block->size = destsize ;
-
     add_block(newblock);
 
 }
