@@ -431,17 +431,18 @@ class Function:
                 if(self.current_token.value == "else"):
 
                     self.addline(postlabel + ":\n")
-
                     self.advance()
                     if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
                         self.buildIfStatement()
                     elif(self.current_token.tok == T_OPENSCOPE):
                         self.advance()
                         self.beginRecursiveCompile()
+                        if(self.current_token.tok == T_CLSSCOPE):
+                            self.advance()
                     else:
                         throw(ExpectedToken(self.current_token, "{"))
-                    if(self.current_token.tok == T_CLSSCOPE):
-                        self.advance()
+                    
+
                     self.addline(jmpafter + ":\n")
 
                 else:
@@ -454,7 +455,6 @@ class Function:
         else:
             # the following is executed in an instance like this:
             # if(false) { ... }
-
             self.skipBody()
 
         self.continues.pop()

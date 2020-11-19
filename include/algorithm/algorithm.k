@@ -137,7 +137,7 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
  * @param member the name of the next pointer of the linked list structure
  * @param listhead the first link
  */
-#define each_link(type, varname, member, listhead) (type *varname = listhead; varname->member != nullptr; varname = varname->member )
+#define each_link(type, varname, member, listhead) (type *varname = listhead; varname != nullptr; varname = varname->member )
 
 
 #define range(name, max) (size_t name = 0; name < (max); name++)
@@ -162,6 +162,15 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
  * @returns -1 for 0, 1 for 1
  */
 #define bintern(a) (((a)*2)-1)
+
+/**
+ * Clamp a value x to the range of min->max.
+ * @param x the value to clamp
+ * @param min min value of x possible (inclusive)
+ * @param max max value of x possible (inclusive)
+ * @returns None. (the value of x will be changed)
+ */
+#define clamp(x, min, max) if((x)<(min)){x = min;} else if ((x)>(max)){x=max;}(0)
 
 
 /**

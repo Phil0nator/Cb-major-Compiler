@@ -55,5 +55,16 @@ inline long __inline__syscall(long call){__asm{"
 "}}
 
 
+#ifdef __GNUC__
+/**
+ * Compatibility with common syntax highlighting, but will never be compiled.
+ */
+#define global
+#define function
+#define __cdecl
+#define cextern extern
+
+#endif
+
 
 #endif

@@ -81,7 +81,13 @@ size_t cached_size = NULL;
  */
 void remove_block(mblock* block){
     assert(block != nullptr);
+
+
     cached_size-=block->size;
+    clamp( cached_size, 0, INT_MAX);
+    
+    
+    
     deletions++;
     if (block == free_head){
         free_head = block->next;
@@ -111,12 +117,30 @@ void remove_block(mblock* block){
 bool scan_merge(mblock* b){
 
     if(cached_size > malloc_maxcache){
-        cached_size-=b->size;
+        cached_size -= b->size + sizeof(mblock);
+        clamp( cached_size, 0, INT_MAX);
+        printf("Destroy pointer\n");
         destroy_ptr(b);
         return false;
     }
 
+    for each_link(mblock, block, next, free_head){
 
+
+        if ((block + sizeof(mblock) + block->size) == b){
+
+            block->size += b->size + sizeof(mblock) ;
+            cached_size += sizeof(mblock);
+            return false;
+
+        } else if ((b + sizeof(mblock) + b->size) == block){
+            remove_block(block);
+            b->size += block->size+sizeof(mblock);
+            return true;
+
+        } 
+
+    }
 
     return true;
 }
@@ -132,9 +156,7 @@ void simple_add(mblock* block){
     if(block->size == NULL){
         return;
     }
-    
-    if(free_head == nullptr){
-        free_head = block;
+    if(block == free_head){
         return;
     }
 
@@ -144,6 +166,9 @@ void simple_add(mblock* block){
     free_head->prev = block;
     block->next = free_head;
     free_head = block;
+    
+    
+
 
 }
 /**
@@ -160,11 +185,15 @@ void add_block(mblock* block){
     }
     appends++;
     cached_size += block->size;
+    clamp( cached_size, 0, INT_MAX);
+
     if(free_head == nullptr){
         free_head = block;
         return;
     }
+
     if(scan_merge(block)){
+
         simple_add(block);
     }
 }
@@ -181,18 +210,17 @@ mblock* scan_existing(size_t request){
     if(free_head == nullptr){
         return nullptr;
     }
-    printf("Start loop with request: %i\n", request);
+
     for each_link(mblock,block,next,free_head){
         if(block->size >= request){
-            printf("BLOCK: Size: %i, Addr %x\n", block->size, block);
+
             remove_block(block);
             split_block(block, request);
-            printf("Return end loop\n");
             return block;
         }
 
+
     }
-    printf("End loop\n");
 
 
     return nullptr;
@@ -210,13 +238,13 @@ void printstate(){
     if(free_head == nullptr){
         printf("EMPTY\n");
     }else{
-        int i  =0;
         for each_link(mblock, block, next, free_head){
             printf("BLOCK: %i @ %x\n", block->size, block);
+
         }
     }
 
-    printf("Appends: %i, Deletions %i\n",appends,deletions);
+    printf("Appends: %i, Deletions %i, Cache: %u\n",appends,deletions, cached_size);
 
 
     printf("=======================\n");
@@ -262,22 +290,46 @@ void split_block(mblock* block, size_t destsize){
 
     assert(destsize <= block->size);
 
+    /**
+     * A split to the same size has no result.
+     */
     if(block->size == destsize){
         return;
     }
 
+    /**
+     * Projected size for the other half of the split, if a split is possible.
+     */
     size_t othersize = block->size - destsize;
+    
+    
+    /**
+     * If the projected other size would be less than one mblock, then the split is impossible because
+     * of the block overhead.
+     */
     if(othersize <= sizeof(mblock)){
         return;
     }
-    mblock* newblock = ($mblock* MALLOC_USERPTR(block + destsize));
+
+    /**
+     * The new block is located at (block + destsize + sizeof(mblock))
+     */
+    mblock* newblock = (MALLOC_USERPTR(block + destsize));
+    
+    /**
+     * The size for the new block will be the previously projected size, adjusted for the 
+     * block overhead.
+     */
     newblock->size = othersize - sizeof(mblock);
+    //safeguard
     newblock->next = nullptr;
     newblock->prev = nullptr;
 
+    /**
+     * The original block's size is now set to destsize
+     */
     block->size = destsize ;
     add_block(newblock);
-
 }
 
 /**
@@ -298,9 +350,12 @@ global void free(void* usrptr){
  * @returns a pointer with at least (size) bytes of free space
  */
 global void* malloc(size_t size){
+
+
     if (size > malloc_maxcache){
         malloc_maxcache += size;
     }
+
     mblock* block = scan_existing(size);
     if(block != nullptr){
         return MALLOC_USERPTR(block);
