@@ -113,7 +113,7 @@ class Structure:
                         self.advance()
                     exprtokens = self.compiler.currentTokens[start:self.compiler.ctidx]
                     value = determineConstexpr(t.isflt(), exprtokens, emptyfn)
-                    size += t.csize() * value.accessor
+                    size += t.csize() * value.accessor-1
                     self.advance()
                     continue
 

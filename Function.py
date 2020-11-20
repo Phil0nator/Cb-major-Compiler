@@ -1266,6 +1266,11 @@ class Function:
                 else:
                     throw(UnexpectedToken(self.current_token))
 
+            elif(self.current_token.tok == T_PTRACCESS):
+                exprtokens.append(self.current_token)
+                self.advance()
+                self.current_token.thint = "m"
+
             # if one of the above special conditions was true, there is no need to add the actual
             #   current token.
             if(not wasfunc):
@@ -1273,7 +1278,6 @@ class Function:
             wasfunc = False
 
             self.advance()
-
         return exprtokens, instructions
 
     # evaluate the next tokens and return the asm instructions

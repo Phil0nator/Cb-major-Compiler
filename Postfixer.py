@@ -44,24 +44,33 @@ class Postfixer:
             # an ID could be a local variable, global variable, function
             # pointer, member variable
             elif(t.tok == T_ID):
-                v: Variable = self.fn.getVariable(t.value)
-                if(v is None):
 
-                    v = self.fn.compiler.getType(t.value)
+                if(t.thint is not None and t.thint == "m"):
+                    ec = EC.ExpressionComponent(t.value, LITERAL.copy(),token=t)
+                
+                else:
+
+
+                    v: Variable = self.fn.getVariable(t.value)
                     if(v is None):
-                        if(self.fn.compiler.ismember(t.value)):  # the variable is a member
-                            ec = EC.ExpressionComponent(
-                                t.value, LITERAL.copy(), token=t)
-                        else:  # the ID does not exist
-                            throw(UnkownIdentifier(t))
-                    else:  # variable is type, so it is replace by its size
 
-                        ec = EC.ExpressionComponent(
-                            v.size(0), LITERAL.copy(), constint=True, token=t)
-                        ec.memory_location = valueOf(v)
-                else:  # variable is local or global or function pointer
-                    v.referenced = True
-                    ec = EC.ExpressionComponent(v, v.t)
+                        v = self.fn.compiler.getType(t.value)
+                        if(v is None):
+                            if(self.fn.compiler.ismember(t.value)):  # the variable is a member
+                                ec = EC.ExpressionComponent(
+                                    t.value, LITERAL.copy(), token=t)
+                            else:  # the ID does not exist
+                                throw(UnkownIdentifier(t))
+                        else:  # variable is type, so it is replace by its size
+
+                            ec = EC.ExpressionComponent(
+                                v.csize(), LITERAL.copy(), constint=True, token=t)
+                            ec.memory_location = valueOf(v)
+                    
+                    else:  # variable is local or global or function pointer
+                        v.referenced = True
+                        ec = EC.ExpressionComponent(v, v.t)
+            
             # function calls are replaced by a pop because their return values are already pushed.
             # the Peephole optimizer will remove redundant push-pops and replace them with mov's
             # when possible, and with a high enough Optimization flag (set by

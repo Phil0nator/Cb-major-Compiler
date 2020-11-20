@@ -173,6 +173,7 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
 #define clamp(x, min, max) if((x)<(min)){x = min;} else if ((x)>(max)){x=max;}(0)
 
 
+
 /**
  * alloca is a way to allocate additional space on the stack, semi-dynamically.
  * alloca is very prone to causing errors, and should only be used in very controlled

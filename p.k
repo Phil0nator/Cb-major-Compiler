@@ -14,24 +14,21 @@ void fillblock(mblock* block, size_t i){
 int main(long argc, char** argv){
 
 
-    while(true){
 
-        char* c1 = malloc(206);
-        char* c2 = malloc(302);
+    char* c1 = malloc(206);
+    char* c2 = malloc(58);
 
-        char* c3 = malloc(50);
 
-        strcpy(c1, "This should be fine         \r");
-        strcpy(c2, "This too should be fine     \r");
-        strcpy(c3, "Why not this too...         \r");
-        printf("%s%s%s",c1,c2,c3);
+    strcpy(c1, "This should be fine         \n");
+    strcpy(c2, "This is gud?\n");
 
-        free(c1);
-        free(c3);
-        free(c2);
+    printf(c1);
+    printf(c2);
+    printstate();
 
-    }
-    
+    free(c2);
+    free(c1);
+    printstate();
 
 
     // void* testing_area = qmmap(10000);
