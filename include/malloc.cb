@@ -90,11 +90,8 @@ size_t cached_size = NULL;
  */
 void merge_right(mblock* b){
     if(b->next != nullptr){
-        printf("Exists.\n");
         if(b->next->free == true){
-            printf("Free.\n");
             if(  ($mblock* b + b->size + sizeof(mblock) )== b->next ){
-                printf("Found\n");
                 b->size += b->next->size + sizeof(mblock);
                 b->next = b->next->next;
                 if(b->next){
@@ -118,7 +115,6 @@ bool scan_merge(mblock* b){
     if(cached_size > malloc_maxcache){
         cached_size -= b->size + sizeof(mblock);
         clamp( cached_size, 0, INT_MAX);
-        printf("Destroy pointer\n");
         destroy_ptr(b);
         return false;
     }

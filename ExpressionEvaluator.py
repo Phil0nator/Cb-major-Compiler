@@ -385,7 +385,7 @@ class ExpressionEvaluator:
                 a, b, op)
 
         # can be optimized through reduced register loading
-        elif(op in ["+", "-"]):
+        elif(op in ["+", "-"] and dwordImmediate(b.accessor)):
             newinstr, newt, apendee = self.noloadOp(a, b, op)
 
         # comparisons with zero can be optimized through the
