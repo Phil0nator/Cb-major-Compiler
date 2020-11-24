@@ -235,8 +235,8 @@ class ExpressionEvaluator:
             throw(UnmatchedTernary(a.token))
 
         reg, _, __, newinstr = optloadRegs(a, None, "?", LONG.copy())
-        newinstr += f"test {reg}, {reg}\n"
         cmpinstr, aregec, bregec = ternarystack.pop()
+        newinstr += f"test {reg}, {reg}\n"
         newinstr += cmpinstr
 
         rfree(aregec.accessor)

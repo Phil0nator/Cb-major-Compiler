@@ -170,7 +170,7 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
  * @param max max value of x possible (inclusive)
  * @returns None. (the value of x will be changed)
  */
-#define clamp(x, min, max) if((x)<(min)){x = min;} else if ((x)>(max)){x=max;}(0)
+#define clamp(x, min, max) (x < min) ? min : ((x>max)?max:x)
 
 
 

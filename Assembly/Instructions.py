@@ -141,7 +141,7 @@ class Peephole:
                     # in instances where the compiler creates code to evaluate an or, and, or xor operation for use
                     # in a conditional operation, the subsequent test
                     # instruction that will be emitted will be redundant.
-                    if(line.op == "test" and prev.op in ["or", "and", "xor"] and line.dest == line.source):
+                    if(line.op == "test" and prev.op in ["or", "and", "xor"] and line.dest == line.source and line.dest == prev.dest):
                         # ommit line
                         splitted[line.idx] = ""
 
