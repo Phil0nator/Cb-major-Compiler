@@ -1234,18 +1234,24 @@ class Function:
                 elif(self.tokens[self.ctidx + 1].tok == T_DOT):
                     wasfunc = True
                     start = self.current_token.start.copy()
+                    vname = f"{self.current_token.value}"
                     var = self.getVariable(self.current_token.value)
-                    if(var is None):
-                        throw(UnkownIdentifier(self.current_token))
-                    self.advance()
-                    self.advance()
-                    member = self.current_token.value
-                    memvar = var.t.getMember(member)
-                    if(memvar is None):
-                        throw(UnkownIdentifier(self.current_token))
-                    offset = memvar.offset
+                    while(self.tokens[self.ctidx + 1].tok == T_DOT):
+                        if(var is None):
+                            throw(UnkownIdentifier(self.current_token))
+                        self.advance()
+                        self.advance()
+                        member = self.current_token.value
+                        memvar = var.t.getMember(member)
+                        if(memvar is None):
+                            throw(UnkownIdentifier(self.current_token))
+                        vname += f".{memvar.name}"
+                        
+                        var = memvar
+
                     exprtokens.append(
-                        Token(T_ID, f"{var.name}.{memvar.name}", start, self.current_token.end))
+                        Token(T_ID, vname, start, self.current_token.end))
+
             elif (self.current_token.tok == T_KEYWORD):
 
                 # forward function declarations are detected and parsed here. The label used
@@ -1393,6 +1399,26 @@ class Function:
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
+    def buildStackStructure(self, var, starter=""):
+        if(not var.isptr and var.t.members is not None):
+            for v in var.t.members:
+                if(isinstance(v, Variable)):
+
+                    self.variables.append(Variable(v.t.copy(
+                    ), f"{starter}{var.name}.{v.name}", offset=var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
+                    # initialize to null
+
+                    self.addline(Instruction(
+                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
+
+                    # recursivly fill in nested structures
+                    self.buildStackStructure(v, starter=f"{starter}{var.name}.")                    
+
+                else:
+                    print("Non-Variable member error")
+                    exit(1)
+
+
     def buildDeclaration(self, register=False):                     # declare new var
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):
             self.buildRegdecl()
@@ -1431,19 +1457,7 @@ class Function:
         # if the variable is a stack-based structure,
         #   add its member variables too.
         if(not var.isptr and var.t.members is not None):
-            for v in var.t.members:
-                if(isinstance(v, Variable)):
-
-                    self.variables.append(Variable(v.t.copy(
-                    ), f"{var.name}.{v.name}", offset=var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
-                    # initialize to null
-
-                    self.addline(Instruction(
-                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
-
-                else:
-                    print("Non-Variable member error")
-                    exit(1)
+            self.buildStackStructure(var)
 
         sizes = [1]
         isarr = False
