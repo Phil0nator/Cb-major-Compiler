@@ -4212,49 +4212,12 @@ _void_thread_join_pthread_t.:
 ___void_thread_join_pthread_t.__return:
 	leave
 	ret
-_void_CreateVector_pVector.size_tsize_t:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 32
-	mov [rbp-8], rdi
-	mov [rbp-16], rsi
-	mov [rbp-24], rdx
-	mov rbx, qword[rbp-8]
-	mov r11, qword[rbp-16]
-	mov [rbx], r11
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	mov r11, qword[rbp-24]
-	mov [rbx], r11
-	mov r10, qword[rbp-24]
-	mov rbx, qword[rbp-16]
-	imul rbx, r10
-	mov rdi, rbx
-	xor rax, rax
-	call _void._qmmap_psize_t
-	push rax
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+16]
-	pop r11
-	mov [rbx], r11
-___void_CreateVector_pVector.size_tsize_t__return:
-	leave
-	ret
 main:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 56
+	sub rsp, 24
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
-	mov qword[rbp-48], 0
-	mov qword[rbp-40], 0
-	mov qword[rbp-32], 0
-	mov rdx, 8
-	mov rsi, 5
-	lea rbx, [rbp-48]
-	mov rdi, rbx
-	xor rax, rax
-	call _void_CreateVector_pVector.size_tsize_t
 	xor rax, rax
 	jmp __main__return
 __main__return:

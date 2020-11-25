@@ -37,7 +37,7 @@ typedef void* iterable;
  */
 #define for_each(array, length, fn) for(size_t __foreachiterator__ = 0; __foreachiterator__ < length; __foreachiterator__++) {\
                                         fn((array)[__foreachiterator__]);\
-                                    }
+                                    }(0)
 /**
  * The value of x implies y
  */
