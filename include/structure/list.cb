@@ -1,8 +1,14 @@
 
-
 struct List{
 
-    
+    void data;
+    List* next;
+
+    function void set(void d){
+        this->data = d;
+    }
 
 
 };
+
+

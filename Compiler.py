@@ -249,7 +249,7 @@ class Compiler:
         self.advance()
 
     # isolate a function and build a Function object
-    def createFunction(self):
+    def createFunction(self, thisp=False, thispt = None):
         inline = False
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "inline"):
@@ -270,6 +270,8 @@ class Compiler:
         self.advance()
 
         parameters = []
+        if(thisp):
+            parameters.append(Variable(thispt,"this",isptr=True))
 
         variardic = False
 

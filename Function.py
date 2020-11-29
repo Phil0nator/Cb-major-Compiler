@@ -1053,6 +1053,95 @@ class Function:
     def buildAmbiguousFunctionCall(self, fid, types):
         pass
 
+    def rawFNParameterLoad(self, fn, sseused, normused, pcount):
+        paraminst = ""
+        # for each parameter
+        for i in range(pcount):
+
+            # check for extra parameters
+            if(i >= pcount - fn.extra_params):
+                break
+
+            # if the parameter is a float, load to SSE register
+            if(fn.parameters[i].isflt()):
+
+                inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
+                    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
+                )
+                sseused += 1
+            # else, load to normal register of the correct size
+            else:
+                # determine size:
+
+                result = setSize(
+                    norm_parameter_registers[normused],
+                    fn.parameters[i].t.csize())
+
+                ec = EC.ExpressionComponent(
+                    result, fn.parameters[i].t.copy(), token=self.current_token)
+                # build main instructions
+                inst = f"{self.evaluateRightsideExpression(ec)}"
+                # finalize with mov of correct size
+
+                # if(fn.parameters[i].t.csize() != 8):
+
+                #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
+                # fn.parameters[i].t.csize()), setSize(result,
+                # fn.parameters[i].t.csize())]))
+
+                # inst += (maskset(
+                #    norm_parameter_registers[normused],
+                #    fn.parameters[i].t.csize()))
+                #    rfree(result)
+                normused += 1
+            paraminst = f"{inst}{paraminst}"
+
+            if(self.current_token.tok == ","):
+                self.advance()
+
+        # load the function's extra params
+        epcounter = fn.extra_params
+
+        while epcounter > 0:
+            # extra parameters are loaded into rax, and then into their BSS
+            # memory location
+            paraminst += (self.evaluateRightsideExpression(EC.ExpressionComponent(
+                "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token))
+            )
+            paraminst += loadToReg(
+                f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
+            if(self.current_token.tok == ","):
+                self.advance()
+            epcounter -= 1
+
+
+        return paraminst
+
+
+    def buildFunctionCallClosing(self, fn, varcall, var):
+        instructions = ""
+
+        # actual 'call' instruction
+
+        instructions += (fncall(fn)
+                         ) if not varcall else (Instruction("call", [valueOf(var)]))
+
+        # save return value for register restores
+        if(len(self.regdecls) > 0):
+            tmp = ralloc(False)
+            instructions += raw_regmov(
+                tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
+
+        instructions += (self.restoreregs())
+
+        # restore return value after register restores
+        if(len(self.regdecls) > 0):
+            rfree(tmp)
+            instructions += raw_regmov(
+                sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
+        
+        return instructions
+
     def buildFunctionCall(self):
 
         # TODO:
@@ -1122,96 +1211,54 @@ class Function:
 
         instructions += (self.pushregs())
 
-        paraminst = ""
+        paraminst = self.rawFNParameterLoad(fn,sseused,normused,pcount)
 
-        # for each parameter
-        for i in range(pcount):
+        
 
-            # check for extra parameters
-            if(i >= pcount - fn.extra_params):
-                break
 
-            # if the parameter is a float, load to SSE register
-            if(fn.parameters[i].isflt()):
-
-                inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
-                )
-                sseused += 1
-            # else, load to normal register of the correct size
-            else:
-                # determine size:
-
-                result = setSize(
-                    norm_parameter_registers[normused],
-                    types[i].csize())
-
-                ec = EC.ExpressionComponent(
-                    result, fn.parameters[i].t.copy(), token=self.current_token)
-                # build main instructions
-                inst = f"{self.evaluateRightsideExpression(ec)}"
-                # finalize with mov of correct size
-
-                # if(fn.parameters[i].t.csize() != 8):
-
-                #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
-                # fn.parameters[i].t.csize()), setSize(result,
-                # fn.parameters[i].t.csize())]))
-
-                # inst += (maskset(
-                #    norm_parameter_registers[normused],
-                #    fn.parameters[i].t.csize()))
-                #    rfree(result)
-                normused += 1
-            paraminst = f"{inst}{paraminst}"
-
-            if(self.current_token.tok == ","):
-                self.advance()
-
-        # load the function's extra params
-        epcounter = fn.extra_params
-
-        while epcounter > 0:
-            # extra parameters are loaded into rax, and then into their BSS
-            # memory location
-            paraminst += (self.evaluateRightsideExpression(EC.ExpressionComponent(
-                "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token))
-            )
-            paraminst += loadToReg(
-                f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
-            if(self.current_token.tok == ","):
-                self.advance()
-            epcounter -= 1
-
-        if(self.current_token.tok != T_ENDL):
-            # self.advance()
-            pass
 
         instructions += paraminst
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
         instructions += (Instruction("mov", [rax, ssevarsforrax]))
 
-        # actual 'call' instruction
-
-        instructions += (fncall(fn)
-                         ) if not varcall else (Instruction("call", [valueOf(var)]))
-
-        # save return value for register restores
-        if(len(self.regdecls) > 0):
-            tmp = ralloc(False)
-            instructions += raw_regmov(
-                tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
-
-        instructions += (self.restoreregs())
-
-        # restore return value after register restores
-        if(len(self.regdecls) > 0):
-            rfree(tmp)
-            instructions += raw_regmov(
-                sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
+        instructions += self.buildFunctionCallClosing(fn,varcall,var if varcall else None)
 
         return instructions, fn
+
+
+    def wrapExpressionFunctionCall(self):
+        instructions = ""
+        start = self.current_token.start.copy()
+        fninstr, fn = self.buildFunctionCall()
+
+        token = Token(T_FUNCTIONCALL, fninstr, start,
+                        self.current_token.start.copy())
+        token.fn = fn
+        instructions += fninstr + "\n"
+
+        if(fn.returntype.isflt()):
+            instructions += Instruction("movq",
+                                        [rax, sse_return_register])
+        instructions += Instruction("push", [norm_return_register])
+        return token, instructions
+
+
+
+    def memberCall(self, fn, this):
+        self.addline(self.pushregs())
+        self.addline(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
+        normused = 1
+        sseused = 0
+        pcount = len(fn.parameters)-1
+        self.advance()
+        self.advance()
+        self.addline(self.rawFNParameterLoad(fn,sseused,normused,pcount))
+        self.addline(self.buildFunctionCallClosing(fn,False, None))
+        if(fn.returntype.isflt()):
+            self.addline(Instruction("movq",
+                                        [rax, sse_return_register]))
+        self.addline(Instruction("push", [norm_return_register]))
 
     # construct expression components from tokens
 
@@ -1253,20 +1300,12 @@ class Function:
                         exprtokens.append(
                             self.current_token) if self.current_token.tok == T_CLSP else None
                         continue
+                    else:
+                        
+                        token, inst = self.wrapExpressionFunctionCall()
+                        exprtokens.append(token)
+                        instructions+=inst
 
-                    start = self.current_token.start.copy()
-                    fninstr, fn = self.buildFunctionCall()
-
-                    token = Token(T_FUNCTIONCALL, fninstr, start,
-                                  self.current_token.start.copy())
-                    token.fn = fn
-                    exprtokens.append(token)
-                    instructions += fninstr + "\n"
-
-                    if(fn.returntype.isflt()):
-                        instructions += Instruction("movq",
-                                                    [rax, sse_return_register])
-                    instructions += Instruction("push", [norm_return_register])
 
                 # Member variables accessed from stack based structures can be abstracted as Variable objects
                 #   because they are effectively stored the same.
@@ -1275,6 +1314,7 @@ class Function:
                     start = self.current_token.start.copy()
                     vname = f"{self.current_token.value}"
                     var = self.getVariable(self.current_token.value)
+                    vstack = [var]
                     while(self.tokens[self.ctidx + 1].tok == T_DOT):
                         if(var is None):
                             throw(UnkownIdentifier(self.current_token))
@@ -1287,9 +1327,22 @@ class Function:
                         vname += f".{memvar.name}"
 
                         var = memvar
+                        vstack.append(var)
 
-                    exprtokens.append(
-                        Token(T_ID, vname, start, self.current_token.end))
+                    # for member access, the token can simply be added. 
+                    # for member function calls, a more complex function call 
+                    # must be built
+                    if(self.tokens[self.ctidx+1].tok != T_OPENP):
+                        exprtokens.append(
+                            Token(T_ID, vname, start, self.current_token.end))
+                    else:
+                        obj = vstack[-2]
+                        fn = var.initializer
+
+                        self.memberCall(fn,obj)
+                        exprtokens.append(Token(T_FUNCTIONCALL, "",start,self.current_token.end.copy()))
+                        exprtokens[-1].fn = fn
+
 
             elif (self.current_token.tok == T_KEYWORD):
 
@@ -1439,9 +1492,9 @@ class Function:
         return instructions
 
     def buildStackStructure(self, var, starter=""):
-        if(not var.isptr and var.t.members is not None):
+        if(not var.isptr)and(  var.t.ptrdepth==0 and var.t.members is not None):
             for v in var.t.members:
-                if(isinstance(v, Variable)):
+                if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
 
                     self.variables.append(Variable(v.t.copy(
                     ), f"{starter}{var.name}.{v.name}", offset=var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
@@ -1453,10 +1506,6 @@ class Function:
                     # recursivly fill in nested structures
                     self.buildStackStructure(
                         v, starter=f"{starter}{var.name}.")
-
-                else:
-                    print("Non-Variable member error")
-                    exit(1)
 
     def buildDeclaration(self, register=False):                     # declare new var
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):
