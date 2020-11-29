@@ -13,7 +13,7 @@ from Assembly.CodeBlocks import (doFloatOperation,
                                  function_closer, functionlabel, getLogicLabel,
                                  loadToPtr, loadToReg, maskset, movRegToVar,
                                  movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue,
-                                 allocate_readonly, createIntrinsicHeap)
+                                 allocate_readonly, createIntrinsicHeap, movMemVar, extra_parameterlabel)
 from Assembly.Instructions import Instruction, Peephole, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import isfloat, INTMAX
@@ -117,6 +117,17 @@ class Function:
         self.staticnameref = {
 
         }
+
+
+        # Parameter information:
+        #   number of sse parameter registers used
+        self.ssepcount = 0
+        #   number of normal parameter registers used
+        self.normpcount  = 0
+        #   number of extra memory-stored registers are used
+        self.extra_params = 0
+        # the above information is set externally by the compiler class
+
 
         # monitoring:
 
@@ -340,7 +351,12 @@ class Function:
     def loadParameters(self):
         countn = 0
         counts = 0
+
+
         for p in self.parameters:
+
+            if(self.parameters.index(p) >= len(self.parameters)-self.extra_params):
+                break
 
             if (self.inline):
                 if(p.isflt()):
@@ -369,6 +385,12 @@ class Function:
                         p.offset, norm_parameter_registers[countn]))
                     countn += 1
 
+        epcounter = self.extra_params
+        while epcounter > 0:
+            self.addVariable(self.parameters[-epcounter])
+            self.addline(movMemVar((self.variables[-1]), f"[{extra_parameterlabel(self, epcounter)[:-1]}]"      ))
+            epcounter-=1
+    
     def createClosing(self):                    # create end of the function
 
         self.addline(function_closer(
@@ -441,7 +463,6 @@ class Function:
                             self.advance()
                     else:
                         throw(ExpectedToken(self.current_token, "{"))
-                    
 
                     self.addline(jmpafter + ":\n")
 
@@ -1107,6 +1128,11 @@ class Function:
         # for each parameter
         for i in range(pcount):
 
+            # check for extra parameters
+            if(i >= pcount-fn.extra_params):
+                break
+
+
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
@@ -1143,6 +1169,18 @@ class Function:
 
             if(self.current_token.tok == ","):
                 self.advance()
+
+        # load the function's extra params
+        epcounter = fn.extra_params
+
+        while epcounter > 0:
+            paraminst += (self.evaluateRightsideExpression(EC.ExpressionComponent(
+                    "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token))
+                )
+            paraminst += loadToReg(f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
+            if(self.current_token.tok == ","):
+                self.advance()
+            epcounter-=1
 
         if(self.current_token.tok != T_ENDL):
             # self.advance()
@@ -1246,7 +1284,7 @@ class Function:
                         if(memvar is None):
                             throw(UnkownIdentifier(self.current_token))
                         vname += f".{memvar.name}"
-                        
+
                         var = memvar
 
                     exprtokens.append(
@@ -1412,12 +1450,12 @@ class Function:
                         "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
 
                     # recursivly fill in nested structures
-                    self.buildStackStructure(v, starter=f"{starter}{var.name}.")                    
+                    self.buildStackStructure(
+                        v, starter=f"{starter}{var.name}.")
 
                 else:
                     print("Non-Variable member error")
                     exit(1)
-
 
     def buildDeclaration(self, register=False):                     # declare new var
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):

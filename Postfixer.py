@@ -46,10 +46,10 @@ class Postfixer:
             elif(t.tok == T_ID):
 
                 if(t.thint is not None and t.thint == "m"):
-                    ec = EC.ExpressionComponent(t.value, LITERAL.copy(),token=t)
-                
-                else:
+                    ec = EC.ExpressionComponent(
+                        t.value, LITERAL.copy(), token=t)
 
+                else:
 
                     v: Variable = self.fn.getVariable(t.value)
                     if(v is None):
@@ -66,11 +66,11 @@ class Postfixer:
                             ec = EC.ExpressionComponent(
                                 v.csize(), LITERAL.copy(), constint=True, token=t)
                             ec.memory_location = valueOf(v)
-                    
+
                     else:  # variable is local or global or function pointer
                         v.referenced = True
                         ec = EC.ExpressionComponent(v, v.t)
-            
+
             # function calls are replaced by a pop because their return values are already pushed.
             # the Peephole optimizer will remove redundant push-pops and replace them with mov's
             # when possible, and with a high enough Optimization flag (set by

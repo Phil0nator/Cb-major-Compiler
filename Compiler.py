@@ -1,30 +1,25 @@
+import Classes.DType as Type
+import config
+from Assembly.CodeBlocks import (createFloatConstant, createIntrinsicConstant,
+                                 createStringConstant, extra_parameterlabel,
+                                 functionlabel)
+from Assembly.Registers import (norm_parameter_registers,
+                                norm_scratch_registers,
+                                norm_scratch_registers_inuse, ralloc, rfree,
+                                rfreeAll, sse_parameter_registers,
+                                sse_scratch_registers,
+                                sse_scratch_registers_inuse)
+from Classes.Constexpr import buildConstantSet, determineConstexpr
+from Classes.DType import DType, type_precedence
+from Classes.Error import *
+from Classes.Location import Location
+from Classes.Token import *
+from Classes.Token import Token
 from Classes.Variable import Variable
 from Function import Function
-from Classes.DType import DType
-from Classes.DType import type_precedence
-import Classes.DType as Type
-from Structure import Structure
-from Classes.Token import Token
-from Classes.Token import *
-from Classes.Location import Location
-from Classes.Constexpr import determineConstexpr, buildConstantSet
+from globals import BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID
 from Lexer import Lexer
-from Classes.Error import *
-import config
-
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, LONG, SHORT, DOUBLE
-
-from Assembly.Registers import sse_parameter_registers
-from Assembly.Registers import norm_scratch_registers
-from Assembly.Registers import sse_scratch_registers
-from Assembly.Registers import norm_parameter_registers
-from Assembly.Registers import ralloc, rfree, rfreeAll
-from Assembly.Registers import sse_scratch_registers_inuse, norm_scratch_registers_inuse
-
-
-from Assembly.CodeBlocks import createIntrinsicConstant, functionlabel
-from Assembly.CodeBlocks import createFloatConstant
-from Assembly.CodeBlocks import createStringConstant
+from Structure import Structure
 
 #####################################
 #
@@ -279,6 +274,11 @@ class Compiler:
 
         variardic = False
 
+        # count of each type of parameter
+        ssecount = 0
+        normcount = 0
+
+
         # load parameters until end of fn header at ')'
         while self.current_token.tok != T_CLSP:
 
@@ -288,6 +288,10 @@ class Compiler:
                 break
 
             t = self.checkType()
+            # increment param types
+            ssecount += t.isflt()
+            normcount += not t.isflt()
+
 
             if(self.current_token.tok != T_ID):
                 throw(ExpectedIdentifier(self.current_token))
@@ -351,6 +355,24 @@ class Compiler:
         f = Function(name, parameters, rettype, self,
                      self.currentTokens[start:self.ctidx])
         f.variardic = variardic
+
+
+        # handle additional parameters...
+        extra_params = (ssecount - len(sse_parameter_registers))
+        if extra_params < 0:
+            extra_params = 0
+        extra_params += (normcount - len(norm_parameter_registers))
+
+        f.extra_params = extra_params
+        f.ssepcount = ssecount
+        f.normpcount = normcount
+        while extra_params > 0:
+            self.heap += f"{extra_parameterlabel(f, extra_params)} resb 8\n"
+            extra_params -= 1
+
+        
+
+
         self.functions.append(f)
         # add as a variable for fn pointers
         self.globals.append(
@@ -361,6 +383,10 @@ class Compiler:
                 isptr=True,
                 mutable=False,
                 signed=f.returntype.signed))
+
+        
+
+        
 
     def buildStruct(self):                  # isolate and build a structure
         # \see Structure

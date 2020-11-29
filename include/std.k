@@ -19,6 +19,8 @@
 #include "sys/sock.k"               /* low level socket interaction */
 #include "sys/pth.k"                /* low level thread interaction */
 
+#include "structure/structure.ch"   /* standard data structures */
+
 #include "string.k"                 /* high level string functions */
 #include "io/input.k"               /* input functions */
 #include "io/filesystem.k"          /* high level file interaction */

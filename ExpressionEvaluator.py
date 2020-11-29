@@ -793,24 +793,12 @@ class RightSideEvaluator(ExpressionEvaluator):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
-            
-            
-            
 
             # TODO
             #
             # Sometimes setting this to true causes errors
-            apendee.memory_location = False
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            apendee.memory_location = True
+
             rfree(breg)
 
         elif(a.type.__eq__(b.type)):

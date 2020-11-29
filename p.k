@@ -3,7 +3,8 @@
 
 int main(long argc, char** argv){
 
-    printf(strerror(1));
+    List l;
+
 
     return 0;
 }

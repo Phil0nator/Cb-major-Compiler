@@ -49,6 +49,10 @@ def functionlabel(fn):
     out = out.replace("#", types)
     return out
 
+def extra_parameterlabel(fn, num):
+    return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
+
+
 # get the code block to allocate a stack frame at the begining of a function
 
 
@@ -252,6 +256,10 @@ def movVarToReg(reg, var):
 
         else:
             return f"mov {reg},  {valueOf(var)}\n"
+
+def movMemVar(dest, source):
+    return f"mov rax, {valueOf(source)}\n{loadToReg(dest, 'rax')}"
+
 #
 # get the value of x.
 # valueOf is used within lines, so it will always equate to one

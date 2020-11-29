@@ -154,9 +154,10 @@ def evaluate(a, b, op):
         a.accessor = a.accessor.initializer
     if(b is not None and isinstance(b.accessor, Variable)):
         b.accessor = b.accessor.initializer
-    
+
     if(b is not None):
-        return calculateConstant(a, b, op) if a.isconstint() and b.isconstint() else calculateCfloat(a, b, op)
+        return calculateConstant(a, b, op) if a.isconstint(
+        ) and b.isconstint() else calculateCfloat(a, b, op)
     return a
 
 
