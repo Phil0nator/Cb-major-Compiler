@@ -183,7 +183,8 @@ global long system(char* command){
         printf(strerror(err));
         
     } // if child, execute bash
-    waitpid(pid, nullptr, nullptr);
+    long e = waitpid(pid, nullptr, nullptr);
+    
     return 0;
 }
 

@@ -1784,7 +1784,7 @@ ___long_execl_pchar.char..__return:
 _long_system_pchar.:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 32
+	sub rsp, 40
 	mov [rbp-8], rdi
 	xor rax, rax
 	mov rax , 57 
@@ -1836,6 +1836,7 @@ _long_system_pchar.:
 	xor r8, r8
 	syscall
 .L0x83:
+	mov qword[rbp-32], rax
 	xor rax, rax
 	jmp ___long_system_pchar.__return
 ___long_system_pchar.__return:
@@ -4218,6 +4219,21 @@ main:
 	sub rsp, 24
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
+	mov rdi, 1
+	xor rax, rax
+	call _char._strerror_plong
+	mov rdi, rax
+	xor rax, rax
+	push rdi
+	mov rbx, rdi
+	mov rsi, rdi
+	mov rdi, 1
+	xor rax, rax
+	call _int_fputs_pFILEchar.
+	mov rbx, rax
+	pop rdi
+	mov rax, rbx
+.L0x146:
 	xor rax, rax
 	jmp __main__return
 __main__return:
