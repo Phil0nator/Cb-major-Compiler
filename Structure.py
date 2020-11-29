@@ -141,11 +141,14 @@ class Structure:
                 if(self.current_token.value == "function"):
                     self.advance()
                     self.compiler.createFunction(thisp=True,thispt=prototypeType)
+                    self.compiler.ctidx-=1
                     self.update()
                     f = self.compiler.functions[-1]
                     self.compiler.possible_members.append(f.name)
                     prototypeType.members.append(Variable(f.returntype.up(),f.name,initializer=f))
-
+                    
+                    if(self.current_token.tok == T_CLSSCOPE):
+                        self.advance()
         # finalize
         self.compiler.types.pop()
         self.compiler.types.append(prototypeType)

@@ -59,10 +59,14 @@ inline long __inline__syscall(long call){__asm{"
 /**
  * Compatibility with common syntax highlighting, but will never be compiled.
  */
-#define global
-#define function
-#define __cdecl
-#define cextern extern
+# define global
+# define function
+# define __cdecl
+# define cextern extern
+
+# define __AVX
+# define __SSE
+# define __SSE2
 
 #endif
 

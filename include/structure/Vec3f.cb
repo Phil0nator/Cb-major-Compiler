@@ -1,0 +1,83 @@
+
+
+#define VEC3F_AVX_LOADYMM0 __asm{"vmovdqu ymm0, [rdi]"}
+#define VEC3F_AVX_DEPOSITYMM1 __asm{"vmovdqu [rdi], ymm1"}
+
+
+#define VEC3F_AVX_ADD   __asm{"vaddpd ymm1, ymm0, [rsi]"}
+#define VEC3F_AVX_SUB   __asm{"vsubpd ymm1, ymm0, [rsi]"}
+#define VEC3F_AVX_MUL   __asm{"vmulpd ymm1, ymm0, [rsi]"}
+#define VEC3F_AVX_DIV   __asm{"vdivpd ymm1, ymm0, [rsi]"}
+
+
+
+#ifdef __AVX
+
+#   define VEC3F_LOAD VEC3F_AVX_LOADYMM0
+#   define VEC3F_DEPOSIT VEC3F_AVX_DEPOSITYMM1
+#   define VEC3F_ADD VEC3F_AVX_ADD
+#   define VEC3F_SUB VEC3F_AVX_SUB
+#   define VEC3F_MUL VEC3F_AVX_MUL
+#   define VEC3F_DIV VEC3F_AVX_DIV
+
+#endif
+
+#define VEC3F_SQRT      __asm{"                         \
+                                sqrtsd xmm0, [rdi]      \
+                                sqrtsd xmm1, [rdi+8]    \
+                                sqrtsd xmm2, [rdi+16]   \
+                                movsd [rdi], xmm0       \
+                                movsd [rdi+8], xmm1     \
+                                movsd [rdi+16], xmm2    \
+                            "}
+
+
+struct Vec3f{
+
+    double x;
+    double y;
+    double z;
+
+#ifdef __AVX
+    long padd = 0;
+#endif
+
+    function void set(double x, double y, double z){
+        this->x=x;
+        this->y=y;
+        this->z=z;
+    }
+
+    function void add(Vec3f* other){
+        VEC3F_LOAD
+        VEC3F_ADD
+        VEC3F_DEPOSIT
+    }
+
+    function void sub(Vec3f* other){
+        VEC3F_LOAD
+        VEC3F_SUB
+        VEC3F_DEPOSIT
+    }
+
+    function void mul(Vec3f* other){
+        VEC3F_LOAD
+        VEC3F_MUL
+        VEC3F_DEPOSIT
+    }
+
+    function void div(Vec3f* other){
+        VEC3F_LOAD
+        VEC3F_DIV
+        VEC3F_DEPOSIT
+    }
+
+    function void sqrt(){
+        VEC3F_SQRT
+    }
+
+
+
+};
+
+

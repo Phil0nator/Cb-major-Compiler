@@ -706,7 +706,7 @@ class Function:
 
         # copy value so as not to change it
         content = f"{self.current_token.value}"
-
+        content = content.replace("\\", "")
         lnum = getLogicLabel("")
         content = content.replace("%L", lnum)
 
@@ -1053,13 +1053,17 @@ class Function:
     def buildAmbiguousFunctionCall(self, fid, types):
         pass
 
-    def rawFNParameterLoad(self, fn, sseused, normused, pcount):
+    def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset= False):
         paraminst = ""
+
+        rng = range(1, pcount) if offset else range(pcount)
+
         # for each parameter
-        for i in range(pcount):
+        for i in rng:
 
             # check for extra parameters
             if(i >= pcount - fn.extra_params):
+
                 break
 
             # if the parameter is a float, load to SSE register
@@ -1113,6 +1117,7 @@ class Function:
             if(self.current_token.tok == ","):
                 self.advance()
             epcounter -= 1
+
 
 
         return paraminst
@@ -1244,22 +1249,25 @@ class Function:
         return token, instructions
 
 
-
+    # build a function call that takes a pointer to an object as the first parameter.
+    # (Functions defined in a structure that need a definition of 'this')
     def memberCall(self, fn, this):
+        # prevent warnings
+        this.referenced = True
         self.addline(self.pushregs())
         self.addline(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
         normused = 1
         sseused = 0
-        pcount = len(fn.parameters)-1
+        pcount = len(fn.parameters)
         self.advance()
         self.advance()
-        self.addline(self.rawFNParameterLoad(fn,sseused,normused,pcount))
+        self.addline(self.rawFNParameterLoad(fn,sseused,normused,pcount,True))
+        
         self.addline(self.buildFunctionCallClosing(fn,False, None))
         if(fn.returntype.isflt()):
             self.addline(Instruction("movq",
                                         [rax, sse_return_register]))
         self.addline(Instruction("push", [norm_return_register]))
-
     # construct expression components from tokens
 
     def buildExpressionComponents(self):
@@ -1335,6 +1343,7 @@ class Function:
                     if(self.tokens[self.ctidx+1].tok != T_OPENP):
                         exprtokens.append(
                             Token(T_ID, vname, start, self.current_token.end))
+                    # build function calls to member functions:
                     else:
                         obj = vstack[-2]
                         fn = var.initializer

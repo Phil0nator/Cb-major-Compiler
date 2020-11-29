@@ -1,14 +1,17 @@
 
-struct List{
+struct ListNode{
 
     void data;
-    List* next;
+    ListNode* next;
 
-    function void set(void d){
-        this->data = d;
-    }
+
 
 
 };
 
 
+struct List{
+
+    ListNode head;
+
+};

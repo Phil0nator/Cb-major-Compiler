@@ -1,11 +1,17 @@
 #include "std.k"
 
+
 int main(long argc, char** argv){
 
+
+    Vec3f v;
+    v.set(1,2,3);
+    Vec3f two;
+    two.set(2,4,6);
+
+
     
-    List l;
-    l.set(25);
-    printf("%i\n", l.data);
+    printf("%f,%f,%f\n",v.x,v.y,v.z);
 
 
     return 0;
