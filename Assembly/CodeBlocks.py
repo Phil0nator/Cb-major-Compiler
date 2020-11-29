@@ -49,6 +49,7 @@ def functionlabel(fn):
     out = out.replace("#", types)
     return out
 
+
 def extra_parameterlabel(fn, num):
     return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
 
@@ -257,6 +258,7 @@ def movVarToReg(reg, var):
         else:
             return f"mov {reg},  {valueOf(var)}\n"
 
+
 def movMemVar(dest, source):
     return f"mov rax, {valueOf(source)}\n{loadToReg(dest, 'rax')}"
 
@@ -278,7 +280,7 @@ def valueOf(x, dflt=False, exactSize=True):
     elif (isinstance(x, Variable)):
         x.referenced = True
         if(x.glob):
-            if(x.isptr):
+            if(x.t.ptrdepth > 1 or x.isptr):
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:

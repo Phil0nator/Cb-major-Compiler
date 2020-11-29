@@ -230,7 +230,6 @@ class Compiler:
             "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], LONG.copy(), self, exprtokens))
 
-
         isptr = False
         # if the final value is a variable, the initializer to that variable is
         # taken
@@ -278,7 +277,6 @@ class Compiler:
         ssecount = 0
         normcount = 0
 
-
         # load parameters until end of fn header at ')'
         while self.current_token.tok != T_CLSP:
 
@@ -291,7 +289,6 @@ class Compiler:
             # increment param types
             ssecount += t.isflt()
             normcount += not t.isflt()
-
 
             if(self.current_token.tok != T_ID):
                 throw(ExpectedIdentifier(self.current_token))
@@ -356,7 +353,6 @@ class Compiler:
                      self.currentTokens[start:self.ctidx])
         f.variardic = variardic
 
-
         # handle additional parameters...
         extra_params = (ssecount - len(sse_parameter_registers))
         if extra_params < 0:
@@ -370,9 +366,6 @@ class Compiler:
             self.heap += f"{extra_parameterlabel(f, extra_params)} resb 8\n"
             extra_params -= 1
 
-        
-
-
         self.functions.append(f)
         # add as a variable for fn pointers
         self.globals.append(
@@ -383,10 +376,6 @@ class Compiler:
                 isptr=True,
                 mutable=False,
                 signed=f.returntype.signed))
-
-        
-
-        
 
     def buildStruct(self):                  # isolate and build a structure
         # \see Structure

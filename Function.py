@@ -118,16 +118,14 @@ class Function:
 
         }
 
-
         # Parameter information:
         #   number of sse parameter registers used
         self.ssepcount = 0
         #   number of normal parameter registers used
-        self.normpcount  = 0
+        self.normpcount = 0
         #   number of extra memory-stored registers are used
         self.extra_params = 0
         # the above information is set externally by the compiler class
-
 
         # monitoring:
 
@@ -352,10 +350,9 @@ class Function:
         countn = 0
         counts = 0
 
-
         for p in self.parameters:
 
-            if(self.parameters.index(p) >= len(self.parameters)-self.extra_params):
+            if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
                 break
 
             if (self.inline):
@@ -384,13 +381,15 @@ class Function:
                     self.addline(movRegToVar(
                         p.offset, norm_parameter_registers[countn]))
                     countn += 1
-
+        # load extra parameters (those that could not be assigned registers)
         epcounter = self.extra_params
         while epcounter > 0:
+            # extra parameters are loaded from their BSS memory locations
             self.addVariable(self.parameters[-epcounter])
-            self.addline(movMemVar((self.variables[-1]), f"[{extra_parameterlabel(self, epcounter)[:-1]}]"      ))
-            epcounter-=1
-    
+            self.addline(movMemVar(
+                (self.variables[-1]), f"[{extra_parameterlabel(self, epcounter)[:-1]}]"))
+            epcounter -= 1
+
     def createClosing(self):                    # create end of the function
 
         self.addline(function_closer(
@@ -1129,9 +1128,8 @@ class Function:
         for i in range(pcount):
 
             # check for extra parameters
-            if(i >= pcount-fn.extra_params):
+            if(i >= pcount - fn.extra_params):
                 break
-
 
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
@@ -1174,13 +1172,16 @@ class Function:
         epcounter = fn.extra_params
 
         while epcounter > 0:
+            # extra parameters are loaded into rax, and then into their BSS
+            # memory location
             paraminst += (self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token))
-                )
-            paraminst += loadToReg(f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
+                "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token))
+            )
+            paraminst += loadToReg(
+                f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
             if(self.current_token.tok == ","):
                 self.advance()
-            epcounter-=1
+            epcounter -= 1
 
         if(self.current_token.tok != T_ENDL):
             # self.advance()
