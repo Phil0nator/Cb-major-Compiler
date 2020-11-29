@@ -309,7 +309,6 @@ _char._get_errstr_pint:
 	mov rbx, qword[__linux_errstrlist]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov rax, rbx
 	jmp ___char._get_errstr_pint__return
 	jmp .L0x1
@@ -1166,7 +1165,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov qword[rbp-56], rbx
 	mov rcx, 10
 	mov rdx, 1
@@ -1186,7 +1184,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov r10, rbx
 	and r11b, 0xff
 	mov r11, r10
@@ -1200,7 +1197,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov qword[rbp-80], rbx
 	mov rcx, 16
 	xor rdx, rdx
@@ -1220,7 +1216,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov qword[rbp-96], rbx
 	mov rcx, 8
 	xor rdx, rdx
@@ -1240,7 +1235,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov qword[rbp-112], rbx
 	mov rcx, 10
 	xor rdx, rdx
@@ -1261,7 +1255,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov rsi, rbx
 	mov rbx, qword[rbp-8]
 	mov rdi, rbx
@@ -1278,7 +1271,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov byte[rbp-136], bl
 	mov rbx, STRING_CONSTANT_134
 	mov qword[rbp-144], rbx
@@ -1305,7 +1297,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	movq xmm7, rbx
 	movsd qword[rbp-160], xmm7
 	mov rsi, 1000000000
@@ -1326,7 +1317,6 @@ _int___sprintf_pchar.char.void.:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	movq xmm7, rbx
 	movsd qword[rbp-176], xmm7
 	mov rsi, 10000000
@@ -1416,10 +1406,6 @@ _FILE_fopen_pchar.char.:
 	mov r10, qword[rbp-16]
 	and r11, 0xff
 	lea r10, [r10+r11*1]
-	mov bl, byte[rbx]
-	and rbx, 0xff
-	mov r10b, byte[r10]
-	and r10, 0xff
 	add bl, r10b
 	mov qword[rbp-24], rbx
 	mov qword[rbp-32], 510
@@ -2879,7 +2865,6 @@ _char._asctime_ptm.:
 	and rbx, 0x7fffffff
 	mov r10, qword[wday_name]
 	lea r10, [r10+rbx*8]
-	mov r10, qword[r10]
 	mov rsi, r10
 	mov rbx, qword[asctime__result_buf]
 	mov rdi, rbx
@@ -2896,7 +2881,6 @@ _char._asctime_ptm.:
 	and rbx, 0x7fffffff
 	mov r10, qword[mon_name]
 	lea r10, [r10+rbx*8]
-	mov r10, qword[r10]
 	mov rsi, r10
 	mov rbx, qword[asctime__result_buf]
 	add rbx, 4
@@ -3016,8 +3000,6 @@ _int_inet_aton_pchar.in_addr.:
 	call sscanf
 	mov dword[rbp-36], eax
 	lea rbx, [rbp-28] 
-	mov bl, byte[rbx]
-	and bl, 0xff
 	mov r10b, 255
 	and bl, r10b
 	mov dword[rbp-44], ebx
@@ -3025,8 +3007,6 @@ _int_inet_aton_pchar.in_addr.:
 	lea rbx, [rbp-28] 
 	and r10, 0xff
 	lea rbx, [rbx+r10*1]
-	mov bl, byte[rbx]
-	and rbx, 0xff
 	mov r10b, 255
 	and bl, r10b
 	mov dword[rbp-52], ebx
@@ -3034,8 +3014,6 @@ _int_inet_aton_pchar.in_addr.:
 	lea rbx, [rbp-28] 
 	and r10, 0xff
 	lea rbx, [rbx+r10*1]
-	mov bl, byte[rbx]
-	and rbx, 0xff
 	mov r10b, 255
 	and bl, r10b
 	mov dword[rbp-60], ebx
@@ -3043,8 +3021,6 @@ _int_inet_aton_pchar.in_addr.:
 	lea rbx, [rbp-28] 
 	and r10, 0xff
 	lea rbx, [rbx+r10*1]
-	mov bl, byte[rbx]
-	and rbx, 0xff
 	mov r10b, 255
 	and bl, r10b
 	mov dword[rbp-68], ebx
@@ -3357,7 +3333,6 @@ _int___SSCANF_pchar.char.void..:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov rsi, rbx
 	mov rbx, qword[rbp-16]
 	mov rdi, rbx
@@ -3379,7 +3354,6 @@ _int___SSCANF_pchar.char.void..:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov rsi, rbx
 	mov rbx, qword[rbp-16]
 	mov rdi, rbx
@@ -3400,7 +3374,6 @@ _int___SSCANF_pchar.char.void..:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov qword[rbp-56], rbx
 	mov rbx, qword[rbp-56]
 	mov r10, qword[rbp-16]
@@ -3420,7 +3393,6 @@ _int___SSCANF_pchar.char.void..:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov rdx, rbx
 	mov rbx, qword[rbp-8]
 	and r10, 0xff
@@ -3450,7 +3422,6 @@ _int___SSCANF_pchar.char.void..:
 	mov rbx, qword[rbp-24]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*8]
-	mov rbx, qword[rbx]
 	mov rdx, rbx
 	xor rsi, rsi
 	mov rbx, qword[rbp-16]
@@ -4218,6 +4189,21 @@ main:
 	sub rsp, 24
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
+	mov rdi, 1
+	xor rax, rax
+	call _char._strerror_plong
+	mov rdi, rax
+	xor rax, rax
+	push rdi
+	mov rbx, rdi
+	mov rsi, rdi
+	mov rdi, 1
+	xor rax, rax
+	call _int_fputs_pFILEchar.
+	mov rbx, rax
+	pop rdi
+	mov rax, rbx
+.L0x146:
 	xor rax, rax
 	jmp __main__return
 __main__return:

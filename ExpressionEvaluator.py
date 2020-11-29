@@ -774,7 +774,6 @@ class RightSideEvaluator(ExpressionEvaluator):
         if(op == "["):
             if(b.type.isflt()):
                 throw(UsingFloatAsIndex(b.token))
-
             if(isinstance(b.accessor, int) and b.accessor == 0):
                 areg, breg, o, ninstr = optloadRegs(a, None, op, o)
                 instr += ninstr
@@ -794,7 +793,24 @@ class RightSideEvaluator(ExpressionEvaluator):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
-            apendee.memory_location = True
+            
+            
+            
+
+            # TODO
+            #
+            # Sometimes setting this to true causes errors
+            apendee.memory_location = False
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             rfree(breg)
 
         elif(a.type.__eq__(b.type)):
