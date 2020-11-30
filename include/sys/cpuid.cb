@@ -92,7 +92,50 @@ typedef unsigned int cpuidreg_t;
 #define CPUID_PBE               31      /* Pending break Enable (PBE# pin) wakeup capability */
 #define CPUID_HPERVISOR         63      /* Hypervisor present (always zero on physical cpu) */
 
+/**
+ * (Used Internally)
+ * Encode a bit index and register number into a single unsigned long.
+ * Format:
+ *    00                000000.....
+ *  [0:2 register]      [2:-  index]
+ * 
+ * The bits representing a register:
+ *  0: EBX
+ *  1: ECX
+ *  2: EDX
+ * 
+ * @param idx bit index
+ * @param reg register
+ * @returns internal encoding
+ */
+#define CPUID_IESF(idx, reg)         reg+(idx<<2)
 
+/** 
+ * Special Features:
+ *     Define Name          Bit index and register      description
+ */
+#define CPUID_FSGSBASE              CPUID_IESF(0,0)     /* Access to base of %fs and %gs */
+#define CPUID_PREFETCHWT1           CPUID_IESF(0,1)     /* Access to PREFETCHWT1 instruction */
+#define CPUID_IA32_TSC_ADJUST       CPUID_IESF(1,0)     /* Access to IA32_TSC_ADJUST */
+#define CPUID_AVX512_VBMI           CPUID_IESF(1,1)     /* AVX-512 Vector Bit Manipulation Instructions */
+#define CPUID_SGX                   CPUID_IESF(2,0)     /* Software Guard Extensions */
+#define CPUID_UMIP                  CPUID_IESF(2,1)     /* User-mode Instruction Prevention */
+#define CPUID_AVX512_4VNNIW         CPUID_IESF(2,2)     /* AVX-512 4-register Neural Network Instructions */
+#define CPUID_BMI1                  CPUID_IESF(3,0)     /* Bit Manipulation Instruction Set 1 */
+#define CPUID_PKU                   CPUID_IESF(3,1)     /* Memory Protection Keys for User-mode pages */
+#define CPUID_AVX512_4FMAPS         CPUID_IESF(3,2)     /* AVX-512 4-register Multiply Accumulation Single Precision */
+#define CPUID_HLE                   CPUID_IESF(4,0)     /* TSX Hardware Lock Elision */
+#define CPUID_OSPKE                 CPUID_IESF(4,1)     /* PKU enabled by OS */
+#define CPUID_FSRM                  CPUID_IESF(4,2)     /* Fast Short REP MOVSB */
+#define CPUID_AVX2                  CPUID_IESF(5,0)     /* Advanced Vector Extensions 2 */
+#define CPUID_WAITPKG               CPUID_IESF(5,1)     /* Timed pause and user-level monitor/wait */
+#define CPUID_FDP_EXCPTN_ONLY       CPUID_IESF(6,0)     /* FDP_EXCPTN_ONLY */
+#define CPUID_AVX512_VBMI2          CPUID_IESF(6,1)     /* AVX-512 Vector Bit Manipulation Instructions 2 */
+#define CPUID_SMEP                  CPUID_IESF(7,0)     /* Supervisor Mode Excecution Prevention */
+#define CPUID_CET_SS                CPUID_IESF(7,1)     /* Control flow enforcement (CET) shadow stack */
+#define CPUID_BMI2                  CPUID_IESF(8,0)     /* Bit Manipulation Instruction Set 2 */
+#define CPUID_GFNI                  CPUID_IESF(8,1)     /* Galois Field Instructions */
+#define CPUID_AVX512_VP2INTERSECT   CPUID_IESF(8,2)     /* AVX-512 VP2INTERSECT Doubleword and Quadword Instructions */
 
 inline void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpuidreg_t* edx) {
 
