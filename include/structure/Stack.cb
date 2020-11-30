@@ -1,0 +1,46 @@
+#ifndef __STACK
+#define __STACK 1
+
+#include "sys/mman.cb"
+
+struct Stack {
+
+    void* base;
+    void* ptr = 0;
+    size_t size;
+
+    function void feed(void* ptr){
+        this->base = ptr;
+    }
+
+    function void alloc(size_t size){
+        this->size = size;
+        this->base = qmmap(size);
+    }
+
+    function void destroy(){
+        munmap(this->base, this->size);
+    }
+
+    function void push(void item){
+    }
+
+    function void pop(){
+    }
+
+    function void pop(void* dest){
+    }
+
+};
+
+
+
+
+
+
+
+
+
+
+
+#endif

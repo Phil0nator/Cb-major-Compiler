@@ -1216,9 +1216,12 @@ class Function:
         paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
 
         instructions += paraminst
+        
+        
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
-        instructions += (Instruction("mov", [rax, ssevarsforrax]))
+        # (Varargs turned off:)
+        # instructions += (Instruction("mov", [rax, ssevarsforrax]))
 
         instructions += self.buildFunctionCallClosing(
             fn, varcall, var if varcall else None)

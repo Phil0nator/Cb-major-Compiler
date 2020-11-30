@@ -7,6 +7,9 @@
 
 #include "stddef.k"
 
+typedef size_t typename;
+
+#include "Stack.cb"
 #include "list.cb"
 #include "Vec3f.cb"
 

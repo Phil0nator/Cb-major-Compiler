@@ -325,7 +325,9 @@ def setSize(reg, size):
 
     if("xmm" in reg):
         return reg
+
     reg = normal_size[reg]
+
     if(size == 1):
         return boolchar_version[reg]
     elif(size == 2):

@@ -1,5 +1,9 @@
+#ifndef __VEC3F
+#define __VEC3F 1
 
-
+/**
+ * AVX flag optimized instructions:
+ */
 #define VEC3F_AVX_LOADYMM0 __asm{"vmovdqu ymm0, [rdi]"}
 #define VEC3F_AVX_DEPOSITYMM1 __asm{"vmovdqu [rdi], ymm1"}
 
@@ -10,7 +14,9 @@
 #define VEC3F_AVX_DIV   __asm{"vdivpd ymm1, ymm0, [rsi]"}
 
 
-
+/**
+ * AVX optimizations will only be used if available on the compiling CPU
+ */
 #ifdef __AVX
 
 #   define VEC3F_LOAD VEC3F_AVX_LOADYMM0
@@ -21,6 +27,9 @@
 #   define VEC3F_DIV VEC3F_AVX_DIV
 
 #endif
+/**
+ * For CPU's without AVX:
+ */
 #ifndef __AVX
 
 #   define VEC3F_LOAD __asm{"                           \
@@ -61,7 +70,10 @@
 
 #endif
 
-
+/**
+ * Universal definitions:
+ * (Reguardless of AVX)
+ */
 
 #define VEC3F_SQRT      __asm{"                         \
                                 sqrtsd xmm0, [rdi]      \
@@ -83,51 +95,87 @@
                             addsd xmm0, xmm2            \
                             "}
 
-
+/**
+ * The Vec3f Structure is used to perform SIMD optimized vector operations for 3D vectors.
+ * When AVX is enabled, the Vec3f will be significantly faster.
+ */
 struct Vec3f{
-
+    /** Main data */
     double x;
     double y;
     double z;
-
+/**
+ * Extra padding for AVX flag optimizations
+ */
 #ifdef __AVX
     long padd = 0;
 #endif
-
+    /**
+     * Set the value of a vector.
+     * @param x x value
+     * @param y y value
+     * @param z z value
+     * @returns None
+     */
     function void set(double x, double y, double z){
         this->x=x;
         this->y=y;
         this->z=z;
     }
-
+    /**
+     * Add two vectors
+     * @param other the vector to add
+     * @returns None
+     */
     function void add(Vec3f* other){
         VEC3F_LOAD
         VEC3F_ADD
         VEC3F_DEPOSIT
     }
-
+    /**
+     * Subtract two vectors
+     * @param other the vector to subtract
+     * @returns None
+     */
     function void sub(Vec3f* other){
         VEC3F_LOAD
         VEC3F_SUB
         VEC3F_DEPOSIT
     }
-
+    /**
+     * Cross multiply two vectors
+     * (Cross product)
+     * @param other vector to multiply by
+     * @returns None
+     */
     function void mul(Vec3f* other){
         VEC3F_LOAD
         VEC3F_MUL
         VEC3F_DEPOSIT
     }
-
+    /**
+     * Static divide of vectors.
+     *  [this / other] -> { this.x/other.x , this.y / other.y , this.z / other.z }
+     * @param other vector to divide by
+     * @returns None
+     */
     function void div(Vec3f* other){
         VEC3F_LOAD
         VEC3F_DIV
         VEC3F_DEPOSIT
     }
-
+    /**
+     * Square root vector. (Each value becomes its square root)
+     * @returns None
+     */
     function void sqrt(){
         VEC3F_SQRT
     }
-
+    /**
+     * Dot product of vectors
+     * @param other operand B
+     * @returns dot product of this and other
+     */
     function double dot(Vec3f* other){
         VEC3F_DOT
     }
@@ -138,3 +186,4 @@ struct Vec3f{
 };
 
 
+#endif
