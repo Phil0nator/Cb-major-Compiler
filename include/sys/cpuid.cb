@@ -27,9 +27,9 @@ typedef unsigned int cpuidreg_t;
 
 
 /** CPUID Definitions:
+ *  Info: [https://en.wikipedia.org/wiki/CPUID]
  *      Define Name        (EDX:ECX) BIT    Description
  */
-
 #define CPUID_FPU               0       /* Onboard x87 FPU */
 #define CPUID_SSE3              32      /* Prescott New Instructions-SSE3 (PNI) */
 #define CPUID_VME               1       /* Virtual 8086 mode extensions */
@@ -102,6 +102,23 @@ inline void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpui
 
 }
 
+
+global bool cpuid_getfeature(unsigned long feature){
+
+    unsigned long eax = 1;
+    unsigned long ebx = 0;
+    unsigned long ecx = 0;
+    unsigned long edx = 0;
+
+    native_cpuid(&eax, &ebx, &ecx, &edx);
+
+    long ftinf = (ecx << 32)+edx;
+
+    long mask = BITIDX(feature);
+
+    return (ftinf&&mask) >> feature;
+
+}
 
 
 
