@@ -41,7 +41,7 @@ parser.add_argument("-g", "--debug", action="store_true", default=False,
                     help="Add helpful comments in the outputted nasm code if [-nasm] option used")
 parser.add_argument("-O2", "--optimize2", action="store_true", default=False,
                     help="Use level 2 optimization (longer compiletime, but somewhat faster output)")
-parser.add_argument("-O3", "--optimize3", action="store_true", default=True,
+parser.add_argument("-O3", "--optimize3", action="store_true", default=False,
                     help="Use level 3 optimization (much longer compiletime, but faster output)")
 parser.add_argument("-p", "--profile", action="store_true", default=False,
                     help="Print profiling statistics about the compiler for debugging/optimization")

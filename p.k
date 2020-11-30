@@ -9,8 +9,9 @@ int main(long argc, char** argv){
     Vec3f two;
     two.set(2,4,6);
 
+    double dot = v.dot(&two);
 
-    
+    printf("DOT: %f\n", dot);
     printf("%f,%f,%f\n",v.x,v.y,v.z);
 
 

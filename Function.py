@@ -1053,7 +1053,7 @@ class Function:
     def buildAmbiguousFunctionCall(self, fid, types):
         pass
 
-    def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset= False):
+    def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False):
         paraminst = ""
 
         rng = range(1, pcount) if offset else range(pcount)
@@ -1118,10 +1118,7 @@ class Function:
                 self.advance()
             epcounter -= 1
 
-
-
         return paraminst
-
 
     def buildFunctionCallClosing(self, fn, varcall, var):
         instructions = ""
@@ -1144,7 +1141,7 @@ class Function:
             rfree(tmp)
             instructions += raw_regmov(
                 sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
-        
+
         return instructions
 
     def buildFunctionCall(self):
@@ -1216,57 +1213,70 @@ class Function:
 
         instructions += (self.pushregs())
 
-        paraminst = self.rawFNParameterLoad(fn,sseused,normused,pcount)
-
-        
-
-
+        paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
 
         instructions += paraminst
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
         instructions += (Instruction("mov", [rax, ssevarsforrax]))
 
-        instructions += self.buildFunctionCallClosing(fn,varcall,var if varcall else None)
+        instructions += self.buildFunctionCallClosing(
+            fn, varcall, var if varcall else None)
 
         return instructions, fn
 
-
+    # wrap a function call as a part of an expression
     def wrapExpressionFunctionCall(self):
         instructions = ""
+        # token start
         start = self.current_token.start.copy()
+        # main instruction compilation
         fninstr, fn = self.buildFunctionCall()
 
+        # token to add to expression token list containing fn information
         token = Token(T_FUNCTIONCALL, fninstr, start,
-                        self.current_token.start.copy())
+                      self.current_token.start.copy())
         token.fn = fn
         instructions += fninstr + "\n"
 
+        # result saving
         if(fn.returntype.isflt()):
             instructions += Instruction("movq",
                                         [rax, sse_return_register])
         instructions += Instruction("push", [norm_return_register])
         return token, instructions
 
-
     # build a function call that takes a pointer to an object as the first parameter.
     # (Functions defined in a structure that need a definition of 'this')
+
     def memberCall(self, fn, this):
         # prevent warnings
         this.referenced = True
+
+        # save regdecls
         self.addline(self.pushregs())
+        # load 'this'
         self.addline(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
+
+        # remaining parameters:
         normused = 1
         sseused = 0
         pcount = len(fn.parameters)
         self.advance()
         self.advance()
-        self.addline(self.rawFNParameterLoad(fn,sseused,normused,pcount,True))
-        
-        self.addline(self.buildFunctionCallClosing(fn,False, None))
+        self.addline(
+            self.rawFNParameterLoad(
+                fn,
+                sseused,
+                normused,
+                pcount,
+                True))
+
+        # actual function call, and restore
+        self.addline(self.buildFunctionCallClosing(fn, False, None))
         if(fn.returntype.isflt()):
             self.addline(Instruction("movq",
-                                        [rax, sse_return_register]))
+                                     [rax, sse_return_register]))
         self.addline(Instruction("push", [norm_return_register]))
     # construct expression components from tokens
 
@@ -1309,19 +1319,27 @@ class Function:
                             self.current_token) if self.current_token.tok == T_CLSP else None
                         continue
                     else:
-                        
+
                         token, inst = self.wrapExpressionFunctionCall()
                         exprtokens.append(token)
-                        instructions+=inst
-
+                        instructions += inst
 
                 # Member variables accessed from stack based structures can be abstracted as Variable objects
                 #   because they are effectively stored the same.
                 elif(self.tokens[self.ctidx + 1].tok == T_DOT):
                     wasfunc = True
+
+                    # begin tokens
                     start = self.current_token.start.copy()
+
+                    # vname will compount each identifier with dots between them to form
+                    # the string version of the identifiers together. e.g:
+                    # object.member.member    =   "object.member.member"
                     vname = f"{self.current_token.value}"
                     var = self.getVariable(self.current_token.value)
+
+                    # vstack keeps track of all the variable objects found in
+                    # the chain
                     vstack = [var]
                     while(self.tokens[self.ctidx + 1].tok == T_DOT):
                         if(var is None):
@@ -1337,21 +1355,27 @@ class Function:
                         var = memvar
                         vstack.append(var)
 
-                    # for member access, the token can simply be added. 
-                    # for member function calls, a more complex function call 
+                    # for member access, the token can simply be added.
+                    # for member function calls, a more complex function call
                     # must be built
-                    if(self.tokens[self.ctidx+1].tok != T_OPENP):
+                    if(self.tokens[self.ctidx + 1].tok != T_OPENP):
                         exprtokens.append(
                             Token(T_ID, vname, start, self.current_token.end))
                     # build function calls to member functions:
                     else:
+                        # object, and member function
                         obj = vstack[-2]
                         fn = var.initializer
 
-                        self.memberCall(fn,obj)
-                        exprtokens.append(Token(T_FUNCTIONCALL, "",start,self.current_token.end.copy()))
+                        # build member function call, and add tokens
+                        self.memberCall(fn, obj)
+                        exprtokens.append(
+                            Token(
+                                T_FUNCTIONCALL,
+                                "",
+                                start,
+                                self.current_token.end.copy()))
                         exprtokens[-1].fn = fn
-
 
             elif (self.current_token.tok == T_KEYWORD):
 
@@ -1501,7 +1525,7 @@ class Function:
         return instructions
 
     def buildStackStructure(self, var, starter=""):
-        if(not var.isptr)and(  var.t.ptrdepth==0 and var.t.members is not None):
+        if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
 

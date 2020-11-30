@@ -238,6 +238,20 @@ class Peephole:
                 if (line.op == "mov" and line.dest == line.source):
                     splitted[line.idx] = ""
 
+                # replace the common structure:
+                #   lea reg, [addr]
+                #   mov reg, [reg]
+                #
+                # by replacing it with the faster:
+                #   mov reg, [addr]
+                #
+                if(prev.op == "lea" and line.op in ["mov", "movsd"])\
+                    and (f"[{prev.dest}]" in line.source and "[" not in line.dest) \
+                        and ("[" in line.source):
+                    splitted[prev.idx] = ""
+                    splitted[line.idx] = f"{line.op} {line.dest}, {prev.source}\n"
+                    optims += 1
+
                 prev = line
 
         self.instructions = '\n'.join(splitted)

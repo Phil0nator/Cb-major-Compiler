@@ -375,7 +375,7 @@ total_labelCounter = -1
 def getLogicLabel(inf):
     global total_labelCounter
     total_labelCounter += 1
-    return f"_L{inf}_{hex(total_labelCounter)}" if config.DO_DEBUG else f".L{hex(total_labelCounter)}"
+    return f".L{inf}_{hex(total_labelCounter)}" if config.DO_DEBUG else f".L{hex(total_labelCounter)}"
 
 # bitshift int a by int b in direction op, based on signed flag
 

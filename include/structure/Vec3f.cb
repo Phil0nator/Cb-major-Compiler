@@ -21,6 +21,47 @@
 #   define VEC3F_DIV VEC3F_AVX_DIV
 
 #endif
+#ifndef __AVX
+
+#   define VEC3F_LOAD __asm{"                           \
+                            movsd xmm0, [rdi]           \
+                            movsd xmm1, [rdi+8]         \
+                            movsd xmm2, [rdi+16]        \
+                            "}
+
+#   define VEC3F_DEPOSIT __asm{"                    \
+                            movsd [rdi], xmm0       \
+                            movsd [rdi+8], xmm1     \
+                            movsd [rdi+16], xmm2    \
+                            "}
+
+#   define VEC3F_ADD    __asm{"\
+                            addsd xmm0, [rsi]       \
+                            addsd xmm1, [rsi+8]     \
+                            addsd xmm2, [rsi+16]    \
+                            "}
+
+#   define VEC3F_SUB    __asm{"\
+                            subsd xmm0, [rsi]       \
+                            subsd xmm1, [rsi+8]     \
+                            subsd xmm2, [rsi+16]    \
+                            "}
+
+#   define VEC3F_MUL    __asm{"\
+                            mulsd xmm0, [rsi]       \
+                            mulsd xmm1, [rsi+8]     \
+                            mulsd xmm2, [rsi+16]    \
+                            "}
+
+#   define VEC3F_DIV    __asm{"\
+                            divsd xmm0, [rsi]       \
+                            divsd xmm1, [rsi+8]     \
+                            divsd xmm2, [rsi+16]    \
+                            "}
+
+#endif
+
+
 
 #define VEC3F_SQRT      __asm{"                         \
                                 sqrtsd xmm0, [rdi]      \
@@ -29,6 +70,17 @@
                                 movsd [rdi], xmm0       \
                                 movsd [rdi+8], xmm1     \
                                 movsd [rdi+16], xmm2    \
+                            "}
+
+#define VEC3F_DOT       __asm{"                         \
+                            movsd xmm0, [rdi]           \
+                            movsd xmm1, [rdi+8]         \
+                            mulsd xmm0, [rsi]           \
+                            movsd xmm2, [rdi+16]        \
+                            mulsd xmm1, [rsi+8]         \
+                            mulsd xmm2, [rsi+16]        \
+                            addsd xmm0, xmm1            \
+                            addsd xmm0, xmm2            \
                             "}
 
 
@@ -75,6 +127,11 @@ struct Vec3f{
     function void sqrt(){
         VEC3F_SQRT
     }
+
+    function double dot(Vec3f* other){
+        VEC3F_DOT
+    }
+
 
 
 
