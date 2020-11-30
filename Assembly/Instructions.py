@@ -36,6 +36,17 @@ class Line:
             return dwordImmediate(int(self.source))
         return False
 
+    def psize_dest(self):
+        if("qword[" in self.dest):
+            return "qword"
+        if("dword[" in self.dest):
+            return "dword"
+        if("word[" in self.dest):
+            return "word"
+        if("byte[" in self.dest):
+            return "byte"
+        return ""
+
     def threePart(self):
         return self.dest is not None and self.source is not None
 
@@ -245,12 +256,19 @@ class Peephole:
                 # by replacing it with the faster:
                 #   mov reg, [addr]
                 #
-                if(prev.op == "lea" and line.op in ["mov", "movsd"])\
-                    and (f"[{prev.dest}]" in line.source and "[" not in line.dest) \
+                if(prev.op == "lea" and line.op in ["mov", "movsd"]):
+                    if(f"[{prev.dest}]" in line.source and "[" not in line.dest) \
                         and ("[" in line.source):
-                    splitted[prev.idx] = ""
-                    splitted[line.idx] = f"{line.op} {line.dest}, {prev.source}\n"
-                    optims += 1
+                        splitted[prev.idx] = ""
+                        splitted[line.idx] = f"{line.op} {line.dest}, {prev.source}\n"
+                        optims += 1
+                    elif ( f"[{prev.dest}]" in line.dest and "[" not in line.source ) \
+                        and ("[" in line.dest):
+                        #print(splitted[prev.idx:line.idx+1])
+                        sizesp = line.psize_dest()
+                        splitted[prev.idx] = ""
+                        splitted[line.idx] = f"{line.op} {sizesp}{prev.source}, {line.source}\n"
+
 
                 prev = line
 

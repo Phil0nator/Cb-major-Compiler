@@ -4,13 +4,14 @@
 int main(long argc, char** argv){
 
 
-    void* test = alloca(256);
-    test[0] = 25;
-    test[1] = 26;
-    printf("%i\n", test[0]);
-    printf("%i\n", test[0]);
-
-
+    unsigned int a;unsigned int b;unsigned int c;unsigned int d;
+    a=1;
+    b=0;
+    c=0;
+    d=0;
+    native_cpuid(&a,&b,&c,&d);
+    printf("%b4\n",a);
+    printf("%i\n", GETBIT(a,4));
 
     return 0;
 }

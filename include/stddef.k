@@ -7,7 +7,7 @@
 
 #include "io/io.k" /* IO stream definitions */
 #include "sys/syscall.k" /* syscall macro */
-
+#include "sys/cpuid.cb"  /* cpuid info */
 
 #define nullptr 0
 
@@ -49,10 +49,6 @@ typedef short int32;
 #define MAX_INT 9223372036854775807
 #define MAX_UINT 18446744073709551615
 
-inline long __inline__syscall(long call){__asm{"
-  mov rax, rdi
-  syscall
-"}}
 
 
 #ifdef __GNUC__

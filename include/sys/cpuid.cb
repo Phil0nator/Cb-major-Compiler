@@ -1,0 +1,108 @@
+#ifndef __CPUID
+#define __CPUID 1
+
+#define __CALLCPUID             __asm{"cpuid"}
+#define __CCALL_TO_CPUID        __asm{"                 \
+                                    mov eax, [rdi]      \
+                                    mov ebx, [rsi]      \
+                                    mov r11, rdx        \
+                                    mov r10, rcx        \
+                                    mov ecx, [r11]      \
+                                    mov edx, [r10]      \
+                                    "}
+
+#define __CPUID_RETURN          __asm{"                 \
+                                    mov [rdi], eax      \
+                                    mov [rsi], ebx      \
+                                    mov [r11], ecx      \
+                                    mov [r10], edx      \
+                                    "}
+
+
+typedef unsigned int cpuidreg_t;
+
+
+#define BITIDX(idx) (1<<((idx)))
+#define GETBIT(num, idx) ((num)&&(BITIDX(idx)))>>((idx))
+
+
+/** CPUID Definitions:
+ *      Define Name        (EDX:ECX) BIT    Description
+ */
+
+#define CPUID_FPU               0       /* Onboard x87 FPU */
+#define CPUID_SSE3              32      /* Prescott New Instructions-SSE3 (PNI) */
+#define CPUID_VME               1       /* Virtual 8086 mode extensions */
+#define CPUID_PCLMULQDQ         33      /* PCLMULQDQ */
+#define CPUID_DE                2       /* Debugging Extensions */
+#define CPUID_DTES64            34      /* 64-bit debug store */
+#define CPUID_PSE               3       /* Page Size Extension */
+#define CPUID_MONITOR           35      /* MONITOR and MWAIT instructions */
+#define CPUID_TSC               4       /* Time Stamp Counter */
+#define CPUID_DS_CPL            36      /* CPL qualified debug store */
+#define CPUID_MSR               5       /* Model-specific registers */
+#define CPUID_VMX               37      /* Virtual Machine Extensions */
+#define CPUID_PAE               6       /* Physicall Address Extension */
+#define CPUID_SMX               38      /* Safer Mode Extensions (LaGrande) */
+#define CPUID_MCE               7       /* Machine Check Exception */
+#define CPUID_EST               39      /* Enhanced SpeedStep       */
+#define CPUID_CX8               8       /* CMPXCHG8 instruction */
+#define CPUID_TM2               40      /* Thermal Monitor 2 */
+#define CPUID_APIC              9       /* Onboard Advanced Programmable Interrupt Controller */
+#define CPUID_SSSE3             41      /* Suplimental SSE3 instructiuons */
+#define CPUID_CNTXT_ID          42      /* L1 Context ID */
+#define CPUID_SEP               11      /* SYSENTER and SYSEXIT instructions */
+#define CPUID_SDBG              43      /* Silicon Debug interface */
+#define CPUID_MTRR              12      /* Memory Type Range Registers  */
+#define CPUID_FMA               44      /* Fused Multiply Add (FMA3)    */
+#define CPUID_PGE               13      /* Page Global Enable bit in CR4 */
+#define CPUID_CX16              45      /* CMPXCHG16B instruction */
+#define CPUID_MCA               14      /* Machine check architecture */
+#define CPUID_XTPR              46      /* Can disable sending task priority messages */
+#define CPUID_CMOV              15      /* Conditional move and FCMOV instructions */
+#define CPUID_PDCM              47      /* Perform and debug capability */
+#define CPUID_PAT               16      /* Page Attribute Table */
+#define CPUID_PSE_36            17      /* 36-bit page size extension */
+#define CPUID_PCID              49      /* Process context identifiers */
+#define CPUID_PSN               18      /* Processior Serial Number */
+#define CPUID_DCA               50      /* Direct cache access for DMA writes */
+#define CPUID_CLFSH             19      /* CLFLUSH instruction */
+#define CPUID_SSE4_1            51      /* SSE4.1 instructions */
+#define CPUID_SSE4_2            52      /* SSE4.2 instructions */
+#define CPUID_DS                21      /* Debug store: save trace of executed jumps */
+#define CPUID_X2APIC            53      /* x2apic */
+#define CPUID_ACPI              22      /* Onboard thermal control MSRs for ACPI */
+#define CPUID_MOVBE             54      /* MOVBE instruction (big-endian) */
+#define CPUID_MMX               23      /* MMX instructions */
+#define CPUID_POPCNT            55      /* POPCNT instruction */
+#define CPUID_FXSR              24      /* FXSAVE, FXRESTOR instructions */
+#define CPUID_TSC_DEADLINE      56      /* APIC implements one-shot operation using a TSC deadline value */
+#define CPUID_SSE               25      /* SSE instructions */
+#define CPUID_AES               57      /* AES instruction set */
+#define CPUID_SSE2              26      /* SSE2 instructions */
+#define CPUID_XSAVE             58      /* XSAVE, XRESTOR, XSETBV, XGETBV */
+#define CPUID_SS                27      /* CPU cache implements self-snoop  */
+#define CPUID_OSXSAVE           59      /* XSAVE Enabled by OS */
+#define CPUID_HTT               28      /* Hyper-threading */
+#define CPUID_AVX               60      /* Advanced Vector Extensions */
+#define CPUID_TM                29      /* Thermal monitor automatically limits temperature */
+#define CPUID_F16C              61      /* F16C (half-precision) FP feature
+#define CPUID_IA64              30      /* IA64 processor emulating x86 */
+#define CPUID_RDRND             62      /* RDRAND (on-chip random number generator) feature */
+#define CPUID_PBE               31      /* Pending break Enable (PBE# pin) wakeup capability */
+#define CPUID_HPERVISOR         63      /* Hypervisor present (always zero on physical cpu) */
+
+
+
+inline void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpuidreg_t* edx) {
+
+    __CCALL_TO_CPUID
+    __CALLCPUID
+    __CPUID_RETURN
+
+}
+
+
+
+
+#endif

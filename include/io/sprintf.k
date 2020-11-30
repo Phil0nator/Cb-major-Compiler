@@ -7,7 +7,8 @@
 #define FORMAT_INT64 'i'
 #define FORMAT_UINT64 'u'
 #define FORMAT_CHAR 'c'
-#define FORMAT_BOOL 'b'
+#define FORMAT_BOOL 'B'
+#define FORMAT_BINARY 'b'
 #define FORMAT_DOUBLE 'd'
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
@@ -93,6 +94,21 @@ function long toStr(long val, char* buffer, bool signed, long base){
 }
 
 
+size_t toBinary(char* buffer, unsigned long val, long bits){
+
+    for(int i = 0 ; i < bits;i++){
+        if( (val&&1) == 1){
+            @buffer = '1';
+        }else{
+            @buffer = '0';
+        }
+        val >>= 1;
+        buffer++;
+    }
+
+    return bits;
+
+}
 
 
 
@@ -224,6 +240,28 @@ global int __sprintf(char* str, char* fmt, void* args){
                     double f = args[argc];
                     int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
                     str += fsize-1;
+                    break;
+                }
+
+                case FORMAT_BINARY{
+                    long numb = args[argc];
+                    char bitind = @(fmt+1);
+                    long bits = 64;
+                    if(bitind == '8'){
+                        fmt++;
+                    }else if (bitind == '4'){
+                        bits = 32;
+                        fmt ++;
+                    }else if (bitind == '2'){
+                        bits = 16;
+                        fmt ++;
+                    }else if (bitind == '1'){
+                        bits = 8;
+                        fmt++;
+                    }
+
+                    long sb = toBinary(str,numb, bits);
+                    str+=sb;
                     break;
                 }
             }
