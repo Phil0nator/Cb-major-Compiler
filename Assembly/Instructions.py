@@ -236,8 +236,11 @@ class Peephole:
                     # if same source  ->  destination, but both not addresses
                     if(line.source == prev.dest and not prev.hasAddr() and not line.hasAddr()):
                         splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
-
-                        #optims +=1
+                        
+                        #TODO:
+                        # check for errors with this deletion:
+                        splitted[prev.idx] = ""
+                        optims +=1
 
                 # replace 'mov %r, 0' with the faster 'xor %r, %r'
                 if(line.op == "mov" and line.source == "0" and not line.hasAddr()):

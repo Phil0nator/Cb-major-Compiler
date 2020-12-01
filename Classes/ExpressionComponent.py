@@ -12,7 +12,7 @@ from globals import *
 
 class ExpressionComponent:
     def __init__(self, accessor, t, isoperation=False,
-                 constint=False, token=None, memloc=None):
+                 constint=False, token=None, memloc=None, memhint=0):
         self.type = t  # DType
         self.accessor = accessor  # value: any
         # \depricated
@@ -22,7 +22,9 @@ class ExpressionComponent:
         self.constint = constint  # if the object represents a constant integer value: bool
         self.token = token  # the token from which the compenent was originated
 
+        # Usage hints for the evaluator
         self.memory_location = memloc
+        self.member_loc      = memhint
 
     def isRegister(self):  # bool
         return isinstance(
