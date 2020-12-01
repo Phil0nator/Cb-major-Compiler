@@ -4,8 +4,8 @@
 int main(long argc, char** argv){
 
 
-    
-    printf("%b\n", CPUID_AVX512_4VNNIW);
+    bool avx = cpuid_getfeature(CPUID_SSE2);
+    printf("%B\n", avx);
 
 
     return 0;

@@ -25,6 +25,19 @@ typedef unsigned int cpuidreg_t;
 #define BITIDX(idx) (1<<((idx)))
 #define GETBIT(num, idx) ((num)&&(BITIDX(idx)))>>((idx))
 
+/**
+ * CPUID call requests:
+ */
+#define CPUID_GET_HIGHEST           0x0             /* Returns highest possible request */
+#define CPUID_GET_FEATURE           0x1             /* Returns Feature bits */
+#define CPUID_GET_CACHETLB          0x2             /* Returns Cache and TLB info */
+#define CPUID_GET_SERIAL            0x3             /* Returns Processor Serial number on intel CPU's Pentium III */
+#define CPUID_GET_INTEL_THREADCORE  0x4             /* Returns Processor topology and cache hierarchy for intel hyperthreaded processors*/
+#define CPUID_GET_THERMALPOWER      0x6             /* -- */
+#define CPUID_GET_EXTENDED          0x7             /* Get extended features */
+#define CPUID_GET_HAMMERTIME        0x8FFFFFFFh     /* AMD K7/K8 "IT'S HAMMER TIME" easter egg */
+
+
 
 /** CPUID Definitions:
  *  Info: [https://en.wikipedia.org/wiki/CPUID]
@@ -136,6 +149,10 @@ typedef unsigned int cpuidreg_t;
 #define CPUID_BMI2                  CPUID_IESF(8,0)     /* Bit Manipulation Instruction Set 2 */
 #define CPUID_GFNI                  CPUID_IESF(8,1)     /* Galois Field Instructions */
 #define CPUID_AVX512_VP2INTERSECT   CPUID_IESF(8,2)     /* AVX-512 VP2INTERSECT Doubleword and Quadword Instructions */
+#define CPUID_ERMS                  CPUID_IESF(9,0)     /* Enhanced REP MOVSB / STOSB */
+#define CPUID_VAES                  CPUID_IESF(9,1)     /* Vector AES Instruction set (VEX-256/EVEX) */
+#define CPUID_SRBDS_CTRL            CPUID_IESF(9,2)     /* Special Register Buffer Data Sampling Mitigations */
+
 
 inline void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpuidreg_t* edx) {
 
@@ -148,7 +165,7 @@ inline void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpui
 
 global bool cpuid_getfeature(unsigned long feature){
 
-    unsigned long eax = 1;
+    unsigned long eax = CPUID_GET_FEATURE;
     unsigned long ebx = 0;
     unsigned long ecx = 0;
     unsigned long edx = 0;
@@ -158,8 +175,30 @@ global bool cpuid_getfeature(unsigned long feature){
     long ftinf = (ecx << 32)+edx;
 
     long mask = BITIDX(feature);
-
+    printf("%b8\n", GETBIT(ftinf,feature));
     return (ftinf&&mask) >> feature;
+
+}
+
+global bool cpuid_getextended(unsigned long feature){
+
+    unsigned long eax = CPUID_GET_EXTENDED;
+    unsigned long ebx = 0;
+    unsigned long ecx = 0;
+    unsigned long edx = 0;
+
+    unsigned long reg = feature&&11b;
+    feature >>= 2;
+
+
+    native_cpuid(&eax, &ebx, &ecx, &edx);
+
+    reg = (&ebx)[reg];
+    
+
+
+    return GETBIT(reg,feature);
+
 
 }
 

@@ -1,8 +1,10 @@
 #ifndef __STD
 #define __STD 1
+
 #include "sys/syscall.k"            /* easy syscall macro */
 #include "sys/errlist.k"            /* Error handling */
 #include "bits/endian.k"            /* endian conversion */
+#include "sys/cpuid.cb"             /* cpuid info */
 #include "limits.k"                 /* limits of datatypes */
 #include "stddef.k"                 /* commonly used definitions */
 #include "functions/variardic.k"    /* used in variardic functions */

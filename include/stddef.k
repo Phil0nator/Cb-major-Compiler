@@ -7,7 +7,6 @@
 
 #include "io/io.k" /* IO stream definitions */
 #include "sys/syscall.k" /* syscall macro */
-#include "sys/cpuid.cb"  /* cpuid info */
 
 #define nullptr 0
 

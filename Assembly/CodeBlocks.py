@@ -397,14 +397,12 @@ def shiftInt(a, b, op, signed):
         return f"{cmd} {a}, {b}\n"
     else:
         if(a == rcx):
-            tmp = ralloc(False)
-            rfree(tmp)
+            tmp = rax
             return f"mov {tmp}, {a}\nmov cl, {boolchar_version[b]}\n{cmd} {tmp}, cl\nmov {a}, {tmp}\n"
         elif(b == rcx):
             return f"{cmd} {a}, cl\n"
         else:
-            tmp = ralloc(False)
-            rfree(tmp)
+            tmp = rax
             return f"mov {tmp}, rcx\nmov cl, {boolchar_version[b]}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
 
 # load register to rax
