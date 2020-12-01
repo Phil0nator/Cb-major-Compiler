@@ -575,8 +575,11 @@ class Compiler:
                     self.advance()
                     self.createFunction()
                     # apply new properties
-                    self.functions[-1].inline = True
-                    self.globals.pop()
+                    if(not config.__Osize__):
+                        self.functions[-1].inline = True
+                        self.globals.pop()
+                    else:
+                        self.functions[-1].wouldbe_inline = True
 
                 elif (self.current_token.value == "function"):
                     self.advance()
@@ -598,7 +601,14 @@ class Compiler:
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.
-        for f in self.functions:
+        for f in reversed(self.functions):
+
+            #   TODO: Set up some size optimizations
+            # if(config.__Osize__):
+            #    if f.wouldbe_inline and f.references == 0:
+            #        f.inline = True
+
+
 
             if not f.inline:
 
@@ -613,7 +623,7 @@ class Compiler:
                 if(config.DO_DEBUG):
                     f.asm = f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
 
-                self.text = f"{self.text}{f.asm}"
+                self.text = f"{f.asm}{self.text}"
 
                 # garbage collection
                 f.GC()

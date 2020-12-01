@@ -43,6 +43,8 @@ parser.add_argument("-O2", "--optimize2", action="store_true", default=False,
                     help="Use level 2 optimization (longer compiletime, but somewhat faster output)")
 parser.add_argument("-O3", "--optimize3", action="store_true", default=False,
                     help="Use level 3 optimization (much longer compiletime, but faster output)")
+parser.add_argument("-OS", "--optimize-size", action="store_true", default=False,
+                    help="Optimize output for executable size, rather than speed.")
 parser.add_argument("-p", "--profile", action="store_true", default=False,
                     help="Print profiling statistics about the compiler for debugging/optimization")
 parser.add_argument("-c", "--object", action="store_true", default=False,
@@ -105,6 +107,14 @@ if(args.optimize2):
     __oplevel__ = 2
 elif(args.optimize3):
     __oplevel__ = 3
+
+# optimize for executable size
+__Osize__ = False
+
+if(args.optimize_size):
+    __oplevel__= 3
+    #   TODO: Set up some optimizations
+    # __Osize__ = True
 
 # future location for the compiler to be accessed globally
 GlobalCompiler = None

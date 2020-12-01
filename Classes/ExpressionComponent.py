@@ -24,7 +24,7 @@ class ExpressionComponent:
 
         # Usage hints for the evaluator
         self.memory_location = memloc
-        self.member_loc      = memhint
+        self.member_loc = memhint
 
     def isRegister(self):  # bool
         return isinstance(

@@ -171,6 +171,16 @@ class Function:
 
         # Features
 
+        ## Size optimization:
+        
+        # When size optimization is being ran, functions are not inlined. This
+        # flag stores weather or not this function would have been inline otherwise
+        self.wouldbe_inline = False
+        # Count the number of times this function is called
+        self.references = 0
+
+
+
     def advance(self):                              # advance token
         self.ctidx += 1
         if(self.ctidx == self.maxtokens):
@@ -1216,8 +1226,7 @@ class Function:
         paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
 
         instructions += paraminst
-        
-        
+
         # follow c varargs standard:
         # (number of sse registers used is stored in RAX before a function call)
         # (Varargs turned off:)

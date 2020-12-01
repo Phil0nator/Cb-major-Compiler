@@ -873,9 +873,9 @@ class RightSideEvaluator(ExpressionEvaluator):
 
     # access member b of struct a
     def memberAccess(self, a, b):
-        
+
         temp = LeftSideEvaluator(self.fn)
-        return temp.memberAccess(a,b)
+        return temp.memberAccess(a, b)
 
         instr = ""
         member = b.accessor
@@ -887,8 +887,6 @@ class RightSideEvaluator(ExpressionEvaluator):
             throw(UnkownIdentifier(b.token))
         o = memv.t.copy()
         # new register
-
-        
 
         tmpaddr = ralloc(False)
         instr += loadToReg(tmpaddr, a.accessor)
@@ -1100,19 +1098,17 @@ class LeftSideEvaluator(ExpressionEvaluator):
         if(a.member_loc > 1):
             a.memory_location = True
             instr += bringdown_memloc(a)
-            a.member_loc=False
-
+            a.member_loc = False
 
         tmpaddr = ralloc(False)
         instr += loadToReg(tmpaddr, a.accessor)
-
 
         if(memv.offset != 0):
             instr += f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
 
         rfree(a.accessor)
         return instr, o, EC.ExpressionComponent(
-            tmpaddr, memv.t.copy(), token=b.token, memloc=True, memhint=a.member_loc+1)
+            tmpaddr, memv.t.copy(), token=b.token, memloc=True, memhint=a.member_loc + 1)
 
     # evaluate logical NOT
     def evalNot(self, a):

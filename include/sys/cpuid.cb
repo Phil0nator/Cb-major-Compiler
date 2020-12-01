@@ -173,11 +173,10 @@ global bool cpuid_getfeature(unsigned long feature){
     native_cpuid(&eax, &ebx, &ecx, &edx);
 
     long ftinf = (ecx << 32)+edx;
+    
 
     long mask = BITIDX(feature);
-    printf("%b8\n", GETBIT(ftinf,feature));
     return (ftinf&&mask) >> feature;
-
 }
 
 global bool cpuid_getextended(unsigned long feature){

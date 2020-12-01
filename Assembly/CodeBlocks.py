@@ -214,6 +214,7 @@ def spop(v: EC.ExpressionComponent):
 
 def fncall(fn):
     global norm_scratch_registers_inuse, sse_scratch_registers_inuse
+    fn.references+=1
     if(not fn.inline):
         return "call %s\n" % fn.getCallingLabel()
     else:
