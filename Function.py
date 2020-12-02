@@ -118,6 +118,14 @@ class Function:
 
         }
 
+
+        # The local state stack stores the state of the local scope in a stack,
+        # so that temporary stack variables can be pushed and popped at will.
+        # For example, any declarations defined inside an if statement will need to be
+        # removed by pushing the stack state before the if statement, and popping it after.
+        self.localstate_stack = []
+
+
         # Parameter information:
         #   number of sse parameter registers used
         self.ssepcount = 0
@@ -300,6 +308,22 @@ class Function:
                 if(valid):
                     return f
 
+
+    def push_stackstate(self):
+        
+        self.localstate_stack.append((self.stackCounter, len(self.variables)))
+
+    def pop_stackstate(self):
+
+        self.stackCounter, newidx = self.localstate_stack.pop()
+        for i in range(len(self.variables)-newidx):
+            oldvar = self.variables.pop()
+            if(oldvar.register is not None):
+                rfree(oldvar.register)
+        
+        #self.variables = self.variables[:newidx]
+
+
     def checkForId(self):               # check next tokens for ID
 
         if(self.current_token.tok != T_ID):
@@ -452,7 +476,7 @@ class Function:
             self.checkTok(T_OPENSCOPE)
 
             # compile the body
-            self.beginRecursiveCompile()
+            self.compileBodyScope()
             self.addline(f"jmp {jmpafter}")
             self.advance()
 
@@ -467,7 +491,7 @@ class Function:
                         self.buildIfStatement()
                     elif(self.current_token.tok == T_OPENSCOPE):
                         self.advance()
-                        self.beginRecursiveCompile()
+                        self.compileBodyScope()
                         if(self.current_token.tok == T_CLSSCOPE):
                             self.advance()
                     else:
@@ -502,10 +526,13 @@ class Function:
         self.continues.append(comparisonlabel)
         self.breaks.append(endlabel)
 
+        # save varstate for loop declaration
+        self.push_stackstate()
+
+
         # build the declaration a for example : for ( a; ... ;...) { ... }
-        self.buildDeclaration()
-        # var is the variable declared above
-        var = self.variables[-1]
+        self.compileLine()
+        
 
         # build the instructions neccessary to evaluate the expression b for
         # example: for (a; b; ...){ ... }
@@ -552,6 +579,7 @@ class Function:
 
         self.continues.pop()
         self.breaks.pop()
+        self.pop_stackstate()
 
     def buildWhileloop(self):
         self.advance()
@@ -563,6 +591,8 @@ class Function:
         endlabel = getLogicLabel("WHILEEND")
         self.continues.append(comparisonlabel)
         self.breaks.append(endlabel)
+
+        self.push_stackstate()
 
         self.addline(f"jmp {comparisonlabel}")
         self.addline(f"{startlabel}:")
@@ -577,6 +607,8 @@ class Function:
         # if the expression inside the while loop header always evaluates to False,
         # the body of the loop is not compiled.
         dontGetBody = False
+
+        
 
         if(not resultant.isconstint()):
             cmpinst += f"{checkTrue(resultant)}jnz {startlabel}\n"
@@ -602,6 +634,7 @@ class Function:
         # clean up var
         self.continues.pop()
         self.breaks.pop()
+        self.pop_stackstate()
 
     def buildSIMD(self):
         self.advance()
@@ -743,6 +776,8 @@ class Function:
 
         self.breaks.append(endlabel)
 
+        self.push_stackstate()
+
         # evaluate the lvalue to compare
         loadinstr, cmpvalue = self.evaluateExpression()
 
@@ -809,6 +844,7 @@ class Function:
         self.addline(f"{endlabel}:")
         self.advance()
         self.breaks.pop()
+        self.pop_stackstate()
 
         rfree(cmpvalue.accessor)
 
@@ -843,7 +879,9 @@ class Function:
         self.addline(f"{startlabel}:")
 
         # compile body
+        self.push_stackstate()
         self.beginRecursiveCompile()
+        self.pop_stackstate()
         self.advance()
 
         # ensure that body is followed by a while
@@ -887,6 +925,16 @@ class Function:
         self.ctidx -= 2
         self.advance()
 
+    # build forward functions or, inline function declarations.
+    # e.g:
+    #   
+    # int main(int argc, char** argv){
+    # 
+    #   bool* fn = function bool (int a) { return a == 5; };
+    #   fn(5);
+    #
+    # }
+    #
     def buildInlineFunction(self):
         self.advance()
         rettype = self.checkForType()
@@ -1063,6 +1111,7 @@ class Function:
     def buildAmbiguousFunctionCall(self, fid, types):
         pass
 
+    # load the parameters to call a function
     def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False):
         paraminst = ""
 
@@ -1130,6 +1179,7 @@ class Function:
 
         return paraminst
 
+    # build the ending of a function call code block
     def buildFunctionCallClosing(self, fn, varcall, var):
         instructions = ""
 
@@ -1777,6 +1827,31 @@ class Function:
         # else:
         # #   throw(UnkownIdentifier(self.current_token))
 
+    # compile a single line
+    def compileLine(self):
+        
+        if(self.current_token.tok == T_KEYWORD):
+            # keyword statement
+            self.buildKeywordStatement()
+
+        elif (self.current_token.tok == T_ID):
+            # ID initiated statement
+            self.buildIDStatement()
+
+        elif(self.current_token.tok in OPERATORS):
+            self.buildAssignment()
+
+        else:
+            pass  # ambiguous statement
+            throw(UnexpectedToken(self.current_token))
+            self.advance()
+
+    # compile the body of some control structures
+    def compileBodyScope(self):
+        self.push_stackstate()
+        self.beginRecursiveCompile()
+        self.pop_stackstate()
+    
     def beginRecursiveCompile(self):            # recursive main
         opens = 1  # maintain track of open and close scopes ("{, }")
         self.recursive_depth += 1
@@ -1784,22 +1859,8 @@ class Function:
 
             if(self.current_token.tok == T_CLSSCOPE):
                 opens -= 1
-
-            elif(self.current_token.tok == T_KEYWORD):
-                # keyword statement
-                self.buildKeywordStatement()
-
-            elif (self.current_token.tok == T_ID):
-                # ID initiated statement
-                self.buildIDStatement()
-
-            elif(self.current_token.tok in OPERATORS):
-                self.buildAssignment()
-
             else:
-                pass  # ambiguous statement
-                throw(UnexpectedToken(self.current_token))
-                self.advance()
+                self.compileLine()
 
         self.recursive_depth -= 1
 

@@ -29,7 +29,8 @@
 #include "sys/mman.cb"
 #include "algorithm/algorithm.k"
 #include "assert/assert.k"
-
+#include "stddef.k"
+#include "limits.k"
 
 #define MALLOC_PAGESIZE 4096
 #define MALLOC_PAGESIZE_ADJUSTED (MALLOC_PAGESIZE-sizeof(mblock))

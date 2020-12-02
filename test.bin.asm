@@ -265,6 +265,7 @@ STRING_CONSTANT_166: db `%i:%i:%i %i`, 0
 STRING_CONSTANT_167: db `%i.%i.%i.%i`, 0
 STRING_CONSTANT_168: db `LOCKED`, 0
 STRING_CONSTANT_169: db `unlocked thread: %i\n`, 0
+STRING_CONSTANT_170: db `%i `, 0
 __linux_errstrlist: DQ STRING_CONSTANT_0, STRING_CONSTANT_1, STRING_CONSTANT_2, STRING_CONSTANT_3, STRING_CONSTANT_4, STRING_CONSTANT_5, STRING_CONSTANT_6, STRING_CONSTANT_7, STRING_CONSTANT_8, STRING_CONSTANT_9, STRING_CONSTANT_10, STRING_CONSTANT_11, STRING_CONSTANT_12, STRING_CONSTANT_13, STRING_CONSTANT_14, STRING_CONSTANT_15, STRING_CONSTANT_16, STRING_CONSTANT_17, STRING_CONSTANT_18, STRING_CONSTANT_19, STRING_CONSTANT_20, STRING_CONSTANT_21, STRING_CONSTANT_22, STRING_CONSTANT_23, STRING_CONSTANT_24, STRING_CONSTANT_25, STRING_CONSTANT_26, STRING_CONSTANT_27, STRING_CONSTANT_28, STRING_CONSTANT_29, STRING_CONSTANT_30, STRING_CONSTANT_31, STRING_CONSTANT_32, STRING_CONSTANT_33, STRING_CONSTANT_34, STRING_CONSTANT_35, STRING_CONSTANT_36, STRING_CONSTANT_37, STRING_CONSTANT_38, STRING_CONSTANT_39, STRING_CONSTANT_40, STRING_CONSTANT_41, STRING_CONSTANT_42, STRING_CONSTANT_43, STRING_CONSTANT_44, STRING_CONSTANT_45, STRING_CONSTANT_46, STRING_CONSTANT_47, STRING_CONSTANT_48, STRING_CONSTANT_49, STRING_CONSTANT_50, STRING_CONSTANT_51, STRING_CONSTANT_52, STRING_CONSTANT_53, STRING_CONSTANT_54, STRING_CONSTANT_55, STRING_CONSTANT_56, STRING_CONSTANT_57, STRING_CONSTANT_58, STRING_CONSTANT_59, STRING_CONSTANT_60, STRING_CONSTANT_61, STRING_CONSTANT_62, STRING_CONSTANT_63, STRING_CONSTANT_64, STRING_CONSTANT_65, STRING_CONSTANT_66, STRING_CONSTANT_67, STRING_CONSTANT_68, STRING_CONSTANT_69, STRING_CONSTANT_70, STRING_CONSTANT_71, STRING_CONSTANT_72, STRING_CONSTANT_73, STRING_CONSTANT_74, STRING_CONSTANT_75, STRING_CONSTANT_76, STRING_CONSTANT_77, STRING_CONSTANT_78, STRING_CONSTANT_79, STRING_CONSTANT_80, STRING_CONSTANT_81, STRING_CONSTANT_82, STRING_CONSTANT_83, STRING_CONSTANT_84, STRING_CONSTANT_85, STRING_CONSTANT_86, STRING_CONSTANT_87, STRING_CONSTANT_88, STRING_CONSTANT_89, STRING_CONSTANT_90, STRING_CONSTANT_91, STRING_CONSTANT_92, STRING_CONSTANT_93, STRING_CONSTANT_94, STRING_CONSTANT_95, STRING_CONSTANT_96, STRING_CONSTANT_97, STRING_CONSTANT_98, STRING_CONSTANT_99, STRING_CONSTANT_100, STRING_CONSTANT_101, STRING_CONSTANT_102, STRING_CONSTANT_103, STRING_CONSTANT_104, STRING_CONSTANT_105, STRING_CONSTANT_106, STRING_CONSTANT_107, STRING_CONSTANT_108, STRING_CONSTANT_109, STRING_CONSTANT_110, STRING_CONSTANT_111, STRING_CONSTANT_112, STRING_CONSTANT_113, STRING_CONSTANT_114, STRING_CONSTANT_115, STRING_CONSTANT_116, STRING_CONSTANT_117, STRING_CONSTANT_118, STRING_CONSTANT_119, STRING_CONSTANT_120, STRING_CONSTANT_121, STRING_CONSTANT_122, STRING_CONSTANT_123, STRING_CONSTANT_124, STRING_CONSTANT_125, STRING_CONSTANT_126, STRING_CONSTANT_127, STRING_CONSTANT_128, STRING_CONSTANT_129, STRING_CONSTANT_130, STRING_CONSTANT_131
 errno: DD 0
 nullterm: DB 0
@@ -478,7 +479,7 @@ ___void._qmmap_psize_t__return:
 _bool_all_of_raw_piterablesize_tsize_tvoid.:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 48
+	sub rsp, 40
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -524,7 +525,7 @@ ___bool_all_of_raw_piterablesize_tsize_tvoid.__return:
 _bool_any_of_raw_piterablesize_tsize_tvoid.:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 48
+	sub rsp, 40
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -570,7 +571,7 @@ ___bool_any_of_raw_piterablesize_tsize_tvoid.__return:
 _bool_none_of_raw_piterablesize_tsize_tvoid.:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 48
+	sub rsp, 40
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -1018,7 +1019,7 @@ ___char._strerror_plong__return:
 _long_toStr_plongchar.boollong:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 144
+	sub rsp, 128
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -1089,14 +1090,14 @@ _long_toStr_plongchar.boollong:
 	jnz .L0x126
 .L0x128:
 	mov rbx, qword[rbp-120]
-	mov dword[rbp-136], ebx
+	mov dword[rbp-128], ebx
 	jmp .L0x12d
 .L0x12c:
-	mov r10d, dword[rbp-136]
+	mov r10d, dword[rbp-128]
 	mov rbx, qword[rbp-16]
 	and r10, 0x7fffffff
 	lea rbx, [rbx+r10*1]
-	mov r11d, dword[rbp-136]
+	mov r11d, dword[rbp-128]
 	mov r10, qword[rbp-120]
 	mov r12d, r11d
 	sub r10, r12
@@ -1105,10 +1106,10 @@ _long_toStr_plongchar.boollong:
 	and r11, 0xff
 	mov [rbx], r11b
 .L0x12e:
-	dec dword[rbp-136]
+	dec dword[rbp-128]
 .L0x12d:
 	xor r10d, r10d
-	mov ebx, dword[rbp-136]
+	mov ebx, dword[rbp-128]
 	cmp ebx, r10d
 	jg .L0x12c
 .L0x12f:
@@ -1125,7 +1126,7 @@ ___long_toStr_plongchar.boollong__return:
 _size_t_toBinary_pchar.ulonglong:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 40
+	sub rsp, 32
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -1223,7 +1224,7 @@ ___long_toStr_pdoublechar.long__return:
 _int___sprintf_pchar.char.void.:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 224
+	sub rsp, 48
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -1928,7 +1929,7 @@ ___long_execl_pchar.char..__return:
 _long_system_pchar.:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 32
+	sub rsp, 24
 	mov [rbp-8], rdi
 	mov rax , 57 
 	mov r10 , rcx 
@@ -2164,7 +2165,7 @@ ___void_add_block_pmblock.__return:
 _mblock._scan_existing_psize_t:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 24
+	sub rsp, 16
 	mov [rbp-8], rdi
 	mov rbx, qword[free_head]
 	test rbx, rbx
@@ -2221,7 +2222,7 @@ ___mblock._scan_existing_psize_t__return:
 _void_printstate_p:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 16
+	sub rsp, 8
 	mov rdi, STRING_CONSTANT_141
 	push rdi
 	mov rsi, rdi
@@ -2516,7 +2517,7 @@ ___void_memcpy_pvoid.void.size_t__return:
 _void_avx_memcpy_pvoid.void.size_t:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 56
+	sub rsp, 48
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -3561,7 +3562,7 @@ ___int_scansd_pchar.booldouble.__return:
 _int___SSCANF_pchar.char.void..:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 64
+	sub rsp, 40
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
 	mov [rbp-24], rdx
@@ -4399,6 +4400,9 @@ main:
 	sub rsp, 24
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
+	mov rsi, 45
+	mov rdi, STRING_CONSTANT_170
+	call printf
 	xor rax, rax
 	jmp __main__return
 __main__return:

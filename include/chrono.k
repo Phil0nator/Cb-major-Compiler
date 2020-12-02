@@ -98,8 +98,8 @@ global tm* gmtime(time_t timer){
 
 
     mday = yday;
-
-    for(int mi = 0 ; true; mi++){
+    int mi;
+    for(mi = 0 ; true; mi++){
         if(mday > mdays[mi]){
             mday = mday - mdays[mi];
         }else{
