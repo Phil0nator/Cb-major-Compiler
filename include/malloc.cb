@@ -329,8 +329,23 @@ global void* malloc(size_t size){
  */
 global void* realloc(void* addr, size_t newsize){
     
+    mblock *block = MALLOC_LOCALPTR(addr);
+    size_t oldsize = block->size;
 
+    if(oldsize < MALLOC_PAGESIZE){
 
+        free(addr);
+        void* newaddr = malloc(newsize);
+        if ( addr == newaddr ){
+            return addr;
+        }
+        memcpy(newaddr, addr, oldsize);
+        return newaddr;
+    
+    }
+
+    mmap(addr,newsize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+    return addr;
 }
 /**
  * Allocate at least size bytes, and zero out the entire block.
@@ -338,7 +353,9 @@ global void* realloc(void* addr, size_t newsize){
  * @returns a malloc'd block of memory containing only zeros, with a size of at least (size).
  */
 global void* calloc(size_t size){
-
+    void* out = malloc(size);
+    memzer(out, size);
+    return out;
 }
 
 

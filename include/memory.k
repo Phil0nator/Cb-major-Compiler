@@ -86,6 +86,18 @@ global void memset(void* dest, unsigned char value, size_t bytes){
     "}
 }
 
+global void memzer(void* dest, size_t bytes){
+    __asm{"
+    
+    xor bl, bl
+    %L:
+    mov [rdi+rsi], bl
+    dec rsi
+    jnz %L
+    
+    "}
+}
+
 
 
 #endif

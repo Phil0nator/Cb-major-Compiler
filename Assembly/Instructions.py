@@ -1,12 +1,13 @@
 import config
 from Classes.Token import isdigit
-from Assembly.TypeSizes import dwordImmediate
-from Assembly.Registers import REGISTERS
+from Assembly.TypeSizes import dwordImmediate, getSizeSpecifier
+from Assembly.Registers import REGISTERS, sizeOf
 import Classes.ExpressionComponent as EC
 import re
 import struct
 
 MOV_INST = ["mov", "movq", "movsd"]
+SIMPLE_ARITH_INST = ["add", "sub", "and", "or", "xor", "cmp"]
 
 
 def getMovop(a, b):
@@ -36,6 +37,11 @@ class Line:
             return dwordImmediate(int(self.source))
         return False
 
+    def validSourceCopy(self):
+        if(self.source.isdigit()):
+            return dwordImmediate(int(self.source))
+        return True
+
     def psize_dest(self):
         if("qword[" in self.dest):
             return "qword"
@@ -46,6 +52,20 @@ class Line:
         if("byte[" in self.dest):
             return "byte"
         return ""
+    
+    def psize_source(self):
+        if("qword[" in self.source):
+            return "qword"
+        if("dword[" in self.source):
+            return "dword"
+        if("word[" in self.source):
+            return "word"
+        if("byte[" in self.source):
+            return "byte"
+        return ""
+
+    def size_dest(self):
+        return sizeOf(self.dest)
 
     def threePart(self):
         return self.dest is not None and self.source is not None
@@ -232,7 +252,7 @@ class Peephole:
                     optims += 1
 
                 # redundant mov's
-                if (line.op in MOV_INST and prev.op == line.op):
+                elif (line.op in MOV_INST and prev.op == line.op):
                     # if same source  ->  destination, but both not addresses
                     if(line.source == prev.dest and not prev.hasAddr() and not line.hasAddr()):
                         splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
@@ -243,13 +263,13 @@ class Peephole:
                         optims += 1
 
                 # replace 'mov %r, 0' with the faster 'xor %r, %r'
-                if(line.op == "mov" and line.source == "0" and not line.hasAddr()):
+                elif(line.op == "mov" and line.source == "0" and not line.hasAddr()):
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
 
                 # ensure that there are no redundant movs like:
                 # e.g: mov rax, rax
-                if (line.op == "mov" and line.dest == line.source):
+                elif (line.op == "mov" and line.dest == line.source):
                     splitted[line.idx] = ""
 
                 # replace the common structure:
@@ -259,7 +279,7 @@ class Peephole:
                 # by replacing it with the faster:
                 #   mov reg, [addr]
                 #
-                if(prev.op == "lea" and line.op in ["mov", "movsd"]):
+                elif(prev.op == "lea" and line.op in ["mov", "movsd"]):
                     if(f"[{prev.dest}]" in line.source and "[" not in line.dest) \
                             and ("[" in line.source):
                         splitted[prev.idx] = ""
@@ -267,10 +287,33 @@ class Peephole:
                         optims += 1
                     elif (f"[{prev.dest}]" in line.dest and "[" not in line.source) \
                             and ("[" in line.dest):
-                        # print(splitted[prev.idx:line.idx+1])
                         sizesp = line.psize_dest()
                         splitted[prev.idx] = ""
                         splitted[line.idx] = f"{line.op} {sizesp}{prev.source}, {line.source}\n"
+
+
+                # remove repetitive / impossible jmp instructions
+                elif (prev.op == "jmp" and prev.op == line.op):
+                    splitted[line.idx] = ""
+    
+                # incorperate memory operands for suitable instructions
+                # TODO: (Experiment more to make sure this works)
+                elif (prev.op == "mov" and line.op in SIMPLE_ARITH_INST and not line.hasAddr() and prev.validSourceCopy()):
+                    if(prev.dest == line.dest and not prev.constSource()):
+                        if prev.psize_source() == "" and "[" in prev.source:
+                            prev.source = f"{getSizeSpecifier(prev.dest)}{prev.source}"
+                        
+                        splitted[prev.idx] = ""
+                        splitted[line.idx] = f"{line.op} {prev.source}, {line.source}\n"
+                        optims += 1
+
+                    elif (prev.dest == line.source):
+                        if prev.psize_source() == "" and "[" in prev.source:
+                            prev.source = f"{getSizeSpecifier(prev.dest)}{prev.source}"
+
+                        splitted[line.idx] = f"{line.op} {line.dest}, {prev.source}\n"
+                        splitted[prev.idx] = ""
+                        optims += 1
 
                 prev = line
 
