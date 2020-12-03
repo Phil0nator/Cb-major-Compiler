@@ -2,7 +2,7 @@
 
 int main(long argc, char** argv){
 
-    printf("%f\n", tan(M_PI));
+    printf("The number is: ( %f ) \n", acos(0.045));
     
 
 

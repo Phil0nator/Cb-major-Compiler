@@ -28,5 +28,17 @@
 
 #define sizeof(x) typeof(x)
 
+#define QNAN             ($void 0x7FF8000000000001)
+#define SNAN             ($void 0x7FF0000000000001)
+#define NAN              ($void 0x7FFFFFFFFFFFFFFF)
+#define INF              ($void 0x7FF0000000000000)
+#define NINF             ($void 0xFFF0000000000000)
+
+
+
+#define isNaN(x)        (($void x) == NAN)
+#define isQNaN(x)       (($void x) == QNAN)
+#define isSNaN(x)       (($void x) == SNAN)
+
 
 #endif

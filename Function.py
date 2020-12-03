@@ -381,7 +381,6 @@ class Function:
             return Token(T_INT, final.type.csize(),
                          stp.start, stp.end)
 
-
     # load parameters into memory (first instructions)
 
     def loadParameters(self):
@@ -1993,6 +1992,7 @@ class Function:
             # functions that are found to be simple enough, can be optimized:
 
             # implicit parameter register declaration...
+            # WIP
             if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
                 self.GC()
                 newfunc = self.reset()

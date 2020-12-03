@@ -114,6 +114,25 @@ size_t toBinary(char* buffer, unsigned long val, long bits){
 
 function long toStr(double val, char* buffer, long multiplier){
 
+
+    if(isQNaN(val)){
+        strcpy(buffer, "QNaN");
+        return 4;
+    }else if(isSNaN(val)){
+        strcpy(buffer, "SNaN");
+        return 4;
+    }else if (isNaN(val)){
+        strcpy(buffer, "NaN");
+        return 3;
+    }else if (val == INF){
+        strcpy(buffer, "Inf");
+        return 3;
+    }else if (val == NINF){
+        strcpy(buffer, "-Inf");
+        return 4;
+    }
+
+
     long mantissa = val;
     long l = 0;
 

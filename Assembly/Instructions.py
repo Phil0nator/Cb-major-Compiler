@@ -187,11 +187,12 @@ class Peephole:
                     #
                     #   mov xmm1, {2}
                     #   opsd xmm1, {1}
-                    #
-                    if (nextline.op in SIMD_ARITH_INST and prev.op ==
-                            "movsd" and prev.dest == nextline.source):
-                        splitted[prev.idx] = ""
-                        splitted[nextline.idx] = f"{nextline.op} {nextline.dest}, {prev.source}\n"
+                    #   TODO:
+                    #   Fix Errors (Use Arcsin to test)
+                    # if (nextline.op in SIMD_ARITH_INST and prev.op ==
+                    #        "movsd" and prev.dest == nextline.source):
+                    #    splitted[prev.idx] = ""
+                    #    splitted[nextline.idx] = f"{nextline.op} {nextline.dest}, {prev.source}\n"
 
                 # additions or subtractions by one can be substituted for their
                 # faster counterparts in 'inc' or 'dec' respectively

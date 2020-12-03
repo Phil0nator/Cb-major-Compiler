@@ -6,7 +6,7 @@
 #endif
 #define __TRIG
 
-
+#include "limits.k"
 
 #define __TAYLOR_3F     (3*2)
 #define __TAYLOR_5F     (__TAYLOR_3F*5*4)
@@ -22,7 +22,9 @@
 
 
 
-
+/**
+ * A degree nine taylor approximation of the sin function
+ */
 double taylor_sin(double x){
 
     return x - (__TAYLOR_P3(x)/__TAYLOR_3F) + (__TAYLOR_P5(x)/__TAYLOR_5F) - (__TAYLOR_P7(x)/__TAYLOR_7F) +  (__TAYLOR_P9(x)/__TAYLOR_9F);
@@ -57,18 +59,101 @@ global double cos(double x){
 
 }
 
-#define __TTAYLOR_1_3 (1.0/3.0)
-#define __TTAYLOR_2_15 (2.0/15.0)
-#define __TTAYLOR_17_315 (17.0/315.0)
-#define __TTAYLOR_62_2835 (62.0/2835.0)
 
-global double taylor_tan(double x){
-    return x + (__TTAYLOR_1_3 * __TAYLOR_P3(x)) + (__TTAYLOR_2_15 * __TAYLOR_P5(x)) + (__TTAYLOR_17_315 * __TAYLOR_P7(x)) + (__TTAYLOR_62_2835 * __TAYLOR_P9(x));
-}
-
+/**
+ * Taylor series tan
+ * @see sin, cos
+ * @param x input
+ * @returns tan(x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
 global double tan(double x){
     if(x != 0){
-        return taylor_tan(x);
+        return sin(x) / cos (x);
     }
     return 0; 
 }
+
+/**
+ * Taylor series cot
+ * @see tan
+ * @param x input
+ * @returns cot(x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+global double cot(double x){
+    if( x != 0 ){
+        return 1.0 / tan(x);
+    }
+    return QNAN;
+}
+
+/**
+ * Taylor series sec
+ * @see cos
+ * @param x input
+ * @returns cot(x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+global double sec(double x){
+    if( x!= 0){
+        return 1.0 / cos(x);
+    }
+    return 1;
+}
+
+/**
+ * Taylor series csc
+ * @see sin
+ * @param x input
+ * @returns cot(x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+global double csc(double x){
+    if (x!=0){
+        return 1.0 / sin(x);
+    }
+    return QNAN;
+}
+
+#define __TAYLOR_ASIN1      0.5
+#define __TAYLOR_ASIN2      0.375
+#define __TAYLOR_ASIN3      0.3125
+#define __TAYLOR_ASIN4      0.2734375
+
+#define __TAYLOR_ASINT1     (__TAYLOR_ASIN1*(__TAYLOR_P3(x)/3.0))
+#define __TAYLOR_ASINT2     (__TAYLOR_ASIN2*(__TAYLOR_P5(x)/5.0))
+#define __TAYLOR_ASINT3     (__TAYLOR_ASIN3*(__TAYLOR_P7(x)/7.0))
+#define __TAYLOR_ASINT4     (__TAYLOR_ASIN4*(__TAYLOR_P9(x)/9.0))
+
+global double taylor_asin(double x){
+    return x + __TAYLOR_ASINT1 + __TAYLOR_ASINT2 + __TAYLOR_ASINT3 + __TAYLOR_ASINT4;
+}
+
+
+/**
+ * Taylor series arcsin (sin^-1)
+ * @param x input
+ * @returns sin^-1(x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+global double asin(double x){
+    if(x < -1 || x > 1){
+        return QNAN;
+    }
+    return taylor_asin(x);
+}
+
+/**
+ * Taylor series arccos (cos^-1)
+ * @param x input
+ * @returns cos^-1(x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+global double acos(double x){
+    if(x < -1 || x > 1){
+        return QNAN;
+    }
+    return M_PI_2 - taylor_asin(x);
+}
+
