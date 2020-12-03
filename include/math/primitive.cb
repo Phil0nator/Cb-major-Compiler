@@ -1,0 +1,14 @@
+
+#ifndef __MATH
+#error "primitive.cb should only be included through math/math.cb."
+#endif
+#ifdef __PRIMITIVEMATH
+#error "primitive.cb should only be included through math/math.cb"
+#endif
+#define __PRIMITIVEMATH
+
+
+#define __MATHBASE_SQRT __asm{"sqrtsd xmm0, xmm0"} (0)
+#define __MATHBASE_TRUNC __asm{"cvttsd2si rax, xmm0"} (0)
+#define __MATHBASE_ROUND __asm{"cvtsd2si rax, xmm0"} (0)
+#define __MATHBASE_CVTSI2SD __asm{"cvtsi2sd xmm0, rdi"} (0)

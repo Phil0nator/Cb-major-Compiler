@@ -6,7 +6,7 @@
 #define __CHRONO 1
 #include "sys/time.k"
 #include "stddef.k"
-#include "math.k"
+#include "math/math.cb"
 
 typedef unsigned long clock_t;
 

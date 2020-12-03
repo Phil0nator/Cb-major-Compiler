@@ -10,7 +10,7 @@
 #include "functions/variardic.k"    /* used in variardic functions */
 #include "memory.k"                 /* memory operations */
 #include "io/printf.k"              /* output */
-#include "math.k"                   /* math functions */
+#include "math/math.cb"                   /* math functions */
 #include "random.k"                 /* fast psudo random number generator */
 
 #include "algorithm/algorithm.k"    /* high level algorithm macros */

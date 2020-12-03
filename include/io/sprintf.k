@@ -16,10 +16,10 @@
 #define FORMAT_HEX 'x'
 #define FORMAT_OCTAL 'o'
 
-#include "math.k"
+#include "math/math.cb"
 #include "string.k"
 #include "bits/endian.k"
-
+#include "algorithm/algorithm.k"
 
 /* 
 function long toStr(long val, char* buffer, bool signed, short base){
@@ -114,17 +114,26 @@ size_t toBinary(char* buffer, unsigned long val, long bits){
 
 function long toStr(double val, char* buffer, long multiplier){
 
-    long integral = val;
-    long l = toStr(integral, buffer, 1, 10);
+    long mantissa = val;
+    long l = 0;
+
+    l += toStr(mantissa, buffer, 1, 10);
     buffer+=l;
     
-    val = abs(val);
-    val -= abs(integral);
-    val *= multiplier;
-
+    val = (abs(val)-abs(mantissa))*multiplier;
+    long leading = toStr(abs(round(val)), buffer, 1, 10)-1;
     @buffer = '.';
     buffer++;
-    l += toStr(round(val), buffer, 0, 10);
+    for range(i, 7-leading){
+        @buffer = '0';
+        buffer++;
+        l++;
+    }
+    buffer--;
+
+
+    
+    l += toStr(abs(round(val)), buffer, 1, 10);
     return l+1;
 
 

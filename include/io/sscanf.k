@@ -2,7 +2,7 @@
 #define __SCANF 1
 #include "stddef.k"
 #include "bits/endian.k"
-#include "math.k"
+#include "math/math.cb"
 #define SSCANF_FORMAT_INT 'i'
 #define SSCANF_FORMAT_UINT 'u'
 #define SSCANF_FORMAT_CHAR 'c'

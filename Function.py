@@ -381,6 +381,7 @@ class Function:
             return Token(T_INT, final.type.csize(),
                          stp.start, stp.end)
 
+
     # load parameters into memory (first instructions)
 
     def loadParameters(self):
@@ -1113,7 +1114,6 @@ class Function:
     # load the parameters to call a function
     def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False):
         paraminst = ""
-
 
         # when parameters are being loaded it signifies that a function has been called,
         # so the counter needs to be incremented
@@ -1990,7 +1990,6 @@ class Function:
 
         if(config.__oplevel__ == 3):
 
-            
             # functions that are found to be simple enough, can be optimized:
 
             # implicit parameter register declaration...

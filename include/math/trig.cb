@@ -1,0 +1,74 @@
+#ifndef __MATH
+#error "trig.cb should only be included through math/math.cb."
+#endif
+#ifdef __TRIG
+#error "trig.cb should only be included through math/math.cb"
+#endif
+#define __TRIG
+
+
+
+#define __TAYLOR_3F     (3*2)
+#define __TAYLOR_5F     (__TAYLOR_3F*5*4)
+#define __TAYLOR_7F     (__TAYLOR_5F*7*6)
+#define __TAYLOR_9F     (__TAYLOR_7F*9*8)
+
+#define __TAYLOR_P3(x) (x*x*x)
+#define __TAYLOR_P5(x) (__TAYLOR_P3(x)*x*x)
+#define __TAYLOR_P7(x) (__TAYLOR_P5(x)*x*x)
+#define __TAYLOR_P9(x) (__TAYLOR_P7(x)*x*x)
+
+
+
+
+
+
+double taylor_sin(double x){
+
+    return x - (__TAYLOR_P3(x)/__TAYLOR_3F) + (__TAYLOR_P5(x)/__TAYLOR_5F) - (__TAYLOR_P7(x)/__TAYLOR_7F) +  (__TAYLOR_P9(x)/__TAYLOR_9F);
+
+}
+
+/**
+ * Taylor series approxomated sin function (degree 9 by default)
+ * @param x sin input
+ * @returns sin(x)
+ */
+global double sin(double x){
+    if (x != 0){       
+        return  taylor_sin(M_PI - fmod(x, 2*M_PI));
+    }
+    return 0;
+
+}
+
+/**
+ * Taylor series cosine
+ * @see sin
+ * @param x input
+ * @returns cos(x)
+ */
+global double cos(double x){
+
+    if(x != 0){
+        return sin(x+M_PI_2);
+    }
+    return 1;
+
+}
+
+#define __TTAYLOR_1_3 (1.0/3.0)
+#define __TTAYLOR_2_15 (2.0/15.0)
+#define __TTAYLOR_17_315 (17.0/315.0)
+#define __TTAYLOR_62_2835 (62.0/2835.0)
+
+global double taylor_tan(double x){
+    return x + (__TTAYLOR_1_3 * __TAYLOR_P3(x)) + (__TTAYLOR_2_15 * __TAYLOR_P5(x)) + (__TTAYLOR_17_315 * __TAYLOR_P7(x)) + (__TTAYLOR_62_2835 * __TAYLOR_P9(x));
+}
+
+global double tan(double x){
+    if(x != 0){
+        return taylor_tan(x);
+    }
+    return 0; 
+}

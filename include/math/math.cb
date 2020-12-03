@@ -9,36 +9,26 @@
 
 #define MAXUINT -1
 
-
-#define EPSILON         1.192092896e-32          /* smallest respresentable double value greater than 0  */
-#define M_PI            3.14159265358979323846   /* PI                                                   */
-#define M_E             2.71828182845904523536   /* e                                                    */
-#define M_LOG2E         1.44269504088896340736   /* log2(e)                                              */
-#define M_LOG10E        0.434294481903251827651  /* log10(e)                                             */
-#define M_LN2           0.693147180559945309417  /* ln(2)                                                */
-#define M_PI_2          1.57079632679489661923   /* PI/2                                                 */
-#define M_PI_4          0.785398163397448309616  /* PI/4                                                 */
-#define M_1_PI          0.318309886183790671538  /* 1/PI                                                 */
-#define M_2_PI          0.636619772367581343076  /* 2/PI                                                 */
-#define M_2_SQRTPI      1.12837916709551257390   /* 2 / sqrt( PI )                                       */
-#define M_SQRT2         1.41421356237309504880   /* sqrt( 2 )                                            */
-#define M_SQRT1_2       0.707106781186547524401  /* 1 / sqrt(2)                                          */
-#define M_MINZERO       -0.0                     /* double precision -0.0                                */
-#define M_LOG2_10       3
-double M_MINZERO_MEM = M_MINZERO;
+#include "constants.cb" /* useful math constants */
+#include "primitive.cb" /* Asm macros for primitives */
 
 /**
  * Square root.
  * @param a input
  * @returns square root of a
  */
-global double sqrt(double a){
+inline double sqrt(double a){
+  __MATHBASE_SQRT;
+}
+/**
+ * Square root.
+ * @param a input
+ * @returns square root of a
+ */
+inline double sqrt(long a){
 
-    __asm{"
-    
-    sqrtsd xmm0, xmm0
-    
-    "}
+  __MATHBASE_CVTSI2SD;
+  __MATHBASE_SQRT;
 
 }
 /**
@@ -46,33 +36,11 @@ global double sqrt(double a){
  * @param a input
  * @returns square root of a
  */
-global double sqrt(int a){
+inline long sqrt(long a){
 
-  __asm{"
-  
-    cvtsi2sd xmm0, rdi
-    sqrtsd xmm0, xmm0
-  
-  "}
-
-
-}
-/**
- * Square root.
- * @param a input
- * @returns square root of a
- */
-global long sqrt(long a){
-
-  __asm{"
-  
-  cvtsi2sd xmm0, rdi
-  sqrtsd xmm0, xmm0
-  cvttsd2si rax, xmm0
-  
-  
-  "}
-
+  __MATHBASE_CVTSI2SD;
+  __MATHBASE_SQRT;
+  __MATHBASE_TRUNC;
 
 }
 
@@ -109,7 +77,7 @@ global long pow(long base, long exp){
 global double pow(long base, long exp){
 
   pow(base, exp);
-  __asm{"cvtsi2sd xmm0, rax"}
+  __MATHBASE_CVTSI2SD;
 
 }
 
@@ -142,7 +110,7 @@ global double pow(double base, long exp){
  * @returns closest integer to x
  */
 inline long round(double x){
-  __asm{"cvtsd2si rax, xmm0"}
+  __MATHBASE_ROUND;
 }
 
 /**
@@ -159,8 +127,8 @@ global long ceil(double x){
  * @param x value to truncate
  * @returns x without a decimal point
  */
-global long trunc(double x){
-  __asm{"cvttsd2si rax, xmm0"}
+inline long trunc(double x){
+  __MATHBASE_TRUNC;
 }
 
 /**
@@ -177,7 +145,7 @@ global long floor(double x){
  * @param x value
  * @returns |x|
  */
-inline long abs(long x){
+global long abs(long x){
 
   __asm{"
   
@@ -196,14 +164,15 @@ inline long abs(long x){
  * @param x value
  * @returns |x|
  */
-inline double abs(double x){
+global double abs(double x){
 
   __asm{"
 
 
+
   movq rax, xmm0
-  shr rax, 1
   shl rax, 1
+  shr rax, 1
   movq xmm0, rax 
 
 
@@ -217,7 +186,7 @@ inline double abs(double x){
  * @param x value
  * @returns log(x)
  */
-inline long log(long x){
+global long log(long x){
   
   return log2(x) / M_LOG2_10;
 
@@ -228,7 +197,7 @@ inline long log(long x){
  * @param n log
  * @returns log base base of n
  */
-inline long log(long base, long n){
+global long log(long base, long n){
   
   return log2(n) / log2(base);
   
@@ -271,7 +240,7 @@ global double fmod(double x, double n){
  * @param modulus destination for value of modulus
  * @returns dividend / divisor, @modulus = dividend % divisor
  */
-inline long divmod(long dividend, long divisor, long* modulus ){
+global long divmod(long dividend, long divisor, long* modulus ){
 
   __asm{"
   mov rbx, rdx
@@ -287,7 +256,7 @@ inline long divmod(long dividend, long divisor, long* modulus ){
 /**
  * 
  */
-inline long divmods(long dividend, long divisor, long* modulus){
+global long divmods(long dividend, long divisor, long* modulus){
   __asm{"
   mov rbx, rdx
   xor rdx, rdx
@@ -297,5 +266,11 @@ inline long divmods(long dividend, long divisor, long* modulus){
   "}
 }
 
+
+/**
+ * More complex math functions:
+ */
+
+#include "trig.cb"
 
 #endif

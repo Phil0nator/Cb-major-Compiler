@@ -248,7 +248,7 @@ class ExpressionEvaluator:
         newinstr = self.normal_semiconstexprheader(a, b)
 
         if(a.type.isflt() != b.type.isflt()):
-            throw(TypeMismatch(a.tok, a.type, b.type))
+            throw(TypeMismatch(a.token, a.type, b.type))
 
         areg, breg, __, outinstr = optloadRegs(a, b, ":", LONG.copy())
         areg = setSize(areg, 8)
