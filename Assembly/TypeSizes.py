@@ -77,11 +77,14 @@ def getHeapReserver(t):
 
 # depricated
 
-psizes = ["byte","word",None,"dword",None,None,None,"qword"]
+
+psizes = ["byte", "word", None, "dword", None, None, None, "qword"]
+
+
 def getSizeSpecifier(t):
     if(isinstance(t, str)):
         if t in R.REGISTERS:
-            return psizes[R.sizeOf(t)-1]
+            return psizes[R.sizeOf(t) - 1]
 
 # use a mask to truncate reg to size
 

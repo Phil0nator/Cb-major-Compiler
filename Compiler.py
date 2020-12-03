@@ -608,8 +608,6 @@ class Compiler:
             #    if f.wouldbe_inline and f.references == 0:
             #        f.inline = True
 
-
-
             if not f.inline:
 
                 self.currentfunction = f

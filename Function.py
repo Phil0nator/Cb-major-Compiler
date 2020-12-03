@@ -1,5 +1,6 @@
-import time
 import random
+import time
+
 import Assembly.AVX as AVX
 import Assembly.CodeBlocks as CodeBlocks
 import Assembly.TypeSizes as TypeSizes
@@ -8,24 +9,25 @@ import Classes.Optimizer
 import config
 from Assembly.AVX import (avx_correctSize, avx_doToReg, avx_dropToAddress,
                           avx_loadToReg, avx_ralloc, avx_rfree)
-from Assembly.CodeBlocks import (doFloatOperation,
-                                 doIntOperation, fncall, function_allocator,
-                                 function_closer, functionlabel, getLogicLabel,
-                                 loadToPtr, loadToReg, maskset, movRegToVar,
-                                 movVarToReg, spop, spush, valueOf, raw_regmov, checkTrue,
-                                 allocate_readonly, createIntrinsicHeap, movMemVar, extra_parameterlabel)
+from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
+                                 createIntrinsicHeap, doFloatOperation,
+                                 doIntOperation, extra_parameterlabel, fncall,
+                                 function_allocator, function_closer,
+                                 functionlabel, getLogicLabel, loadToPtr,
+                                 loadToReg, maskset, movMemVar, movRegToVar,
+                                 movVarToReg, raw_regmov, spop, spush, valueOf)
 from Assembly.Instructions import Instruction, Peephole, floatTo64h
 from Assembly.Registers import *
-from Assembly.TypeSizes import isfloat, INTMAX
-from Classes.Constexpr import determineConstexpr, buildConstantSet
+from Assembly.TypeSizes import INTMAX, isfloat
+from Classes.Constexpr import buildConstantSet, determineConstexpr
 from Classes.DType import DType
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
-from ExpressionEvaluator import (LeftSideEvaluator, RightSideEvaluator, ExpressionEvaluator,
-                                 optloadRegs)
-from globals import (BOOL, CHAR, DOUBLE, INT, LONG, SHORT, VOID, TsCompatible,
-                     isIntrinsic, OPERATORS)
+from ExpressionEvaluator import (ExpressionEvaluator, LeftSideEvaluator,
+                                 RightSideEvaluator, optloadRegs)
+from globals import (BOOL, CHAR, DOUBLE, INT, LONG, OPERATORS, SHORT, VOID,
+                     TsCompatible, isIntrinsic)
 from Postfixer import Postfixer
 
 # multiply all items in an array
@@ -118,13 +120,12 @@ class Function:
 
         }
 
-
         # The local state stack stores the state of the local scope in a stack,
         # so that temporary stack variables can be pushed and popped at will.
         # For example, any declarations defined inside an if statement will need to be
-        # removed by pushing the stack state before the if statement, and popping it after.
+        # removed by pushing the stack state before the if statement, and
+        # popping it after.
         self.localstate_stack = []
-
 
         # Parameter information:
         #   number of sse parameter registers used
@@ -179,15 +180,19 @@ class Function:
 
         # Features
 
-        ## Size optimization:
-        
+        # count the number of other functions called to enable, with high optimization level,
+        # implicit parameter register declaration.
+        self.fncalls = 0
+        self.implicit_paramregdecl = False
+
+        # Size optimization:
+
         # When size optimization is being ran, functions are not inlined. This
-        # flag stores weather or not this function would have been inline otherwise
+        # flag stores weather or not this function would have been inline
+        # otherwise
         self.wouldbe_inline = False
         # Count the number of times this function is called
         self.references = 0
-
-
 
     def advance(self):                              # advance token
         self.ctidx += 1
@@ -308,21 +313,19 @@ class Function:
                 if(valid):
                     return f
 
-
     def push_stackstate(self):
-        
+
         self.localstate_stack.append((self.stackCounter, len(self.variables)))
 
     def pop_stackstate(self):
 
         self.stackCounter, newidx = self.localstate_stack.pop()
-        for i in range(len(self.variables)-newidx):
+        for i in range(len(self.variables) - newidx):
             oldvar = self.variables.pop()
             if(oldvar.register is not None):
                 rfree(oldvar.register)
-        
-        #self.variables = self.variables[:newidx]
 
+        #self.variables = self.variables[:newidx]
 
     def checkForId(self):               # check next tokens for ID
 
@@ -389,7 +392,7 @@ class Function:
             if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
                 break
 
-            if (self.inline):
+            if (self.inline or self.implicit_paramregdecl):
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
                     counts += 1
@@ -403,7 +406,7 @@ class Function:
             self.addVariable(p)
             p.referenced = True
 
-            if (not self.inline):
+            if (not self.inline and not self.implicit_paramregdecl):
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
                 if(p.isflt()):
@@ -529,10 +532,8 @@ class Function:
         # save varstate for loop declaration
         self.push_stackstate()
 
-
         # build the declaration a for example : for ( a; ... ;...) { ... }
         self.compileLine()
-        
 
         # build the instructions neccessary to evaluate the expression b for
         # example: for (a; b; ...){ ... }
@@ -607,8 +608,6 @@ class Function:
         # if the expression inside the while loop header always evaluates to False,
         # the body of the loop is not compiled.
         dontGetBody = False
-
-        
 
         if(not resultant.isconstint()):
             cmpinst += f"{checkTrue(resultant)}jnz {startlabel}\n"
@@ -927,9 +926,9 @@ class Function:
 
     # build forward functions or, inline function declarations.
     # e.g:
-    #   
+    #
     # int main(int argc, char** argv){
-    # 
+    #
     #   bool* fn = function bool (int a) { return a == 5; };
     #   fn(5);
     #
@@ -1114,6 +1113,11 @@ class Function:
     # load the parameters to call a function
     def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False):
         paraminst = ""
+
+
+        # when parameters are being loaded it signifies that a function has been called,
+        # so the counter needs to be incremented
+        self.fncalls += 1
 
         rng = range(1, pcount) if offset else range(pcount)
 
@@ -1829,7 +1833,7 @@ class Function:
 
     # compile a single line
     def compileLine(self):
-        
+
         if(self.current_token.tok == T_KEYWORD):
             # keyword statement
             self.buildKeywordStatement()
@@ -1851,7 +1855,7 @@ class Function:
         self.push_stackstate()
         self.beginRecursiveCompile()
         self.pop_stackstate()
-    
+
     def beginRecursiveCompile(self):            # recursive main
         opens = 1  # maintain track of open and close scopes ("{, }")
         self.recursive_depth += 1
@@ -1986,6 +1990,17 @@ class Function:
 
         if(config.__oplevel__ == 3):
 
+            
+            # functions that are found to be simple enough, can be optimized:
+
+            # implicit parameter register declaration...
+            if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
+                self.GC()
+                newfunc = self.reset()
+                newfunc.implicit_paramregdecl = True
+                newfunc.compile()
+                self.asm = newfunc.asm
+
             pfinal = Peephole()
             pfinal.addline(self.asm)
 
@@ -2003,4 +2018,4 @@ class Function:
 
     def GC(self):
         self.asm = ""
-        del self.peephole
+        self.peephole = Peephole()

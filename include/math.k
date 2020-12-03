@@ -141,7 +141,7 @@ global double pow(double base, long exp){
  * @param x value to round
  * @returns closest integer to x
  */
-global long round(double x){
+inline long round(double x){
   __asm{"cvtsd2si rax, xmm0"}
 }
 
@@ -177,7 +177,7 @@ global long floor(double x){
  * @param x value
  * @returns |x|
  */
-global long abs(long x){
+inline long abs(long x){
 
   __asm{"
   
@@ -196,7 +196,7 @@ global long abs(long x){
  * @param x value
  * @returns |x|
  */
-global double abs(double x){
+inline double abs(double x){
 
   __asm{"
 
@@ -217,7 +217,7 @@ global double abs(double x){
  * @param x value
  * @returns log(x)
  */
-global long log(long x){
+inline long log(long x){
   
   return log2(x) / M_LOG2_10;
 
@@ -228,7 +228,7 @@ global long log(long x){
  * @param n log
  * @returns log base base of n
  */
-global long log(long base, long n){
+inline long log(long base, long n){
   
   return log2(n) / log2(base);
   

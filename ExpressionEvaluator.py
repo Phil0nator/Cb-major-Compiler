@@ -591,14 +591,14 @@ class RightSideEvaluator(ExpressionEvaluator):
         needload = True
         instr = ""
         instr += bringdown_memloc(a)
-        areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
-        instr += i
+        #areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
+        #instr += i
 
         cmd = "inc" if op == "++" else "dec"
 
-        instr += Instruction(cmd, [areg])
+        instr += Instruction(cmd, [valueOf(a.accessor)])
         o = a.type.copy()
-        return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
+        return instr, o, a
 
     # evaluate logical NOT
     def evalNot(self, a):

@@ -21,7 +21,7 @@ typedef int off_t;
 #define MAP_ANONYMOUS 0x20
 
 
-global void* mmap(void* addr, size_t length, long prot, long flags, long fd, off_t offset){
+inline void* mmap(void* addr, size_t length, long prot, long flags, long fd, off_t offset){
     __asm{"
     mov rax, 9
     mov r10, rcx

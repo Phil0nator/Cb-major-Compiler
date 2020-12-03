@@ -112,7 +112,7 @@ elif(args.optimize3):
 __Osize__ = False
 
 if(args.optimize_size):
-    __oplevel__= 3
+    __oplevel__ = 3
     #   TODO: Set up some optimizations
     # __Osize__ = True
 

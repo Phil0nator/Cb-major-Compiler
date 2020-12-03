@@ -8,10 +8,11 @@ import struct
 
 MOV_INST = ["mov", "movq", "movsd"]
 SIMPLE_ARITH_INST = ["add", "sub", "and", "or", "xor", "cmp"]
+SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
 
 
 def getMovop(a, b):
-    if ("xmm" in a and "xmm" in b):
+    if ("xmm" in a and ("xmm" in b or "[" in b)):
         return "movsd"
     elif ("xmm" in a) ^ ("xmm" in b):
         return "movq"
@@ -52,7 +53,7 @@ class Line:
         if("byte[" in self.dest):
             return "byte"
         return ""
-    
+
     def psize_source(self):
         if("qword[" in self.source):
             return "qword"
@@ -176,6 +177,22 @@ class Peephole:
                         # ommit line
                         splitted[line.idx] = ""
 
+                    # Simplify the basic float operation structure of the compiler:
+                    #   mov xmm0, {1}
+                    #   mov xmm1, {2}
+                    #   opsd xmm1, xmm0
+                    #   ...
+                    #
+                    #   Into the following structure:
+                    #
+                    #   mov xmm1, {2}
+                    #   opsd xmm1, {1}
+                    #
+                    if (nextline.op in SIMD_ARITH_INST and prev.op ==
+                            "movsd" and prev.dest == nextline.source):
+                        splitted[prev.idx] = ""
+                        splitted[nextline.idx] = f"{nextline.op} {nextline.dest}, {prev.source}\n"
+
                 # additions or subtractions by one can be substituted for their
                 # faster counterparts in 'inc' or 'dec' respectively
                 if(line.op == "add" or line.op == "sub") and line.constSource() and int(line.source) == 1:
@@ -254,7 +271,7 @@ class Peephole:
                 # redundant mov's
                 elif (line.op in MOV_INST and prev.op == line.op):
                     # if same source  ->  destination, but both not addresses
-                    if(line.source == prev.dest and not prev.hasAddr() and not line.hasAddr()):
+                    if(line.source == prev.dest and not (line.hasAddr() or prev.hasAddr())):
                         splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
 
                         # TODO:
@@ -291,18 +308,20 @@ class Peephole:
                         splitted[prev.idx] = ""
                         splitted[line.idx] = f"{line.op} {sizesp}{prev.source}, {line.source}\n"
 
-
                 # remove repetitive / impossible jmp instructions
                 elif (prev.op == "jmp" and prev.op == line.op):
                     splitted[line.idx] = ""
-    
+
                 # incorperate memory operands for suitable instructions
                 # TODO: (Experiment more to make sure this works)
-                elif (prev.op == "mov" and line.op in SIMPLE_ARITH_INST and not line.hasAddr() and prev.validSourceCopy()):
-                    if(prev.dest == line.dest and not prev.constSource()):
+                elif (prev.op == "mov" and line.op in SIMPLE_ARITH_INST and not (line.hasAddr() and prev.hasAddr()) and prev.validSourceCopy()):
+
+                    # Condition 1 satisfies a replaceable line dest, Condition 2
+                    # satisfies a replaceable line source
+                    if(line.op == "cmp" and prev.dest == line.dest and not prev.constSource()):
                         if prev.psize_source() == "" and "[" in prev.source:
                             prev.source = f"{getSizeSpecifier(prev.dest)}{prev.source}"
-                        
+
                         splitted[prev.idx] = ""
                         splitted[line.idx] = f"{line.op} {prev.source}, {line.source}\n"
                         optims += 1

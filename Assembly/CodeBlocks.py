@@ -214,7 +214,7 @@ def spop(v: EC.ExpressionComponent):
 
 def fncall(fn):
     global norm_scratch_registers_inuse, sse_scratch_registers_inuse
-    fn.references+=1
+    fn.references += 1
     if(not fn.inline):
         return "call %s\n" % fn.getCallingLabel()
     else:
@@ -574,9 +574,9 @@ def castABD(a, b, areg, breg, newbreg):
 
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() != b.type.csize()):
-            out = maskset(newbreg, a.type.csize())
+            #out = maskset(newbreg, a.type.csize())
 
-            out += loadToReg(newbreg, breg)
+            out = loadToReg(newbreg, breg)
 
             return out
         return False
