@@ -10,7 +10,8 @@
 
 #define __MATHBASE_SQRT __asm{"sqrtsd xmm0, xmm0"} (0)
 #define __MATHBASE_TRUNC __asm{"cvttsd2si rax, xmm0"} (0)
-#define __MATHBASE_ROUND __asm{"cvtsd2si rax, xmm0"} (0)
+#define __MATHBASE_ROUND __asm{"roundsd xmm0, xmm0, 0      \
+                                cvttsd2si rax, xmm0"} (0)
 #define __MATHBASE_CVTSI2SD __asm{"cvtsi2sd xmm0, rdi"} (0)
 #define __MATHBASE_MAXSD    __asm{"maxsd xmm0, xmm1"} (0)
 #define __MATHBASE_MINSD    __asm{"minsd xmm0, xmm1"} (0)

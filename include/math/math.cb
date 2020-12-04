@@ -303,12 +303,6 @@ global long divmods(long dividend, long divisor, long* modulus){
 }
 
 
-global double pow(double b, double x){
-
-  
-
-}
-
 
 
 /**

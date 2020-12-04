@@ -7,7 +7,7 @@
 
 
 #include "stddef.k"
-#include "bits/atomic.k"
+#include "intrinsic/atomic.k"
 
 
 typedef int mutex;

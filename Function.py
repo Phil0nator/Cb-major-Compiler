@@ -741,15 +741,19 @@ class Function:
     def buildASMBlock(self):  # build inline assembly block
         self.advance()
         content = ""
+        defns = []
         if(self.current_token.tok == T_OPENP):
             while self.current_token.tok != T_CLSP:
                 self.advance()
+                if(self.current_token.tok == T_ID):
+                    var = self.getVariable(self.checkForId())
+                    if(var is None):
+                        throw(UnkownIdentifier(self.current_token))
 
-                var = self.getVariable(self.checkForId())
-                if(var is None):
-                    throw(UnkownIdentifier(self.current_token))
-
-                content += f"%define {var.name} {valueOf(var)}\n"
+                    #content += f"%define {var.name} {valueOf(var)}\n"
+                    defns.append((var.name, valueOf(var)))
+                else:
+                    self.advance()
 
             self.advance()
 
@@ -777,6 +781,10 @@ class Function:
         # copy value so as not to change it
         content += f"{rawbody}"
         content = content.replace("\\", "")
+
+        for d in defns:
+            content = content.replace(d[0],d[1])
+
         lnum = getLogicLabel("")
         content = content.replace("%L", lnum)
 

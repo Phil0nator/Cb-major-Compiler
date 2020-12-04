@@ -137,7 +137,6 @@ function long toStr(double val, char* buffer, long multiplier){
     long l = 0;
 
     if(mantissa == 0 && signOf(val)){
-        printf("Here...\n");
         @buffer = '-';
         buffer++;
         l++;

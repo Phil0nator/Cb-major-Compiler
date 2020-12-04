@@ -129,6 +129,9 @@ class PreProcessor:
     def getMacro(self, name):
         return next((m for m in self.macros if m.name == name), None)
 
+    def getMacrop(self, name, params):
+        return next((m for m in self.macros if m.name == name and len(m.params) == params), None)
+
     def checkToks(self, tok):                   # check for specific tokens
         if(self.current_token.tok not in tok):
             throw(ExpectedToken(self.current_token, ' '.join(tok)))
@@ -314,6 +317,7 @@ class PreProcessor:
                 self.delmov()
 
             inps.append(subinp.copy())
+            macro = self.getMacrop(id, len(inps))
             tks = macro.get(inps, starttok)
 
             self.tokens[startidx] = None
