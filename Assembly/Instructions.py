@@ -12,6 +12,7 @@ SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
 
 CMP_INST = ["cmp", "ucomisd", "comisd"]
 
+
 def getMovop(a, b):
     if ("xmm" in a and ("xmm" in b or "[" in b)):
         return "movsd"

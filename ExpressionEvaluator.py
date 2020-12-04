@@ -422,10 +422,11 @@ class ExpressionEvaluator:
                 if(not operatorISO(e.accessor)):  # if the operator takes two operands
                     b = stack.pop()              # second operand
                     op = e.accessor              # operation
-                    
+
                     if(len(stack) < 1):
                         if(op == '-'):
-                            a = EC.ExpressionComponent(0,LITERAL,constint=True)
+                            a = EC.ExpressionComponent(
+                                0, LITERAL, constint=True)
                         else:
                             throw(HangingOperator(pfix[-1].token))
                     else:
