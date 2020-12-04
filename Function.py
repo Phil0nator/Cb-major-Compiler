@@ -740,14 +740,42 @@ class Function:
 
     def buildASMBlock(self):  # build inline assembly block
         self.advance()
+        content = ""
+        if(self.current_token.tok == T_OPENP):
+            while self.current_token.tok != T_CLSP:
+                self.advance()
+
+                var = self.getVariable(self.checkForId())
+                if(var is None):
+                    throw(UnkownIdentifier(self.current_token))
+
+                content += f"%define {var.name} {valueOf(var)}\n"
+
+            self.advance()
+
         self.checkTok(T_OPENSCOPE)
+
+        rawbody = ""
 
         # assembly instructions are stored as a string token
         if(self.current_token.tok != T_STRING):
-            throw(ExpectedToken(self.current_token, "Assembly String"))
+
+            # For in case the string is still a string_constant id
+            vtest = self.getVariable(self.current_token.value)
+            if(vtest is None):
+                throw(ExpectedToken(self.current_token, "Assembly String"))
+
+            if(not isinstance(vtest.initializer, str)):
+
+                throw(ExpectedToken(self.current_token, "Assembly String"))
+
+            rawbody = vtest.initializer[1:-
+                                        1] if vtest.initializer != '""' else ""
+        else:
+            rawbody = self.current_token.value
 
         # copy value so as not to change it
-        content = f"{self.current_token.value}"
+        content += f"{rawbody}"
         content = content.replace("\\", "")
         lnum = getLogicLabel("")
         content = content.replace("%L", lnum)
