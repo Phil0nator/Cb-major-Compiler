@@ -1,6 +1,7 @@
 #ifndef __STD
 #define __STD 1
 
+#include "intrinsic/instruct.cb"    /* easy intrinsic instruction access */
 #include "sys/syscall.k"            /* easy syscall macro */
 #include "sys/errlist.k"            /* Error handling */
 #include "bits/endian.k"            /* endian conversion */

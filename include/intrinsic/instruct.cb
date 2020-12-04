@@ -1,10 +1,10 @@
 #ifndef __INSTR
 #define __INSTR 1
 
-
-#define asm(op, dest, source)  __asm(dest, source){__STRINGIFY__(op dest, source)} (0)
-#define asm(op, a)             __asm(a){__STRINGIFY__(op, a)}(0)
-#define asm(op)                __asm{__STRINGIFY__(op)} (0)
+#define asm(op, dest, source, third)    __asm(dest, source, third){__STRINGIFY__(op dest, source, third)} (0)
+#define asm(op, dest, source)           __asm(dest, source){__STRINGIFY__(op dest, source)} (0)
+#define asm(op, a)                      __asm(a){__STRINGIFY__(op, a)}(0)
+#define asm(op)                         __asm{__STRINGIFY__(op)} (0)
 
 
 #endif
