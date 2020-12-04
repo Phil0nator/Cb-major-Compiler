@@ -95,7 +95,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
 
 size_t toBinary(char* buffer, unsigned long val, long bits){
-
+    buffer += bits;
     for(int i = 0 ; i < bits;i++){
         if( (val&&1) == 1){
             @buffer = '1';
@@ -103,7 +103,7 @@ size_t toBinary(char* buffer, unsigned long val, long bits){
             @buffer = '0';
         }
         val >>= 1;
-        buffer++;
+        buffer--;
     }
 
     return bits;
@@ -137,7 +137,7 @@ function long toStr(double val, char* buffer, long multiplier){
     long l = 0;
 
     if(mantissa == 0 && signOf(val)){
-        
+        printf("Here...\n");
         @buffer = '-';
         buffer++;
         l++;
@@ -152,7 +152,8 @@ function long toStr(double val, char* buffer, long multiplier){
     long leading = toStr(abs(round(val)), buffer, 1, 10)-1;
     @buffer = '.';
     buffer++;
-    for range(i, 7-leading){
+    leading = 7-leading;
+    for range(i, leading){
         @buffer = '0';
         buffer++;
         l++;

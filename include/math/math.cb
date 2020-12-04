@@ -44,6 +44,26 @@ inline long sqrt(long a){
 
 }
 
+/**
+ * Take the smaller value of two floats
+ * @param a float 1
+ * @param b float 2
+ * @returns the smaller of a and b
+ */
+inline double min(double a, double b){
+  __MATHBASE_MINSD;
+}
+
+/**
+ * Take the larger value of two floats
+ * @param a float 1
+ * @param b float 2
+ * @returns the larger of a and b
+ */
+inline double max(double a, double b){
+  __MATHBASE_MAXSD;
+}
+
 
 /**
  * Exponentiation.
@@ -220,6 +240,22 @@ global long log2(long n){
   "}
 }
 
+global long log2(double n){
+  __asm{"
+  xor rax, rax
+  mov rbx, 2
+  cvtsi2sd xmm1, rbx
+  %L_log2dbflp:
+  divsd xmm0, xmm1
+  inc rax
+  comisd xmm0, xmm0
+  jnz %L_log2dbflp
+  dec rax
+  
+  "}
+}
+
+
 /**
  * Modulo of two floating point values.
  * @param x inp a
@@ -265,6 +301,14 @@ global long divmods(long dividend, long divisor, long* modulus){
   mov [rbx], rdx
   "}
 }
+
+
+global double pow(double b, double x){
+
+  
+
+}
+
 
 
 /**

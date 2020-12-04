@@ -194,4 +194,4 @@ global double atan(double x){
  * @returns arctan( y/x )
  * @warning (Will return Inf, -Inf, or QNaN for undefined values)
  */
-#define atan2(x, y)         atan(y/x);
+#define atan2(x, y)         atan((y)/(x));
