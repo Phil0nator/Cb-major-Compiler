@@ -136,6 +136,15 @@ function long toStr(double val, char* buffer, long multiplier){
     long mantissa = val;
     long l = 0;
 
+    if(mantissa == 0 && signOf(val)){
+        
+        @buffer = '-';
+        buffer++;
+        l++;
+        
+    }
+
+
     l += toStr(mantissa, buffer, 1, 10);
     buffer+=l;
     

@@ -6,14 +6,14 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
-from Assembly.Registers import ralloc, rfree, rfreeAll
+from Assembly.Registers import ralloc, rfree, rfreeAll, ralloc_last
 from Assembly.TypeSizes import psizeof, psizeoft, dwordImmediate
 from Classes.Constexpr import calculateConstant, ternarystack
 from Classes.DType import *
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import Variable
-from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID,
+from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID, LITERAL,
                      canShiftmul, operatorISO, typematch)
 
 #############################
@@ -421,11 +421,15 @@ class ExpressionEvaluator:
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):  # if the operator takes two operands
                     b = stack.pop()              # second operand
+                    op = e.accessor              # operation
+                    
                     if(len(stack) < 1):
-                        throw(HangingOperator(pfix[-1].token))
-
-                    a = stack.pop()              # first operand
-                    op = e.accessor              #
+                        if(op == '-'):
+                            a = EC.ExpressionComponent(0,LITERAL,constint=True)
+                        else:
+                            throw(HangingOperator(pfix[-1].token))
+                    else:
+                        a = stack.pop()              # first operand
 
                     # special case
                     if(a.isconstint() and op in ["?"]):
@@ -812,7 +816,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
                 if(a.type.isflt() or b.type.isflt()):
                     rfree(areg)
-                    areg = f"{rax}"
+                    areg = ralloc_last()
                 a.type = BOOL.copy()
 
             apendee = (EC.ExpressionComponent(areg, a.type, token=a.token))
@@ -860,7 +864,7 @@ class RightSideEvaluator(ExpressionEvaluator):
 
                 if(caster.type.isflt() or castee.type.isflt()):
                     rfree(creg)
-                    creg = f"{rax}"
+                    creg = ralloc_last()
                 caster.type = BOOL.copy()
                 o = BOOL.copy()
 

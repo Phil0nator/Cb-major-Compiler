@@ -39,6 +39,6 @@
 #define isNaN(x)        (($void x) == NAN)
 #define isQNaN(x)       (($void x) == QNAN)
 #define isSNaN(x)       (($void x) == SNAN)
-
+#define signOf(x)       (($void x)>>(63))
 
 #endif

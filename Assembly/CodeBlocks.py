@@ -480,8 +480,9 @@ def cmpI(areg, breg, signed, op):
 
 def cmpF(areg, breg, op):
 
-    comparator = getComparater(False, op)
-    return f"ucomisd {areg}, {breg}\nset{comparator} {'al'}\n"
+    comparator = getComparater(True, op)
+    result = ralloc(False)
+    return f"comisd {areg}, {breg}\nset{comparator} {boolchar_version[result]}\n"
 
 # perform boolean operations (bitwize/logical)
 

@@ -10,6 +10,7 @@ MOV_INST = ["mov", "movq", "movsd"]
 SIMPLE_ARITH_INST = ["add", "sub", "and", "or", "xor", "cmp"]
 SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
 
+CMP_INST = ["cmp", "ucomisd", "comisd"]
 
 def getMovop(a, b):
     if ("xmm" in a and ("xmm" in b or "[" in b)):
@@ -163,7 +164,7 @@ class Peephole:
 
                     # cmp instructions that compare a register with zero, can be replaced with the faster and smaller
                     # test instruction.
-                    if(line.op == "cmp" and line.constSource() and not int(line.source) and not line.hasAddr()
+                    if(line.op in CMP_INST and line.constSource() and not int(line.source) and not line.hasAddr()
                             and nextline.op in ["jz", "jnz", "je", "jne", "setz", "setnz", "sete", "setne"]):
 
                         splitted[line.idx] = f"test {line.dest}, {line.dest}\n"

@@ -157,3 +157,41 @@ global double acos(double x){
     return M_PI_2 - taylor_asin(x);
 }
 
+#define __TAYLOR_ATAN3(x)       (1.0/(3.0*(__TAYLOR_P3(x))))
+#define __TAYLOR_ATAN5(x)       (1.0/(5.0*(__TAYLOR_P5(x))))
+#define __TAYLOR_ATAN7(x)       (1.0/(7.0*(__TAYLOR_P7(x))))
+#define __TAYLOR_ATAN9(x)       (1.0/(9.0*(__TAYLOR_P9(x))))
+
+#define __VANILLA_PS(x)         x - (__TAYLOR_P3(x)/3.0) + (__TAYLOR_P5(x)/5.0) - (__TAYLOR_P7(x)/7.0) + (__TAYLOR_P9(x)/9.0)
+
+/**
+ * Taylor series arctan (tan^-1)
+ * @param x input
+ * @returns tan^-1 (x)
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+global double atan(double x){
+    if(x == -1){
+        return (-M_PI_4);
+    }else if (x == 1){
+        return M_PI_4;
+    }else if (x == 0){
+        return 0;
+    }else if ( (x <= 1) && (x >= -1)){
+        return __VANILLA_PS(x);
+    }else if (x < -1){
+        return 0-M_PI_2-(1/x)+__TAYLOR_ATAN3(x)-__TAYLOR_ATAN5(x);
+    }else if (x > 1){
+        return M_PI_2-(1/x)+__TAYLOR_ATAN3(x)-__TAYLOR_ATAN5(x);
+    }
+    return QNAN;
+}
+
+/**
+ * Taylor series arctan of an x and y coordinate.
+ * @param x x coord
+ * @param y y coord
+ * @returns arctan( y/x )
+ * @warning (Will return Inf, -Inf, or QNaN for undefined values)
+ */
+#define atan2(x, y)         atan(y/x);

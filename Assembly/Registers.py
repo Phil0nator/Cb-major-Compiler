@@ -302,7 +302,16 @@ def reralloc(r):
     else:
         norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = True
 
-
+def ralloc_last(flt=False):
+    if(not flt):
+        for i in range(len(norm_scratch_registers_inuse)):
+            if(not norm_scratch_registers_inuse[i]):
+                return norm_scratch_registers[i-1]
+    else:
+        for i in range(len(sse_scratch_registers_inuse)):
+            if(not sse_scratch_registers_inuse[i]):
+                return sse_scratch_registers[i-1]    
+    
 def rfree(r):
     if(not isinstance(r, str) or r in ["pop", ""]):
         return
