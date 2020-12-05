@@ -72,15 +72,13 @@ CBLIBENTRY int __scanf(char* format, void** args, fd_t file);
  * @param format the format to use
  * @returns number of tokens found
  */
-__cdecl size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e){
-    void* args[5];
-    args[0]=a;
-    args[1]=b;
-    args[2]=c;
-    args[3]=d;
-    args[4]=e;
-    return __scanf(format, &args, STDIN);
-}
+#ifdef __CBLIB_SOURCE
+__cdecl
+#endif
+#ifndef __CBLIB_SOURCE
+cextern
+#endif 
+size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e);
 cextern size_t scanf(char* format, void* a, void* b, void* c, void*d);
 cextern size_t scanf(char* format, void* a, void* b, void* c);
 cextern size_t scanf(char* format, void* a, void* b);
@@ -93,14 +91,13 @@ cextern size_t scanf(char* format);
  * @param format the format of the data
  * @returns the number of arguments satisfied
  */
-__cdecl size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d ){
-    void* args[4];
-    args[0]=a;
-    args[1]=b;
-    args[2]=c;
-    args[3]=d;
-    return __scanf(format, &args, file);
-}
+#ifdef __CBLIB_SOURCE
+__cdecl
+#endif
+#ifndef __CBLIB_SOURCE
+cextern
+#endif 
+size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d );
 cextern size_t fscanf(fd_t file, char* format, void* a, void* b, void* c);
 cextern size_t fscanf(fd_t file, char* format, void* a, void* b);
 cextern size_t fscanf(fd_t file, char* format, void* a);

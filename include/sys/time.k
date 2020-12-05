@@ -127,17 +127,7 @@ inline time_t time(time_t *tloc){
 inline void nanosleep(timeval_t*req, timeval_t*rem){
     syscall(35)
 }
-/**
- * Halt execution of the calling thread for at least the specified nanoseconds.
- * @param nanoseconds least sleep time
- * @returns None (cannot fail)
- */
-global void usleep(long nanoseconds){
-    timeval_t req;
-    req.tv_sec = 0;
-    req.tv_usec = nanoseconds;
-    nanosleep(&req, nullptr);
-}
+
 
 
 #endif

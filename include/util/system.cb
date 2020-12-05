@@ -1,0 +1,30 @@
+#ifndef __SYSTEM
+#define __SYSTEM
+
+#include "sys/pth.k"
+#include "util/stddef.k"
+#include "api.cb"
+
+#ifdef __CBLIB_SOURCE
+#   include "system.k"
+#endif
+
+
+
+/**
+ * system will execute command in bash.
+ * @param command command to pass into bash
+ * @returns 0 on success
+ */
+CBLIBENTRY long system(char* command);
+
+
+
+
+
+
+
+
+
+
+#endif

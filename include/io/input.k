@@ -89,3 +89,24 @@ int __scanf(char* format, void** args, fd_t file){
     free(inp);
     return retval;
 }
+
+
+
+size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e){
+    void* args[5];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    args[4]=e;
+    return __scanf(format, &args, STDIN);
+}
+
+size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d ){
+    void* args[4];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    return __scanf(format, &args, file);
+}

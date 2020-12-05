@@ -29,14 +29,14 @@ inline void* mmap(void* addr, size_t length, long prot, long flags, long fd, off
     "}
 }
 
-global void* munmap(void* addr, size_t length){
+inline void* munmap(void* addr, size_t length){
     __asm{"
     mov rax, 11
     syscall
     "}
 }
 
-global void* qmmap(size_t amt){
+inline void* qmmap(size_t amt){
     return mmap(0, amt, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0); 
 }
 

@@ -5,7 +5,7 @@
 #include "sys/syscall.k"            /* easy syscall macro */
 #include "sys/errlist.k"            /* Error handling */
 #include "bits/endian.k"            /* endian conversion */
-#include "sys/cpuid.cb"             /* cpuid info */
+#include "util/cpuid.cb"             /* cpuid info */
 #include "bits/limits.k"                 /* limits of datatypes */
 #include "util/stddef.k"                 /* commonly used definitions */
 #include "functions/variardic.k"    /* used in variardic functions */
@@ -29,12 +29,9 @@
 #include "io/filesystem.cb"          /* high level file interaction */
 
 #include "sys/pth.k"                /* low level threading */
-#include "threads/thread.k"         /* high level threading */
+#include "threads/thread.cb"         /* high level threading */
 
 
-
-#ifndef __CBLIB_SOURCE
-#link   "cblib.o"
-#endif
+#include "api.cb"
 
 #endif

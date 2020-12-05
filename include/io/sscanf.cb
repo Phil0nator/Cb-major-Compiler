@@ -33,17 +33,13 @@ CBLIBENTRY int __SSCANF(char* format, char* input, void** args);
  * @param args destinations for scanned data
  * @returns number of args filled
 */
-__cdecl int sscanf(char* fmt, char* input, void* a, void* b, void* c, void* d){
-
-    void args[4];
-    args[0]=a;
-    args[1]=b;
-    args[2]=c;
-    args[3]=d;
-
-    return __SSCANF(fmt, input, &args);
-
-}
+#ifdef __CBLIB_SOURCE
+__cdecl
+#endif
+#ifndef __CBLIB_SOURCE
+cextern
+#endif
+int sscanf(char* fmt, char* input, void* a, void* b, void* c, void* d);
 cextern int sscanf(char* fmt, char* input, void* a, void* b, void* c);
 cextern int sscanf(char* fmt, char* input, void* a, void* b);
 cextern int sscanf(char* fmt, char* input, void* a);

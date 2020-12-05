@@ -1,0 +1,29 @@
+/**
+ * Mutex provides a higher level abstraction of futexes.
+ */
+
+#ifndef __MUTEX
+#define __MUTEX 1
+
+
+#include "util/stddef.k"
+#include "intrinsic/atomic.k"
+
+
+typedef int mutex;
+
+#include "api.cb"
+#ifdef __CBLIB_SOURCE
+#   include "mutex.k"
+#endif
+
+
+
+CBLIBENTRY void mutex_cmpxchg(mutex* mut, int expect, int desire);
+
+CBLIBENTRY void mlock(mutex* mut);
+
+CBLIBENTRY void munlock(mutex* mut);
+
+
+#endif

@@ -1,24 +1,15 @@
-/**
- * Mutex provides a higher level abstraction of futexes.
- */
-
 #ifndef __MUTEX
-#define __MUTEX 1
+#   error "mutex.k should always be included through mutex.cb"
+#endif
 
 
-#include "util/stddef.k"
-#include "intrinsic/atomic.k"
-
-
-typedef int mutex;
-
-global void mutex_cmpxchg(mutex* mut, int expect, int desire){
+void mutex_cmpxchg(mutex* mut, int expect, int desire){
     int* ep = &expect;
     _atomic_cmpxchg(mut,ep,desire);
     return @ep;
 }
 
-global void mlock(mutex* mut){
+void mlock(mutex* mut){
 
     int c = mutex_cmpxchg(mut,0,1);
     if(c != 0){
@@ -38,12 +29,9 @@ global void mlock(mutex* mut){
 
 }
 
-global void munlock(mutex* mut){
+void munlock(mutex* mut){
     if(_atomic_sub(mut, 1) != 1){
         _atomic_store(mut, 0);
         nfutex(mut, FUTEX_WAIT, 2);
     }
 }
-
-
-#endif

@@ -1,0 +1,43 @@
+/**
+ * thread.k provides higher level threading access.
+ */
+#ifndef __THREAD
+#define __THREAD 1
+
+#include "util/memory.cb"
+#include "sys/pth.k"
+#include "util/stddef.k"
+#include "sys/time.k"
+#include "sys/signal.k"
+#include "threads/futex.k"
+#include "threads/mutex.cb"
+
+#include "api.cb"
+
+typedef void* __threadcallable;
+
+
+
+struct thread_t{
+
+    mutex mut = false;
+    __threadcallable callback = nullptr;
+    pid_t tid = NULL;
+
+};
+
+CBLIBENTRY void thread_create(thread_t* dest,__threadcallable fn, void *arg);
+
+CBLIBENTRY void thread_join(thread_t* thread);
+
+#define thread_self() gettid()
+
+
+#ifdef __CBLIB_SOURCE
+#   include "thread.k"
+#endif
+
+
+
+
+#endif

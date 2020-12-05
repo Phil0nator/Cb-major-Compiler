@@ -30,7 +30,7 @@
 #endif
 
 
-global void __assert(bool condition, char* fname, int line, char* assertion){
+function void __assert(bool condition, char* fname, int line, char* assertion){
 
 #ifndef NDEBUG
     if(!condition){

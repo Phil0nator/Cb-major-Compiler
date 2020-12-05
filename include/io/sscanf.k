@@ -150,3 +150,17 @@ int __SSCANF(char* format, char* input, void** args){
 
 
 }
+
+
+
+int sscanf(char* fmt, char* input, void* a, void* b, void* c, void* d){
+
+    void args[4];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+
+    return __SSCANF(fmt, input, &args);
+
+}

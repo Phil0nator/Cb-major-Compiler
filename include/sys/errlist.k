@@ -417,7 +417,7 @@ char** __linux_errstrlist = {
  * @param err the error code to search (can be positive or negative)
  * @returns a cstring with the associated message.
  */
-global char* get_errstr(int err){
+function char* get_errstr(int err){
 
     if(err < MAX_ERR && err >= 0){
         return __linux_errstrlist[err];

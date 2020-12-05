@@ -90,6 +90,14 @@ CBLIBENTRY char* ctime(time_t timer);
 
 
 /**
+ * Halt execution of the calling thread for at least the specified nanoseconds.
+ * @param nanoseconds least sleep time
+ * @returns None (cannot fail)
+ */
+CBLIBENTRY void usleep(long nanoseconds);
+
+
+/**
  * TODO:
  *  Impliment strftime()
  *  http://www.cplusplus.com/reference/ctime/strftime/

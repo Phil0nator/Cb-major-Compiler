@@ -113,3 +113,11 @@ tm* localtime(time_t timer){
 char* ctime(time_t timer){
     return asctime(localtime(timer));
 }
+
+
+void usleep(long nanoseconds){
+    timeval_t req;
+    req.tv_sec = 0;
+    req.tv_usec = nanoseconds;
+    nanosleep(&req, nullptr);
+}
