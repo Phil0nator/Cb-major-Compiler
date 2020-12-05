@@ -27,6 +27,7 @@
 #include "util/string.cb"                 /* high level string functions */
 #include "io/input.cb"               /* input functions */
 #include "io/filesystem.cb"          /* high level file interaction */
+#include "util/system.cb"           /* Call bash commands */
 
 #include "sys/pth.k"                /* low level threading */
 #include "threads/thread.cb"         /* high level threading */
