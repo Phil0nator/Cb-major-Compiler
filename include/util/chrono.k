@@ -1,41 +1,25 @@
-/**
- * chrono.k provides higher level time access
- */
-
 #ifndef __CHRONO
-#define __CHRONO 1
-#include "sys/time.k"
-#include "stddef.k"
-#include "math/math.cb"
+#   error "chrono.k should always be included through chrono.cb"
+#endif
 
-typedef unsigned long clock_t;
+/* locally used definitions */
+tm __tmbuf;
+timezone_t __internaltime;
+int* mdays = {31,28,31,30,31,30,31,31,30,31,30,31};
 
-struct tm{
 
-    int tm_sec = 0;     /* seconds after the minute */
-    int tm_min = 0;     /* minutes after the hour */
-    int tm_hour = 0;    /* hours since midnight */
-    int tm_mday = 0;    /* day of the month */
-    int tm_mon = 0;     /* months since January */
-    int tm_year = 0;    /* years since 1900 */
-    int tm_wday = 0;    /* days since Sunday */
-    int tm_yday = 0;    /* days since January 1st */
-    int tm_isdst = 0;   /* Daylight savings time flag */
-    /** 
-    * tm_isdst > 0 if daylight savings else tm_isdst == 0. When no information
-    * is available, tm_isdst < 0
-    */
+/* Locally used definitions */
+char** wday_name = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+char** mon_name = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
+// buffer
+char* asctime__result_buf = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', NULL};
 
 
 
-/**
- * Get number of clock ticks elapsed. Use clockdif() to determine the amount of time between two
- * calls to clock(). 
- * @warning the return value of the first call to clock() is undefined in the C standard
- * @returns number of clock ticks elapsed
- */
-global clock_t clock()
+clock_t clock()
 {
 	timespec ts;
 
@@ -53,24 +37,8 @@ global clock_t clock()
 	return ts.tv_sec*1000000 + ts.tv_usec/1000;
 }
 
-/**
- * Get the difference between two clock values in seconds as a double.
- */
-#define clockdif(end, beginning) ((($double end-beginning)/CLOCKS_PER_SEC))
 
-/* locally used definitions */
-tm __tmbuf;
-timezone_t __internaltime;
-int* mdays = {31,28,31,30,31,30,31,31,30,31,30,31};
-
-
-/**
- * Construct a tm object based on a time_t value, under the GMT timezone.
- * @param timer epoch time
- * @returns a pointer to a tm object build based on the epoch time.
- * @warning the pointer returned may be overwritten and altered in subsequent calls to gmtime, localtime, ctime, or asctime.
- */
-global tm* gmtime(time_t timer){
+tm* gmtime(time_t timer){
     tzset(); // POSIX standard 
     time_t ogt = timer;
     tm* tmd = &__tmbuf;
@@ -119,22 +87,10 @@ global tm* gmtime(time_t timer){
     tmd->tm_mon = month;
     return tmd;
 }
-/* Locally used definitions */
-char** wday_name = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-char** mon_name = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-};
-// buffer
-char* asctime__result_buf = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ', NULL};
 
-/**
- * Format a tm object into a string in the form: Www Mmm Ddd hh:mm:ss yyyy
- * @param timeptr a pointer to a tm object to format
- * @returns a string containing the formatted tm object
- * @warning the string returned from asctime CANNOT be passed into free(), and will be overwritten in subsequent asctime and ctime calls.
- */
-global char* asctime(tm* timeptr){
+
+
+char* asctime(tm* timeptr){
 
     memset(asctime__result_buf, ' ', 28);
     strcpy(asctime__result_buf, wday_name[timeptr->tm_wday]);
@@ -146,43 +102,14 @@ global char* asctime(tm* timeptr){
     return asctime__result_buf;
 }
 
-/* externally defined time information (per POSIX) */
-extern time_t timezone;
-extern int daylight;
-extern char* tzname;
-cextern void tzset();
 
-/**
- * Get the current time as a tm object based on the current timezone.
- * @param timer the time to format
- * @returns a formatted tm object
- * @warning the pointer returned may be overwritten and altered in subsequent calls to gmtime, localtime, ctime, or asctime.
- */
-global tm* localtime(time_t timer){
+tm* localtime(time_t timer){
     tzset(); // POSIX standard
     return gmtime(timer-timezone);
 
 
 }
 
-
-/**
- * Get a string representation of the time timer in the local timezone.
- * @param timer time to format
- * @returns formatted string 
- * @warning the string returned from ctime CANNOT be passed into free(), and will be overwritten in subsequent asctime and ctime calls.
- */
-global char* ctime(time_t timer){
+char* ctime(time_t timer){
     return asctime(localtime(timer));
 }
-
-
-/**
- * TODO:
- *  Impliment strftime()
- *  http://www.cplusplus.com/reference/ctime/strftime/
- * 
- */
-
-
-#endif

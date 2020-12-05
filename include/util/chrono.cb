@@ -1,0 +1,105 @@
+/**
+ * chrono.k provides higher level time access
+ */
+
+#ifndef __CHRONO
+#define __CHRONO 1
+#include "sys/time.k"
+#include "stddef.k"
+#include "math/math.cb"
+
+#include "api.cb"
+
+typedef unsigned long clock_t;
+
+struct tm{
+
+    int tm_sec = 0;     /* seconds after the minute */
+    int tm_min = 0;     /* minutes after the hour */
+    int tm_hour = 0;    /* hours since midnight */
+    int tm_mday = 0;    /* day of the month */
+    int tm_mon = 0;     /* months since January */
+    int tm_year = 0;    /* years since 1900 */
+    int tm_wday = 0;    /* days since Sunday */
+    int tm_yday = 0;    /* days since January 1st */
+    int tm_isdst = 0;   /* Daylight savings time flag */
+    /** 
+    * tm_isdst > 0 if daylight savings else tm_isdst == 0. When no information
+    * is available, tm_isdst < 0
+    */
+};
+
+
+
+/**
+ * Get number of clock ticks elapsed. Use clockdif() to determine the amount of time between two
+ * calls to clock(). 
+ * @warning the return value of the first call to clock() is undefined in the C standard
+ * @returns number of clock ticks elapsed
+ */
+CBLIBENTRY clock_t clock();
+
+/**
+ * Get the difference between two clock values in seconds as a double.
+ */
+#define clockdif(end, beginning) ((($double end-beginning)/CLOCKS_PER_SEC))
+
+
+
+
+/**
+ * Construct a tm object based on a time_t value, under the GMT timezone.
+ * @param timer epoch time
+ * @returns a pointer to a tm object build based on the epoch time.
+ * @warning the pointer returned may be overwritten and altered in subsequent calls to gmtime, localtime, ctime, or asctime.
+ */
+CBLIBENTRY tm* gmtime(time_t timer);
+
+
+/**
+ * Format a tm object into a string in the form: Www Mmm Ddd hh:mm:ss yyyy
+ * @param timeptr a pointer to a tm object to format
+ * @returns a string containing the formatted tm object
+ * @warning the string returned from asctime CANNOT be passed into free(), and will be overwritten in subsequent asctime and ctime calls.
+ */
+CBLIBENTRY char* asctime(tm* timeptr);
+
+
+/* externally defined time information (per POSIX) */
+extern time_t timezone;
+extern int daylight;
+extern char* tzname;
+cextern void tzset();
+
+/**
+ * Get the current time as a tm object based on the current timezone.
+ * @param timer the time to format
+ * @returns a formatted tm object
+ * @warning the pointer returned may be overwritten and altered in subsequent calls to gmtime, localtime, ctime, or asctime.
+ */
+CBLIBENTRY tm* localtime(time_t timer);
+
+
+/**
+ * Get a string representation of the time timer in the local timezone.
+ * @param timer time to format
+ * @returns formatted string 
+ * @warning the string returned from ctime CANNOT be passed into free(), and will be overwritten in subsequent asctime and ctime calls.
+ */
+CBLIBENTRY char* ctime(time_t timer);
+
+
+/**
+ * TODO:
+ *  Impliment strftime()
+ *  http://www.cplusplus.com/reference/ctime/strftime/
+ * 
+ */
+
+
+#ifdef __CBLIB_SOURCE
+#   include "chrono.k"
+#endif
+
+
+#endif

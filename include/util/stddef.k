@@ -54,9 +54,9 @@ typedef short int32;
 /**
  * Compatibility with common syntax highlighting, but will never be compiled.
  */
-# define global
-# define function
-# define __cdecl
+# define global 
+# define function 
+# define __cdecl 
 # define cextern extern
 
 # define __AVX

@@ -4,10 +4,10 @@
 #ifndef __PTH
 #define __PTH 1
 
-#include "stddef.k"
+#include "util/stddef.k"
 #include "io/filesystem.cb"
-#include "memory.k"
-#include "string.k"
+#include "util/memory.cb"
+#include "util/string.cb"
 typedef long pid_t;
 
 /* Cloning flags.  */

@@ -6,7 +6,7 @@
 #define __MUTEX 1
 
 
-#include "stddef.k"
+#include "util/stddef.k"
 #include "intrinsic/atomic.k"
 
 

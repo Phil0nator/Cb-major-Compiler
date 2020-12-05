@@ -9,7 +9,7 @@ typedef unsigned long FILE;
 
 
 #include "util/stddef.k"
-#include "util/memory.k"
+#include "util/memory.cb"
 #include "sys/files.k"
 #include "sys/stat.k"
 

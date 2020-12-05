@@ -4,13 +4,13 @@
 #ifndef __THREAD
 #define __THREAD 1
 
-#include "memory.k"
+#include "util/memory.cb"
 #include "sys/pth.k"
-#include "stddef.k"
+#include "util/stddef.k"
 #include "sys/time.k"
 #include "sys/signal.k"
-#include "futex.k"
-#include "mutex.k"
+#include "threads/futex.k"
+#include "threads/mutex.k"
 
 typedef void* __threadcallable;
 

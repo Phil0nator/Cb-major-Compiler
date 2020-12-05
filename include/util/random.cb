@@ -1,0 +1,38 @@
+#ifndef __RAND
+#define __RAND 1
+
+#include "api.cb"
+#ifdef __CBLIB_SOURCE
+#   include "random.k"
+#endif
+
+
+/**
+ * rdrand is an intrinsic x86_64 instruction that generates cryptographically secure 64bit integers using
+ * the cpu's entropy source.
+ * @returns a random long
+ */
+inline long rdrand();
+
+/**
+ * rand() uses xorshift randomness to get multiple random numbers out of one 
+ * rdrand call for faster but less secure random numbers.
+ * The srand() function must be called first before any useful numbers can be produced by rand().
+ * @see srand()
+ */
+CBLIBENTRY long rand();
+
+/**
+ * srand() sets the seed for the speed-oriented rand() function.
+ * @see rand()
+ */
+CBLIBENTRY void srand();
+
+/**
+ * srand() sets the seed for the speed-oriented rand() function.
+ * @see rand()
+ */
+CBLIBENTRY void srand(long seed);
+
+
+#endif

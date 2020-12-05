@@ -1,21 +1,9 @@
-/**
- * string.k provides functions for working with strings, (char arrays).
- * Functions provided in string.k assume null terminated char* values.
- */
 #ifndef __STRING
-#define __STRING 1
-#include "stddef.k"
-#include "memory.k"
-#include "sys/errlist.k"
+#   error   "string.k should only be included through string.cb"
+#endif
 
 
-/**
- * Copy a string.
- * @param dest destination of copy
- * @param source source of copy
- * @returns bytes copied
- */
-function int strcpy(char* dest, char* source){
+long strcpy(char* dest, char* source){
     __asm{"
     mov rax, -1
     _void_strcpy_pchar.char._flp:
@@ -32,12 +20,7 @@ function int strcpy(char* dest, char* source){
     "}
 }
 
-/**
- * Get the length of a string.
- * @param str string in question
- * @returns bytes of str
- */
-function size_t strlen(char *str){
+size_t strlen(char *str){
 
     __asm{"
     mov rax, -1
@@ -52,17 +35,8 @@ function size_t strlen(char *str){
 
 }
 
-/*
-TODO:
-Impliment cstring functions
-#https://www.tutorialspoint.com/c_standard_library/string_h.htm
-*/
 
-/*
-* Find the first instance of char c in string str within
-*       n bytes.
-*/
-function char* memchr(char* str, char c, size_t n){
+char* memchr(char* str, char c, size_t n){
     register size_t finalptr = str+n;
     while(str < finalptr){
         if(@str == c){
@@ -72,11 +46,9 @@ function char* memchr(char* str, char c, size_t n){
     }
     return nullptr;   
 }
-/*
-*   Compare str1 to str2 within n bytes
-*
-*/
-function int memcmp(char* str1, char* str2, size_t n){
+
+
+int memcmp(char* str1, char* str2, size_t n){
     
     register int value = 0;
     register size_t maxstr = str1+n;
@@ -95,15 +67,8 @@ function int memcmp(char* str1, char* str2, size_t n){
 
 }
 
-function char* strcat(char* dest, char* source);
 
-function char* strncat(char* dest, char* source, size_t n);
-
-/*
-*   Find the first instance of char c in string str
-*
-*/
-function char* strchr(char* str, char c){
+char* strchr(char* str, char c){
 
     while(@str != 0){
         if(@str == c){
@@ -115,9 +80,8 @@ function char* strchr(char* str, char c){
 
 }
 
-function int strcmp(char* str1, char str2);
-function size_t strcspn(char* str1, char* str2);
-function char* strerror(long errnum){
+
+char* strerror(long errnum){
     if(errnum >= 0){
         return get_errstr(errnum);
     }else{
@@ -125,14 +89,3 @@ function char* strerror(long errnum){
     }
     return nullptr;
 }
-
-function char* strpbrk(char* str1, char* str2);
-function char* strrchr(char* str, char c);
-function size_t strspn(char* str1, char* str2);
-function char* strstr(char* haystack, char* needle);
-function char** strtok(char*str, char delim);
-
-
-
-
-#endif

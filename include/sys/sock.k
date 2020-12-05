@@ -5,8 +5,8 @@
 #define __SYSSOCK 1
 
 #include "files.k" // fd_t, read, write, etc...
-#include "sscanf.cb" // sscanf
-#include "memory.k"  // malloc
+#include "io/sscanf.cb" // sscanf
+#include "util/memory.cb"  // malloc
 
 /** 32bit ip address type */
 typedef int in_addr;

@@ -1,25 +1,10 @@
-/*
-  * <memory.k> contains wrappers of malloc and its friends for convenience.
-*/
 #ifndef __MEMORY
-#define __MEMORY 1
+#   error "memory.k should only be included through memory.cb"
+#endif
 
 
 
-#include "stddef.k"
-#include "sys/mman.cb"
-#include "malloc.cb"
-
-
-/* Temporary memory macros until proper malloc is implimented */
-
-
-
-
-
-
-
-global void memcpy(void *dest, void* source, size_t bytes){
+void memcpy(void *dest, void* source, size_t bytes){
 
     __asm{"
     ; rax = final dest:
@@ -37,7 +22,8 @@ global void memcpy(void *dest, void* source, size_t bytes){
 
 }
 
-global void avx_memcpy(void* dest, void* source, size_t bytes){
+
+void avx_memcpy(void* dest, void* source, size_t bytes){
 
     int offset = bytes%32;
     size_t avxcount = (bytes-offset)/4;
@@ -49,7 +35,8 @@ global void avx_memcpy(void* dest, void* source, size_t bytes){
     }
 }
 
-inline void avx_memzeraligned(void* dest, size_t qqwords){
+
+void avx_memzeraligned(void* dest, size_t qqwords){
     __asm{"
     vxorpd ymm0, ymm0, ymm0
     %Lavxmemzeraligned_lp:
@@ -60,7 +47,8 @@ inline void avx_memzeraligned(void* dest, size_t qqwords){
     "}
 }
 
-global void avx_memzer(void* dest, size_t bytes){
+
+void avx_memzer(void* dest, size_t bytes){
     int offset = bytes%32;
     size_t avxcount = (bytes-offset)/4;
     
@@ -73,9 +61,7 @@ global void avx_memzer(void* dest, size_t bytes){
 }
 
 
-
-
-global void memset(void* dest, unsigned char value, size_t bytes){
+void memset(void* dest, unsigned char value, size_t bytes){
     __asm{"
     
     _void_memset_pvoid.ucharsize_t_flp:
@@ -86,7 +72,7 @@ global void memset(void* dest, unsigned char value, size_t bytes){
     "}
 }
 
-global void memzer(void* dest, size_t bytes){
+void memzer(void* dest, size_t bytes){
     __asm{"
     
     xor bl, bl
@@ -97,7 +83,3 @@ global void memzer(void* dest, size_t bytes){
     
     "}
 }
-
-
-
-#endif

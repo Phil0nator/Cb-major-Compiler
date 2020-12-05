@@ -1,5 +1,5 @@
-//#define __CBLIB_SOURCE 1
-#include "io/printf.cb"
+#define __CBLIB_SOURCE 1
+#include "cblib.cb"
 
 int main(long argc, char** argv){
 

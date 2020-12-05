@@ -5,8 +5,6 @@
  */
 #ifndef __VARIARDIC
 #define __VARIARDIC 1
-#include "stddef.k"
-#include "memory.k"
 
 
 

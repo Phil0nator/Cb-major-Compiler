@@ -4,8 +4,8 @@
 #ifndef __FUTEX__
 #define __FUTEX__ 1
 
-#include "time.k"
-#include "stddef.k"
+#include "sys/time.k"
+#include "util/stddef.k"
 
 /* FUTEX operations  */
 #define FUTEX_WAIT                      0       

@@ -5,7 +5,7 @@
 #   include "algorithm/algorithm.cb"
 #endif
 
-#include "stddef.k"
+#include "util/stddef.k"
 
 typedef size_t typename;
 

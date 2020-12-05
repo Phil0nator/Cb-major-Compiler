@@ -6,7 +6,7 @@
 #include "sys/files.k"
 #include "io/filesystem.cb"
 #include "util/stddef.k"
-#include "memory.k"
+#include "util/memory.cb"
 
 #include "api.cb"
 

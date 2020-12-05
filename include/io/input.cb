@@ -3,9 +3,9 @@
 
 #include "api.cb"
 
-#include "stddef.k"
+#include "util/stddef.k"
 #include "printf.cb"
-#include "memory.k"
+#include "util/memory.cb"
 #include "io/filesystem.cb"
 #include "sprintf.cb"
 #include "sscanf.cb"

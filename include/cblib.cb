@@ -9,22 +9,22 @@
 #include "bits/limits.k"                 /* limits of datatypes */
 #include "util/stddef.k"                 /* commonly used definitions */
 #include "functions/variardic.k"    /* used in variardic functions */
-#include "util/memory.k"                 /* memory operations */
+#include "util/memory.cb"                 /* memory operations */
 #include "io/printf.cb"              /* output */
 #include "math/math.cb"                   /* math functions */
-#include "util/random.k"                 /* fast psudo random number generator */
+#include "util/random.cb"                 /* fast psudo random number generator */
 
 #include "algorithm/algorithm.cb"    /* high level algorithm macros */
 
 #include "assert/assert.k"          /* debug assertions */
-#include "util/chrono.k"                 /* high level time operations */
+#include "util/chrono.cb"                 /* high level time operations */
 #include "sys/files.k"              /* low level file interaction */
 #include "sys/sock.k"               /* low level socket interaction */
 #include "sys/pth.k"                /* low level thread interaction */
 
 #include "structure/structure.cb"   /* standard data structures */
 
-#include "util/string.k"                 /* high level string functions */
+#include "util/string.cb"                 /* high level string functions */
 #include "io/input.cb"               /* input functions */
 #include "io/filesystem.cb"          /* high level file interaction */
 

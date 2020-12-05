@@ -1,0 +1,72 @@
+/*
+  * <memory.k> contains wrappers of malloc and its friends for convenience.
+*/
+#ifndef __MEMORY
+#define __MEMORY 1
+
+
+
+#include "util/stddef.k"
+#include "sys/mman.cb"
+#include "util/malloc.cb"
+
+#include "api.cb"
+
+#ifdef __CBLIB_SOURCE
+#   include "memory.k"
+#endif
+
+/**
+ * Copy one region of memory into another
+ * @param dest destination of copy
+ * @param source source of copy
+ * @param bytes bytes to copy
+ * @returns None
+ */
+CBLIBENTRY void memcpy(void *dest, void* source, size_t bytes);
+
+/**
+ * Copy one region of memory into another using AVX optimization
+ * @param dest destination of copy
+ * @param source source of copy
+ * @param bytes bytes to copy
+ * @returns None
+ */
+CBLIBENTRY void avx_memcpy(void* dest, void* source, size_t bytes);
+
+/**
+ * Set an aligned region of memory to zero.
+ * @param dest start of region
+ * @param qqwords number qqwords (64bytes)
+ * @returns None
+ */
+CBLIBENTRY void avx_memzeraligned(void* dest, size_t qqwords);
+
+/**
+ * Zero a region of memory using AVX
+ * @param dest region
+ * @param bytes number of bytes to zero
+ * @returns None
+ */
+CBLIBENTRY void avx_memzer(void* dest, size_t bytes);
+
+/**
+ * Set a region of memory to a single 8 bit value
+ * @param dest region
+ * @param value what to place in the memory
+ * @param bytes number of bytes to set
+ * @returns None
+ */
+CBLIBENTRY void memset(void* dest, unsigned char value, size_t bytes);
+
+/**
+ * Zero a region of memory.
+ * @param dest region
+ * @param bytes number of bytes to zero
+ * @returns None
+ */
+CBLIBENTRY void memzer(void* dest, size_t bytes);
+
+
+
+#endif

@@ -410,7 +410,6 @@ char** __linux_errstrlist = {
 #define MAX_ERR 131
 
 
-int errno = 0;
 
 /**
  * get_errstr will return the message associated with a given error, 
