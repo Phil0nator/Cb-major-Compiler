@@ -12,6 +12,13 @@
 #include "constants.cb" /* useful math constants */
 #include "primitive.cb" /* Asm macros for primitives */
 
+#include "api.cb"
+
+#ifdef __CBLIB_SOURCE
+# include "math.k"
+#endif
+
+
 /**
  * Square root.
  * @param a input
@@ -71,22 +78,7 @@ inline double max(double a, double b){
  * @param exp the exponent
  * @returns base^exp
  */
-global long pow(long base, long exp){
-
-  __asm{"
-  
-  mov rax, rdi
-  dec rsi
-  jz _int_pow_pintint_end
-  _int_pow_pintint_flp:
-  mul rdi
-  dec rsi
-  jnz _int_pow_pintint_flp
-  _int_pow_pintint_end:
-  "}
-
-
-}
+CBLIBENTRY long pow(long base, long exp);
 
 /**
  * Exponentiation.
@@ -94,12 +86,7 @@ global long pow(long base, long exp){
  * @param exp the exponent
  * @returns base^exp
  */
-global double pow(long base, long exp){
-
-  pow(base, exp);
-  __MATHBASE_CVTSI2SD;
-
-}
+CBLIBENTRY double pow(long base, long exp);
 
 /**
  * Exponentiation.
@@ -107,21 +94,7 @@ global double pow(long base, long exp){
  * @param exp the exponent
  * @returns base^exp
  */
-global double pow(double base, long exp){
-
-  __asm{"
-  
-    
-    dec rdi
-    _double_pow_pdoubleint_flp:
-    mulsd xmm0, xmm0
-    dec rdi
-    jnz _int_pow_pintint_flp
-  
-  
-  "}
-
-}
+CBLIBENTRY double pow(double base, long exp);
 
 
 /**
@@ -138,9 +111,7 @@ inline long round(double x){
  * @param x value to ceil
  * @returns integer higher than x
  */
-global long ceil(double x){
-  return 0-floor(0-x);
-}
+CBLIBENTRY long ceil(double x);
 
 /**
  * Truncate a floating point double.
@@ -156,27 +127,14 @@ inline long trunc(double x){
  * @param x number to floor
  * @returns integer below x
  */
-global long floor(double x){
-  return round(x-0.5);
-}
+CBLIBENTRY long floor(double x);
 
 /**
  * Absolute value.
  * @param x value
  * @returns |x|
  */
-global long abs(long x){
-
-  __asm{"
-  
-  mov rax, rdi
-  sar rdi, 63
-  xor rax, rdi
-  sub rax, rdi
-  
-  "}
-
-}
+CBLIBENTRY long abs(long x);
 
 
 /**
@@ -184,21 +142,7 @@ global long abs(long x){
  * @param x value
  * @returns |x|
  */
-global double abs(double x){
-
-  __asm{"
-
-
-
-  movq rax, xmm0
-  shl rax, 1
-  shr rax, 1
-  movq xmm0, rax 
-
-
-  "}
-
-}
+CBLIBENTRY double abs(double x);
 
 
 /**
@@ -206,54 +150,26 @@ global double abs(double x){
  * @param x value
  * @returns log(x)
  */
-global long log(long x){
-  
-  return log2(x) / M_LOG2_10;
+CBLIBENTRY long log(long x);
 
-}
+
 /**
  * Arbitrary base integer logarithm.
  * @param base base
  * @param n log
  * @returns log base base of n
  */
-global long log(long base, long n){
-  
-  return log2(n) / log2(base);
-  
-}
+CBLIBENTRY long log(long base, long n);
+
+
+
 /**
  * Integer log base 2.
  * @param n value
  * @returns log2(n)
  */
-global long log2(long n){
-  __asm{"
-  
-  xor rax, rax
-  %L_long_lop2_plong_flp:
-  sar rdi, 1
-  inc rax
-  test rdi, rdi
-  jnz %L_long_lop2_plong_flp
-  dec rax
-  "}
-}
+CBLIBENTRY long log2(long n);
 
-global long log2(double n){
-  __asm{"
-  xor rax, rax
-  mov rbx, 2
-  cvtsi2sd xmm1, rbx
-  %L_log2dbflp:
-  divsd xmm0, xmm1
-  inc rax
-  comisd xmm0, xmm0
-  jnz %L_log2dbflp
-  dec rax
-  
-  "}
-}
 
 
 /**
@@ -262,45 +178,30 @@ global long log2(double n){
  * @param n inp b
  * @returns x % n
  */
-global double fmod(double x, double n){
-  return (0-n)*(floor(x/n))+x;
-}
+CBLIBENTRY double fmod(double x, double n);
 
 
 
 /**
- * Take the modulus and quotient of a single division operation.
+ * Take the modulus and quotient of a single unsigned division operation.
  * (This is useful because integer division is the most expensive integer operation)
  * @param dividend dividend
  * @param divisor divisor
  * @param modulus destination for value of modulus
  * @returns dividend / divisor, @modulus = dividend % divisor
  */
-global long divmod(long dividend, long divisor, long* modulus ){
-
-  __asm{"
-  mov rbx, rdx
-  xor rdx, rdx
-  mov rax, rdi
-  div rsi
-  mov [rbx], rdx
-  "}
-
-}
+CBLIBENTRY long divmod(long dividend, long divisor, long* modulus );
 
 
 /**
- * 
+ * Take the modulus and quotient of a single signed division operation.
+ * (This is useful because integer division is the most expensive integer operation)
+ * @param dividend dividend
+ * @param divisor divisor
+ * @param modulus destination for value of modulus
+ * @returns dividend / divisor, @modulus = dividend % divisor
  */
-global long divmods(long dividend, long divisor, long* modulus){
-  __asm{"
-  mov rbx, rdx
-  xor rdx, rdx
-  mov rax, rdi
-  idiv rsi
-  mov [rbx], rdx
-  "}
-}
+CBLIBENTRY long divmods(long dividend, long divisor, long* modulus);
 
 
 

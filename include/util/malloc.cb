@@ -25,16 +25,19 @@
  * malloc.cb provides a high level memory management system similar to C's malloc. 
  */
 #ifndef __MALLOC
-#define __MALLOCO 1
+#define __MALLOC 1
 #include "sys/mman.cb"
-#include "algorithm/algorithm.k"
+#include "algorithm/algorithm.cb"
 #include "assert/assert.k"
-
+#include "stddef.k"
+#include "limits.k"
 
 #define MALLOC_PAGESIZE 4096
 #define MALLOC_PAGESIZE_ADJUSTED (MALLOC_PAGESIZE-sizeof(mblock))
 #define MALLOC_USERPTR(localptr) ((localptr)+sizeof(mblock))
 #define MALLOC_LOCALPTR(userptr) ((userptr)-sizeof(mblock))
+
+
 
 /**
  * malloc_maxcache determines the maximum amount of memory to keep in the free_head
@@ -62,6 +65,13 @@ struct mblock{
      */
     mblock* next;
     mblock* prev;
+    
+    /**
+     * free: 0 = in use, 1 = free.
+     * The data type is long for memory alignment. 
+     */
+    long free;
+
 
 };
 
@@ -75,42 +85,23 @@ mblock* free_head = nullptr;
 size_t cached_size = NULL;
 
 /**
- * remove_block removes a given block from the linked list.
+ * merge_right removes a given block from the linked list.
  * @param block a valid block to remove
  * @returns None
  */
-void remove_block(mblock* block){
-    assert(block != nullptr);
+void merge_right(mblock* b){
+    if(b->next != nullptr){
+        if(b->next->free == true){
+            if(  ($mblock* b + b->size + sizeof(mblock) )== b->next ){
+                b->size += b->next->size + sizeof(mblock);
+                b->next = b->next->next;
+                if(b->next){
+                    b->next->prev = b;
+                }
 
-    cached_size-=block->size;
-    clamp( cached_size, 0, INT_MAX);
-    printf("SUB %i\nCACHE: %i\n", block->size, cached_size);
-    
-    
-    
-    deletions++;
-    if (block == free_head){
-        free_head = block->next;
-        if(free_head){
-            free_head->prev = nullptr;
+            }
         }
-        block->prev=nullptr;
-        block->next=nullptr;
-        return;
     }
-
-    if(block->next != nullptr){
-        block->next->prev = block->prev;
-    }
-    
-    if(block->prev != nullptr){
-        block->prev->next = block->next;
-    }
-
-    
-    block->prev=nullptr;
-    block->next=nullptr;
-
 }
 
 /**
@@ -124,63 +115,17 @@ bool scan_merge(mblock* b){
 
     if(cached_size > malloc_maxcache){
         cached_size -= b->size + sizeof(mblock);
-        clamp( cached_size, 0, INT_MAX);
-        printf("Destroy pointer\n");
+        cached_size = clamp( cached_size, 0, INT_MAX);
         destroy_ptr(b);
         return false;
     }
 
-
-    for each_link(mblock, block, next, free_head){
-
-        if ((block + sizeof(mblock) + block->size) == b){
-            printf("M1\n");
-            block->size += b->size + sizeof(mblock) ;
-            cached_size += sizeof(mblock);
-            return false;
-        } 
-        else if ((b + sizeof(mblock) + b->size) == block){
-            printf("M2\n");
-            remove_block(block);
-            b->size += block->size+sizeof(mblock);
-            return true;
-
-        } 
-
-
-    }
+    merge_right(b);
+    merge_right(b->prev);
 
     return true;
 }
 
-/**
- * The most simple way to add a block to the linked list without scanning for a
- * merge.
- * @param block the block to add
- * @returns None
- */
-void simple_add(mblock* block){
-    
-    if(block->size == NULL){
-        
-        return;
-    }
-    
-    if(block == free_head){
-
-        return;
-    }
-    
-
-    free_head->prev = block;
-    block->next = free_head;
-    free_head = block;
-    free_head->prev = nullptr;
-    
-    
-
-
-}
 /**
  * A more complex way to add a block to the linked list, which includes
  * the merge scan.
@@ -189,27 +134,15 @@ void simple_add(mblock* block){
  */
 void add_block(mblock* block){
     
-    assert(block != nullptr);
-    if(block->size == NULL){
-        return;
-    }
-    
-
     if(free_head == nullptr){
         free_head = block;
-        block->next=nullptr;
-        block->prev=nullptr;
+        block->prev = block;
+        block->next = nullptr;
         return;
     }
-    appends++;
-    cached_size += block->size;
-    clamp( cached_size, 0, INT_MAX);
-    printf("ADD %i\nCACHE: %i\n", block->size, cached_size);
 
-    if(scan_merge(block)){
-
-        simple_add(block);
-    }
+    free_head->prev->next = block;
+    free_head->prev = block;
 
 }
 
@@ -227,11 +160,15 @@ mblock* scan_existing(size_t request){
     }
 
     for each_link(mblock,block,next,free_head){
-        if(block->size >= request){
 
-            remove_block(block);
-            split_block(block, request);
-            return block;
+        if(block->free == true){
+            if(block->size >= request){
+
+                split_block(block, request);
+                block->free=false;
+                return block;
+
+            }
         }
 
     }
@@ -253,7 +190,7 @@ void printstate(){
         printf("EMPTY\n");
     }else{
         for each_link(mblock, block, next, free_head){
-            printf("BLOCK: %i @ %x\n", block->size, block);
+            printf("BLOCK: %i @ %x : %i\n", block->size, block, block->free);
 
         }
     }
@@ -302,49 +239,27 @@ inline void destroy_ptr(mblock* ptr){
  */
 void split_block(mblock* block, size_t destsize){
 
-    assert(destsize <= block->size);
-
-    /**
-     * A split to the same size has no result.
-     */
-    if(block->size == destsize){
+    if((block->size - destsize - sizeof(mblock) )<= sizeof(mblock)){
         return;
     }
 
-    /**
-     * Projected size for the other half of the split, if a split is possible.
-     */
-    size_t othersize = block->size - destsize;
+    mblock* newblock = block+destsize+sizeof(mblock);
+    newblock->prev=block;
+    newblock->next=block->next;
+
+
     
-    
-    /**
-     * If the projected other size would be less than one mblock, then the split is impossible because
-     * of the block overhead.
-     */
-    if(othersize <= sizeof(mblock)){
-        return;
+    if(block->next){
+        block->next->prev = newblock;
     }
-    printf("SPLIT %i -> %i\n",block->size, destsize);
 
-    /**
-     * The new block is located at (block + destsize + sizeof(mblock))
-     */
-    mblock* newblock = (MALLOC_USERPTR(block + destsize));
+    block->next=newblock;
     
-    /**
-     * The size for the new block will be the previously projected size, adjusted for the 
-     * block overhead.
-     */
-    newblock->size = othersize - sizeof(mblock);
-    //safeguard
-    newblock->next = nullptr;
-    newblock->prev = nullptr;
+    newblock->size = (block->size -destsize) - sizeof(mblock);
+    newblock->free = true;
+    block->size = destsize;
 
-    /**
-     * The original block's size is now set to destsize
-     */
-    block->size = destsize ;
-    add_block(newblock);
+
 }
 
 /**
@@ -355,8 +270,13 @@ void split_block(mblock* block, size_t destsize){
 global void free(void* usrptr){
 
     mblock* block = MALLOC_LOCALPTR(usrptr);
-    printf("FREE\n");
-    add_block(block);
+    if(block->size >= MALLOC_PAGESIZE){
+        block->size+=sizeof(mblock);
+        destroy_ptr(block);
+        return;
+    }
+    block->free = true;
+    scan_merge(block);
 
 }
 
@@ -367,29 +287,38 @@ global void free(void* usrptr){
  */
 global void* malloc(size_t size){
 
-
-    if (size > malloc_maxcache){
-        malloc_maxcache += size;
-    }
-
-    mblock* block = scan_existing(size);
-    if(block != nullptr){
-        return MALLOC_USERPTR(block);
-    }
-
-    size_t newsize;
-    if(size < MALLOC_PAGESIZE_ADJUSTED) {
-        newsize = MALLOC_PAGESIZE;
-    }else{
-        newsize = size + sizeof(mblock);
-    }
+    mblock* out;
+    if(size >= MALLOC_PAGESIZE){
         
-    block = create_ptr(newsize);
-    block->size = newsize;
-    block->prev = nullptr;
-    block->next = nullptr;
-    split_block(block, size);
-    return MALLOC_USERPTR(block);
+        out = create_ptr(size+sizeof(mblock));
+        out->size = size;
+        out->next = nullptr;
+        out->prev = nullptr;
+        out->free = false;
+        return MALLOC_USERPTR(out);
+
+    }
+
+    if(free_head != nullptr){
+
+        out = scan_existing(size);
+        if(out){
+            out->free=false;
+            return MALLOC_USERPTR( out );
+        }
+
+    }
+
+
+
+    out = create_ptr(MALLOC_PAGESIZE);
+    out->size = MALLOC_PAGESIZE-sizeof(mblock);
+    add_block(out);
+    split_block(out, size);
+    out->free=false;
+    return MALLOC_USERPTR( out );
+
+
 }
 
 /**
@@ -400,22 +329,23 @@ global void* malloc(size_t size){
  */
 global void* realloc(void* addr, size_t newsize){
     
-    if(addr == nullptr){
-        return malloc(newsize);
-    }
-    mblock* block = MALLOC_LOCALPTR(addr);
+    mblock *block = MALLOC_LOCALPTR(addr);
     size_t oldsize = block->size;
-    if(oldsize == newsize){
-        return addr;
-    }
-    add_block(block);
-    
-    void* out = malloc(newsize);
-    
-    avx_memcpy(out, addr, oldsize);
-    memset(out+oldsize, 0, newsize-oldsize);
-    return out;
 
+    if(oldsize < MALLOC_PAGESIZE){
+
+        free(addr);
+        void* newaddr = malloc(newsize);
+        if ( addr == newaddr ){
+            return addr;
+        }
+        memcpy(newaddr, addr, oldsize);
+        return newaddr;
+    
+    }
+
+    mmap(addr,newsize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+    return addr;
 }
 /**
  * Allocate at least size bytes, and zero out the entire block.
@@ -424,10 +354,36 @@ global void* realloc(void* addr, size_t newsize){
  */
 global void* calloc(size_t size){
     void* out = malloc(size);
-    avx_memzer(out, size);
+    memzer(out, size);
     return out;
 }
 
+/**
+ * mapalloc is a more simplified allocator that just wraps the basic functionality
+ * of the mmap syscall, and abstracts the need to track page sizes.
+ * Pointers allocated by mapalloc must be freed using mapfree.
+ * @see mapfree
+ * @param size number of bytes to allocate
+ * @returns a pointer with size bytes mapped after it
+ */
+global void* mapalloc(size_t size){
+    void* out = qmmap(size+sizeof(long));
+    @out = size;
+    return out+sizeof(long);
+}
+
+/**
+ * Free a pointer allocated using mapalloc
+ * @param ptr pointer returned by mapalloc
+ * @returns None
+ * @see mapalloc
+ */
+global void mapfree(void* ptr){
+    ptr-=sizeof(long);
+    size_t size = @ptr;
+    munmap(ptr, size);
+
+}
 
 
 

@@ -2,7 +2,7 @@
 #define __STRUCTURE
 
 #ifndef __ALGORITHM
-#   include "algorithm/aglorithm.k"
+#   include "algorithm/algorithm.cb"
 #endif
 
 #include "stddef.k"

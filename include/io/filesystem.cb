@@ -1,0 +1,73 @@
+/**
+ * filesystem.cb provides higher level file access.
+ */
+#ifndef __FSYSTEM
+#define __FSYSTEM 1
+
+
+typedef unsigned long FILE;
+
+
+#include "util/stddef.k"
+#include "util/memory.k"
+#include "sys/files.k"
+#include "sys/stat.k"
+
+
+#include "api.cb"
+#ifdef __CBLIB_SOURCE
+#   include "filesystem.k"
+#endif
+
+
+
+
+/**
+ *   fopen will open a file of name fname with the given mode and return a file descriptor.
+ *       Mode can be one of the following cstrings:
+ *           -"r": open for read only
+ *           -"w": open for write only
+ *           -"a": open for appending write
+ *           -"r+": open for read or write
+ *           -"w+": open for read/write and create the file if it doesn't yet exist
+ *           -"a+": open for read/append and create the file if it doesn't yet exist
+ *       fopen will return a negative integer if the open failed.
+ * @param fname filepath
+ * @param mode the open-mode specifier
+ * @returns A file descriptor to the requested file, or the error code
+ *                  produced in trying to access it.
+*/
+
+CBLIBENTRY FILE fopen(char* fname, char* mode);
+
+
+/**
+ *
+ *   fputs will directly write the cstring given by text to the file given by fd
+ *       and will lseek the file to the correct offset.
+ * @param fd file descriptor
+ * @param text data to write
+ * @returns number of bytes written
+ */
+CBLIBENTRY size_t fputs(FILE fd, char* text);
+
+/**
+ * fgets will read the requested number of bytes from a file descriptor into a buffer.
+ * @param fd file descriptor
+ * @param buffer a buffer for the data to be written to
+ * @param amt number of bytes
+ * @returns number of bytes read
+ */
+CBLIBENTRY long fgets(FILE fd, char* buffer, size_t amt);
+
+/**
+ * floads will load an entire file into a char buffer, which is dynamically allocated. 
+ * The caller is responsible for freeing the returned buffer using mapfree.
+ * @param fd the file to load from
+ * @returns a char buffer containing the file data, or an error code.
+ */
+CBLIBENTRY void* floads(FILE fd);
+
+
+
+#endif

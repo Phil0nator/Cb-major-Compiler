@@ -1,0 +1,20 @@
+#ifndef __APIDEF
+#define __APIDEF
+
+/**
+ * Api entries when compiling from source must be declared as global
+ */
+#ifdef __CBLIB_SOURCE
+#define CBLIBENTRY global
+#endif
+
+/**
+ * Api entries when compiling normally must be declared with extern
+ */
+#ifndef __CBLIB_SOURCE
+#define CBLIBENTRY extern
+#link   "cblib.o"
+#endif
+
+
+#endif

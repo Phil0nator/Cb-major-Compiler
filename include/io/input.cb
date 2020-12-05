@@ -1,0 +1,116 @@
+#ifndef __INPUT
+#define __INPUT 1
+
+#include "api.cb"
+
+#include "stddef.k"
+#include "printf.cb"
+#include "memory.k"
+#include "io/filesystem.cb"
+#include "sprintf.cb"
+#include "sscanf.cb"
+
+#ifdef __CBLIB_SOURCE
+#   include "input.k"
+#endif
+
+/**
+ * Print a message, and get an input as an integer.
+ * @param msg message to print
+ * @returns a response from stdin as an integer
+ */
+CBLIBENTRY int getInt(char* msg);
+
+
+/**
+ * Print a message, and get an input as an unsigned integer.
+ * @param msg message to print
+ * @returns a response from stdin as an unsigned integer
+ */
+CBLIBENTRY unsigned int getUint(char* msg);
+
+
+/**
+ * Get one char from stdin
+ * (blocking)
+ * @returns char from stdin
+ */
+CBLIBENTRY char getchar();
+
+
+
+/**
+ * Print a message to stdout, and copy a response into a buffer as a string.
+ * (Blocking)
+ * @param buffer buffer to copy response into
+ * @param maxlen maximum length of string to collect
+ * @param msg message to print
+ * @returns None
+ */
+CBLIBENTRY void getString(char* buffer, int maxlen, char* msg);
+
+
+
+
+/**
+ * String to integer conversion
+ * (Base 10 only)
+ * @param str string to convert
+ * @param signed if the string is a signed integer
+ * @returns the integer conversion
+ */
+CBLIBENTRY int toInteger(char* str, bool signed);
+
+/**
+ * (Used internally)
+ */
+CBLIBENTRY int __scanf(char* format, void** args, fd_t file);
+
+
+/**
+ * scanf will scan stdin using format, and deposit the found values in the other arguments given.
+ * @param format the format to use
+ * @returns number of tokens found
+ */
+__cdecl size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e){
+    void* args[5];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    args[4]=e;
+    return __scanf(format, &args, STDIN);
+}
+cextern size_t scanf(char* format, void* a, void* b, void* c, void*d);
+cextern size_t scanf(char* format, void* a, void* b, void* c);
+cextern size_t scanf(char* format, void* a, void* b);
+cextern size_t scanf(char* format, void* a);
+cextern size_t scanf(char* format);
+
+/**
+ * fscanf will do the same as scanf, but on a file of your choice.
+ * @param file the file descriptor to read from
+ * @param format the format of the data
+ * @returns the number of arguments satisfied
+ */
+__cdecl size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d ){
+    void* args[4];
+    args[0]=a;
+    args[1]=b;
+    args[2]=c;
+    args[3]=d;
+    return __scanf(format, &args, file);
+}
+cextern size_t fscanf(fd_t file, char* format, void* a, void* b, void* c);
+cextern size_t fscanf(fd_t file, char* format, void* a, void* b);
+cextern size_t fscanf(fd_t file, char* format, void* a);
+cextern size_t fscanf(fd_t file, char* format);
+
+
+
+
+
+
+
+
+#endif

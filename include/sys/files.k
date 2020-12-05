@@ -6,7 +6,7 @@
 
 
 
-#include "stddef.k"
+#include "util/stddef.k"
 
 typedef unsigned long fd_t;  /* file descriptor datatype */
 typedef long mode_t;         /* file openmode datatype   */

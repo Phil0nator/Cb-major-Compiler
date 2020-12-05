@@ -1,0 +1,50 @@
+
+
+#ifndef __SPRINTF
+#define __SPRINTF 1
+
+#include "api.cb"
+
+
+
+#include "math/math.cb"
+#include "util/string.k"
+#include "bits/endian.k"
+#include "algorithm/algorithm.cb"
+
+#ifdef __CBLIB_SOURCE
+#   include   "sprintf.k"
+#endif
+
+
+
+
+
+
+/**
+ * (Used internally)
+ */
+CBLIBENTRY int __sprintf(char* str, char* fmt, void* args);
+
+
+
+/**
+ * Format fmt with args into str.
+ * Formats:
+ *  -%i signed integer value
+ *  -%u unsigned integer value
+ *  -%x hex value
+ *  -%c char
+ *  -%b boolean
+ *  -%f float
+ *  -%d double
+ *  -%s cstring
+ * str must be already allocated with enough size for the operation to complete. If not, SIGSEGV will be raised.
+ * @param str a destination string preallocated with enough space for the operation.
+ * @param fmt a format string.
+ * @param args the arguments to fill into the string. An inadequate amount of arguments will result in a SIGSEGV.
+*/
+CBLIBENTRY int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4);
+
+
+#endif

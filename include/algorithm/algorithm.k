@@ -1,63 +1,8 @@
-/*
-    Contents: Macros and functions designed to make algorithms easier to read and write.
-    
-    MIT License
-    Copyright (c) 2020 Philo Kaulkin
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-    OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
 #ifndef __ALGORITHM
-#define __ALGORITHM 1
+#   error "algorithm.k should only be included through algorithm.cb"
+#endif
 
-#include "memory.k"
-
-/* iterable pointer datatype */
-typedef void* iterable;
-
-/**
- * Do function fn for each item in ptr array of length.
- * @returns Does not return
- */
-#define for_each(array, length, fn) for(size_t __foreachiterator__ = 0; __foreachiterator__ < length; __foreachiterator__++) {\
-                                        fn((array)[__foreachiterator__]);\
-                                    }(0)
-/**
- * The value of x implies y
- */
-#define IMPLIES(x, y) (!(x) || (y))
-
-/**
- * Construct a heap-based array of type with amt elements
- */
-#define newarray(type, amt) malloc(type*amt)
-/**
- * Dynamically allocate one object/primitive of type type
- */
-#define new(type) malloc(type)
-/**
- * Deallocate
- */
-#define delete(ptr) free(ptr)
-
-
-global bool all_of_raw(iterable array, size_t itemsize,size_t itemcount, void* cmpfn){
+bool all_of_raw(iterable array, size_t itemsize,size_t itemcount, void* cmpfn){
     register iterable max = array+(itemsize*itemcount);
     for(iterable a = array; a < max;a+=itemsize){
         if(!cmpfn(@a)){
@@ -68,17 +13,8 @@ global bool all_of_raw(iterable array, size_t itemsize,size_t itemcount, void* c
 
     return true;
 }
-/**
- * Use cmpfn to compare all elements of an array.
- * @param array the array to use
- * @param items number of items
- * @param cmpfn comparison function (return boolean)
- * @returns true if cmpfn returns true for all elements, else none
- */
-#define all_of(array,items,cmpfn) all_of_raw(array, typeof(@(array)) ,(items), cmpfn)
 
-
-global bool any_of_raw(iterable array, size_t itemsize, size_t items, void* cmpfn){
+bool any_of_raw(iterable array, size_t itemsize, size_t items, void* cmpfn){
     register iterable max = array+(itemsize*items);
     for(iterable a = array; a < max; a+=itemsize){
         if(cmpfn(@a)){
@@ -87,16 +23,8 @@ global bool any_of_raw(iterable array, size_t itemsize, size_t items, void* cmpf
     }
     return false;
 }
-/**
- * Use cmpfn to compare all elements of an array.
- * @param array the array to use
- * @param items number of items
- * @param cmpfn comparison function (return boolean)
- * @returns true if cmpfn returns true for any elements, else none
- */
-#define any_of(array, items, cmpfn) any_of_raw(array, typeof(@(array)), items, cmpfn)
 
-global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmpfn){
+bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmpfn){
     register iterable max = array+(itemsize*items);
     for(iterable a = array; a < max; a += itemsize){
         if(cmpfn(@a)){
@@ -105,88 +33,4 @@ global bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmp
     }
     return true;
 }
-/**
- * Use cmpfn to compare all elements of an array.
- * @param array the array to use
- * @param items number of items
- * @param cmpfn comparison function (return boolean)
- * @returns true if cmpfn returns true for no elements, else none
- */
-#define none_of(array, items, cmpfn) none_of_raw(array, typeof(@(array)), items, cmpfn)
 
-/**
- * Loop header for a for loop that traverses an array.
- * @param varname name of iterator
- * @param array the array
- * @param items the number of items
- */
-#define each(varname, array, items) (size_t varname = 0; varname < (items); varname++)
-
-/**
- * Loop header for a for loop that traverses an array with an iterator.
- * @param varname the name of iterable
- * @param array the array
- * @param items number of items
- */
-#define each_in(varname, array, items) (iterable varname = (array); varname < (array) +  items*typeof((array))  ; varname += typeof(array))
-
-/**
- * Loop header for a for loop traversing a linked list
- * @param type the datatype of the links
- * @param varname the name to declare the iterator
- * @param member the name of the next pointer of the linked list structure
- * @param listhead the first link
- */
-#define each_link(type, varname, member, listhead) (type *varname = listhead; varname != nullptr; varname = varname->member )
-
-
-#define range(name, max) (size_t name = 0; name < (max); name++)
-
-
-/**
- * Perminantly halt the calling process until it is stopped by a signal.
- */
-#define HALT() __haltlabel__:goto __haltlabel__
-
-/**
- * Scalar swap a with b. (both a and be must be variables / scalar values in memory)
- * @param a a variable
- * @param b b variable
- * @returns Does not return
- */
-#define swap(a, b) a = a ^ b; b = a ^ b; a = a ^ b
-
-/**
- * Take a binary value (1 or 0) a, and make it either -1, or 1.
- * @param a an integer value, presumed to be either 1 or zero
- * @returns -1 for 0, 1 for 1
- */
-#define bintern(a) (((a)*2)-1)
-
-/**
- * Clamp a value x to the range of min->max.
- * @param x the value to clamp
- * @param min min value of x possible (inclusive)
- * @param max max value of x possible (inclusive)
- * @returns None. (the value of x will be changed)
- */
-#define clamp(x, min, max) (x < min) ? min : ((x>max)?max:x)
-
-
-
-/**
- * alloca is a way to allocate additional space on the stack, semi-dynamically.
- * alloca is very prone to causing errors, and should only be used in very controlled
- * circumstances.
- * @param size the number of bytes to allocate
- * @returns a pointer to the allocated space
- */
-inline void* alloca(size_t size){
-    __asm{"
-    sub rsp, rdi
-    mov rax, rsp
-    "}
-}
-
-
-#endif

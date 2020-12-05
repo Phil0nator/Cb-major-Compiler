@@ -15,7 +15,7 @@
 #ifndef __ASSERT
 #define __ASSERT 1
 
-#include "io/printf.k"
+#include "io/printf.cb"
 #include "sys/pth.k"
 
 #ifndef NDEBUG

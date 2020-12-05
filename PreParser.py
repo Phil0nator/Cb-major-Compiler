@@ -386,7 +386,6 @@ class PreProcessor:
 
             else:
                 self.advance()
-
         # filter out deleted tokens that were replaced with None
         return list(filter(badfilter, self.tokens))
 

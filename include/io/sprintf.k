@@ -1,8 +1,6 @@
-
-
 #ifndef __SPRINTF
-#define __SPRINTF 1
-
+#   error "sprintf.k should only be included through sprintf.cb"
+#endif
 
 #define FORMAT_INT64 'i'
 #define FORMAT_UINT64 'u'
@@ -16,10 +14,8 @@
 #define FORMAT_HEX 'x'
 #define FORMAT_OCTAL 'o'
 
-#include "math/math.cb"
-#include "string.k"
-#include "bits/endian.k"
-#include "algorithm/algorithm.k"
+char* __numbercharactersbase1016 = "0123456789abcdef";
+
 
 /* 
 function long toStr(long val, char* buffer, bool signed, short base){
@@ -47,8 +43,6 @@ function long toStr(long val, char* buffer, bool signed, short base){
 } */
 
 
-
-char* __numbercharactersbase1016 = "0123456789abcdef";
 
 function long toStr(long val, char* buffer, bool signed, long base){
     if(val == 0){
@@ -168,25 +162,10 @@ function long toStr(double val, char* buffer, long multiplier){
 }
 
 
-/**
 
-    Format fmt with args into str.
-    Formats:
-        -%i signed integer value
-        -%u unsigned integer value
-        -%x hex value
-        -%c char
-        -%b boolean
-        -%f float
-        -%d double
-        -%s cstring
 
-    str must be already allocated with enough size for the operation to complete. If not, SIGSEGV will be raised.
-    @param str a destination string preallocated with enough space for the operation.
-    @param fmt a format string.
-    @param args the arguments to fill into the string. An inadequate amount of arguments will result in a SIGSEGV.
-*/
-global int __sprintf(char* str, char* fmt, void* args){
+
+int __sprintf(char* str, char* fmt, void* args){
 
     int argc = 0;
 
@@ -323,8 +302,7 @@ global int __sprintf(char* str, char* fmt, void* args){
 
 
 
-
-global int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4){
+int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4){
 
     void args[4];
 
@@ -335,6 +313,3 @@ global int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void 
     int l = __sprintf(dest,fmt,&args);
     return l;
 }
-
-
-#endif

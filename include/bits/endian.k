@@ -25,7 +25,7 @@
 #ifndef __BITS
 #define __BITS 1
 
-#include "stddef.k"
+#include "util/stddef.k"
 
 #define DOUBLE_PRECISION_MULTIPLIER 1000000000
 #define FLOAT_PRECISION_MULTIPLIER 10000000

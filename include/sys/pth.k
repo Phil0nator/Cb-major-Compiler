@@ -5,7 +5,7 @@
 #define __PTH 1
 
 #include "stddef.k"
-#include "filesystem.k"
+#include "io/filesystem.cb"
 #include "memory.k"
 #include "string.k"
 typedef long pid_t;
