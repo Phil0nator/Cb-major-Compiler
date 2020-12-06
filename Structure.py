@@ -138,12 +138,11 @@ class Structure:
                 var.initializer = value.accessor
 
             elif (self.current_token.tok == T_KEYWORD):
-                if(self.current_token.value == "function"):
-                    self.advance()
-                    self.compiler.createFunction(
-                        thisp=True, thispt=prototypeType)
-                    self.compiler.ctidx -= 1
-                    self.update()
+                lf = len(self.compiler.functions)
+                self.compiler.compileLine(thisp=True, thispt=prototypeType)
+                self.compiler.ctidx-=1
+                self.update()
+                if(len(self.compiler.functions) - lf > 0):
                     f = self.compiler.functions[-1]
                     self.compiler.possible_members.append(f.name)
                     prototypeType.members.append(
@@ -151,6 +150,8 @@ class Structure:
 
                     if(self.current_token.tok == T_CLSSCOPE):
                         self.advance()
+
+
         # finalize
         self.compiler.types.pop()
         self.compiler.types.append(prototypeType)

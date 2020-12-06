@@ -430,163 +430,169 @@ class Compiler:
         # actual compilation step
         while self.current_token.tok != T_EOF:
 
-            if (self.current_token.tok == T_ID):
+            self.compileLine()
+
+
+    def compileLine(self, thisp=False, thispt=None):
+
+        if (self.current_token.tok == T_ID):
                 self.createConstant()
-            elif (self.current_token.tok == T_KEYWORD):
+        elif (self.current_token.tok == T_KEYWORD):
 
-                # unsigned keyword is always followed by a normal variable
-                # declaration.
-                if(self.current_token.value == "unsigned"):
+            # unsigned keyword is always followed by a normal variable
+            # declaration.
+            if(self.current_token.value == "unsigned"):
 
-                    s = self.current_token
-                    self.advance()
-                    self.createConstant()
-                    v = self.globals[-1]
-                    if(v.isflt()):
-                        throw(InvalidSignSpecifier(s))
+                s = self.current_token
+                self.advance()
+                self.createConstant()
+                v = self.globals[-1]
+                if(v.isflt()):
+                    throw(InvalidSignSpecifier(s))
 
-                    v.signed = False
-                    v.t = v.t.copy()
-                    v.t.signed = False
-                    v.glob = True
+                v.signed = False
+                v.t = v.t.copy()
+                v.t.signed = False
+                v.glob = True
 
-                # typedef is always followed by two types and an endline:
-                elif(self.current_token.value == "typedef"):
+            # typedef is always followed by two types and an endline:
+            elif(self.current_token.value == "typedef"):
 
-                    # start token
-                    s = self.current_token
+                # start token
+                s = self.current_token
 
-                    self.advance()
+                self.advance()
 
-                    # type a
-                    ta = self.checkType()
-                    if(self.current_token.tok != T_ID):
-                        throw(ExpectedIdentifier(self.current_token))
+                # type a
+                ta = self.checkType()
+                if(self.current_token.tok != T_ID):
+                    throw(ExpectedIdentifier(self.current_token))
 
-                    # new type name
-                    ntn = self.current_token.value
-                    newtype = ta.copy()
-                    newtype.name = ntn
+                # new type name
+                ntn = self.current_token.value
+                newtype = ta.copy()
+                newtype.name = ntn
 
-                    # add new typename to precedence list, if applicable
-                    if ta.name in type_precedence:
-                        type_precedence[ntn] = type_precedence[ta.name]
+                # add new typename to precedence list, if applicable
+                if ta.name in type_precedence:
+                    type_precedence[ntn] = type_precedence[ta.name]
 
-                    # add new type to types and tdefs
-                    self.types.append(newtype.copy())
-                    self.tdefs.append((ta, newtype))
-                    if(self.isIntrinsic(ntn)):
-                        INTRINSICS.append(newtype.copy())
-                    self.advance()
-                    if(self.current_token.tok != T_ENDL):
-                        throw(ExpectedSemicolon(self.current_token))
-                    self.advance()
+                # add new type to types and tdefs
+                self.types.append(newtype.copy())
+                self.tdefs.append((ta, newtype))
+                if(self.isIntrinsic(ntn)):
+                    INTRINSICS.append(newtype.copy())
+                self.advance()
+                if(self.current_token.tok != T_ENDL):
+                    throw(ExpectedSemicolon(self.current_token))
+                self.advance()
 
-                # extern is followed by either a function declaration or a
-                # variable declaration
-                elif(self.current_token.value == "extern"):
-                    self.advance()
-                    # record location to jump back to
-                    backto = self.ctidx - 1
-                    self.checkType()
-                    self.advance()
+            # extern is followed by either a function declaration or a
+            # variable declaration
+            elif(self.current_token.value == "extern"):
+                self.advance()
+                # record location to jump back to
+                backto = self.ctidx - 1
+                self.checkType()
+                self.advance()
 
-                    # function determinant:
-                    #   for function delcarations fndp.tok will always be a '(', and for variables
-                    #   it will always be something else.
-                    fndp = self.current_token
+                # function determinant:
+                #   for function delcarations fndp.tok will always be a '(', and for variables
+                #   it will always be something else.
+                fndp = self.current_token
 
-                    # with the determinant, jump back to the begining to
-                    # perform the compilation
-                    self.ctidx = backto
-                    self.advance()
+                # with the determinant, jump back to the begining to
+                # perform the compilation
+                self.ctidx = backto
+                self.advance()
 
-                    if(fndp.tok == "("):  # if is function
+                if(fndp.tok == "("):  # if is function
 
-                        self.createFunction()
-                        fn = self.functions[-1]
-                        config.__CEXTERNS__ += "extern " + \
-                            functionlabel(fn)[:-1] + "\n"
-                        glob = self.globals[-1]
-                        glob.name = fn.getCallingLabel()
+                    self.createFunction(thisp=thisp,thispt=thispt)
+                    fn = self.functions[-1]
+                    config.__CEXTERNS__ += "extern " + \
+                        functionlabel(fn)[:-1] + "\n"
+                    glob = self.globals[-1]
+                    glob.name = fn.getCallingLabel()
 
-                    else:  # if is variable
+                else:  # if is variable
 
-                        self.createConstant(True)
+                    self.createConstant(True)
 
-                        config.__CEXTERNS__ += "extern " + \
-                            self.globals[-1].name + "\n"
-                # same code as extern, with slight modification for cextern
-                elif(self.current_token.value == "cextern"):
-                    self.advance()
-                    backto = self.ctidx - 1
-                    self.checkType()
-                    self.advance()
+                    config.__CEXTERNS__ += "extern " + \
+                        self.globals[-1].name + "\n"
+            # same code as extern, with slight modification for cextern
+            elif(self.current_token.value == "cextern"):
+                self.advance()
+                backto = self.ctidx - 1
+                self.checkType()
+                self.advance()
 
-                    fndp = self.current_token
-                    self.ctidx = backto
-                    self.advance()
+                fndp = self.current_token
+                self.ctidx = backto
+                self.advance()
 
-                    if(fndp.tok == "("):
+                if(fndp.tok == "("):
 
-                        self.createFunction()
-                        fn = self.functions[-1]
-                        fn.extern = True
-                        config.__CEXTERNS__ += "extern " + \
-                            functionlabel(fn)[:-1] + "\n"
-                        glob = self.globals[-1]
-                        glob.name = fn.getCallingLabel()
-
-                    else:
-
-                        self.createConstant(True)
-                        config.__CEXTERNS__ += "extern " + \
-                            self.globals[-1].name + "\n"
-
-                # __cdecl is always followed by a function declaration
-                elif(self.current_token.value == "__cdecl"):
-                    self.advance()
-
-                    self.createFunction()
+                    self.createFunction(thisp=thisp,thispt=thispt)
                     fn = self.functions[-1]
                     fn.extern = True
-                    # apply new properties to generated function:
-                    config.__CEXTERNS__ += "global " + \
+                    config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-1] + "\n"
                     glob = self.globals[-1]
                     glob.name = fn.getCallingLabel()
 
-                # global is always followed by a function declaration
-                elif(self.current_token.value == "global"):
-                    self.advance()
+                else:
 
-                    self.createFunction()
-                    # apply global properties
-                    fn = self.functions[-1]
-                    config.__CEXTERNS__ += "global " + \
-                        functionlabel(fn)[:-1] + "\n"
-                    glob = self.globals[-1]
-                    glob.name = fn.getCallingLabel()
+                    self.createConstant(True)
+                    config.__CEXTERNS__ += "extern " + \
+                        self.globals[-1].name + "\n"
 
-                elif(self.current_token.value == "struct"):
-                    self.buildStruct()
-                # inline is always followed by a function declaration
-                elif(self.current_token.value == "inline"):
-                    self.advance()
-                    self.createFunction()
-                    # apply new properties
-                    if(not config.__Osize__):
-                        self.functions[-1].inline = True
-                        self.globals.pop()
-                    else:
-                        self.functions[-1].wouldbe_inline = True
+            # __cdecl is always followed by a function declaration
+            elif(self.current_token.value == "__cdecl"):
+                self.advance()
 
-                elif (self.current_token.value == "function"):
-                    self.advance()
-                    self.createFunction()
+                self.createFunction(thisp=thisp,thispt=thispt)
+                fn = self.functions[-1]
+                fn.extern = True
+                # apply new properties to generated function:
+                config.__CEXTERNS__ += "global " + \
+                    functionlabel(fn)[:-1] + "\n"
+                glob = self.globals[-1]
+                glob.name = fn.getCallingLabel()
 
-            else:
-                throw(UnexpectedToken(self.current_token))
+            # global is always followed by a function declaration
+            elif(self.current_token.value == "global"):
+                self.advance()
+
+                self.createFunction(thisp=thisp,thispt=thispt)
+                # apply global properties
+                fn = self.functions[-1]
+                config.__CEXTERNS__ += "global " + \
+                    functionlabel(fn)[:-1] + "\n"
+                glob = self.globals[-1]
+                glob.name = fn.getCallingLabel()
+
+            elif(self.current_token.value == "struct"):
+                self.buildStruct()
+            # inline is always followed by a function declaration
+            elif(self.current_token.value == "inline"):
+                self.advance()
+                self.createFunction(thisp=thisp,thispt=thispt)
+                # apply new properties
+                if(not config.__Osize__):
+                    self.functions[-1].inline = True
+                    self.globals.pop()
+                else:
+                    self.functions[-1].wouldbe_inline = True
+
+            elif (self.current_token.value == "function"):
+                self.advance()
+                self.createFunction(thisp=thisp,thispt=thispt)
+
+        else:
+            throw(UnexpectedToken(self.current_token))
+
 
     # compile all functions and fill in raw assembly info
     def finalize(self):

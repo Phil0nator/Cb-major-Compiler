@@ -1357,7 +1357,11 @@ class Function:
         # save regdecls
         self.addline(self.pushregs())
         # load 'this'
-        self.addline(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
+
+        if(isinstance(this, Variable)):
+            self.addline(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
+        elif(isinstance(this, EC.ExpressionComponent)):
+            self.addline(f"mov rdi, {valueOf(this.accessor)}\n")
 
         # remaining parameters:
         normused = 1
@@ -1477,6 +1481,41 @@ class Function:
                                 start,
                                 self.current_token.end.copy()))
                         exprtokens[-1].fn = fn
+                elif(self.tokens[self.ctidx+1].tok == T_PTRACCESS):
+                    
+                    start = self.ctidx-1
+                    while(self.tokens[self.ctidx+1].tok == T_PTRACCESS):
+                        self.advance()
+                        self.advance()
+                    if(self.tokens[self.ctidx+1].tok == T_OPENP):
+
+                        miniexpr = self.tokens[start+1:self.ctidx-1]
+                        fnname = self.current_token.value
+                        pf = Postfixer(miniexpr, self)
+                        evaluator = ExpressionEvaluator(self)
+                        instr, value = evaluator.evaluatePostfix(pf.createPostfix(), evaluator)
+                        self.addline(instr)
+                        dt = value.type
+                        fn = dt.getMember(fnname)
+                        if(fn is None):
+                            throw(UnkownIdentifier(self.current_token))
+                        fn = fn.initializer
+
+                        self.memberCall(fn, value)
+                        exprtokens.append(
+                            Token(
+                                T_FUNCTIONCALL,
+                                "",
+                                start,
+                                self.current_token.end.copy()))
+                        exprtokens[-1].fn = fn
+                        wasfunc = True
+
+                    else:
+                        self.ctidx=start
+                        self.advance()
+
+
 
             elif (self.current_token.tok == T_KEYWORD):
 
