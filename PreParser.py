@@ -130,7 +130,8 @@ class PreProcessor:
         return next((m for m in self.macros if m.name == name), None)
 
     def getMacrop(self, name, params):
-        return next((m for m in self.macros if m.name == name and len(m.params) == params), None)
+        return next((m for m in self.macros if m.name ==
+                     name and len(m.params) == params), None)
 
     def checkToks(self, tok):                   # check for specific tokens
         if(self.current_token.tok not in tok):

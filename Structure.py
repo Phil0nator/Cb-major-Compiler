@@ -140,7 +140,7 @@ class Structure:
             elif (self.current_token.tok == T_KEYWORD):
                 lf = len(self.compiler.functions)
                 self.compiler.compileLine(thisp=True, thispt=prototypeType)
-                self.compiler.ctidx-=1
+                self.compiler.ctidx -= 1
                 self.update()
                 if(len(self.compiler.functions) - lf > 0):
                     f = self.compiler.functions[-1]
@@ -150,7 +150,6 @@ class Structure:
 
                     if(self.current_token.tok == T_CLSSCOPE):
                         self.advance()
-
 
         # finalize
         self.compiler.types.pop()

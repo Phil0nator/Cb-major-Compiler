@@ -783,7 +783,7 @@ class Function:
         content = content.replace("\\", "")
 
         for d in defns:
-            content = content.replace(d[0],d[1])
+            content = content.replace(d[0], d[1])
 
         lnum = getLogicLabel("")
         content = content.replace("%L", lnum)
@@ -1481,27 +1481,52 @@ class Function:
                                 start,
                                 self.current_token.end.copy()))
                         exprtokens[-1].fn = fn
-                elif(self.tokens[self.ctidx+1].tok == T_PTRACCESS):
-                    
-                    start = self.ctidx-1
-                    while(self.tokens[self.ctidx+1].tok == T_PTRACCESS):
-                        self.advance()
-                        self.advance()
-                    if(self.tokens[self.ctidx+1].tok == T_OPENP):
 
-                        miniexpr = self.tokens[start+1:self.ctidx-1]
+                # member functions called through pointer member access need to be found
+                # here before being passed into the expression evaluators
+                elif(self.tokens[self.ctidx + 1].tok == T_PTRACCESS):
+
+                    # record start token so that for non-function pointer accesses
+                    # it can reset
+                    start = self.ctidx - 1
+                    # iterate through miniexpr (e.g : test->a->b->c ...)
+                    while(self.tokens[self.ctidx + 1].tok == T_PTRACCESS):
+                        self.advance()
+                        self.advance()
+
+                    # if the next token is an open parenthesis, it is a member
+                    # function call
+                    if(self.tokens[self.ctidx + 1].tok == T_OPENP):
+
+                        # isolate miniexpr
+                        miniexpr = self.tokens[start + 1:self.ctidx - 1]
+                        # function name
                         fnname = self.current_token.value
+
+                        # evaluation of miniexpr in order to determine the value for 'this',
+                        # and also the data type of 'this'
                         pf = Postfixer(miniexpr, self)
                         evaluator = ExpressionEvaluator(self)
-                        instr, value = evaluator.evaluatePostfix(pf.createPostfix(), evaluator)
+                        instr, value = evaluator.evaluatePostfix(
+                            pf.createPostfix(), LeftSideEvaluator(self))
                         self.addline(instr)
+
+                        # datatype
                         dt = value.type
+                        # member function
                         fn = dt.getMember(fnname)
                         if(fn is None):
                             throw(UnkownIdentifier(self.current_token))
                         fn = fn.initializer
 
+                        # perform function call, parameter loading, regdecl
+                        # saving, etc...
                         self.memberCall(fn, value)
+
+                        # cleanup
+                        rfree(value.accessor)
+
+                        # add new info to the expression
                         exprtokens.append(
                             Token(
                                 T_FUNCTIONCALL,
@@ -1510,12 +1535,11 @@ class Function:
                                 self.current_token.end.copy()))
                         exprtokens[-1].fn = fn
                         wasfunc = True
-
+                    # if it is not a member function call, the miniexpr can just be a part of the whole expression
+                    # so the ctidx is reset
                     else:
-                        self.ctidx=start
+                        self.ctidx = start
                         self.advance()
-
-
 
             elif (self.current_token.tok == T_KEYWORD):
 

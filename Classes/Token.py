@@ -50,7 +50,7 @@ T_ANOT = "~"
 T_AOR = "|"
 T_AAND = "&"
 
-T_MULTIOP = "-><=!|&+/*.^%"
+T_MULTIOP = "-><=!|&+/*.^%:"
 MULTIOPERS = [
     "->",
     "!=",
@@ -74,7 +74,8 @@ MULTIOPERS = [
     "||",
     "&&",
     "...",
-    ".."]
+    "..",
+    "::"]
 
 
 T_DIGITS = "0123456789"
@@ -112,8 +113,10 @@ T_TERNARYQ = "?"
 T_TERNARYELSE = ":"
 
 T_AMBIGUOUS = "T?T"
-T_DIRECTIVE = "#doit"
+T_DIRECTIVE = "#directive"
 T_INCLUDER = "<...>"
+
+T_NAMESPACE = "::"
 
 KEYWORDS = [
 
@@ -134,12 +137,7 @@ KEYWORDS = [
     "continue",
     "__asm",
     "__simd",
-    "__add2",
-    "__sub2",
-    "__mul2",
-    "__add4",
-    "__sub4",
-    "__mul4",
+    
     "return",
     "typedef",
     "switch",

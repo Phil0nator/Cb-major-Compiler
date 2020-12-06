@@ -176,7 +176,7 @@ class Compiler:
         self.advance()
 
         # check for simple C style function declarations
-        if(self.current_token.tok == T_OPENP):
+        if(self.current_token.tok == T_OPENP or self.current_token.tok == T_NAMESPACE):
             self.ctidx = startidx - 1
             self.advance()
             self.createFunction()
@@ -256,6 +256,23 @@ class Compiler:
                 inline = True
 
         rettype = self.checkType()
+
+        struct = None
+        
+        # for external definitions of member functions:
+        # (The '::' token will be in place of an '(')
+        if(self.currentTokens[self.ctidx+1].tok == T_NAMESPACE):
+            if(self.current_token.tok != T_ID):
+                throw(ExpectedIdentifier(self.current_token))
+
+            # get parent
+            struct = self.getType(self.current_token.value)
+            
+            # setup function for a 'this' value
+            thisp=True
+            thispt=struct
+            self.advance()
+            self.advance()
 
         if(self.current_token.tok != T_ID):
             throw(ExpectedIdentifier(self.current_token))
@@ -378,6 +395,9 @@ class Compiler:
                 isptr=True,
                 mutable=False,
                 signed=f.returntype.signed))
+        
+        
+        
 
     def buildStruct(self):                  # isolate and build a structure
         # \see Structure
@@ -432,11 +452,10 @@ class Compiler:
 
             self.compileLine()
 
-
     def compileLine(self, thisp=False, thispt=None):
 
         if (self.current_token.tok == T_ID):
-                self.createConstant()
+            self.createConstant()
         elif (self.current_token.tok == T_KEYWORD):
 
             # unsigned keyword is always followed by a normal variable
@@ -506,9 +525,9 @@ class Compiler:
                 self.ctidx = backto
                 self.advance()
 
-                if(fndp.tok == "("):  # if is function
+                if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):  # if is function
 
-                    self.createFunction(thisp=thisp,thispt=thispt)
+                    self.createFunction(thisp=thisp, thispt=thispt)
                     fn = self.functions[-1]
                     config.__CEXTERNS__ += "extern " + \
                         functionlabel(fn)[:-1] + "\n"
@@ -531,10 +550,9 @@ class Compiler:
                 fndp = self.current_token
                 self.ctidx = backto
                 self.advance()
+                if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):
 
-                if(fndp.tok == "("):
-
-                    self.createFunction(thisp=thisp,thispt=thispt)
+                    self.createFunction(thisp=thisp, thispt=thispt)
                     fn = self.functions[-1]
                     fn.extern = True
                     config.__CEXTERNS__ += "extern " + \
@@ -552,7 +570,7 @@ class Compiler:
             elif(self.current_token.value == "__cdecl"):
                 self.advance()
 
-                self.createFunction(thisp=thisp,thispt=thispt)
+                self.createFunction(thisp=thisp, thispt=thispt)
                 fn = self.functions[-1]
                 fn.extern = True
                 # apply new properties to generated function:
@@ -565,7 +583,7 @@ class Compiler:
             elif(self.current_token.value == "global"):
                 self.advance()
 
-                self.createFunction(thisp=thisp,thispt=thispt)
+                self.createFunction(thisp=thisp, thispt=thispt)
                 # apply global properties
                 fn = self.functions[-1]
                 config.__CEXTERNS__ += "global " + \
@@ -578,7 +596,7 @@ class Compiler:
             # inline is always followed by a function declaration
             elif(self.current_token.value == "inline"):
                 self.advance()
-                self.createFunction(thisp=thisp,thispt=thispt)
+                self.createFunction(thisp=thisp, thispt=thispt)
                 # apply new properties
                 if(not config.__Osize__):
                     self.functions[-1].inline = True
@@ -588,13 +606,13 @@ class Compiler:
 
             elif (self.current_token.value == "function"):
                 self.advance()
-                self.createFunction(thisp=thisp,thispt=thispt)
+                self.createFunction(thisp=thisp, thispt=thispt)
 
         else:
             throw(UnexpectedToken(self.current_token))
 
-
     # compile all functions and fill in raw assembly info
+
     def finalize(self):
 
         # the Compiler needs to find the best suitable entrypoint.
