@@ -32,6 +32,10 @@ class Variable:
         self.referenced = False         # for warnings
         self.dtok = None
 
+    def copy(self):
+        return Variable(self.t, self.name, self.glob, self.offset, self.initializer,
+                        self.isptr, self.mutable, self.signed, self.isStackarr, self.static)
+
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and
         # self.isptr == False

@@ -7,7 +7,6 @@
 
 #include "util/stddef.k"
 
-typedef size_t typename;
 
 #include "Stack.cb"
 #include "list.cb"

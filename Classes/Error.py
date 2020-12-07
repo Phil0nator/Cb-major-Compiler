@@ -307,6 +307,12 @@ class UseOfIncompleteType(Error):
         self.message = f"Invalid use of incomplete type ('{t}'): "
 
 
+class VariableTemplate(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Cannot build template of variable:"
+
+
 class Warning:
     def __init__(self, tok, msg):
         self.msg = msg

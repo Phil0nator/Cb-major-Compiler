@@ -129,6 +129,9 @@ KEYWORDS = [
     "struct",
     "const",
     "unsigned",
+    "template",
+    "class",
+    "typename",
 
     "for",
     "while",

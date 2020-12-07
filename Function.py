@@ -178,6 +178,11 @@ class Function:
         # function.
         self.closinglabel = self.getClosingLabel()
 
+        # used to differentiate between template functions and regular
+        # functions
+        self.isTemplate = False
+        self.template_types = []
+
         # Features
 
         # count the number of other functions called to enable, with high optimization level,
@@ -336,6 +341,14 @@ class Function:
         self.advance()
         return id
 
+    def parseTemplate(self):
+        types = []
+        while self.current_token.tok != ">":
+            self.advance()
+            t = self.checkForType()
+            types.append(t)
+        return types
+
     def checkForType(self):             # check next tokens for Type, and return it as a DType
         signed = True
         if(self.current_token.tok == T_KEYWORD):
@@ -349,7 +362,14 @@ class Function:
         if(not self.compiler.isType(self.current_token.value)):
             throw(ExpectedType(self.current_token))
 
-        t = self.compiler.getType(self.current_token.value).copy()
+        if (self.tokens[self.ctidx + 1].tok == "<"):
+            template = self.current_token.value
+            ttok = self.current_token
+            self.advance()
+            types = self.parseTemplate()
+            t = self.compiler.buildTemplateType(template, types, ttok)
+        else:
+            t = self.compiler.getType(self.current_token.value).copy()
 
         self.advance()
         ptrdepth = 0

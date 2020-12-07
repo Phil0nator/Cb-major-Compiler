@@ -59,6 +59,9 @@ class Compiler:
         self.functions = []             # all Function objects
 
         self.types = []                 # all datatypes: DType
+        self.template_types = []        # templated types
+        self.template_cache = []        # already filled templates for speed
+
         # typedefs listed as (old, new):(DType,DType)
         self.tdefs = []
 
@@ -74,7 +77,8 @@ class Compiler:
         self.panicmode = False
 
     def isType(self, q):                # return: if q is type
-        return self.getType(q) is not None
+        return self.getType(
+            q) is not None or self.getTemplateType(q) is not None
 
     def isIntrinsic(self, q):           # return: if q is primitive
         return next((t for t in INTRINSICS if self.Tequals(t.name, q)), None)
@@ -92,6 +96,9 @@ class Compiler:
             return None
 
         return self.getGlob(fn.getCallingLabel())
+
+    def getTemplateType(self, q):
+        return next((t for t in self.template_types if t[0].name == q), None)
 
     def getFunction(self, q):           # get first function of name q
         return next((f for f in self.functions if f.name == q), None)
@@ -452,6 +459,137 @@ class Compiler:
 
             self.compileLine()
 
+    def buildTemplate(self):
+        # keep track of first token for errors
+        first = self.currentTokens[self.ctidx - 1]
+        # ensure syntax
+        if(self.current_token.tok != "<"):
+            throw(ExpectedToken(self.current_token, "<"))
+
+        # collect standin typenames from the template list
+        tns = []
+        while self.current_token.tok != ">":
+            self.advance()
+            # expecting a 'struct', 'class', or 'typename'
+            if(self.current_token.tok != T_KEYWORD):
+                throw(ExpectedToken(self.current_token, "type-specifier"))
+            self.advance()
+            if(self.current_token.tok != T_ID):
+                throw(ExpectedIdentifier(self.current_token))
+            # collect name
+            tns.append(self.current_token.value)
+            self.advance()
+        self.advance()
+
+        # keep track of the current number of types to restore back to after
+        # the template has been created
+        restore_types = len(self.types)
+        for t in tns:
+            self.types.append(DType(t, 0))
+
+        # structs are a simpler process that can be streamlined:
+        if(self.current_token.value == "struct"):
+            self.buildStruct()
+            newt = self.types.pop()
+            # templated types have their own special list
+            self.template_types.append([newt, tns])
+
+        # functions:
+        else:
+
+            # tracker is used to ensure that a function is actually created
+            # as this line is compiled
+            tracker = len(self.functions)
+            self.compileLine()
+            if(tracker == len(self.functions)):
+                throw(VariableTemplate(first))
+            fnt = self.functions[-1]
+            # update the created function as a template
+            fnt.isTemplate = True
+            fnt.template_types = tns
+
+        # delete standin types, and return to original state
+        self.types = self.types[:restore_types]
+
+    def buildTemplateType(self, template, types, tok):
+
+        # check for existing templates:
+        for t in self.template_cache:
+            # they share a name
+            if t[0] == template:
+                # they have the same number of types
+                if len(t[1]) != len(types):
+                    break
+
+                # their types are equal
+                for i in range(len(t[1])):
+                    if t[1][i].name != types[i].name:
+                        break
+                # return existing structure
+                return t[2]
+
+        # get the template structure from the list:
+        tstruct = self.getTemplateType(template)
+        if(tstruct is None):
+            throw(UnkownIdentifier(tok))
+
+        # the template structure needs a deep copy of properties and members
+        # so that it can be used to instantiate multiple different template
+        # structure types
+        struct = tstruct[0].copy()
+
+        # deep copy
+        for i in range(len(tstruct[0].members)):
+            struct.members[i] = tstruct[0].members[i].copy()
+
+        # the second item is an array of typenames used in place of actual types in the
+        # structure's definition
+        tns = tstruct[1]
+
+        # assosiation is a dictionary that associates the typenames of the template with their
+        # actual types given in this declaration
+        assosiation = {}
+        for i in range(len(tns)):
+            assosiation[tns[i]] = types[i].copy()
+
+        # all the members of the new templated type need to be given their new
+        # types, and offsets
+        struct.s = 0
+        for member in struct.members:
+
+            # if template has effect:
+            if(member.t.name in tns):
+                # update type, but maintain pointer depth
+                pd = member.t.ptrdepth
+                member.t = assosiation[member.t.name]
+                member.t.ptrdepth = pd
+
+            if(isinstance(member.initializer, Function)):
+                print(member)
+
+            # apply offset, and overall size
+            member.offset = struct.s
+            struct.s += member.t.s
+
+        self.template_cache.append([template, types, struct])
+        return struct
+
+    def buildTemplateFunction(self, templatefn, tns, types):
+        fn = Function(
+            templatefn.name,
+            templatefn.parameters,
+            templatefn.returntype,
+            self,
+            templatefn.tokens,
+            templatefn.inline,
+            templatefn.extern)
+
+        restore_types = len(self.types)-1
+
+        
+
+
+
     def compileLine(self, thisp=False, thispt=None):
 
         if (self.current_token.tok == T_ID):
@@ -608,6 +746,10 @@ class Compiler:
                 self.advance()
                 self.createFunction(thisp=thisp, thispt=thispt)
 
+            elif(self.current_token.value == "template"):
+                self.advance()
+                self.buildTemplate()
+
         else:
             throw(UnexpectedToken(self.current_token))
 
@@ -632,7 +774,7 @@ class Compiler:
             #    if f.wouldbe_inline and f.references == 0:
             #        f.inline = True
 
-            if not f.inline:
+            if not f.inline and not f.isTemplate:
 
                 self.currentfunction = f
                 f.compile()
