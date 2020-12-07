@@ -137,7 +137,7 @@ KEYWORDS = [
     "continue",
     "__asm",
     "__simd",
-    
+
     "return",
     "typedef",
     "switch",

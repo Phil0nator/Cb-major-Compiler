@@ -1,99 +1,8 @@
 #ifndef __VEC3F
 #define __VEC3F 1
 
-/**
- * AVX flag optimized instructions:
- */
-#define VEC3F_AVX_LOADYMM0 __asm{"vmovdqu ymm0, [rdi]"}
-#define VEC3F_AVX_DEPOSITYMM1 __asm{"vmovdqu [rdi], ymm1"}
+#include "api.cb"
 
-
-#define VEC3F_AVX_ADD   __asm{"vaddpd ymm1, ymm0, [rsi]"}
-#define VEC3F_AVX_SUB   __asm{"vsubpd ymm1, ymm0, [rsi]"}
-#define VEC3F_AVX_MUL   __asm{"vmulpd ymm1, ymm0, [rsi]"}
-#define VEC3F_AVX_DIV   __asm{"vdivpd ymm1, ymm0, [rsi]"}
-
-
-/**
- * AVX optimizations will only be used if available on the compiling CPU
- */
-#ifdef __AVX
-
-#   define VEC3F_LOAD VEC3F_AVX_LOADYMM0
-#   define VEC3F_DEPOSIT VEC3F_AVX_DEPOSITYMM1
-#   define VEC3F_ADD VEC3F_AVX_ADD
-#   define VEC3F_SUB VEC3F_AVX_SUB
-#   define VEC3F_MUL VEC3F_AVX_MUL
-#   define VEC3F_DIV VEC3F_AVX_DIV
-
-#endif
-/**
- * For CPU's without AVX:
- */
-#ifndef __AVX
-
-#   define VEC3F_LOAD __asm{"                           \
-                            movsd xmm0, [rdi]           \
-                            movsd xmm1, [rdi+8]         \
-                            movsd xmm2, [rdi+16]        \
-                            "}
-
-#   define VEC3F_DEPOSIT __asm{"                    \
-                            movsd [rdi], xmm0       \
-                            movsd [rdi+8], xmm1     \
-                            movsd [rdi+16], xmm2    \
-                            "}
-
-#   define VEC3F_ADD    __asm{"\
-                            addsd xmm0, [rsi]       \
-                            addsd xmm1, [rsi+8]     \
-                            addsd xmm2, [rsi+16]    \
-                            "}
-
-#   define VEC3F_SUB    __asm{"\
-                            subsd xmm0, [rsi]       \
-                            subsd xmm1, [rsi+8]     \
-                            subsd xmm2, [rsi+16]    \
-                            "}
-
-#   define VEC3F_MUL    __asm{"\
-                            mulsd xmm0, [rsi]       \
-                            mulsd xmm1, [rsi+8]     \
-                            mulsd xmm2, [rsi+16]    \
-                            "}
-
-#   define VEC3F_DIV    __asm{"\
-                            divsd xmm0, [rsi]       \
-                            divsd xmm1, [rsi+8]     \
-                            divsd xmm2, [rsi+16]    \
-                            "}
-
-#endif
-
-/**
- * Universal definitions:
- * (Reguardless of AVX)
- */
-
-#define VEC3F_SQRT      __asm{"                         \
-                                sqrtsd xmm0, [rdi]      \
-                                sqrtsd xmm1, [rdi+8]    \
-                                sqrtsd xmm2, [rdi+16]   \
-                                movsd [rdi], xmm0       \
-                                movsd [rdi+8], xmm1     \
-                                movsd [rdi+16], xmm2    \
-                            "}
-
-#define VEC3F_DOT       __asm{"                         \
-                            movsd xmm0, [rdi]           \
-                            movsd xmm1, [rdi+8]         \
-                            mulsd xmm0, [rsi]           \
-                            movsd xmm2, [rdi+16]        \
-                            mulsd xmm1, [rsi+8]         \
-                            mulsd xmm2, [rsi+16]        \
-                            addsd xmm0, xmm1            \
-                            addsd xmm0, xmm2            \
-                            "}
 
 /**
  * The Vec3f Structure is used to perform SIMD optimized vector operations for 3D vectors.
@@ -117,73 +26,63 @@ struct Vec3f{
      * @param z z value
      * @returns None
      */
-    function void set(double x, double y, double z){
-        this->x=x;
-        this->y=y;
-        this->z=z;
-    }
+    CBLIBENTRY void set(double x, double y, double z);
+
     /**
      * Add two vectors
      * @param other the vector to add
      * @returns None
      */
-    function void add(Vec3f* other){
-        VEC3F_LOAD
-        VEC3F_ADD
-        VEC3F_DEPOSIT
-    }
+    CBLIBENTRY void add(Vec3f* other);
+
     /**
      * Subtract two vectors
      * @param other the vector to subtract
      * @returns None
      */
-    function void sub(Vec3f* other){
-        VEC3F_LOAD
-        VEC3F_SUB
-        VEC3F_DEPOSIT
-    }
+    CBLIBENTRY void sub(Vec3f* other);
+
     /**
      * Cross multiply two vectors
      * (Cross product)
      * @param other vector to multiply by
      * @returns None
      */
-    function void mul(Vec3f* other){
-        VEC3F_LOAD
-        VEC3F_MUL
-        VEC3F_DEPOSIT
-    }
+    CBLIBENTRY void mul(Vec3f* other);
+
+
     /**
      * Static divide of vectors.
      *  [this / other] -> { this.x/other.x , this.y / other.y , this.z / other.z }
      * @param other vector to divide by
      * @returns None
      */
-    function void div(Vec3f* other){
-        VEC3F_LOAD
-        VEC3F_DIV
-        VEC3F_DEPOSIT
-    }
+    CBLIBENTRY void div(Vec3f* other);
+
+
     /**
      * Square root vector. (Each value becomes its square root)
      * @returns None
      */
-    function void sqrt(){
-        VEC3F_SQRT
-    }
+    CBLIBENTRY void sqrt();
+
+
     /**
      * Dot product of vectors
      * @param other operand B
      * @returns dot product of this and other
      */
-    function double dot(Vec3f* other){
-        VEC3F_DOT
-    }
+    CBLIBENTRY double dot(Vec3f* other);
 
 
 
 
 };
+
+#ifdef __CBLIB_SOURCE
+#   include "Vec3f.k"
+#endif
+
 
 
 #endif

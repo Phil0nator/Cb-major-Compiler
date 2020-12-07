@@ -10,7 +10,6 @@ align 8
 section .bss
 align 16
 %%HEAP%%
-__heap.padding__: resz 1
 
 
 

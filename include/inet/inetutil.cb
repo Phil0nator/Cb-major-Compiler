@@ -1,0 +1,59 @@
+#ifndef __INETUTIL
+#define __INETUTIL
+
+#include "sys/sock.k"   // socket operations
+#include "io/sscanf.cb" // sscanf
+
+#include "api.cb"
+
+
+/**
+ * isdigit returns if c is between '0' and '9'.
+ * @param c char
+ * @returns if c is a decimal number
+ */
+inline bool isdigit(char c){
+    return c >= '0' && c <= '9';
+}
+
+
+/* macro for most common use */
+#define NORMAL_SOCKET socket(AF_INET, SOCK_STREAM, 0)
+
+/**
+ * inet_aton will convert a normal cstring ip address e.g: "127.0.0.1"
+ * into a properly formatted in_addr (big endian 32 bit).
+ * @param cp ip address
+ * @param in_addr destination for new 32 bit value
+ * @returns 1
+ * 
+ */
+CBLIBENTRY int inet_aton(char* cp, in_addr* addr);
+
+
+/**
+ * Attempt to recieve len bytes from sock into buff, using flags.
+ * @param sockfd socket
+ * @param buff buffer to write to
+ * @param len bytes to recv
+ * @param flags additional flags
+ * @returns the number of bytes recieved / error code. 
+ */
+CBLIBENTRY int recv(fd_t sockfd, char* buff, size_t len, int flags);
+
+/**
+ * Attempt to send len bytes of buff to sockfd with flags
+ * @param sockfd socket
+ * @param buff buffer to read from
+ * @param len bytes to send
+ * @param flags additional flags
+ * @returns bytes sent / error code
+ */
+CBLIBENTRY int send(fd_t sockfd, char* buff, size_t len, int flags);
+
+#ifdef __CBLIB_SOURCE
+#   include "inetutil.k"
+#endif
+
+
+#endif

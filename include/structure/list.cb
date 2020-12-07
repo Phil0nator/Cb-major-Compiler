@@ -1,46 +1,7 @@
 #ifndef __LIST
 #define __LIST 1
 
-struct ListNode{
 
-    void data           = NULL;
-    ListNode* next      = nullptr;
-    ListNode* prev      = nullptr;
-
-
-
-};
-
-
-struct List{
-
-    ListNode* head      = nullptr;
-    ListNode* end       = nullptr;
-
-    function void append(void item){
-
-        ListNode* link = new(ListNode);
-        link->data =item;
-        link->prev=nullptr;
-        link->next=nullptr;
-
-        if(this->head != nullptr){
-            
-            this->end->next = link;
-            link->prev = this->end;
-            this->end = link;
-
-        }else{
-            this->head = link;
-            this->end = link;
-        }
-
-    }
-
-    
-
-
-};
 
 
 

@@ -16,7 +16,7 @@
 
 #include "algorithm/algorithm.cb"    /* high level algorithm macros */
 
-#include "assert/assert.k"          /* debug assertions */
+#include "assert/assert.cb"          /* debug assertions */
 #include "util/chrono.cb"                 /* high level time operations */
 #include "sys/files.k"              /* low level file interaction */
 #include "sys/sock.k"               /* low level socket interaction */

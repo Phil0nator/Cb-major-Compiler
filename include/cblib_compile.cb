@@ -1,2 +1,3 @@
 #define __CBLIB_SOURCE 1
+#define NDEBUG
 #include "cblib.cb"

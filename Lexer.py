@@ -148,7 +148,6 @@ class Lexer:
 
     # build unkown identifier. Could be : ID, Keyword, Type, etc...
     def buildAmbiguous(self):
-        value = self.ch
         begin = self.loc.copy()
         self.advance()
         raw = self.raw
@@ -156,11 +155,13 @@ class Lexer:
 
         end = ambiguous_regex.search(raw, chidx).end() - 1
         value = (raw[chidx - 1:end])
-        lv = len(value) - 1
+        lv = end - (chidx - 1) - 2
+        #lv = len(value) - 2
 
-        self.chidx += lv - 1
-        self.loc.ch += lv - 1
+        self.chidx += lv
+        self.loc.ch += lv
         self.advance()
+
         if(value in T.KEYWORDS):
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())

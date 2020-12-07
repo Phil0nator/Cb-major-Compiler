@@ -5,8 +5,7 @@
 #define __SYSSOCK 1
 
 #include "files.k" // fd_t, read, write, etc...
-#include "io/sscanf.cb" // sscanf
-#include "util/memory.cb"  // malloc
+
 
 /** 32bit ip address type */
 typedef int in_addr;
@@ -79,47 +78,7 @@ struct linger_t {
 #define AF_INET6 10 
 #define AF_MAX   12 
 
-/* macro for most common use */
-#define NORMAL_SOCKET socket(AF_INET, SOCK_STREAM, 0)
 
-/**
- * isdigit returns if c is between '0' and '9'.
- * @param c char
- * @returns if c is a decimal number
- */
-inline bool isdigit(char c){
-    return c >= '0' && c <= '9';
-}
-
-/**
- * inet_aton will convert a normal cstring ip address e.g: "127.0.0.1"
- * into a properly formatted in_addr (big endian 32 bit).
- * @param cp ip address
- * @param in_addr destination for new 32 bit value
- * @returns 1
- * 
- */
-function int inet_aton(char* cp, in_addr* addr){
-
-    char p[4];
-
-    int parts = sscanf("%i.%i.%i.%i",cp, &p, &p+1, &p+2, &p+3);
-    
-    int a = p[0]&&0xff;
-    int b = p[1]&&0xff;
-    int c = p[2]&&0xff;
-    int d = p[3]&&0xff;
-
-
-
-    
-    
-    @addr = hton32( (d)||((a << 24) || (b << 16) || (c << 8)));
-    
-    return 1;
-
-
-}
 
 
 
@@ -190,33 +149,7 @@ inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr,
     syscall(44)
 }
 
-/**
- * Attempt to recieve len bytes from sock into buff, using flags.
- * @param sockfd socket
- * @param buff buffer to write to
- * @param len bytes to recv
- * @param flags additional flags
- * @returns the number of bytes recieved / error code. 
- */
-function int recv(fd_t sockfd, char* buff, size_t len, int flags){
 
-    return recvfrom(sockfd, buff, len, flags, NULL, NULL);
-
-}
-
-/**
- * Attempt to send len bytes of buff to sockfd with flags
- * @param sockfd socket
- * @param buff buffer to read from
- * @param len bytes to send
- * @param flags additional flags
- * @returns bytes sent / error code
- */
-function int send(fd_t sockfd, char* buff, size_t len, int flags){
-
-    return sendto(sockfd, buff, len,flags, NULL, NULL);
-
-}
 
 
 

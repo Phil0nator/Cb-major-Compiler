@@ -30,7 +30,7 @@
 
 #include "sys/mman.cb"
 #include "algorithm/algorithm.cb"
-#include "assert/assert.k"
+#include "assert/assert.cb"
 #include "stddef.k"
 #include "bits/limits.k"
 

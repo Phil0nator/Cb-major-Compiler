@@ -7,6 +7,9 @@
 #ifndef __ERRLIST
 #define __ERRLIST 1
 
+#include "api.cb"
+
+
 char** __linux_errstrlist = {
 
 "Success",
@@ -417,7 +420,12 @@ char** __linux_errstrlist = {
  * @param err the error code to search (can be positive or negative)
  * @returns a cstring with the associated message.
  */
-function char* get_errstr(int err){
+CBLIBENTRY char* get_errstr(int err)
+#ifndef __CBLIB_SOURCE
+;
+#endif
+#ifdef __CBLIB_SOURCE
+{
 
     if(err < MAX_ERR && err >= 0){
         return __linux_errstrlist[err];
@@ -425,6 +433,7 @@ function char* get_errstr(int err){
     return "Unkown Error Code.";
 
 }
+#endif
 
 
 #endif

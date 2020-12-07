@@ -1,7 +1,10 @@
 #ifndef __STACK
 #define __STACK 1
 
-#include "sys/mman.cb"
+#include "util/malloc.cb"
+#include "api.cb"
+
+
 
 struct Stack {
 
@@ -9,34 +12,26 @@ struct Stack {
     void* ptr = 0;
     size_t size;
 
-    function void feed(void* ptr){
-        this->base = ptr;
-    }
+    CBLIBENTRY void feed(void* ptr);
 
-    function void alloc(size_t size){
-        this->size = size;
-        this->base = qmmap(size);
-    }
+    CBLIBENTRY void alloc(size_t size);
 
-    function void destroy(){
-        munmap(this->base, this->size);
-    }
+    CBLIBENTRY void destroy();
 
-    function void push(void item){
-    }
+    CBLIBENTRY void push(void item);
 
-    function void pop(){
-    }
+    CBLIBENTRY void pop();
 
-    function void pop(void* dest){
-    }
+    CBLIBENTRY void pop(void* dest);
 
 };
 
 
 
 
-
+#ifdef __CBLIB_SOURCE
+#   include "Stack.k"
+#endif
 
 
 

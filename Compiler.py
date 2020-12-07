@@ -258,19 +258,22 @@ class Compiler:
         rettype = self.checkType()
 
         struct = None
-        
+
         # for external definitions of member functions:
         # (The '::' token will be in place of an '(')
-        if(self.currentTokens[self.ctidx+1].tok == T_NAMESPACE):
+        if(self.currentTokens[self.ctidx + 1].tok == T_NAMESPACE):
             if(self.current_token.tok != T_ID):
                 throw(ExpectedIdentifier(self.current_token))
 
             # get parent
             struct = self.getType(self.current_token.value)
-            
+
+            if(struct is None):
+                throw(UnkownType(self.current_token))
+
             # setup function for a 'this' value
-            thisp=True
-            thispt=struct
+            thisp = True
+            thispt = struct
             self.advance()
             self.advance()
 
@@ -395,9 +398,6 @@ class Compiler:
                 isptr=True,
                 mutable=False,
                 signed=f.returntype.signed))
-        
-        
-        
 
     def buildStruct(self):                  # isolate and build a structure
         # \see Structure
