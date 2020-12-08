@@ -218,28 +218,28 @@ def fncall(fn):
     if(not fn.inline):
         return "call %s\n" % fn.getCallingLabel()
     else:
+        if not fn.isCompiled:
+            # save register allocation for calling
+            regstate = norm_scratch_registers_inuse.copy()
+            regstatesse = sse_scratch_registers_inuse.copy()
+            # free all registers for re-compilation of the inline
+            rfreeAll()
 
-        # save register allocation for calling
-        regstate = norm_scratch_registers_inuse.copy()
-        regstatesse = sse_scratch_registers_inuse.copy()
-        # free all registers for re-compilation of the inline
-        rfreeAll()
+            resetcfg = False
 
-        resetcfg = False
+            # suppress warnings for re-compilation
+            if(fn.isCompiled and not config.__nowarn__):
+                config.__nowarn__ = True
+                resetcfg = True
+            fn = fn.reset()
+            fn.compile()
+            # restore register state
+            norm_scratch_registers_inuse = regstate
+            sse_scratch_registers_inuse = regstatesse
 
-        # suppress warnings for re-compilation
-        if(fn.isCompiled and not config.__nowarn__):
-            config.__nowarn__ = True
-            resetcfg = True
-        fn = fn.reset()
-        fn.compile()
-        # restore register state
-        norm_scratch_registers_inuse = regstate
-        sse_scratch_registers_inuse = regstatesse
-
-        # re-enable warnings if necessary
-        if resetcfg:
-            config.__nowarn__ = False
+            # re-enable warnings if necessary
+            if resetcfg:
+                config.__nowarn__ = False
 
         return fn.asm
 
