@@ -41,4 +41,11 @@
 #define isSNaN(x)       (($void x) == SNAN)
 #define signOf(x)       ($bool (($void x)>>(63)))
 
+
+template<typename T, typename O>
+T static_cast(O x){
+    return $T ($void x);
+}
+
+
 #endif
