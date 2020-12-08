@@ -57,6 +57,8 @@ class Compiler:
         self.prevtok = Token(T_AMBIGUOUS, T_AMBIGUOUS, None, None)
 
         self.functions = []             # all Function objects
+        self.template_functions = []    # function templates
+        self.templatefunction_cache = []# already created function templates
 
         self.types = []                 # all datatypes: DType
         self.template_types = []        # templated types
@@ -489,7 +491,9 @@ class Compiler:
 
         # structs are a simpler process that can be streamlined:
         if(self.current_token.value == "struct"):
+            restorefn = len(self.functions)
             self.buildStruct()
+            self.functions = self.functions[:restorefn]
             newt = self.types.pop()
             # templated types have their own special list
             self.template_types.append([newt, tns])
@@ -503,10 +507,11 @@ class Compiler:
             self.compileLine()
             if(tracker == len(self.functions)):
                 throw(VariableTemplate(first))
-            fnt = self.functions[-1]
+            fnt = self.functions.pop()
             # update the created function as a template
             fnt.isTemplate = True
             fnt.template_types = tns
+            self.template_functions.append(fnt)
 
         # delete standin types, and return to original state
         self.types = self.types[:restore_types]
@@ -517,6 +522,7 @@ class Compiler:
         for t in self.template_cache:
             # they share a name
             if t[0] == template:
+                valid = True
                 # they have the same number of types
                 if len(t[1]) != len(types):
                     break
@@ -524,9 +530,11 @@ class Compiler:
                 # their types are equal
                 for i in range(len(t[1])):
                     if t[1][i].name != types[i].name:
+                        valid = False
                         break
-                # return existing structure
-                return t[2]
+                if valid:
+                    # return existing structure
+                    return t[2]
 
         # get the template structure from the list:
         tstruct = self.getTemplateType(template)
@@ -565,7 +573,9 @@ class Compiler:
                 member.t.ptrdepth = pd
 
             if(isinstance(member.initializer, Function)):
-                print(member)
+                member.initializer.parameters[0].t = struct.up()
+                member.initializer = self.buildTemplateFunction(
+                    member.initializer, tns, types)
 
             # apply offset, and overall size
             member.offset = struct.s
@@ -574,7 +584,12 @@ class Compiler:
         self.template_cache.append([template, types, struct])
         return struct
 
+    # build / get a template function based on template parameters
     def buildTemplateFunction(self, templatefn, tns, types):
+        # restore the types if necessary
+        restore_types = len(self.types) - 1
+
+        # create semi-copy function
         fn = Function(
             templatefn.name,
             templatefn.parameters,
@@ -584,11 +599,48 @@ class Compiler:
             templatefn.inline,
             templatefn.extern)
 
-        restore_types = len(self.types)-1
+        # update returntype standin if necessary
+        if fn.returntype.name in tns:
+            fn.returntype = types[tns.index(fn.returntype.name)]
 
+        # replace parameter types with their new values if specified in the template
+        for i in range(len(fn.parameters)):
+            p = fn.parameters[i]
+            if p.t.name in tns:
+                fn.parameters[i] = fn.parameters[i].copy()
+                fn.parameters[i].t = types[tns.index(p.t.name)]
+
+        # check if the function has already been built before
+        fnexist = templatefn.getFunction(
+            fn.name, [p.t for p in fn.parameters], fn.returntype)
         
+        # if it has been built, just use the existing build
+        if(fnexist is not None):
+            fn = fnexist
+        else:
+            # if it's not been built, the new temporary types need to be added
+            # to compile the template function.
+            for i in range(len(tns)):
+                temptype = types[i].copy()
+                temptype.name = tns[i]
+                self.types.append(temptype)
 
-
+        # if it is not already built, it needs to be compiled
+        if not fn.isCompiled:
+            # compile
+            fn.compile()
+            # save
+            self.functions.append(fn)
+            # update
+            fn.isCompiled = True
+            fn.isTemplate = True
+            if not fn.inline:
+                self.text = f"{fn.asm}{self.text}"
+        
+        
+        # restore types if necessary
+        self.types = self.types[:restore_types]
+        return fn
 
     def compileLine(self, thisp=False, thispt=None):
 

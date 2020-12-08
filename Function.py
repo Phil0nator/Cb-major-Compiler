@@ -284,12 +284,25 @@ class Function:
     def addcomment(self, c):                        # add a comment to the assembly
         self.asm += ";" + c + "\n"
 
+    def qgettfn(self, fnname):
+        return next((fn for fn in self.compiler.template_functions if fn.name == fnname), None)
+
+    def getTemplateFunction(self, fnname, ptypes, ttypes):
+        
+        template = next((fn for fn in self.compiler.template_functions if fn.name == fnname and len(fn.parameters) == len(ptypes)), None)
+        if(template is None):
+            return template
+        return self.compiler.buildTemplateFunction(template, template.template_types, ttypes)
+
     # get function with name fn and datatypes types, or a suitable replacement
     # (casting)
 
-    def getFunction(self, fn, types):
+    def getFunction(self, fn, types, rettype=None, searchlist=None):
+        if searchlist is None:
+            searchlist = self.compiler.functions
 
-        for f in self.compiler.functions:  # first seach exact matches
+
+        for f in searchlist:  # first seach exact matches
             if f.name == fn:
                 if(len(f.parameters) != len(types) and not f.variardic):
                     continue
@@ -300,10 +313,14 @@ class Function:
 
                         valid = False
                         break
+
+                if rettype is not None and not rettype.__eq__(f.returntype):
+                    valid = False
+
                 if(valid):
                     return f
 
-        for f in self.compiler.functions:  # seach others for valid casts
+        for f in searchlist:  # seach others for valid casts
             if f.name == fn:
                 lt = len(types)
                 if(len(f.parameters) != lt):
@@ -314,6 +331,10 @@ class Function:
                     if (not TsCompatible(f.parameters[i].t, types[i], self)):
                         valid = False
                         break
+
+                if rettype is not None and not TsCompatible(
+                        rettype, f.returntype, self):
+                    valid = False
 
                 if(valid):
                     return f
@@ -1270,14 +1291,20 @@ class Function:
 
         # function name
         fid = self.current_token.value
-
         # token of function name
         fnstartt = self.current_token
         # placeholder
         fn = None
         instructions = ""
-
+        template = False
+        ttypes = []
         self.advance()
+        if(self.current_token.tok == "<"):
+            template=True
+            ttypes = self.parseTemplate()
+            self.advance()
+
+
         self.checkTok(T_OPENP)
 
         types = []
@@ -1295,7 +1322,11 @@ class Function:
 
         # using the fn name, and the parameter types find the actual function
         # object best suited for this call
-        fn = self.getFunction(fid, types)
+
+        if template:
+            fn = self.getTemplateFunction(fid,types,ttypes)
+        else:
+            fn = self.getFunction(fid, types)
 
         if(fn is self and self.inline):
             throw(RecursiveInlineCall(self.current_token))
@@ -1410,7 +1441,6 @@ class Function:
         opens = 1
         instructions = ""
         wasfunc = False
-
         # The tokens: ; , } ) etc... will mark the end of an
         # expression
         while opens > 0 and self.current_token.tok not in [
@@ -1434,7 +1464,7 @@ class Function:
             # faster mov operation, but it can be noted that with a good cache hit a push/pop will not be
             # too much slower than a mov.
             elif(self.current_token.tok == T_ID):
-                if(self.tokens[self.ctidx + 1].tok == "("):
+                if(self.tokens[self.ctidx + 1].tok in "(" or self.qgettfn(self.current_token.value) is not None):
                     wasfunc = True
 
                     if(self.current_token.value in predefs):
@@ -1444,7 +1474,6 @@ class Function:
                             self.current_token) if self.current_token.tok == T_CLSP else None
                         continue
                     else:
-
                         token, inst = self.wrapExpressionFunctionCall()
                         exprtokens.append(token)
                         instructions += inst
