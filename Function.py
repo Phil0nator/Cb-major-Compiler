@@ -10,8 +10,9 @@ import config
 from Assembly.AVX import (avx_correctSize, avx_doToReg, avx_dropToAddress,
                           avx_loadToReg, avx_ralloc, avx_rfree)
 from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
-                                 createIntrinsicHeap, doFloatOperation,
-                                 doIntOperation, extra_parameterlabel, fncall,
+                                 createIntrinsicHeap, createStringConstant,
+                                 doFloatOperation, doIntOperation,
+                                 extra_parameterlabel, fncall,
                                  function_allocator, function_closer,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
@@ -41,7 +42,9 @@ def product(arr):
 
 
 predefs = [
-    "typeof"
+    "typeof",
+    "sizeof",
+    "typeid"
 ]
 
 
@@ -376,7 +379,7 @@ class Function:
             types.append(t)
         return types
 
-    def checkForType(self):             # check next tokens for Type, and return it as a DType
+    def checkForType(self, err=True):             # check next tokens for Type, and return it as a DType
         signed = True
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
@@ -384,11 +387,15 @@ class Function:
                 self.advance()
 
         if(self.current_token.tok != T_ID):
-            throw(ExpectedIdentifier(self.current_token))
-
+            if err:
+                throw(ExpectedIdentifier(self.current_token))
+            else:
+                return None
         if(not self.compiler.isType(self.current_token.value)):
-            throw(ExpectedType(self.current_token))
-
+            if err:
+                throw(ExpectedType(self.current_token))
+            else:
+                return None
         if (self.tokens[self.ctidx + 1].tok == "<"):
             template = self.current_token.value
             ttok = self.current_token
@@ -427,6 +434,30 @@ class Function:
                              stp.start, stp.end)
             return Token(T_INT, final.type.csize(),
                          stp.start, stp.end)
+
+        elif (p == "sizeof"):
+            startidx = self.ctidx
+            self.advance()
+            typeq = self.checkForType(False)
+
+            if (typeq is None):
+                self.ctidx=startidx-1
+                self.advance()
+                final = self.evaluateExpression()[1]
+                return Token(T_INT, final.type.csize(), self.tokens[startidx].start,self.tokens[startidx].end)
+            else:
+                self.advance()
+                return Token(T_INT, typeq.csize(), self.tokens[startidx].start,self.tokens[startidx].end)
+        
+        elif (p == "typeid"):
+            
+            self.advance()
+            typeq = self.checkForType()
+            constant = createStringConstant(typeq.__repr__())
+            self.compiler.constants+=constant[0]
+            self.compiler.globals.append(Variable(CHAR.up().up(),constant[1],glob=True))
+            self.advance()
+            return Token(T_ID, constant[1], stp.start,stp.end)
 
     # load parameters into memory (first instructions)
 

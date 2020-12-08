@@ -26,7 +26,6 @@
 #define LONG_MAX        9223372036854775807
 #define LONG_MIN        (0-LONG_MAX-1)
 
-#define sizeof(x) typeof(x)
 
 #define QNAN             ($void 0x7FF8000000000001)
 #define SNAN             ($void 0x7FF0000000000001)
