@@ -132,9 +132,16 @@ class Compiler:
         out.ptrdepth = pd
         return out
 
-    def checkType(self):                # check the next tokens for a type, and return it
+    def parseTemplate(self):
+        types = []
+        while self.current_token.tok != ">":
+            self.advance()
+            t = self.checkType()
+            types.append(t)
+        return types
 
-        # account for sign of type
+    def checkType(self, err=True):                # check the next tokens for a type, and return it
+
         signed = True
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
@@ -142,17 +149,24 @@ class Compiler:
                 self.advance()
 
         if(self.current_token.tok != T_ID):
-            throw(ExpectedIdentifier(self.current_token))
-
+            if err:
+                throw(ExpectedIdentifier(self.current_token))
+            else:
+                return None
         if(not self.isType(self.current_token.value)):
-            throw(ExpectedType(self.current_token))
-        # get raw type
-        t = self.getType(self.current_token.value)
-        if(t is None):
-            throw(UnkownType(self.current_token))
-        t = t.copy()
+            if err:
+                throw(ExpectedType(self.current_token))
+            else:
+                return None
+        if (self.currentTokens[self.ctidx + 1].tok == "<"):
+            template = self.current_token.value
+            ttok = self.current_token
+            self.advance()
+            types = self.parseTemplate()
+            t = self.buildTemplateType(template, types, ttok)
+        else:
+            t = self.getType(self.current_token.value).copy()
 
-        # apply pointer depth, and sign
         self.advance()
         ptrdepth = 0
         while self.current_token.tok == "*":
@@ -522,19 +536,13 @@ class Compiler:
         for t in self.template_cache:
             # they share a name
             if t[0] == template:
-                valid = True
                 # they have the same number of types
                 if len(t[1]) != len(types):
                     break
 
-                # their types are equal
-                for i in range(len(t[1])):
-                    if t[1][i].name != types[i].name:
-                        valid = False
-                        break
-                if valid:
-                    # return existing structure
-                    return t[2]
+                fulleq = ''.join([ty.name for ty in t[1]]) == ''.join([ty.name for ty in types])
+                if fulleq:
+                    return t[2].copy()
 
         # get the template structure from the list:
         tstruct = self.getTemplateType(template)
@@ -563,6 +571,8 @@ class Compiler:
         # all the members of the new templated type need to be given their new
         # types, and offsets
         struct.s = 0
+        struct.name += ''.join([t.name for t in types])
+        
         for member in struct.members:
 
             # if template has effect:
@@ -582,7 +592,7 @@ class Compiler:
             struct.s += member.t.s
 
         self.template_cache.append([template, types, struct])
-        return struct
+        return struct.copy()
 
     # build / get a template function based on template parameters
     def buildTemplateFunction(self, templatefn, tns, types):

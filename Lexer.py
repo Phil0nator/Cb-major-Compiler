@@ -265,7 +265,7 @@ class Lexer:
                 token = self.buildMultichar()
                 tokens.append(token)
 
-            elif (T.isdigit(ord(self.ch))):
+            elif self.ch.isdigit():
                 token = self.buildNumber()
                 tokens.append(token)
 
