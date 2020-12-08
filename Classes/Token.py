@@ -132,6 +132,7 @@ KEYWORDS = [
     "template",
     "class",
     "typename",
+    "auto",
 
     "for",
     "while",

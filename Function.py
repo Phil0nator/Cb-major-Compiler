@@ -943,8 +943,13 @@ class Function:
         else:
             s = self.current_token
             self.advance()
-
-            self.buildDeclaration(register=True)
+            if self.current_token.tok != T_KEYWORD:
+                self.buildDeclaration(register=True)
+            else:
+                if self.current_token.value == "auto":
+                    self.buildAutoDefine(register=True)
+                else:
+                    throw(UnexpectedToken(self.current_token))
 
             v = self.variables[-1]
             self.regdecls.append(
@@ -1077,8 +1082,35 @@ class Function:
 
         return label
 
-    # build a statement that starts with a keyword
+    def buildAutoDefine(self, register=False):
+        self.advance()
+        name = self.checkForId()
 
+        # check if variable exists already
+        if(self.getVariable(name) is not None and not self.getVariable(name).glob):
+            throw(VariableRedeclaration(self.tokens[self.ctidx - 1], name))
+
+        # check if varname is a datatype
+        if(self.compiler.getType(name) is not None):
+            throw(UsingTypenameAsVariable(self.tokens[self.ctidx - 1]))
+
+        self.checkTok(T_EQUALS)
+
+        instr, value = self.evaluateExpression()        
+        
+        self.addline(instr)
+        var = Variable(value.type,name)
+        if register:
+            var.register = ralloc(value.type.isflt())
+
+        self.addVariable(var)
+        self.addline(loadToReg(var,value.accessor))
+        rfree(value.accessor)
+        self.checkSemi()
+
+
+
+    # build a statement that starts with a keyword
     def buildKeywordStatement(self):
         word = self.current_token.value
 
@@ -1090,6 +1122,9 @@ class Function:
 
         elif (word == "function"):
             self.buildInlineFunction()
+
+        elif (word == "auto"):
+            self.buildAutoDefine()
 
         # wrapper for declaration with unsigned type
         elif(word == "unsigned"):

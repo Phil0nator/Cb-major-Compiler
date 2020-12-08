@@ -1,12 +1,7 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
-template <typename T>
-struct Test{
 
-    T bruh;
-
-};
 
 
 
@@ -14,10 +9,8 @@ int main(long argc, char** argv){
     printf("Hello World!\n");
     
 
-    Test<Test<int> > test;
-    test.bruh.bruh = 69;
-    printf("%i\n", test.bruh.bruh);
-
+    register auto test = sqrt(2.0);
+    printf("%f\n", test);
 
     return 0;
 }
