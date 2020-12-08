@@ -143,6 +143,12 @@ class Function:
         # will always happen.
         self.hasReturned = False
 
+        # The isReturning flag is set when the function is compiling the return statement
+        # in order to signifiy that certain extra optimizations can be made. For example,
+        # register declarations do not need to be saved or restored during the return statement
+        # because they will go out of scope anyway.
+        self.isReturning = False
+
         # recursive_depth keeps track of how many control-structures deep the function is.
         # so, for example:
         #
@@ -475,6 +481,9 @@ class Function:
 
     def buildReturnStatement(self):             # build a return statement
         self.advance()
+        # set flag
+        # see declarations
+        self.isReturning = True
         if(self.current_token.tok != T_ENDL):
 
             instr = self.evaluateRightsideExpression(
@@ -490,6 +499,7 @@ class Function:
         self.checkSemi()
         if self.recursive_depth == 1:
             self.hasReturned = True
+        self.isReturning = False
 
     def buildIfStatement(self):
         self.advance()
@@ -1259,28 +1269,36 @@ class Function:
 
         return paraminst
 
+    def doVarcall(self, var):
+        out = ""
+        if not self.isReturning:
+            out+= self.pushregs()
+        
+        return out + (Instruction("call", [valueOf(var)]))
+
+
     # build the ending of a function call code block
     def buildFunctionCallClosing(self, fn, varcall, var):
         instructions = ""
 
         # actual 'call' instruction
 
-        instructions += (fncall(fn)
-                         ) if not varcall else (Instruction("call", [valueOf(var)]))
+        instructions += (fncall(fn) if not varcall else self.doVarcall(var))
 
-        # save return value for register restores
-        if(len(self.regdecls) > 0):
-            tmp = ralloc(False)
-            instructions += raw_regmov(
-                tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
+        if not self.isReturning:
+            # save return value for register restores
+            if(len(self.regdecls) > 0 ):
+                tmp = ralloc(False)
+                instructions += raw_regmov(
+                    tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
 
-        instructions += (self.restoreregs())
+            instructions += (self.restoreregs())
 
-        # restore return value after register restores
-        if(len(self.regdecls) > 0):
-            rfree(tmp)
-            instructions += raw_regmov(
-                sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
+            # restore return value after register restores
+            if(len(self.regdecls) > 0):
+                rfree(tmp)
+                instructions += raw_regmov(
+                    sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
 
         return instructions
 
@@ -1361,7 +1379,8 @@ class Function:
         sseused = 0
         normused = 0
 
-        instructions += (self.pushregs())
+        if not self.isReturning:
+            instructions += (self.pushregs())
 
         paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
 
@@ -1737,13 +1756,13 @@ class Function:
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
-    def buildStackStructure(self, var, starter=""):
+    def buildStackStructure(self, var, starter="", startoffset = 0):
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
 
                     self.variables.append(Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset+var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
                     # initialize to null
 
                     self.addline(Instruction(
@@ -1751,7 +1770,7 @@ class Function:
 
                     # recursivly fill in nested structures
                     self.buildStackStructure(
-                        v, starter=f"{starter}{var.name}.")
+                        v, starter=f"{starter}{var.name}.", startoffset=var.offset)
 
     def buildDeclaration(self, register=False):                     # declare new var
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):

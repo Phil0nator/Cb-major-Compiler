@@ -1,12 +1,12 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-template<typename T>
-inline T add2(T a, T b){
+template <typename T>
+struct Test{
 
-    return a+b;
+    T bruh;
 
-}
+};
 
 
 
@@ -14,10 +14,10 @@ int main(long argc, char** argv){
     printf("Hello World!\n");
     
 
-    double test = add2<double>(2.5, 3.6);
-    printf("%f\n", test);
-    int t2 = add2<int, int>(2,3);
-    printf("%i\n", t2);
+    Test<Test<int> > test;
+    test.bruh.bruh = 69;
+    printf("%i\n", test.bruh.bruh);
+
 
     return 0;
 }
