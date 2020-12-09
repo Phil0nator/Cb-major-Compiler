@@ -336,6 +336,30 @@ class Peephole:
                         splitted[line.idx] = f"{line.op} {line.dest}, {prev.source}\n"
                         splitted[prev.idx] = ""
                         optims += 1
+                # many add instructions can be optimized to use the lea instruction in order to diversify
+                # port usage, and increase overall microarchitecture usage.
+                elif (prev.op == "add" and line.op == "mov" and line.source == prev.dest and not (prev.hasAddr() or line.hasAddr())):
+                    splitted[prev.idx] = ""
+                    splitted[line.idx] = f"lea {line.dest}, [{prev.dest}+{prev.source}]\n"
+                    optims += 1
+                
+                # a pair of additions, subtractions, or a combination of the two can be simplified into one lea 
+                # instruction in order to reduce file size, avoid stalls, and increase microarchitecture usage
+                elif (prev.op == "add" or (prev.op == "sub" and prev.constSource())) and (line.op == "add" or (line.op == "sub" and line.constSource())):
+                    if(prev.dest == line.dest and not (prev.op == "sub" and prev.op == line.op) and not (prev.hasAddr() or line.hasAddr())):
+
+                        
+                        # if the previous was an add, then the terms can be compiled in order:
+                        if(prev.op == "add"):
+                            effective_address = f"[{prev.dest}+{prev.source}{'+' if line.op == 'add' else '-'}{line.source}]"
+                        # if the previous was a sub, then the terms must be reversed
+                        # (The new first term or old last term must be + because you cannot use two subtractions)
+                        else:
+                            effective_address = f"[{line.dest}+{line.source}-{prev.source}]\n"
+
+                        splitted[prev.idx] =""
+                        splitted[line.idx] = f"lea {line.dest}, {effective_address}\n"
+                        optims+=1
 
                 prev = line
 

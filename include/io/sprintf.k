@@ -68,12 +68,11 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
         val = divmod(val, base,&mod);
 
-
         tmpbuf[len] = __numbercharactersbase1016[mod];
+        
         len++;
 
     }
-
     for(int i = len;i>0;i--){
         buffer[i]=tmpbuf[len-i];
     }
@@ -82,7 +81,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
 
 
-    return (len+signspace)++;
+    return (len+signspace)+1;
 
 
 }

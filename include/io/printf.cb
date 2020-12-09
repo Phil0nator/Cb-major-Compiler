@@ -80,7 +80,7 @@ cextern void fprintf(fd_t file, char* fmt, void arg1, void arg2, void arg3);
 cextern void fprintf(fd_t file, char* fmt, void arg1, void arg2);
 cextern void fprintf(fd_t file, char* fmt, void arg1);
 inline void fprintf(fd_t file,char* fmt){
-    fputs(file, fmt);
+    return fputs(file, fmt);
 }
 
 #endif

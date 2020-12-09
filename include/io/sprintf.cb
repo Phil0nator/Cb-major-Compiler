@@ -44,7 +44,18 @@ CBLIBENTRY int __sprintf(char* str, char* fmt, void* args);
  * @param fmt a format string.
  * @param args the arguments to fill into the string. An inadequate amount of arguments will result in a SIGSEGV.
 */
-CBLIBENTRY int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4);
-
+#ifdef __CBLIB_SOURCE
+__cdecl
+#endif
+#ifndef __CBLIB_SOURCE
+cextern
+#endif
+int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4);
+cextern int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3);
+cextern int sprintf(char* dest, char* fmt, void arg1, void arg2);
+cextern int sprintf(char* dest, char* fmt, void arg1);
+inline int sprintf(char* dest, char* fmt){
+    return strcpy(dest, fmt);
+}
 
 #endif

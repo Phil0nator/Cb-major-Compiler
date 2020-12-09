@@ -620,3 +620,34 @@ def getOnelineAssignmentOp(a, b, op):
             cmd = cmd[0] + 'a' + cmd[2]
 
     return cmd, cmd != ""
+
+
+
+def lea_mul_opt(shiftval, areg, a, b):
+    newinstr = ""
+    if(shiftval == 2):
+        newinstr += f"lea {areg}, [{areg}+{areg}*2]\n"
+    elif (shiftval == 4):
+        if(b.accessor == 5):
+            newinstr += f"lea {areg}, [{areg}+{areg}*4]\n"
+        elif(b.accessor == 6):
+            
+            r2 = ralloc(False, size=a.type.csize())
+            newinstr += f"mov {r2}, {areg}\n"
+            newinstr += f"lea {areg}, [{areg}+{areg}*4]\n"
+            newinstr += f"add {areg}, {r2}\n"
+            rfree(r2)
+        else:
+            
+            r2 = ralloc(False, size=a.type.csize())
+            newinstr += f"mov {r2}, {areg}\n"
+            newinstr += f"lea {areg}, [{areg}*8]\n"
+            newinstr += f"sub {areg}, {r2}\n"
+            rfree(r2)
+
+
+    elif (shiftval == 8):
+        if(b.accessor == 9):
+            newinstr += f"lea {areg}, [{areg}+{areg}*8]\n"
+
+    return newinstr

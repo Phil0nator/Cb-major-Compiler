@@ -2,19 +2,19 @@
 import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, loadToReg, maskset,
-                                 shiftInt, shiftmul, valueOf)
+                                 shiftInt, shiftmul, valueOf, zeroize, lea_mul_opt)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
-from Assembly.Registers import ralloc, rfree, rfreeAll, ralloc_last
-from Assembly.TypeSizes import psizeof, psizeoft, dwordImmediate
+from Assembly.Registers import ralloc, ralloc_last, rfree, rfreeAll
+from Assembly.TypeSizes import dwordImmediate, psizeof, psizeoft
 from Classes.Constexpr import calculateConstant, ternarystack
 from Classes.DType import *
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import Variable
-from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID, LITERAL,
-                     canShiftmul, operatorISO, typematch)
+from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LITERAL, LONG, SHORT,
+                     VOID, canShiftmul, operatorISO, typematch)
 
 #############################
 # optloadRegs is used to load
@@ -82,8 +82,10 @@ def optloadRegs(a, b, op, o, constvalok=False):
 def bringdown_memloc(a):
     instr = ""
     if(a.memory_location):
+        
         instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
         instr += maskset(a.accessor, a.type.csize())
+
         a.memory_location = False
 
     return instr
@@ -269,7 +271,25 @@ class ExpressionEvaluator:
         newt = None
         apendee = None
 
-        if(canShiftmul(b.accessor)):
+        ## multiplication has many special cases:
+
+        # when multiplied by zero, anything will return $LITERAL 0
+        if (b.accessor == 0):
+            newinstr = ""
+            newt = a.type
+            apendee = EC.ExpressionComponent(0, LITERAL,constint=True,token=b.token)
+            rfree(a.accessor)
+        
+        # when multiplied by one, the value a is returned unmodified
+        elif (b.accessor == 1):
+            newinstr = ""
+            newt = a.type
+            apendee = a
+
+
+        # if the number is an even log2 (can be done via shifting),
+        # the bitshift instructions are used instead of mul / imul
+        elif(canShiftmul(b.accessor)):
             newinstr = self.normal_semiconstexprheader(a, b)
 
             newinstr += bringdown_memloc(a)
@@ -285,6 +305,37 @@ class ExpressionEvaluator:
 
             a.accessor = areg
             apendee = a
+
+        # if the number is <= 10, the lea instruction can be used
+        # to generate specialized code faster than an imov / mov instruction.
+        elif(b.accessor <= 9):
+            
+            # determine closest lea multiplier
+            if b.accessor >= 8:
+                shiftval = 8
+            elif b.accessor >= 4:
+                shiftval = 4
+            elif b.accessor >= 2:
+                shiftval = 2
+            else:
+                shiftval = None
+            
+            # standard loading...
+            newinstr = self.normal_semiconstexprheader(a, b)
+
+            newinstr += bringdown_memloc(a)
+
+            areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
+            newinstr += i
+            # actual code
+            newinstr += lea_mul_opt(shiftval, areg, a, b)
+            # closing
+            newt = a.type
+            a.accessor = areg
+            apendee = a
+
+
+
         newt = a.type.copy()
         return newinstr, newt, apendee
 
@@ -369,6 +420,7 @@ class ExpressionEvaluator:
 
             newinstr, newt, apendee = self.mult_div_optimization(
                 a, b, op)
+
         # can be optimized by not loading the constant
         # to a register. (shift by register requires expensive
         # use of cl register specifically)
@@ -695,8 +747,9 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"movsd {oreg}, [{tmp}]\n"
             else:
                 oreg = ralloc(False, a.accessor.t.csize())
-                instr += maskset(oreg, a.type.size(1))
-                instr += f"mov {setSize( oreg, a.type.size(1))}, {psizeoft(a.type, 1)}[{tmp}]\n"
+                #instr += maskset(oreg, a.type.size(1))
+                oreg = setSize(oreg, a.type.size(1))
+                instr += f"mov {oreg}, {psizeoft(a.type, 1)}[{tmp}]\n"
             o = a.accessor.t.copy()
             o.ptrdepth -= 1
             rfree(tmp)
@@ -709,8 +762,9 @@ class RightSideEvaluator(ExpressionEvaluator):
             if(a.type.isflt()):
                 instr += f"movsd {result}, [{a.accessor}]\n"
             else:
-                instr += maskset(result, a.type.size(1))
-                instr += f"mov {setSize( result, a.type.size(1))}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
+                #instr += maskset(result, a.type.size(1))
+                result = setSize( result, a.type.size(1))
+                instr += f"mov {result}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
             rfree(a.accessor)
             o = a.type.copy()
             o.ptrdepth -= 1
@@ -727,8 +781,9 @@ class RightSideEvaluator(ExpressionEvaluator):
             if(a.type.isflt()):
                 instr += f"movsd {areg}, [{a.accessor}]\n"
             else:
-                instr += maskset(areg, a.type.size(1))
-                instr += f"mov {setSize( areg, a.type.size(1))}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
+                #instr += maskset(areg, a.type.size(1))
+                areg = setSize( areg, a.type.size(1))
+                instr += f"mov {areg}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
             rfree(a.accessor)
             rfree(result)
 
@@ -1061,6 +1116,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             else:
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
+                #instr += zeroize(setSize(breg, 8))
                 instr += ninstr
                 instr += maskset(setSize(breg, 8), sizeOf(breg))
                 areg = setSize(areg, 8)
