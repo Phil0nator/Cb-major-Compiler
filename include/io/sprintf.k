@@ -301,7 +301,7 @@ int __sprintf(char* str, char* fmt, void* args){
 
 
 
-int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4){
+__cdecl int sprintf(char* dest, char* fmt, void arg1, void arg2, void arg3, void arg4){
 
     void args[4];
 

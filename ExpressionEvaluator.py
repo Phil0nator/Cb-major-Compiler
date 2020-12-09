@@ -274,13 +274,17 @@ class ExpressionEvaluator:
         ## multiplication has many special cases:
 
         # when multiplied by zero, anything will return $LITERAL 0
+        # when divided by zero, and error will return
         if (b.accessor == 0):
-            newinstr = ""
-            newt = a.type
-            apendee = EC.ExpressionComponent(0, LITERAL,constint=True,token=b.token)
-            rfree(a.accessor)
+            if op == "*":
+                newinstr = ""
+                newt = a.type
+                apendee = EC.ExpressionComponent(0, LITERAL,constint=True,token=b.token)
+                rfree(a.accessor)
+            else:
+                throw(DivisionByZero(b.token))
         
-        # when multiplied by one, the value a is returned unmodified
+        # when multiplied / divided by one, the value a is returned unmodified
         elif (b.accessor == 1):
             newinstr = ""
             newt = a.type
@@ -308,7 +312,7 @@ class ExpressionEvaluator:
 
         # if the number is <= 10, the lea instruction can be used
         # to generate specialized code faster than an imov / mov instruction.
-        elif(b.accessor <= 9):
+        elif(b.accessor <= 9 and op == "*"):
             
             # determine closest lea multiplier
             if b.accessor >= 8:

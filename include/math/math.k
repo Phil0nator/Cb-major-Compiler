@@ -128,6 +128,7 @@ long divmod(long dividend, long divisor, long* modulus ){
   mov rbx, rdx
   xor rdx, rdx
   mov rax, rdi
+  prefetchw [rbx]
   div rsi
   mov [rbx], rdx
   "}
@@ -139,6 +140,7 @@ long divmods(long dividend, long divisor, long* modulus){
   mov rbx, rdx
   xor rdx, rdx
   mov rax, rdi
+  prefetchw [rbx]
   idiv rsi
   mov [rbx], rdx
   "}
