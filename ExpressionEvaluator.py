@@ -1,8 +1,9 @@
 # used to store out-of-order instructions for ternary operator
 import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
-                                 getOnelineAssignmentOp, loadToReg, maskset,
-                                 shiftInt, shiftmul, valueOf, zeroize, lea_mul_opt)
+                                 getOnelineAssignmentOp, lea_mul_opt,
+                                 loadToReg, magic_division, magic_modulo,
+                                 maskset, shiftInt, shiftmul, valueOf, zeroize)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
@@ -338,7 +339,19 @@ class ExpressionEvaluator:
             a.accessor = areg
             apendee = a
 
+        elif (op == "/"):
 
+            # standard loading...
+            newinstr = self.normal_semiconstexprheader(a, b)
+
+            newinstr += bringdown_memloc(a)
+
+            areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
+            newinstr += i
+
+            newinstr += magic_division(a, areg, b.accessor)
+            a.accessor = areg
+            apendee = a
 
         newt = a.type.copy()
         return newinstr, newt, apendee
@@ -384,6 +397,20 @@ class ExpressionEvaluator:
 
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
+    
+    def mod_opt(self, a, b, op):
+        newinstr = None
+        newt = None
+        apendee = None
+        
+        newinstr = self.normal_semiconstexprheader(a, b)
+        areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
+        newinstr += i
+        newinstr += magic_modulo(a, areg, b.accessor)
+        a.accessor = areg
+        
+        
+        return newinstr, a.type, a
     # optimization for operations which do not require both operands in
     # registers
 
@@ -425,17 +452,22 @@ class ExpressionEvaluator:
             newinstr, newt, apendee = self.mult_div_optimization(
                 a, b, op)
 
+        elif(op == "%"):
+            newinstr, newt, apendee = self.mod_opt(
+                a,b,op
+            )
+
         # can be optimized by not loading the constant
         # to a register. (shift by register requires expensive
         # use of cl register specifically)
-        if(op in [">>", "<<"]):
+        elif(op in [">>", "<<"]):
 
             newinstr, newt, apendee = self.const_shift_optimization(
                 a, b, op)
 
         # can be optimized through the inc or dec
         # operators instead of 'add <...>, 1 '
-        if(op in ["+", "-"] and b.accessor == 1):
+        elif(op in ["+", "-"] and b.accessor == 1):
 
             newinstr, newt, apendee = self.inc_dec_optimization(
                 a, b, op)
@@ -447,7 +479,7 @@ class ExpressionEvaluator:
         # comparisons with zero can be optimized through the
         # test instruction, followed by the 'z' or 'nz' conditional
         # arguments
-        if(op == "==" or op == "!=") and b.accessor == 0:
+        elif(op == "==" or op == "!=") and b.accessor == 0:
 
             newinstr, newt, apendee = self.test_optimization(
                 a, b, op

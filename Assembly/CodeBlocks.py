@@ -21,6 +21,8 @@ from Assembly.Registers import *
 from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
                                 maskset, psizeof, psizeoft, dwordImmediate)
 
+from globals import canShiftmul
+
 # bitmasks for boolean values
 ensure_boolean = "and al, 1\n"
 
@@ -440,12 +442,17 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op == "*"):
         return f"{loadToRax(areg)}\nmul {breg}\n{getFromRax(areg)}\n"
     elif(op == "/"):
+        
+        # TODO: More benchmarks to confirm that this is faster:
+        
         if(signed):
             asmop = "idiv"
+            return f"cvtsi2sd xmm0, {areg}\ncvtsi2sd xmm1, {breg}\ndivsd xmm0, xmm1\ncvttsd2si {areg}, xmm0\n"
         else:
             asmop = "div"
+            return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
 
-        return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
+    
     elif(op == "%"):
         if(signed):
             asmop = "idiv"
@@ -651,3 +658,59 @@ def lea_mul_opt(shiftval, areg, a, b):
             newinstr += f"lea {areg}, [{areg}+{areg}*8]\n"
 
     return newinstr
+
+
+def magic_division(a, areg, b, internal = False):
+    
+    # new eq : f(n, d) = (n * m(d)) >> 33
+    # m(x) = 2^33 / x + 1
+
+    twopower = 8*a.type.csize()+1
+
+
+    #                2^33     / x + 1
+    multiplicand = int(pow(2, twopower) / b + 1) 
+
+    mulcmd = "imul" if a.type.signed else "mul"
+    shiftcmd = "sar" if a.type.signed else "shr"
+
+    instr = f"{zeroize(rax)}mov eax, {setSize(areg, 4)}\n"
+    instr += f"mov rcx, {multiplicand}\n"    
+    instr += f"{mulcmd} rcx\n"
+    if a.type.csize() != 8:
+        instr += f"{shiftcmd} rax, {twopower}\n"
+        instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
+    else:
+        instr += f"{shiftcmd} rdx, 1\n"
+        instr += getFromRdx(areg) if not internal else f"mov rax, rdx\n"
+
+
+    return instr
+
+
+def magic_modulo(a, areg, b):
+    if canShiftmul(b) and not a.type.signed:
+        return f"and {areg}, {b-1}\n"
+    else:
+        # most cases :
+        #   m(x, n) = x - (x / n) * n
+    
+    
+        twopower = 8*a.type.csize()+1
+        shiftcmd = "sar" if a.type.signed else "shr"
+        #multiplicand = int(pow(2, twopower) / b + 1) 
+
+        instr = ""
+        instr += magic_division(a, areg, b, True) if not canShiftmul(b) else ( shiftInt(areg, shiftmul(b), ">>", a.type.signed) )
+        
+        if canShiftmul(b):
+            instr += f"{shiftcmd[:-1]}l rax, {shiftmul(b)}\n"
+        else:
+            instr += f"mov rcx, {b}\n"
+            instr += f"{'imul' if a.type.signed else 'mul'} rcx\n"
+        
+        
+        instr += f"sub {areg}, {setSize(rax, a.type.csize())}\n"
+    
+    
+    return instr
