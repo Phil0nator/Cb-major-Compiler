@@ -3,12 +3,10 @@
 
 long test = LONG_MAX;
 
-int main(int argc, char** argv){
+int main(unsigned int argc, char** argv){
 	
-	//1000000
-	for range(i, 1000000){
-		fprintf(-1, "Test: %i\n", LONG_MAX/4);
-	}
+	auto test = argv%2;
+	printf("test; %i\n", test);
 
     return 0;
 }

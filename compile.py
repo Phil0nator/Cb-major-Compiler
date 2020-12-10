@@ -109,6 +109,8 @@ def main():
     # feed to template
     asm = "%s" % fileTemplate
     asm = asm.replace("%%HEAP%%", c.heap)
+    if(not config.DO_DEBUG and config.__tonasm__):
+        c.text = re.sub(";.*", "", c.text)
     asm = asm.replace("%%TEXT%%", c.text)
     asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
     asm = asm.replace("%%CONSTANTS%%", c.constants)
@@ -126,8 +128,7 @@ def main():
 
         asm = re.sub("\n\t.*:", asm_labelRepl, asm)
 
-        if(not config.DO_DEBUG):
-            asm = re.sub(";.*", "", asm)
+        
 
     # linking, and running
 

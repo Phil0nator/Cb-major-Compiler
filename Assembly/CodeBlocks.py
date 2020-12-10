@@ -139,7 +139,7 @@ stringconstant_counter = 0
 def createStringConstant(s):
     global stringconstant_counter
     out = []
-    name = ("STRING_CONSTANT_%s" % stringconstant_counter)
+    name = ("LC.S%s" % stringconstant_counter)
     out.append("%s: db `%s`, 0\n" % (name, s.replace("\n", "")))
     out.append(name)
     stringconstant_counter += 1
@@ -155,7 +155,7 @@ floatconstant_counter = 0
 def createFloatConstant(s):
     global floatconstant_counter
     out = []
-    name = ("FLT_CONSTANT_%s" % floatconstant_counter)
+    name = ("LC.F%s" % floatconstant_counter)
     #out.append("%s: dq __float32__(%s)\n"%(name,s))
     out.append(f"{name}: dq {s.hex()}\n")
     out.append(name)
@@ -687,7 +687,7 @@ def magic_division(a, areg, b, internal = False):
 
 
 def magic_modulo(a, areg, b):
-    if canShiftmul(b) and not a.type.signed:
+    if canShiftmul(b) and not a.type.isSigned():
         return f"and {areg}, {b-1}\n"
     else:
         # most cases :

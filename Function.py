@@ -58,7 +58,7 @@ predefs = [
 #####################################################
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
-                 tokens, inline=False, extern=False):
+                 tokens, inline=False, extern=False, compileCount = 0):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -105,6 +105,9 @@ class Function:
         # used for read-only values generated during compiletime that can be
         # stored in .text
         self.suffix = ""
+
+        # number of times this function has been re-compiled in optimization
+        self.compileCount = compileCount
 
         # \see Assembly.Instructions.Peephole
         self.peephole = Peephole()              # optimizer
@@ -470,6 +473,9 @@ class Function:
             if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
                 break
 
+            if self.compileCount and p.referenced == False:
+                continue
+
             if (self.inline or self.implicit_paramregdecl):
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
@@ -482,7 +488,7 @@ class Function:
                         p.register, p.t, token=self.tokens[0]))
 
             self.addVariable(p)
-            p.referenced = True
+            #p.referenced = True
 
             if (not self.inline and not self.implicit_paramregdecl):
                 if(config.DO_DEBUG):
@@ -2097,6 +2103,8 @@ class Function:
                 opens -= 1
             else:
                 self.compileLine()
+                if self.hasReturned:
+                    return
 
         self.recursive_depth -= 1
 
@@ -2211,7 +2219,7 @@ class Function:
             warn(NoReturnStatement(self.tokens[0], self))
 
         for v in self.variables:
-            if(not v.referenced):
+            if(not v.referenced and v not in self.parameters):
                 warn(UnusedVariable(v.dtok, v, self))
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
@@ -2224,14 +2232,29 @@ class Function:
 
             # functions that are found to be simple enough, can be optimized:
 
-            # implicit parameter register declaration...
+            
+
             # WIP
-            if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
-                self.GC()
+            if self.compileCount == 0:
+                # implicit parameter register declaration...
+                needs_recompile = False
                 newfunc = self.reset()
-                newfunc.implicit_paramregdecl = True
-                newfunc.compile()
-                self.asm = newfunc.asm
+                newfunc.compileCount += 1
+                if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
+                    newfunc.implicit_paramregdecl = True
+                    needs_recompile = True
+
+
+                for p in self.parameters:
+                    if not p.referenced:
+                        needs_recompile = True
+
+
+                if needs_recompile:
+                    self.GC()
+                    newfunc.compile()
+                    self.asm = newfunc.asm
+
 
             pfinal = Peephole()
             pfinal.addline(self.asm)
@@ -2246,7 +2269,7 @@ class Function:
     def reset(self):
 
         return Function(self.name, self.parameters, self.returntype,
-                        self.compiler, self.tokens, extern=self.extern, inline=self.inline)
+                        self.compiler, self.tokens, extern=self.extern, inline=self.inline, compileCount=self.compileCount)
 
     def GC(self):
         self.asm = ""

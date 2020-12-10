@@ -403,7 +403,7 @@ class ExpressionEvaluator:
         newt = None
         apendee = None
         
-        if (a.type.csize() < 8 or (canShiftmul(b.accessor) and not a.type.signed)):
+        if (a.type.csize() < 8 or (canShiftmul(b.accessor) and not a.type.isSigned()) ):
             newinstr = self.normal_semiconstexprheader(a, b)
             areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
             newinstr += i

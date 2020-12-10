@@ -25,6 +25,11 @@ class DType:
             return 8
         return self.s
 
+    def isSigned(self, depth=0):
+        if self.ptrdepth-depth == 0:
+            return self.signed
+        return False
+
     def csize(self):
         return self.size(0)
 
