@@ -442,15 +442,12 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op == "*"):
         return f"{loadToRax(areg)}\nmul {breg}\n{getFromRax(areg)}\n"
     elif(op == "/"):
-        
-        # TODO: More benchmarks to confirm that this is faster:
-        
+                
         if(signed):
             asmop = "idiv"
-            return f"cvtsi2sd xmm0, {areg}\ncvtsi2sd xmm1, {breg}\ndivsd xmm0, xmm1\ncvttsd2si {areg}, xmm0\n"
         else:
             asmop = "div"
-            return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
+        return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
 
     
     elif(op == "%"):
@@ -674,14 +671,15 @@ def magic_division(a, areg, b, internal = False):
     mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
 
-    instr = f"{zeroize(rax)}mov eax, {setSize(areg, 4)}\n"
+    instr = f"{zeroize(rax)}mov rax, {setSize(areg, 8)}\n"
     instr += f"mov rcx, {multiplicand}\n"    
     instr += f"{mulcmd} rcx\n"
     if a.type.csize() != 8:
         instr += f"{shiftcmd} rax, {twopower}\n"
         instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
     else:
-        instr += f"{shiftcmd} rdx, 1\n"
+        instr += f"shrd rdx, rax, 1\n"
+        
         instr += getFromRdx(areg) if not internal else f"mov rax, rdx\n"
 
 
@@ -701,7 +699,7 @@ def magic_modulo(a, areg, b):
         #multiplicand = int(pow(2, twopower) / b + 1) 
 
         instr = ""
-        instr += magic_division(a, areg, b, True) if not canShiftmul(b) else ( shiftInt(areg, shiftmul(b), ">>", a.type.signed) )
+        instr += magic_division(a, areg, b, True)
         
         if canShiftmul(b):
             instr += f"{shiftcmd[:-1]}l rax, {shiftmul(b)}\n"

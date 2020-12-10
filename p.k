@@ -1,12 +1,14 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
-
+long test = LONG_MAX;
 
 int main(int argc, char** argv){
-	unsigned long a = 100;
-	printf("This might not work: %u\n",  a % 7);
-
+	
+	//1000000
+	for range(i, 1000000){
+		fprintf(-1, "Test: %i\n", LONG_MAX/4);
+	}
 
     return 0;
 }

@@ -42,7 +42,10 @@ function long toStr(long val, char* buffer, bool signed, short base){
 
 } */
 
-
+function long divmod10(long x, long* mod){
+    @mod = x % 10;
+    return x / 10;
+}
 
 function long toStr(long val, char* buffer, bool signed, long base){
     if(val == 0){
@@ -59,14 +62,17 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
     
 
+
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
     long len = 0;
     while(val != 0){
 
         long mod;
-
-        val = divmod(val, base,&mod);
+        val = divmod(val,base,&mod);
+        
+        
+        
 
         tmpbuf[len] = __numbercharactersbase1016[mod];
         
