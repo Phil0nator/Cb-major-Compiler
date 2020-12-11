@@ -16,7 +16,8 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  function_allocator, function_closer,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
-                                 movVarToReg, raw_regmov, spop, spush, valueOf)
+                                 movVarToReg, raw_regmov, spop, spush, valueOf,
+                                 zeroize)
 from Assembly.Instructions import Instruction, Peephole, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat
@@ -72,6 +73,7 @@ class Function:
         self.parentstruct = parentstruct
 
         self.stackCounter = 8                   # counter to keep track of stacksize
+        self.stackTotal = 8                     # maintain total count
         self.variables = []                     # all local variables
         # inline functions behave like macros, and are not called
         self.inline = inline
@@ -282,7 +284,7 @@ class Function:
             if v.t.size(0) <= 8:
                 self.stackCounter += 8
             else:
-                self.stackCounter += v.t.csize() + 8
+                self.stackCounter += v.t.csize()
                 v.stackarrsize = v.t.csize()
         self.variables.append(v)
 
@@ -382,7 +384,8 @@ class Function:
         self.localstate_stack.append((self.stackCounter, len(self.variables)))
 
     def pop_stackstate(self):
-
+        if len(self.localstate_stack) < 2:
+            return
         self.stackCounter, newidx = self.localstate_stack.pop()
         for i in range(len(self.variables) - newidx):
             oldvar = self.variables.pop()
@@ -691,7 +694,7 @@ class Function:
     def buildForloop(self):
         self.advance()
         self.checkTok(T_OPENP)
-
+        asmrestore = len(self.asm)
         # pre determine jumping labels:
         toplabel = getLogicLabel("FORTOP")
         comparisonlabel = getLogicLabel("FORCMP")
@@ -742,12 +745,16 @@ class Function:
         # check for constexpr
         if(not resultant.isconstint()):
             self.addline(f"{checkTrue(resultant)}\njnz {toplabel}\n")
+            self.addline(f"{endlabel}:")
+
         elif(resultant.accessor != 0):
             self.addline(f"jmp {toplabel}\n")
+            self.addline(f"{endlabel}:")
+
         else:
+            self.asm = self.asm[:asmrestore]
             pass
 
-        self.addline(f"{endlabel}:")
         self.advance()
 
         self.continues.pop()
@@ -757,7 +764,7 @@ class Function:
     def buildWhileloop(self):
         self.advance()
         self.checkTok(T_OPENP)
-
+        asmrestore = len(self.asm)
         # pre-determined jump labels
         startlabel = getLogicLabel("WHILESTART")
         comparisonlabel = getLogicLabel("WHILECMP")
@@ -803,6 +810,8 @@ class Function:
         self.addline(f"{endlabel}:")
         self.advance()
         # clean up var
+        if dontGetBody:
+            self.asm = self.asm[:asmrestore]
         self.continues.pop()
         self.breaks.pop()
         self.pop_stackstate()
@@ -1922,9 +1931,12 @@ class Function:
                     self.variables.append(Variable(v.t.copy(
                     ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
                     # initialize to null
-
-                    self.addline(Instruction(
-                        "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
+                    
+                    if v.initializer is not None:
+                        self.addline(Instruction(
+                            "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
+                    else:
+                        self.variables[-1].referenced = True
 
                     # recursivly fill in nested structures
                     self.buildStackStructure(
@@ -2300,7 +2312,11 @@ class Function:
             if(self.stackCounter):
                 self.addline("leave")
         elif not self.inline:
-
+            if not self.containsReturn and not self.contains_rawasm:
+                if self.returntype.isflt():
+                    self.addline("xorpd xmm0, xmm0")
+                else:
+                    self.addline(zeroize(setSize("rax", self.returntype.csize())))
             self.closeFeatures()
             self.createClosing()
 

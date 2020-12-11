@@ -51,6 +51,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
     if(a.isRegister() or overrideAload):
         areg = a.accessor
         needLoadA = False
+    elif isinstance(a.accessor, Variable) and a.accessor.register is not None:
+        areg = a.accessor.register
+        needLoadA = False
     else:
         areg = ralloc(a.type.isflt(), size=a.type.csize())
 
@@ -60,6 +63,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
 
         if(b.isRegister()):
             breg = b.accessor
+            needLoadB = False
+        elif isinstance(b.accessor, Variable) and b.accessor.register is not None:
+            breg = b.accessor.register
             needLoadB = False
         else:
 
@@ -436,10 +442,11 @@ class ExpressionEvaluator:
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op not in ["/", "[", "&&"] and op not in signed_comparisons):
+        if(b.accessor == 0 and op in ["+","-","||","|",">>","<<"] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
+            return newinstr, newt, apendee
 
         # indexes of zero can be optimized out by
         # replacing them with a memory_address flag
