@@ -973,7 +973,9 @@ class Function:
 
         # determine datatype
         retrace = self.ctidx
+        p = len(self.asm)
         voider = self.evaluateRightsideExpression("AMB", o)
+        self.asm = self.asm[:p]
         self.ctidx = retrace - 1
         self.advance()
 
@@ -1356,7 +1358,6 @@ class Function:
     # load the parameters to call a function
     def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False):
         paraminst = ""
-
         # when parameters are being loaded it signifies that a function has been called,
         # so the counter needs to be incremented
         self.fncalls += 1
@@ -1484,7 +1485,9 @@ class Function:
         # the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = LONG.copy()
+            p = len(self.asm)
             tmp = self.evaluateRightsideExpression("AMB", o)
+            self.asm = self.asm[:p] # remove tmp code
 
             if(self.current_token.tok == ","):
                 self.advance()
@@ -1574,7 +1577,6 @@ class Function:
     def memberCall(self, fn, this):
         # prevent warnings
         this.referenced = True
-
         # save regdecls
         self.addline(self.pushregs())
         # load 'this'
@@ -1590,16 +1592,18 @@ class Function:
         pcount = len(fn.parameters)
         self.advance()
         self.advance()
-        self.addline(
-            self.rawFNParameterLoad(
+        paraminst = self.rawFNParameterLoad(
                 fn,
                 sseused,
                 normused,
                 pcount,
-                True))
-
+                True)
+        self.addline(paraminst)
+        
         # actual function call, and restore
-        self.addline(self.buildFunctionCallClosing(fn, False, None))
+        callinst = self.buildFunctionCallClosing(fn, False, None)
+        self.addline(callinst)
+
         if(fn.returntype.isflt()):
             self.addline(Instruction("movq",
                                      [rax, sse_return_register]))
@@ -1702,6 +1706,7 @@ class Function:
                                 self.current_token.end.copy()))
                         exprtokens[-1].fn = fn
 
+
                 # member functions called through pointer member access need to be found
                 # here before being passed into the expression evaluators
                 elif(self.tokens[self.ctidx + 1].tok == T_PTRACCESS):
@@ -1741,6 +1746,7 @@ class Function:
 
                         # perform function call, parameter loading, regdecl
                         # saving, etc...
+                        
                         self.memberCall(fn, value)
 
                         # cleanup
