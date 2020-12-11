@@ -339,7 +339,7 @@ LC.S169: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 LC.S170: db `sudo`, 0
 LC.S171: db `-c`, 0
 LC.S172: db `LOCKED`, 0
-LC.F30: dq 0x1.2666666666666p+1
+LC.S173: db `%i\n`, 0
 __linux_errstrlist: DQ LC.S0, LC.S1, LC.S2, LC.S3, LC.S4, LC.S5, LC.S6, LC.S7, LC.S8, LC.S9, LC.S10, LC.S11, LC.S12, LC.S13, LC.S14, LC.S15, LC.S16, LC.S17, LC.S18, LC.S19, LC.S20, LC.S21, LC.S22, LC.S23, LC.S24, LC.S25, LC.S26, LC.S27, LC.S28, LC.S29, LC.S30, LC.S31, LC.S32, LC.S33, LC.S34, LC.S35, LC.S36, LC.S37, LC.S38, LC.S39, LC.S40, LC.S41, LC.S42, LC.S43, LC.S44, LC.S45, LC.S46, LC.S47, LC.S48, LC.S49, LC.S50, LC.S51, LC.S52, LC.S53, LC.S54, LC.S55, LC.S56, LC.S57, LC.S58, LC.S59, LC.S60, LC.S61, LC.S62, LC.S63, LC.S64, LC.S65, LC.S66, LC.S67, LC.S68, LC.S69, LC.S70, LC.S71, LC.S72, LC.S73, LC.S74, LC.S75, LC.S76, LC.S77, LC.S78, LC.S79, LC.S80, LC.S81, LC.S82, LC.S83, LC.S84, LC.S85, LC.S86, LC.S87, LC.S88, LC.S89, LC.S90, LC.S91, LC.S92, LC.S93, LC.S94, LC.S95, LC.S96, LC.S97, LC.S98, LC.S99, LC.S100, LC.S101, LC.S102, LC.S103, LC.S104, LC.S105, LC.S106, LC.S107, LC.S108, LC.S109, LC.S110, LC.S111, LC.S112, LC.S113, LC.S114, LC.S115, LC.S116, LC.S117, LC.S118, LC.S119, LC.S120, LC.S121, LC.S122, LC.S123, LC.S124, LC.S125, LC.S126, LC.S127, LC.S128, LC.S129, LC.S130, LC.S131
 M_MINZERO_MEM: DQ 0x0.0p+0
 __numbercharactersbase1016: DQ "0123456789abcdef"
@@ -3271,10 +3271,10 @@ _clock_t_clock_p:
 	mov r10, rax
 	mov r12, 1000000
 	mov r11, qword[rbp-24]
-	imul r12, r11
-	mov r11, 9223372036854775807
-	sub r11, r12
-	cmp r10, r11
+	imul r11, r12
+	mov r12, 9223372036854775807
+	sub r12, r11
+	cmp r10, r12
 	setg r10b
 	or bl, r10b
 	jz .L0xd1
@@ -3496,9 +3496,8 @@ _char._asctime_ptm.:
 	mov rbx, qword[rbp-8]
 	mov ebx, [rbx+20]
 	and rbx, 0x7fffffff
-	mov r10d, 1900
-	add r10d, ebx
-	mov r9, r10
+	add ebx, 1900
+	mov r9, rbx
 	mov rbx, qword[rbp-8]
 	mov ebx, dword[rbx]
 	and rbx, 0x7fffffff
@@ -3566,54 +3565,42 @@ _void_usleep_plong:
 	leave
 	ret
 _void_feed_pStackvoid.:
-	mov rbx, rdi
-	lea rbx, [rbx+8]
-	mov r11, rsi
-	mov [rbx], r11
+	mov r10, rsi
+	mov qword[rdi+8], r10
 	ret
 _void_alloc_pStacksize_t:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 48
-	mov [rbp-8], rdi
-	mov [rbp-40], rsi
+	sub rsp, 16
+	mov [rbp-8], rsi
+	mov r10, qword[rbp-8]
+	mov qword[rdi+16], r10
+	push rdi
 	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+16]
-	mov r11, qword[rbp-40]
-	mov [rbx], r11
-	mov rbx, qword[rbp-40]
 	mov rdi, rbx
 	call _void._mapalloc_psize_t
-	push rax
-	mov rbx, qword[rbp-8]
-	lea rbx, [rbx+8]
-	pop r11
-	mov [rbx], r11
+	mov rbx, rax
+	pop rdi
+	mov r10, rbx
+	mov qword[rdi+8], r10
 	leave
 	ret
 _void_destroy_pStack:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 40
-	mov [rbp-8], rdi
-	mov rbx, qword[rbp-8]
-	mov rbx, [rbx+8]
+	push rdi
+	mov rbx, qword[rdi+8]
 	mov rdi, rbx
 	call _void_mapfree_pvoid.
-	leave
+	mov rbx, rax
+	pop rdi
+	mov rax, rbx
 	ret
 _void_set_pVec3fdoubledoubledouble:
-	mov rbx, rdi
 	movsd xmm8, xmm0
-	movsd [rbx], xmm8
-	mov rbx, rdi
-	lea rbx, [rbx+8]
+	movsd qword[rdi+0], xmm8
 	movsd xmm8, xmm1
-	movsd [rbx], xmm8
-	mov rbx, rdi
-	lea rbx, [rbx+16]
+	movsd qword[rdi+8], xmm8
 	movsd xmm8, xmm2
-	movsd [rbx], xmm8
+	movsd qword[rdi+16], xmm8
 	ret
 _void_add_pVec3fVec3f.:
 	vmovdqu ymm0, [rdi]
@@ -4617,7 +4604,22 @@ _void_thread_join_pthread_t.:
 	call _void_mlock_pmutex.
 	leave
 	ret
+_long_get_pTest:
+	mov rbx, qword[rdi+0]
+	mov rax, rbx
+___long_get_pTest__return:
+	ret
 main:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov qword[rbp-16], 0
+	mov qword[rbp-16], 36
+	mov rsi, 5
+	mov rdi, LC.S173
+	call printf
 	xor rax, rax
+__main__return:
+	leave
 	ret
 	

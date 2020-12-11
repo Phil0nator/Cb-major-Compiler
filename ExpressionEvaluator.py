@@ -14,8 +14,8 @@ from Classes.DType import *
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import Variable
-from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LITERAL, LONG, SHORT,
-                     VOID, canShiftmul, operatorISO, typematch)
+from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
+                     LONG, SHORT, VOID, canShiftmul, operatorISO, typematch)
 
 #############################
 # optloadRegs is used to load
@@ -146,7 +146,6 @@ class ExpressionEvaluator:
         instrs += bringdown_memloc(b)
         # if the equation can be done in one 'line'
         if(oneline):
-
 
             # if the destination is a variable, and the rightside is a constant
             if(vardest and constright):
@@ -543,8 +542,14 @@ class ExpressionEvaluator:
                         continue
 
                     # if one operand is constant
+                    elif a.isconstint() and not b.isconstint() and not b.type.isflt() and COMMUNITIVE[op]:
+                        # setup for communitive property
+                        tmp = a
+                        a = b
+                        b = tmp
+
                     # optimize for semi constexpr
-                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt()):
+                    if(b.isconstint() and not a.isconstint() and not a.type.isflt()):
 
                         # check for and do any possible optimizations
                         newinstr, newt, apendee = self.check_semiconstexpr_optimization(
@@ -744,10 +749,10 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             result = ralloc(False)
             if(a.accessor.isStackarr or a.accessor.t.members is not None):
-                instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
-                instr += f"lea {result}, [rbp-{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
@@ -1250,10 +1255,10 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 throw(AddressOfConstant(a.token))
             result = ralloc(False)
             if(a.accessor.isStackarr):
-                instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
-                instr += f"lea {result}, [rbp-{a.accessor.offset}]\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(

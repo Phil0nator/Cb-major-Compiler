@@ -292,7 +292,6 @@ class Peephole:
                 # e.g: mov rax, rax
                 elif (line.op == "mov" and line.dest == line.source):
                     splitted[line.idx] = ""
-                
 
                 # replace the common structure:
                 #   lea reg, [addr]

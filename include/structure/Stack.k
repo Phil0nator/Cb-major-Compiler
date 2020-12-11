@@ -3,15 +3,15 @@
 #endif
 
 
-void Stack::feed(void* ptr){
-        this->base = ptr;
+void Stack::feed(void* nptr){
+    base = nptr;
 }
 
-void Stack::alloc(size_t size){
-    this->size = size;
-    this->base = mapalloc(size);
+void Stack::alloc(size_t nsize){
+    size = nsize;
+    base = mapalloc(nsize);
 }
 
 void Stack::destroy(){
-    mapfree(this->base);
+    mapfree(base);
 }

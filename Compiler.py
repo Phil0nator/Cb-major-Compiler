@@ -397,6 +397,12 @@ class Compiler:
         # construct final object
         f = Function(name, parameters, rettype, self,
                      self.currentTokens[start:self.ctidx])
+
+        # setup member fn
+        if thisp:
+            f.memberfn = True
+            f.parentstruct = thispt
+
         f.variardic = variardic
 
         # handle additional parameters...
@@ -543,8 +549,7 @@ class Compiler:
 
                 fulleq = ''.join([ty.name for ty in t[1]]) == ''.join(
                     [ty.name for ty in types])
-                
-                
+
                 if fulleq:
                     return t[2].copy()
 

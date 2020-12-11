@@ -118,7 +118,7 @@ def avx_loadToReg(loadop, avxreg, arr, idx):
     else:
         s = shiftmul(arr.t.csize())
         out += (f"shl {idx}, {s}\n") if s != 0 else ""
-        out += (f"add {idx}, [rbp-{arr.offset}]\n")
+        out += (f"add {idx}, [{arr.baseptr}{arr.offset}]\n")
         out += (f"{avx_getLoader(loadop)} {avxreg}, [{idx}]\n")
     return out
 

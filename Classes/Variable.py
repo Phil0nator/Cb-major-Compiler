@@ -12,11 +12,12 @@
 ###################################
 class Variable:
     def __init__(self, t, name, glob=False, offset=0, initializer=0,
-                 isptr=False, mutable=True, signed=True, isStackarr=False, static=False):
+                 isptr=False, mutable=True, signed=True, isStackarr=False, static=False, bpr="rbp-"):
         self.t = t                      # data type
         self.name = name                  # str: name
         self.glob = glob                  # bool: is global
         self.offset = offset              # ptr offset (stack or otherwise)
+        self.baseptr = bpr                # ptr origin for offset
         self.initializer = initializer  # original value for globals
         self.isptr = isptr              # bool: is pointer value
         self.mutable = mutable          # bool: is constant or mutable
@@ -36,8 +37,10 @@ class Variable:
         self.dtok = None
 
     def copy(self):
-        return Variable(self.t, self.name, self.glob, self.offset, self.initializer,
+        out = Variable(self.t, self.name, self.glob, self.offset, self.initializer,
                         self.isptr, self.mutable, self.signed, self.isStackarr, self.static)
+        out.referenced = self.referenced
+        return out
 
     def isflt(self):  # redundant to DType.isflt
         # return (self.t.name == "float" or self.t.name == "double") and
