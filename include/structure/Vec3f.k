@@ -99,10 +99,10 @@
 
 
 
-void Vec3f::set(double x, double y, double z){
-    this->x=x;
-    this->y=y;
-    this->z=z;
+void Vec3f::set(double nx, double ny, double nz){
+    x=nx;
+    y=ny;
+    z=nz;
 }
 
 void Vec3f::add(Vec3f* other){

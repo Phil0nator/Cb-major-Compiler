@@ -14,8 +14,8 @@ from Classes.DType import *
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import Variable
-from globals import (BOOL, CHAR, DOUBLE, INT, INTRINSICS, LITERAL, LONG, SHORT,
-                     VOID, canShiftmul, operatorISO, typematch)
+from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
+                     LONG, SHORT, VOID, canShiftmul, operatorISO, typematch)
 
 #############################
 # optloadRegs is used to load
@@ -51,6 +51,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
     if(a.isRegister() or overrideAload):
         areg = a.accessor
         needLoadA = False
+    elif isinstance(a.accessor, Variable) and a.accessor.register is not None:
+        areg = a.accessor.register
+        needLoadA = False
     else:
         areg = ralloc(a.type.isflt(), size=a.type.csize())
 
@@ -60,6 +63,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
 
         if(b.isRegister()):
             breg = b.accessor
+            needLoadB = False
+        elif isinstance(b.accessor, Variable) and b.accessor.register is not None:
+            breg = b.accessor.register
             needLoadB = False
         else:
 
@@ -83,9 +89,15 @@ def optloadRegs(a, b, op, o, constvalok=False):
 def bringdown_memloc(a):
     instr = ""
     if(a.memory_location):
-        
-        instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-        instr += maskset(a.accessor, a.type.csize())
+
+        if a.type.isflt():
+            out = ralloc(True)
+            instr += f"movsd {out}, [{setSize(a.accessor, 8)}]\n"
+            rfree(a.accessor)
+            a.accessor = out
+        else:
+            instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
+            instr += maskset(a.accessor, a.type.csize())
 
         a.memory_location = False
 
@@ -117,7 +129,6 @@ class ExpressionEvaluator:
     def doAssignment(self, a, b, op, evaluator):
 
         instrs = ""
-
         # get the necessary opcode for the operation,
         # and determine if it can be done in one line.
 
@@ -138,10 +149,9 @@ class ExpressionEvaluator:
         if(a.isRegister() and not a.memory_location):
             throw(InvalidDestination(a.token))
 
+        instrs += bringdown_memloc(b)
         # if the equation can be done in one 'line'
         if(oneline):
-
-            instrs += bringdown_memloc(b)
 
             # if the destination is a variable, and the rightside is a constant
             if(vardest and constright):
@@ -272,7 +282,7 @@ class ExpressionEvaluator:
         newt = None
         apendee = None
 
-        ## multiplication has many special cases:
+        # multiplication has many special cases:
 
         # when multiplied by zero, anything will return $LITERAL 0
         # when divided by zero, and error will return
@@ -280,17 +290,17 @@ class ExpressionEvaluator:
             if op == "*":
                 newinstr = ""
                 newt = a.type
-                apendee = EC.ExpressionComponent(0, LITERAL,constint=True,token=b.token)
+                apendee = EC.ExpressionComponent(
+                    0, LITERAL, constint=True, token=b.token)
                 rfree(a.accessor)
             else:
                 throw(DivisionByZero(b.token))
-        
+
         # when multiplied / divided by one, the value a is returned unmodified
         elif (b.accessor == 1):
             newinstr = ""
             newt = a.type
             apendee = a
-
 
         # if the number is an even log2 (can be done via shifting),
         # the bitshift instructions are used instead of mul / imul
@@ -314,7 +324,7 @@ class ExpressionEvaluator:
         # if the number is <= 10, the lea instruction can be used
         # to generate specialized code faster than an imov / mov instruction.
         elif(b.accessor <= 9 and op == "*"):
-            
+
             # determine closest lea multiplier
             if b.accessor >= 8:
                 shiftval = 8
@@ -324,7 +334,7 @@ class ExpressionEvaluator:
                 shiftval = 2
             else:
                 shiftval = None
-            
+
             # standard loading...
             newinstr = self.normal_semiconstexprheader(a, b)
 
@@ -397,20 +407,20 @@ class ExpressionEvaluator:
 
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
-    
+
     def mod_opt(self, a, b, op):
         newinstr = None
         newt = None
         apendee = None
-        
-        if (a.type.csize() < 8 or (canShiftmul(b.accessor) and not a.type.isSigned()) ):
+
+        if (a.type.csize() < 8 or (canShiftmul(
+                b.accessor) and not a.type.isSigned())):
             newinstr = self.normal_semiconstexprheader(a, b)
             areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
             newinstr += i
             newinstr += magic_modulo(a, areg, b.accessor)
             a.accessor = areg
-        
-        
+
         return newinstr, a.type, a
     # optimization for operations which do not require both operands in
     # registers
@@ -432,10 +442,11 @@ class ExpressionEvaluator:
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op not in ["/", "[", "&&"] and op not in signed_comparisons):
+        if(b.accessor == 0 and op in ["+","-","||","|",">>","<<"] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
+            return newinstr, newt, apendee
 
         # indexes of zero can be optimized out by
         # replacing them with a memory_address flag
@@ -455,7 +466,7 @@ class ExpressionEvaluator:
 
         elif(op == "%"):
             newinstr, newt, apendee = self.mod_opt(
-                a,b,op
+                a, b, op
             )
 
         # can be optimized by not loading the constant
@@ -538,8 +549,14 @@ class ExpressionEvaluator:
                         continue
 
                     # if one operand is constant
+                    elif a.isconstint() and not b.isconstint() and not b.type.isflt() and COMMUNITIVE[op]:
+                        # setup for communitive property
+                        tmp = a
+                        a = b
+                        b = tmp
+
                     # optimize for semi constexpr
-                    elif(b.isconstint() and not a.isconstint() and not a.type.isflt()):
+                    if(b.isconstint() and not a.isconstint() and not a.type.isflt()):
 
                         # check for and do any possible optimizations
                         newinstr, newt, apendee = self.check_semiconstexpr_optimization(
@@ -739,10 +756,10 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             result = ralloc(False)
             if(a.accessor.isStackarr or a.accessor.t.members is not None):
-                instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
-                instr += f"lea {result}, [rbp-{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
@@ -790,6 +807,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             o = a.accessor.t.copy()
             o.ptrdepth -= 1
             rfree(tmp)
+
             return instr, o, EC.ExpressionComponent(
                 oreg, o.copy(), token=a.token)
 
@@ -800,7 +818,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"movsd {result}, [{a.accessor}]\n"
             else:
                 #instr += maskset(result, a.type.size(1))
-                result = setSize( result, a.type.size(1))
+                result = setSize(result, a.type.size(1))
                 instr += f"mov {result}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
             rfree(a.accessor)
             o = a.type.copy()
@@ -819,7 +837,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"movsd {areg}, [{a.accessor}]\n"
             else:
                 #instr += maskset(areg, a.type.size(1))
-                areg = setSize( areg, a.type.size(1))
+                areg = setSize(areg, a.type.size(1))
                 instr += f"mov {areg}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
             rfree(a.accessor)
             rfree(result)
@@ -1244,10 +1262,10 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 throw(AddressOfConstant(a.token))
             result = ralloc(False)
             if(a.accessor.isStackarr):
-                instr += f"lea {result}, [rbp-{a.accessor.offset+a.accessor.stackarrsize}]\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
-                instr += f"lea {result}, [rbp-{a.accessor.offset}]\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
@@ -1274,7 +1292,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
         instr = bringdown_memloc(a)
         areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
         instr += ninstr
-
         out = instr, a.type.down(), EC.ExpressionComponent(
             areg, a.type.down(), memloc=True)
         return out

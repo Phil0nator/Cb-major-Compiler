@@ -258,7 +258,9 @@ void split_block(mblock* block, size_t destsize){
 
 
 void free(void* usrptr){
-
+    if (usrptr==nullptr){
+        return;
+    }
     mblock* block = MALLOC_LOCALPTR(usrptr);
     if(block->size >= MALLOC_PAGESIZE){
         block->size+=sizeof(mblock);
@@ -351,4 +353,8 @@ void mapfree(void* ptr){
     size_t size = @ptr;
     munmap(ptr, size);
 
+}
+
+void maprealloc(void* ptr, size_t newsize){
+    mmap(ptr, newsize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0); 
 }

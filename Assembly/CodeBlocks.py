@@ -61,7 +61,8 @@ def extra_parameterlabel(fn, num):
 
 def function_allocator(amt):
 
-    return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % ((amt))
+    return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % (
+        (amt)) if amt > 8 else ""
 
 # set a register to zero using the faster 'xor' instruction
 
@@ -82,12 +83,12 @@ def label(name):
 # generate the closing for a function (exit stack frame, and return)
 
 
-def function_closer(name, destructions):
+def function_closer(name, destructions, fn):
     return """__%s__return:
 %s
 leave
 ret
-""" % (name, destructions)
+""" % (name, destructions) if fn.stackCounter > 8 else f"__{name}__return:\nret\n"
 
 # Get the value of a number that is within a set ( a set refers to this
 # notation: { ... , ... , ... })
@@ -292,8 +293,8 @@ def valueOf(x, dflt=False, exactSize=True):
             if(x.isStackarr):
                 offset += x.stackarrsize
             if(not exactSize):
-                return f"QWORD[rbp-{offset}]" if x.register is None else x.register
-            return f"{psizeoft(x.t)}[rbp-{offset}]" if x.register is None else setSize(
+                return f"QWORD[{x.baseptr}{offset}]" if x.register is None else x.register
+            return f"{psizeoft(x.t)}[{x.baseptr}{offset}]" if x.register is None else setSize(
                 x.register, x.t.csize())
     elif (isinstance(x, int)):
         return (x)
@@ -325,7 +326,7 @@ def loadToReg(reg, value):
                 return f"mov {reg}, {valueOf(value)} ;<-\n"
 
         if(isinstance(value, Variable) and value.isStackarr):
-            return f"lea {setSize(reg,8)}, [rbp-{value.offset+value.stackarrsize}] \n"
+            return f"lea {setSize(reg,8)}, [{value.baseptr}{value.offset+value.stackarrsize}] \n"
 
         if(isfloat(value)):
 
@@ -442,14 +443,13 @@ def doIntOperation(areg, breg, op, signed, size=8):
     elif(op == "*"):
         return f"{loadToRax(areg)}\nmul {breg}\n{getFromRax(areg)}\n"
     elif(op == "/"):
-                
+
         if(signed):
             asmop = "idiv"
         else:
             asmop = "div"
         return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
 
-    
     elif(op == "%"):
         if(signed):
             asmop = "idiv"
@@ -626,7 +626,6 @@ def getOnelineAssignmentOp(a, b, op):
     return cmd, cmd != ""
 
 
-
 def lea_mul_opt(shiftval, areg, a, b):
     newinstr = ""
     if(shiftval == 2):
@@ -635,20 +634,19 @@ def lea_mul_opt(shiftval, areg, a, b):
         if(b.accessor == 5):
             newinstr += f"lea {areg}, [{areg}+{areg}*4]\n"
         elif(b.accessor == 6):
-            
+
             r2 = ralloc(False, size=a.type.csize())
             newinstr += f"mov {r2}, {areg}\n"
             newinstr += f"lea {areg}, [{areg}+{areg}*4]\n"
             newinstr += f"add {areg}, {r2}\n"
             rfree(r2)
         else:
-            
+
             r2 = ralloc(False, size=a.type.csize())
             newinstr += f"mov {r2}, {areg}\n"
             newinstr += f"lea {areg}, [{areg}*8]\n"
             newinstr += f"sub {areg}, {r2}\n"
             rfree(r2)
-
 
     elif (shiftval == 8):
         if(b.accessor == 9):
@@ -657,31 +655,29 @@ def lea_mul_opt(shiftval, areg, a, b):
     return newinstr
 
 
-def magic_division(a, areg, b, internal = False):
-    
+def magic_division(a, areg, b, internal=False):
+
     # new eq : f(n, d) = (n * m(d)) >> 33
     # m(x) = 2^33 / x + 1
 
-    twopower = 8*a.type.csize()+1
-
+    twopower = 8 * a.type.csize() + 1
 
     #                2^33     / x + 1
-    multiplicand = int(pow(2, twopower) / b + 1) 
+    multiplicand = int(pow(2, twopower) / b + 1)
 
     mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
 
     instr = f"{zeroize(rax)}mov rax, {setSize(areg, 8)}\n"
-    instr += f"mov rcx, {multiplicand}\n"    
+    instr += f"mov rcx, {multiplicand}\n"
     instr += f"{mulcmd} rcx\n"
     if a.type.csize() != 8:
         instr += f"{shiftcmd} rax, {twopower}\n"
         instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
     else:
         instr += f"shrd rdx, rax, 1\n"
-        
-        instr += getFromRdx(areg) if not internal else f"mov rax, rdx\n"
 
+        instr += getFromRdx(areg) if not internal else f"mov rax, rdx\n"
 
     return instr
 
@@ -692,23 +688,20 @@ def magic_modulo(a, areg, b):
     else:
         # most cases :
         #   m(x, n) = x - (x / n) * n
-    
-    
-        twopower = 8*a.type.csize()+1
+
+        twopower = 8 * a.type.csize() + 1
         shiftcmd = "sar" if a.type.signed else "shr"
-        #multiplicand = int(pow(2, twopower) / b + 1) 
+        #multiplicand = int(pow(2, twopower) / b + 1)
 
         instr = ""
         instr += magic_division(a, areg, b, True)
-        
+
         if canShiftmul(b):
             instr += f"{shiftcmd[:-1]}l rax, {shiftmul(b)}\n"
         else:
             instr += f"mov rcx, {b}\n"
             instr += f"{'imul' if a.type.signed else 'mul'} rcx\n"
-        
-        
+
         instr += f"sub {areg}, {setSize(rax, a.type.csize())}\n"
-    
-    
+
     return instr

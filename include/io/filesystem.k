@@ -60,6 +60,11 @@ size_t fputs(FILE fd, char* text){
     return out;
 }
 
+size_t puts(char* text){
+    size_t l = strlen(text);
+    size_t out = write(STDOUT, text, l);
+    return out;
+}
 
 long fgets(FILE fd, char* buffer, size_t amt){
     long out = read(fd, buffer, amt);

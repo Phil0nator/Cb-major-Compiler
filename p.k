@@ -1,12 +1,25 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-long test = LONG_MAX;
+#if false || false
+
+
+
+
+
+int testFunction(int* input, int length) {
+  register int sum = 0;
+  for (int i = 0; i < length; ++i) {
+    sum += input[i];
+  }
+  return sum;
+}
+
+#endif
+
+
 
 int main(unsigned int argc, char** argv){
 	
-	auto test = argv%2;
-	printf("test; %i\n", test);
 
-    return 0;
 }

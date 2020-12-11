@@ -37,7 +37,7 @@ cextern void printf(char* fmt, void arg1, void arg2, void arg3);
 cextern void printf(char* fmt, void arg1, void arg2);
 cextern void printf(char* fmt, void arg1);
 inline void printf(char* fmt){
-    fputs(STDOUT, fmt);
+    return puts(fmt);
 }
 
 /**
@@ -60,7 +60,7 @@ cextern void eprintf(char* fmt, void arg1, void arg2, void arg3);
 cextern void eprintf(char* fmt, void arg1, void arg2);
 cextern void eprintf(char* fmt, void arg1);
 inline void eprintf(char* fmt){
-    fputs(STDERR, fmt);
+    return fputs(STDERR, fmt);
 }
 
 /**

@@ -1,9 +1,11 @@
 from Classes.Token import *
 from Classes.Location import Location
 from Classes.Error import *
+from Classes.Constexpr import determineConstexpr
 from Postfixer import Postfixer
 from Lexer import Lexer
 from config import include_directories
+from Function import Function
 import os
 import platform
 import cpuid
@@ -217,6 +219,17 @@ class PreProcessor:
         else:
             self.delmov()
 
+
+    def skipIfbody(self):
+        opens = 1
+        while opens > 0:
+            self.delmov()
+            if(self.current_token.tok == T_DIRECTIVE):
+                if(self.current_token.value.startswith("if")):
+                    opens += 1
+                elif(self.current_token.value == "endif"):
+                    opens -= 1
+
     # #ifndef directive
     def buildifndef(self):
         self.delmov()
@@ -225,14 +238,7 @@ class PreProcessor:
         if(q is None):
             self.delmov()
         else:
-            opens = 1
-            while opens > 0:
-                self.delmov()
-                if(self.current_token.tok == T_DIRECTIVE):
-                    if(self.current_token.value.startswith("if")):
-                        opens += 1
-                    elif(self.current_token.value == "endif"):
-                        opens -= 1
+            self.skipIfbody()
 
     def buildMacro(self, name):
 
@@ -340,6 +346,40 @@ class PreProcessor:
 
         throw(FileNotFound(self.current_token, q))
 
+    def buildIf(self):
+        self.delmov()
+        name = self.current_token.value
+        sline = self.current_token.start.line
+        chs = self.current_token.end.ch
+        
+        if(self.current_token.start.line != sline):
+            throw(ExpectedValue(self.current_token))
+            return
+        
+        if self.current_token.tok == T_ID:
+            self.checkDefn()
+            self.update()
+        definitionTokens = [self.current_token]
+        self.delmov()
+        while(self.current_token.start.line == sline):
+            if self.current_token.tok == T_ID:
+                self.checkDefn()
+                self.update()
+                continue
+            definitionTokens.append(self.current_token)
+            self.delmov()
+        definitionTokens.append(self.current_token)
+        self.delmov()
+
+        tmpfn = Function("empty",[],None,config.GlobalCompiler,[])
+        value = determineConstexpr(False, definitionTokens, tmpfn)
+        if value.accessor == 0:
+            self.skipIfbody()
+        else:
+            pass
+
+
+
     # main function
 
     def process(self):
@@ -358,6 +398,8 @@ class PreProcessor:
                     self.buildDefine()
                 elif(self.current_token.value == "ifdef"):
                     self.buildifdef()
+                elif (self.current_token.value == "if"):
+                    self.buildIf()
                 elif(self.current_token.value == "ifndef"):
                     self.buildifndef()
 

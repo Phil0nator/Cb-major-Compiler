@@ -46,6 +46,7 @@ PRIORITY = {
     "[": 0,
 
 
+
     "=": 1,
     "+=": 1,
     "-=": 1,
@@ -161,6 +162,55 @@ OPERATORS = [
 
 
 ]
+
+COMMUNITIVE = {
+    "(": False,
+    "]": False,
+    "[": False,
+    "+": True,
+    "-": False,
+    "!": False,
+    "~": False,
+    "&": False,
+    "|": True,
+    "||": True,
+    "&&": True,
+    "==": False,
+    "!=": False,
+    ">": False,
+    "<": False,
+    ">=": False,
+    "<=": False,
+    ">>": False,
+    "<<": False,
+    "^": True,
+    "*": True,
+    "/": False,
+    "%": False,
+    "&": False,
+    "@": False,
+    "->": False,
+    ".": False,
+    "$": False,
+    "++": False,
+    "--": False,
+    ":": False,
+    "?": False,
+    "=": False,
+    "+=": False,
+    "-=": False,
+    "*=": False,
+    "/=": False,
+    "%=": False,
+    ">>=": False,
+    "<<=": False,
+    "|=": False,
+    "&=": False,
+    "^=": False
+
+}
+
+
 # integer-only operations
 integer_only = [
 

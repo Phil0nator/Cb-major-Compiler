@@ -1,0 +1,10 @@
+#ifndef __VECTOR
+#define __VECTOR
+
+#include "algorithm/algorithm.cb"
+
+
+
+
+
+#endif
