@@ -88,5 +88,7 @@ CBLIBENTRY void* mapalloc(size_t size);
 CBLIBENTRY void mapfree(void* ptr);
 
 
+CBLIBENTRY void maprealloc(void* ptr, size_t newsize);
+
 
 #endif

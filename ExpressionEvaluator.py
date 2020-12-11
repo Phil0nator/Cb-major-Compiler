@@ -84,8 +84,14 @@ def bringdown_memloc(a):
     instr = ""
     if(a.memory_location):
 
-        instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-        instr += maskset(a.accessor, a.type.csize())
+        if a.type.isflt():
+            out = ralloc(True)
+            instr += f"movsd {out}, [{setSize(a.accessor, 8)}]\n"
+            rfree(a.accessor)
+            a.accessor = out
+        else:
+            instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
+            instr += maskset(a.accessor, a.type.csize())
 
         a.memory_location = False
 
@@ -117,7 +123,6 @@ class ExpressionEvaluator:
     def doAssignment(self, a, b, op, evaluator):
 
         instrs = ""
-
         # get the necessary opcode for the operation,
         # and determine if it can be done in one line.
 
@@ -138,10 +143,10 @@ class ExpressionEvaluator:
         if(a.isRegister() and not a.memory_location):
             throw(InvalidDestination(a.token))
 
+        instrs += bringdown_memloc(b)
         # if the equation can be done in one 'line'
         if(oneline):
 
-            instrs += bringdown_memloc(b)
 
             # if the destination is a variable, and the rightside is a constant
             if(vardest and constright):
@@ -790,6 +795,7 @@ class RightSideEvaluator(ExpressionEvaluator):
             o = a.accessor.t.copy()
             o.ptrdepth -= 1
             rfree(tmp)
+
             return instr, o, EC.ExpressionComponent(
                 oreg, o.copy(), token=a.token)
 
@@ -1274,7 +1280,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
         instr = bringdown_memloc(a)
         areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
         instr += ninstr
-
         out = instr, a.type.down(), EC.ExpressionComponent(
             areg, a.type.down(), memloc=True)
         return out

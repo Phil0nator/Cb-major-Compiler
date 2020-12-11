@@ -543,6 +543,8 @@ class Compiler:
 
                 fulleq = ''.join([ty.name for ty in t[1]]) == ''.join(
                     [ty.name for ty in types])
+                
+                
                 if fulleq:
                     return t[2].copy()
 
@@ -625,7 +627,7 @@ class Compiler:
 
         # check if the function has already been built before
         fnexist = templatefn.getFunction(
-            fn.name, [p.t for p in fn.parameters], fn.returntype)
+            fn.name, [p.t for p in fn.parameters], fn.returntype, loose=False)
 
         # if it has been built, just use the existing build
         if(fnexist is not None):

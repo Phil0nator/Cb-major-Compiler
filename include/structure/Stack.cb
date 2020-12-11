@@ -8,8 +8,8 @@
 
 struct Stack {
 
-    void* base;
     void* ptr = 0;
+    void* base;
     size_t size;
 
     CBLIBENTRY void feed(void* ptr);

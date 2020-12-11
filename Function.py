@@ -153,6 +153,10 @@ class Function:
         # (other than just reaching then end).
         self.containsReturn = False
 
+        # if the return value is a constexpr
+        self.returnsConstexpr = False
+        self.constexpr_returnvalue = 0
+
         # Set to true when there is inline assembly used in a function so that
         # return / parameter warnings and optimziations do not interfere with user
         # generated assembly.
@@ -185,6 +189,7 @@ class Function:
         #   recursive_depth = 0;
         #
         self.recursive_depth = 0
+        self.max_depth = 0
 
         # canbeInline is used to determine if the compiler can safely make
         # a function inline without the user specifically defining it as such
@@ -322,7 +327,7 @@ class Function:
     # get function with name fn and datatypes types, or a suitable replacement
     # (casting)
 
-    def getFunction(self, fn, types, rettype=None, searchlist=None):
+    def getFunction(self, fn, types, rettype=None, searchlist=None, loose=True):
         if searchlist is None:
             searchlist = self.compiler.functions
 
@@ -343,25 +348,26 @@ class Function:
 
                 if(valid):
                     return f
+        if loose:
+            for f in searchlist:  # seach others for valid casts
+                if f.name == fn:
+                    lt = len(types)
+                    if(len(f.parameters) != lt):
+                        continue
+                    valid = True
+                    for i in range(lt):
+                        # if f.parameters[i].t.__repr__() != types[i].__repr__():
+                        if (not TsCompatible(f.parameters[i].t, types[i], self)):
+                            valid = False
+                            break
 
-        for f in searchlist:  # seach others for valid casts
-            if f.name == fn:
-                lt = len(types)
-                if(len(f.parameters) != lt):
-                    continue
-                valid = True
-                for i in range(lt):
-                    # if f.parameters[i].t.__repr__() != types[i].__repr__():
-                    if (not TsCompatible(f.parameters[i].t, types[i], self)):
+                    if rettype is not None and not TsCompatible(
+                            rettype, f.returntype, self):
                         valid = False
-                        break
 
-                if rettype is not None and not TsCompatible(
-                        rettype, f.returntype, self):
-                    valid = False
-
-                if(valid):
-                    return f
+                    if(valid):
+                        return f
+        return None
 
     def push_stackstate(self):
 
@@ -571,7 +577,9 @@ class Function:
             ninstr, o = RightSideEvaluator.depositFinal(None, val, None, EC.ExpressionComponent(oreg, self.returntype.copy()))
             instr += ninstr
             rfree(val.accessor)
-
+            self.returnsConstexpr = val.isconstint()
+            if(self.returnsConstexpr):
+                self.constexpr_returnvalue = val.accessor
             
             self.addline(instr)
 
@@ -581,6 +589,8 @@ class Function:
         if self.recursive_depth == 1:
             self.hasReturned = True
             self.fncalls = og_fncalls
+
+
         if self.recursive_depth > 1 or self.inline:
             self.addline(Instruction('jmp', [self.closinglabel[:-1]]))
 
@@ -1599,7 +1609,6 @@ class Function:
             # too much slower than a mov.
             elif(self.current_token.tok == T_ID):
                 if(self.tokens[self.ctidx + 1].tok in "(" or self.qgettfn(self.current_token.value) is not None):
-                    wasfunc = True
 
                     if(self.current_token.value in predefs):
                         exprtokens.append(self.buildPredef())
@@ -1608,6 +1617,8 @@ class Function:
                             self.current_token) if self.current_token.tok == T_CLSP else None
                         continue
                     else:
+                        wasfunc = True
+
                         token, inst = self.wrapExpressionFunctionCall()
                         exprtokens.append(token)
                         instructions += inst
@@ -1894,7 +1905,7 @@ class Function:
 
         t = self.checkForType()
 
-        if(not isIntrinsic(t.name) and register):
+        if(not (isIntrinsic(t.name)) and t.ptrdepth == 0 and register):
             throw(RegsiterStructure(self.current_token))
 
         name = self.checkForId()
@@ -1973,8 +1984,14 @@ class Function:
         # normal inline assignment
         if(not isarr):
 
-            self.addline(self.evaluateRightsideExpression(
-                EC.ExpressionComponent(var, var.t, token=self.current_token)))
+            self.ctidx-=3
+            self.advance()
+            instr, __ = self.evaluateExpression(destination=False)
+            self.addline(instr)
+            var.referenced=False
+
+            #self.addline(self.evaluateRightsideExpression(
+            #    EC.ExpressionComponent(var, var.t, token=self.current_token)))
 
         # array assignment
         else:
@@ -2022,7 +2039,6 @@ class Function:
 
             # single value to fill accross
             else:
-
                 # evaluate the new value
                 evaluation, value = self.evaluateExpression()
                 self.addline(evaluation)
@@ -2133,6 +2149,7 @@ class Function:
 
     # compile the body of some control structures
     def compileBodyScope(self):
+        self.max_depth += 1
         self.push_stackstate()
         self.beginRecursiveCompile()
         self.pop_stackstate()
@@ -2280,8 +2297,10 @@ class Function:
                 # implicit parameter register declaration...
                 needs_recompile = False
                 newfunc = self.reset()
+                newfunc.stackCounter=8
                 newfunc.hasReturned = False
                 newfunc.compileCount += 1
+                newfunc.returnsConstexpr = self.returnsConstexpr
                 if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
                     newfunc.implicit_paramregdecl = True
                     needs_recompile = True
@@ -2290,9 +2309,16 @@ class Function:
                     if not p.referenced:
                         needs_recompile = True
 
+                if self.returnsConstexpr and self.fncalls == 0 and not self.inline and not self.contains_rawasm and self.max_depth == 0:
+                    needs_recompile = False
+                    self.asm = f"{self.getCallingLabel()}:\nmov rax, {self.constexpr_returnvalue}\nret\n"
+
                 if needs_recompile:
                     self.GC()
+                    og = config.__nowarn__
+                    config.__nowarn__ = True
                     newfunc.compile()
+                    config.__nowarn__= og
                     self.asm = newfunc.asm
 
             pfinal = Peephole()
