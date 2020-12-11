@@ -36,7 +36,6 @@ void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpuidreg_t*
     __CCALL_TO_CPUID
     __CALLCPUID
     __CPUID_RETURN
-
 }
 
 bool cpuid_getfeature(unsigned long feature){

@@ -29,6 +29,9 @@ class Variable:
         self.stackdims = isStackarr
         self.stacksizes = []            # ^ sizes
         self.register = None            # register declaration
+        # register value stored represents temporary storage (see
+        # ExpressionEvaluator)
+        self.tmp_register = False
         self.referenced = False         # for warnings
         self.dtok = None
 

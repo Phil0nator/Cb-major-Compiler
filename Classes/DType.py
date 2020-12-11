@@ -26,7 +26,7 @@ class DType:
         return self.s
 
     def isSigned(self, depth=0):
-        if self.ptrdepth-depth == 0:
+        if self.ptrdepth - depth == 0:
             return self.signed
         return False
 

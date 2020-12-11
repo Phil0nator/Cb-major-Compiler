@@ -58,7 +58,7 @@ predefs = [
 #####################################################
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
-                 tokens, inline=False, extern=False, compileCount = 0):
+                 tokens, inline=False, extern=False, compileCount=0):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -148,6 +148,15 @@ class Function:
         # A guarenteed return is one not inside any other control structure, and that
         # will always happen.
         self.hasReturned = False
+
+        # containsReturn keeps track of if a function returns under any conditions at all
+        # (other than just reaching then end).
+        self.containsReturn = False
+
+        # Set to true when there is inline assembly used in a function so that
+        # return / parameter warnings and optimziations do not interfere with user
+        # generated assembly.
+        self.contains_rawasm = False
 
         # The isReturning flag is set when the function is compiling the return statement
         # in order to signifiy that certain extra optimizations can be made. For example,
@@ -241,8 +250,8 @@ class Function:
 
     # get raw asm label used to denote the end of this function
     def getClosingLabel(self):
-        return function_closer(self.getCallingLabel(), None).split(
-            "\n")[0] if not self.inline else getLogicLabel("INLINERETURN") + ":"
+        return function_closer(self.getCallingLabel(), None, self).split(
+            "\n")[0] if not self.inline else (getLogicLabel("INLINERETURN") + ":")
 
     # get a variable of name q from first local then global scope if necessary
 
@@ -297,14 +306,18 @@ class Function:
         self.asm += ";" + c + "\n"
 
     def qgettfn(self, fnname):
-        return next((fn for fn in self.compiler.template_functions if fn.name == fnname), None)
+        return next(
+            (fn for fn in self.compiler.template_functions if fn.name == fnname), None)
 
     def getTemplateFunction(self, fnname, ptypes, ttypes):
-        
-        template = next((fn for fn in self.compiler.template_functions if fn.name == fnname and len(fn.parameters) == len(ptypes)), None)
+
+        template = next(
+            (fn for fn in self.compiler.template_functions if fn.name == fnname and len(
+                fn.parameters) == len(ptypes)), None)
         if(template is None):
             return template
-        return self.compiler.buildTemplateFunction(template, template.template_types, ttypes)
+        return self.compiler.buildTemplateFunction(
+            template, template.template_types, ttypes)
 
     # get function with name fn and datatypes types, or a suitable replacement
     # (casting)
@@ -312,7 +325,6 @@ class Function:
     def getFunction(self, fn, types, rettype=None, searchlist=None):
         if searchlist is None:
             searchlist = self.compiler.functions
-
 
         for f in searchlist:  # first seach exact matches
             if f.name == fn:
@@ -382,7 +394,8 @@ class Function:
             types.append(t)
         return types
 
-    def checkForType(self, err=True):             # check next tokens for Type, and return it as a DType
+    # check next tokens for Type, and return it as a DType
+    def checkForType(self, err=True):
         signed = True
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
@@ -444,23 +457,29 @@ class Function:
             typeq = self.checkForType(False)
 
             if (typeq is None):
-                self.ctidx=startidx-1
+                self.ctidx = startidx - 1
                 self.advance()
                 final = self.evaluateExpression()[1]
-                return Token(T_INT, final.type.csize(), self.tokens[startidx].start,self.tokens[startidx].end)
+                return Token(T_INT, final.type.csize(
+                ), self.tokens[startidx].start, self.tokens[startidx].end)
             else:
                 self.advance()
-                return Token(T_INT, typeq.csize(), self.tokens[startidx].start,self.tokens[startidx].end)
-        
+                return Token(T_INT, typeq.csize(
+                ), self.tokens[startidx].start, self.tokens[startidx].end)
+
         elif (p == "typeid"):
-            
+
             self.advance()
             typeq = self.checkForType()
             constant = createStringConstant(typeq.__repr__())
-            self.compiler.constants+=constant[0]
-            self.compiler.globals.append(Variable(CHAR.up().up(),constant[1],glob=True))
+            self.compiler.constants += constant[0]
+            self.compiler.globals.append(
+                Variable(
+                    CHAR.up().up(),
+                    constant[1],
+                    glob=True))
             self.advance()
-            return Token(T_ID, constant[1], stp.start,stp.end)
+            return Token(T_ID, constant[1], stp.start, stp.end)
 
     # load parameters into memory (first instructions)
 
@@ -474,6 +493,10 @@ class Function:
                 break
 
             if self.compileCount and p.referenced == False:
+                if p.t.isflt():
+                    counts += 1
+                else:
+                    countn += 1
                 continue
 
             if (self.inline or self.implicit_paramregdecl):
@@ -488,7 +511,7 @@ class Function:
                         p.register, p.t, token=self.tokens[0]))
 
             self.addVariable(p)
-            #p.referenced = True
+            p.referenced = False
 
             if (not self.inline and not self.implicit_paramregdecl):
                 if(config.DO_DEBUG):
@@ -512,30 +535,55 @@ class Function:
             epcounter -= 1
 
     def createClosing(self):                    # create end of the function
-
-        self.addline(function_closer(
-            self.getCallingLabel(), self.destructor_text))
-
+        
+        if self.containsReturn:
+            self.addline(function_closer(
+                self.getCallingLabel(), self.destructor_text, self))
+        else:
+            if self.stackCounter <= 8:
+                self.addline("ret\n")
+            else:
+                self.addline("leave\nret\n")
     def buildReturnStatement(self):             # build a return statement
         self.advance()
         # set flag
         # see declarations
-        self.isReturning = True
+        if self.recursive_depth == 1:
+            self.isReturning = True
+        self.containsReturn = True
+        og_fncalls = self.fncalls
+
         if(self.current_token.tok != T_ENDL):
 
-            instr = self.evaluateRightsideExpression(
-                EC.ExpressionComponent(
-                    sse_return_register if self.returntype.isflt() else setSize(
-                        norm_return_register,
-                        self.returntype.csize()),
-                    self.returntype,
-                    token=self.current_token))
+            #instr = self.evaluateRightsideExpression(
+            #    EC.ExpressionComponent(
+            #        sse_return_register if self.returntype.isflt() else setSize(
+            #            norm_return_register,
+            #            self.returntype.csize()),
+            #        self.returntype,
+            #        token=self.current_token))
 
+            instr, val = self.evaluateExpression()
+            oreg = sse_return_register if self.returntype.isflt() else setSize(
+                norm_return_register,
+                self.returntype.csize()
+                )
+            ninstr, o = RightSideEvaluator.depositFinal(None, val, None, EC.ExpressionComponent(oreg, self.returntype.copy()))
+            instr += ninstr
+            rfree(val.accessor)
+
+            
             self.addline(instr)
-        self.addline(Instruction('jmp', [self.closinglabel[:-1]]))
+
+
+
         self.checkSemi()
         if self.recursive_depth == 1:
             self.hasReturned = True
+            self.fncalls = og_fncalls
+        if self.recursive_depth > 1 or self.inline:
+            self.addline(Instruction('jmp', [self.closinglabel[:-1]]))
+
         self.isReturning = False
 
     def buildIfStatement(self):
@@ -881,8 +929,7 @@ class Function:
         self.advance()
 
         self.checkTok(T_CLSSCOPE)
-        if self.recursive_depth == 1:
-            self.hasReturned = True
+        self.contains_rawasm = True
 
     def buildSwitch(self):
         self.advance()
@@ -1133,21 +1180,20 @@ class Function:
 
         self.checkTok(T_EQUALS)
 
-        instr, value = self.evaluateExpression()        
-        
+        instr, value = self.evaluateExpression()
+
         self.addline(instr)
-        var = Variable(value.type,name)
+        var = Variable(value.type, name)
         if register:
             var.register = ralloc(value.type.isflt())
 
         self.addVariable(var)
-        self.addline(loadToReg(var,value.accessor))
+        self.addline(loadToReg(var, value.accessor))
         rfree(value.accessor)
         self.checkSemi()
 
-
-
     # build a statement that starts with a keyword
+
     def buildKeywordStatement(self):
         word = self.current_token.value
 
@@ -1253,6 +1299,7 @@ class Function:
     # push all register declarations before function call
     # to preserve their state.
     def pushregs(self):
+
         out = ""
         for r in self.regdecls:
             out += spush(r)
@@ -1261,6 +1308,7 @@ class Function:
     # to preserve their state.
 
     def restoreregs(self):
+
         out = ""
         for r in reversed(self.regdecls):
             out += spop(r)
@@ -1342,14 +1390,12 @@ class Function:
         return paraminst
 
     def doVarcall(self, var):
-        out = ""
-        if not self.isReturning:
-            out+= self.pushregs()
-        
+        out = self.pushregs()
+
         return out + (Instruction("call", [valueOf(var)]))
 
-
     # build the ending of a function call code block
+
     def buildFunctionCallClosing(self, fn, varcall, var):
         instructions = ""
 
@@ -1357,20 +1403,19 @@ class Function:
 
         instructions += (fncall(fn) if not varcall else self.doVarcall(var))
 
-        if not self.isReturning:
-            # save return value for register restores
-            if(len(self.regdecls) > 0 ):
-                tmp = ralloc(False)
-                instructions += raw_regmov(
-                    tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
+        # save return value for register restores
+        if(len(self.regdecls) > 0):
+            tmp = ralloc(False)
+            instructions += raw_regmov(
+                tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
 
-            instructions += (self.restoreregs())
+        instructions += (self.restoreregs())
 
-            # restore return value after register restores
-            if(len(self.regdecls) > 0):
-                rfree(tmp)
-                instructions += raw_regmov(
-                    sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
+        # restore return value after register restores
+        if(len(self.regdecls) > 0):
+            rfree(tmp)
+            instructions += raw_regmov(
+                sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
 
         return instructions
 
@@ -1390,10 +1435,9 @@ class Function:
         ttypes = []
         self.advance()
         if(self.current_token.tok == "<"):
-            template=True
+            template = True
             ttypes = self.parseTemplate()
             self.advance()
-
 
         self.checkTok(T_OPENP)
 
@@ -1414,7 +1458,7 @@ class Function:
         # object best suited for this call
 
         if template:
-            fn = self.getTemplateFunction(fid,types,ttypes)
+            fn = self.getTemplateFunction(fid, types, ttypes)
         else:
             fn = self.getFunction(fid, types)
 
@@ -1451,8 +1495,7 @@ class Function:
         sseused = 0
         normused = 0
 
-        if not self.isReturning:
-            instructions += (self.pushregs())
+        instructions += (self.pushregs())
 
         paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
 
@@ -1828,13 +1871,13 @@ class Function:
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
-    def buildStackStructure(self, var, starter="", startoffset = 0):
+    def buildStackStructure(self, var, starter="", startoffset=0):
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
 
                     self.variables.append(Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=startoffset+var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
                     # initialize to null
 
                     self.addline(Instruction(
@@ -2215,12 +2258,12 @@ class Function:
         self.asm += self.suffix           # readonly memory
 
         # warning checking:
-        if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned):
+        if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned and not self.contains_rawasm):
             warn(NoReturnStatement(self.tokens[0], self))
-
-        for v in self.variables:
-            if(not v.referenced and v not in self.parameters):
-                warn(UnusedVariable(v.dtok, v, self))
+        if not self.contains_rawasm:
+            for v in self.variables:
+                if(not v.referenced):
+                    warn(UnusedVariable(v.dtok, v, self))
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:
@@ -2232,29 +2275,25 @@ class Function:
 
             # functions that are found to be simple enough, can be optimized:
 
-            
-
             # WIP
             if self.compileCount == 0:
                 # implicit parameter register declaration...
                 needs_recompile = False
                 newfunc = self.reset()
+                newfunc.hasReturned = False
                 newfunc.compileCount += 1
                 if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
                     newfunc.implicit_paramregdecl = True
                     needs_recompile = True
 
-
                 for p in self.parameters:
                     if not p.referenced:
                         needs_recompile = True
-
 
                 if needs_recompile:
                     self.GC()
                     newfunc.compile()
                     self.asm = newfunc.asm
-
 
             pfinal = Peephole()
             pfinal.addline(self.asm)

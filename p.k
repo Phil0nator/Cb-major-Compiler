@@ -3,10 +3,17 @@
 
 long test = LONG_MAX;
 
+
 int main(unsigned int argc, char** argv){
 	
-	auto test = argv%2;
-	printf("test; %i\n", test);
+	
+	printf("test; %i\n", log(100));
+	char* test = malloc(100);
+	strcpy(test, @argv);
+	printf(test);
+	free(test);
+	printf(test);
+		
 
     return 0;
 }

@@ -242,7 +242,7 @@ class Peephole:
 
         while self.opl3_parser() > 0:
             pass
-        
+
         self.opl2()
 
     def opl2(self):
@@ -263,7 +263,6 @@ class Peephole:
 
             prev = lines[0]
             for line in lines[1:]:
-
                 # redundant push/pop operations
                 if (line.op == "pop" and prev.op == "push"):
                     if(line.dest != prev.dest):
@@ -293,6 +292,7 @@ class Peephole:
                 # e.g: mov rax, rax
                 elif (line.op == "mov" and line.dest == line.source):
                     splitted[line.idx] = ""
+                
 
                 # replace the common structure:
                 #   lea reg, [addr]
@@ -344,14 +344,15 @@ class Peephole:
                     splitted[prev.idx] = ""
                     splitted[line.idx] = f"lea {line.dest}, [{prev.dest}+{prev.source}]\n"
                     optims += 1
-                
-                # a pair of additions, subtractions, or a combination of the two can be simplified into one lea 
-                # instruction in order to reduce file size, avoid stalls, and increase microarchitecture usage
+
+                # a pair of additions, subtractions, or a combination of the two can be simplified into one lea
+                # instruction in order to reduce file size, avoid stalls, and
+                # increase microarchitecture usage
                 elif (prev.op == "add" or (prev.op == "sub" and prev.constSource())) and (line.op == "add" or (line.op == "sub" and line.constSource())):
                     if(prev.dest == line.dest and not (prev.op == "sub" and prev.op == line.op) and not (prev.hasAddr() or line.hasAddr())):
 
-                        
-                        # if the previous was an add, then the terms can be compiled in order:
+                        # if the previous was an add, then the terms can be
+                        # compiled in order:
                         if(prev.op == "add"):
                             effective_address = f"[{prev.dest}+{prev.source}{'+' if line.op == 'add' else '-'}{line.source}]"
                         # if the previous was a sub, then the terms must be reversed
@@ -359,11 +360,22 @@ class Peephole:
                         else:
                             effective_address = f"[{line.dest}+{line.source}-{prev.source}]\n"
 
-                        splitted[prev.idx] =""
+                        splitted[prev.idx] = ""
                         splitted[line.idx] = f"lea {line.dest}, {effective_address}\n"
-                        optims+=1
+                        optims += 1
 
                 prev = line
+        else:
+            for line in lines:
+                # replace 'mov %r, 0' with the faster 'xor %r, %r'
+                if(line.op == "mov" and (line.constSource() and int(line.source) == 0) and not line.hasAddr()):
+                    splitted[line.idx] = f"xor {line.dest}, {line.dest}"
+                    optims += 1
+
+                # ensure that there are no redundant movs like:
+                # e.g: mov rax, rax
+                elif (line.op == "mov" and line.dest == line.source):
+                    splitted[line.idx] = ""
 
         self.instructions = '\n'.join(splitted)
 

@@ -10,6 +10,7 @@ typedef unsigned long FILE;
 
 #include "util/stddef.k"
 #include "util/memory.cb"
+#include "io.k"
 #include "sys/files.k"
 #include "sys/stat.k"
 
@@ -50,6 +51,17 @@ CBLIBENTRY FILE fopen(char* fname, char* mode);
  * @returns number of bytes written
  */
 CBLIBENTRY size_t fputs(FILE fd, char* text);
+
+/**
+ * Print raw text to STDOUT.
+ * Similar to fputs: e.g
+ * 
+ * fputs(STDOUT, "Hello World!\n") = puts("Hello World!\n")
+ * 
+ * @param text raw text to print
+ * @returns number of characters printed
+ */
+CBLIBENTRY size_t puts(char* text);
 
 /**
  * fgets will read the requested number of bytes from a file descriptor into a buffer.

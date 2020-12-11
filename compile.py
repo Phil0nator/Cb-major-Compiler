@@ -128,8 +128,6 @@ def main():
 
         asm = re.sub("\n\t.*:", asm_labelRepl, asm)
 
-        
-
     # linking, and running
 
     with open(config.__fileoutput__ + ".asm", "wb") as f:

@@ -312,6 +312,7 @@ class VariableTemplate(Error):
         self.tok = tok
         self.message = f"Cannot build template of variable:"
 
+
 class DivisionByZero(Error):
     def __init__(self, tok):
         self.tok = tok

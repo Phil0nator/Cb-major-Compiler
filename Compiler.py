@@ -58,7 +58,7 @@ class Compiler:
 
         self.functions = []             # all Function objects
         self.template_functions = []    # function templates
-        self.templatefunction_cache = []# already created function templates
+        self.templatefunction_cache = []  # already created function templates
 
         self.types = []                 # all datatypes: DType
         self.template_types = []        # templated types
@@ -140,7 +140,8 @@ class Compiler:
             types.append(t)
         return types
 
-    def checkType(self, err=True):                # check the next tokens for a type, and return it
+    # check the next tokens for a type, and return it
+    def checkType(self, err=True):
 
         signed = True
         if(self.current_token.tok == T_KEYWORD):
@@ -540,7 +541,8 @@ class Compiler:
                 if len(t[1]) != len(types):
                     break
 
-                fulleq = ''.join([ty.name for ty in t[1]]) == ''.join([ty.name for ty in types])
+                fulleq = ''.join([ty.name for ty in t[1]]) == ''.join(
+                    [ty.name for ty in types])
                 if fulleq:
                     return t[2].copy()
 
@@ -572,7 +574,7 @@ class Compiler:
         # types, and offsets
         struct.s = 0
         struct.name += ''.join([t.name for t in types])
-        
+
         for member in struct.members:
 
             # if template has effect:
@@ -613,7 +615,8 @@ class Compiler:
         if fn.returntype.name in tns:
             fn.returntype = types[tns.index(fn.returntype.name)]
 
-        # replace parameter types with their new values if specified in the template
+        # replace parameter types with their new values if specified in the
+        # template
         for i in range(len(fn.parameters)):
             p = fn.parameters[i]
             if p.t.name in tns:
@@ -623,7 +626,7 @@ class Compiler:
         # check if the function has already been built before
         fnexist = templatefn.getFunction(
             fn.name, [p.t for p in fn.parameters], fn.returntype)
-        
+
         # if it has been built, just use the existing build
         if(fnexist is not None):
             fn = fnexist
@@ -646,8 +649,7 @@ class Compiler:
             fn.isTemplate = True
             if not fn.inline:
                 self.text = f"{fn.asm}{self.text}"
-        
-        
+
         # restore types if necessary
         self.types = self.types[:restore_types]
         return fn

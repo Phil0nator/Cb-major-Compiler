@@ -59,7 +59,7 @@ function int scanstr(char* str, char delim, char* dest){
 }
 
 
-function int scansd(char* str, bool double, double* dest){
+function int scansd(char* str, double* dest){
 
     long integral;
     long decimal;
@@ -133,7 +133,7 @@ int __SSCANF(char* format, char* input, void** args){
                 input+=diff;
             }else if (c == SSCANF_FORMAT_FLOAT || c == SSCANF_FORMAT_DOUBLE){
 
-                diff = scansd(input, false, args[argc]);
+                diff = scansd(input, args[argc]);
                 input+=diff;
                 format++;
             }
