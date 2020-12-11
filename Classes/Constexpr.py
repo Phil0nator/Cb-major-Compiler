@@ -85,6 +85,14 @@ def calculateConstant(a, b, op, c=None):
         rfree(b.accessor)
 
         return opa if a.accessor == True else opb
+    
+    elif (op == "!"):
+        return EC.ExpressionComponent(
+            int(not a.accessor), LITERAL.copy(), constint=True)
+
+    elif (op == "~"):
+        return EC.ExpressionComponent(
+            int(~a.accessor), LITERAL.copy(), constint=True)
 
 
 def calculateCfloat(a, b, op):
@@ -158,6 +166,8 @@ def evaluate(a, b, op):
     if(b is not None):
         return calculateConstant(a, b, op) if a.isconstint(
         ) and b.isconstint() else calculateCfloat(a, b, op)
+    else:
+        return calculateConstant(a,None,op)
     return a
 
 

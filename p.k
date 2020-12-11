@@ -1,7 +1,6 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-#if false || false
 
 
 
@@ -15,7 +14,6 @@ int testFunction(int* input, int length) {
   return sum;
 }
 
-#endif
 
 
 

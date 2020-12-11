@@ -213,9 +213,7 @@ class PreProcessor:
         self.checkToks([T_ID])
         q = self.getDefn(self.current_token.value)
         if(q is None):
-            while not (self.current_token.tok ==
-                       T_DIRECTIVE and self.current_token.value == "endif"):
-                self.delmov()
+            self.skipIfbody()
         else:
             self.delmov()
 
@@ -297,6 +295,18 @@ class PreProcessor:
                     Token(T_STRING, o, starttok.start, starttok.end)]
                 self.tkidx = startidx
                 self.update()
+            elif (id == "defined"):
+                self.delmov()
+                self.delmov()
+                value = self.getMacro(self.current_token.value) is not None or self.getDefn(self.current_token.value) is not None
+                
+                self.tokens[startidx:self.tkidx+2] = [
+                    Token(T_INT, int(value), starttok.start, starttok.end)
+                ]
+                
+                self.tkidx = startidx
+                
+                self.update()
 
             else:
                 self.advance()
@@ -348,9 +358,8 @@ class PreProcessor:
 
     def buildIf(self):
         self.delmov()
-        name = self.current_token.value
+
         sline = self.current_token.start.line
-        chs = self.current_token.end.ch
         
         if(self.current_token.start.line != sline):
             throw(ExpectedValue(self.current_token))
@@ -359,18 +368,20 @@ class PreProcessor:
         if self.current_token.tok == T_ID:
             self.checkDefn()
             self.update()
+        multitok = False
         definitionTokens = [self.current_token]
         self.delmov()
+
         while(self.current_token.start.line == sline):
             if self.current_token.tok == T_ID:
                 self.checkDefn()
                 self.update()
+                self.current_token.start.line = sline
                 continue
             definitionTokens.append(self.current_token)
             self.delmov()
-        definitionTokens.append(self.current_token)
-        self.delmov()
-
+        
+        
         tmpfn = Function("empty",[],None,config.GlobalCompiler,[])
         value = determineConstexpr(False, definitionTokens, tmpfn)
         if value.accessor == 0:
