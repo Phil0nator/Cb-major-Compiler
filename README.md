@@ -260,7 +260,7 @@ for (int i = 0; i < 10; i++){
 
 Example:
 
-```
+```C
 switch(expression){
 
   case constexpr{
