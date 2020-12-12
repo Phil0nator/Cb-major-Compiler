@@ -96,7 +96,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 size_t toBinary(char* buffer, unsigned long val, long bits){
     buffer += bits;
     for(int i = 0 ; i < bits;i++){
-        if( (val&&1) == 1){
+        if( (val&&1) ){
             @buffer = '1';
         }else{
             @buffer = '0';

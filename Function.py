@@ -534,7 +534,9 @@ class Function:
                     countn += 1
                 continue
 
-            if (self.inline or self.implicit_paramregdecl):
+            cond = (self.inline or self.implicit_paramregdecl and not ((not p.isflt()) and countn == 1) )
+
+            if cond:
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
                     counts += 1
@@ -548,7 +550,7 @@ class Function:
             self.addVariable(p)
             #p.referenced = False
 
-            if (not self.inline and not self.implicit_paramregdecl):
+            if not cond:
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
                 if(p.isflt()):

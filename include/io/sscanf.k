@@ -30,8 +30,10 @@ function int scanint(char* str, long* dest, bool signed){
         str+=1;
         c = $char(@str);
     }
+
     while( c <= '9' && c >= '0'){
-        val = (val*10)+(c-'0');
+        c-='0';
+        val = (val*10)+(c);
         str+=1;
         c = $char (@str);
     }
@@ -93,7 +95,6 @@ int __SSCANF(char* format, char* input, void** args){
     if(input == 0 || format == 0){
         return 0;
     }
-
     while(@format != 0){
 
         if(@format != SSCANF_FORMAT_SPECIFIER){
@@ -107,7 +108,8 @@ int __SSCANF(char* format, char* input, void** args){
             char c = @format;
             ssize_t diff;
             if(c == SSCANF_FORMAT_INT){
-
+                long* p = args[argc];
+                
                 diff = scanint(input, args[argc], true);
                 input+=diff;
                 format++;
@@ -153,7 +155,7 @@ int __SSCANF(char* format, char* input, void** args){
 
 
 
-int sscanf(char* fmt, char* input, void* a, void* b, void* c, void* d){
+__cdecl int sscanf(char* fmt, char* input, void* a, void* b, void* c, void* d){
 
     void args[4];
     args[0]=a;

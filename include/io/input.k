@@ -72,41 +72,40 @@ int toInteger(char* str, bool signed){
 
 
 
-int __scanf(char* format, void** args, fd_t file){
+int __scanf(char* format, void** args, fd_t file, bool stream){
     
-    char* inp = nullptr;
-    size_t len = 0;
-    size_t gotten = 0;
-    do {
-        len+= __SCANFMAXCHUNK;
-        inp = realloc(inp, len);
-        gotten = fgets(file,inp+len-__SCANFMAXCHUNK, __SCANFMAXCHUNK);
-        inp[len-__SCANFMAXCHUNK+gotten]=0;
-    } while (gotten >= __SCANFMAXCHUNK );
-    
-    
+    char* inp;
+    if (stream){
+        inp = mapalloc(__SCANFMAXCHUNK);
+        fgets(file, inp, __SCANFMAXCHUNK);
+    }
+    else{
+        inp = floads(file);
+    }
+
+
     int retval = __SSCANF(format, inp, args);
-    free(inp);
+    mapfree(inp);
     return retval;
 }
 
 
 
-size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e){
+__cdecl size_t scanf(char* format, void* a, void* b, void* c, void* d, void* e){
     void* args[5];
     args[0]=a;
     args[1]=b;
     args[2]=c;
     args[3]=d;
     args[4]=e;
-    return __scanf(format, &args, STDIN);
+    return __scanf(format, &args, STDIN, true);
 }
 
-size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d ){
+__cdecl size_t fscanf(fd_t file, char* format, void* a, void* b, void* c, void* d ){
     void* args[4];
     args[0]=a;
     args[1]=b;
     args[2]=c;
     args[3]=d;
-    return __scanf(format, &args, file);
+    return __scanf(format, &args, file, false);
 }
