@@ -33,7 +33,9 @@ function int scanint(char* str, long* dest, bool signed){
 
     while( c <= '9' && c >= '0'){
         c-='0';
-        val = (val*10)+(c);
+        
+        val *= 10;
+        val += (c&&0xff);
         str+=1;
         c = $char (@str);
     }
@@ -109,7 +111,6 @@ int __SSCANF(char* format, char* input, void** args){
             ssize_t diff;
             if(c == SSCANF_FORMAT_INT){
                 long* p = args[argc];
-                
                 diff = scanint(input, args[argc], true);
                 input+=diff;
                 format++;

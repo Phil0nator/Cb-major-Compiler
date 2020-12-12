@@ -51,9 +51,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
     if(a.isRegister() or overrideAload):
         areg = a.accessor
         needLoadA = False
-    elif isinstance(a.accessor, Variable) and a.accessor.register is not None:
-        areg = a.accessor.register
-        needLoadA = False
+    #elif isinstance(a.accessor, Variable) and a.accessor.register is not None:
+    #    areg = a.accessor.register
+    #    needLoadA = False
     else:
         areg = ralloc(a.type.isflt(), size=a.type.csize())
 
@@ -64,9 +64,9 @@ def optloadRegs(a, b, op, o, constvalok=False):
         if(b.isRegister()):
             breg = b.accessor
             needLoadB = False
-        elif isinstance(b.accessor, Variable) and b.accessor.register is not None:
-            breg = b.accessor.register
-            needLoadB = False
+        #elif isinstance(b.accessor, Variable) and b.accessor.register is not None:
+        #    breg = b.accessor.register
+        #    needLoadB = False
         else:
 
             breg = ralloc(b.type.isflt(), size=b.type.csize())

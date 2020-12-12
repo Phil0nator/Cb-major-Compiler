@@ -534,7 +534,7 @@ class Function:
                     countn += 1
                 continue
 
-            cond = (self.inline or self.implicit_paramregdecl and not ((not p.isflt()) and countn == 1) )
+            cond = (self.inline or self.implicit_paramregdecl and not ((not p.isflt()) and countn == 2) )
 
             if cond:
                 if(p.isflt()):

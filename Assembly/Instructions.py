@@ -337,12 +337,13 @@ class Peephole:
                         splitted[line.idx] = f"{line.op} {line.dest}, {prev.source}\n"
                         splitted[prev.idx] = ""
                         optims += 1
+                #TODO: FIX
                 # many add instructions can be optimized to use the lea instruction in order to diversify
                 # port usage, and increase overall microarchitecture usage.
-                elif (prev.op == "add" and line.op == "mov" and line.source == prev.dest and not (prev.hasAddr() or line.hasAddr())):
-                    splitted[prev.idx] = ""
-                    splitted[line.idx] = f"lea {line.dest}, [{prev.dest}+{prev.source}]\n"
-                    optims += 1
+                #elif (prev.op == "add" and line.op == "mov" and line.source == prev.dest and not (prev.hasAddr() or line.hasAddr())):
+                #    splitted[prev.idx] = ""
+                #    splitted[line.idx] = f"lea {line.dest}, [{prev.dest}+{prev.source}]\n"
+                #    optims += 1
 
                 # a pair of additions, subtractions, or a combination of the two can be simplified into one lea
                 # instruction in order to reduce file size, avoid stalls, and
