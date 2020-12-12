@@ -821,6 +821,11 @@ class Compiler:
                 self.advance()
                 self.buildTemplate()
 
+
+
+            else:
+                throw(UnexpectedToken(self.current_token))
+
         else:
             throw(UnexpectedToken(self.current_token))
 
