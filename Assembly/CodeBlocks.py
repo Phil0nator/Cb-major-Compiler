@@ -586,8 +586,12 @@ def castABD(a, b, areg, breg, newbreg):
             return out
         return False
     if(a.type.isflt() and not b.type.isflt()):
+        if sizeOf(breg) < 4:
+            breg = setSize(breg, 4)
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
     if(b.type.isflt() and not a.type.isflt()):
+        if sizeOf(newbreg) < 4:
+            breg = setSize(newbreg, 4)
         return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False
 

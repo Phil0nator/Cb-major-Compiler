@@ -856,8 +856,20 @@ class RightSideEvaluator(ExpressionEvaluator):
             str) else e.type
         if(t is None):
             throw(UnkownType(e.token))
+        
+        if t.isflt() == a.type.isflt():
+            a.type = t
+            if a.isRegister():
+                a.accessor = setSize(a.accessor, t.csize())
+            return "", t, a
+        
+        
+        
         aval = ralloc(a.type.isflt(), a.type.csize())
         result = ralloc(t.isflt(), t.csize())
+        
+        
+        
         instr += bringdown_memloc(a)
         cst = castABD(EC.ExpressionComponent("", t),
                       EC.ExpressionComponent("", a.type), "", aval, result)

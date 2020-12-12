@@ -50,7 +50,7 @@ T_ANOT = "~"
 T_AOR = "|"
 T_AAND = "&"
 
-T_MULTIOP = "-><=!|&+/*.^%:"
+T_MULTIOP = "-><=!|&+/*^%:"
 MULTIOPERS = [
     "->",
     "!=",

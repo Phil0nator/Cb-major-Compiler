@@ -265,6 +265,14 @@ class Lexer:
                 token = self.buildMultichar()
                 tokens.append(token)
 
+            elif (self.ch == "."):
+                
+                if self.raw[self.chidx+1].isdigit():
+                    token=self.buildNumber()
+                else:
+                    token = self.buildMultichar()
+                tokens.append(token)
+
             elif self.ch.isdigit():
                 token = self.buildNumber()
                 tokens.append(token)
@@ -280,6 +288,8 @@ class Lexer:
             elif (T.isidchar(ord(self.ch))):
                 token = self.buildAmbiguous()
                 tokens.append(token)
+
+            
 
             else:
                 throw(UnkownCharSequence(

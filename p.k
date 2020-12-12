@@ -7,9 +7,15 @@
 
 
 
+struct Test{
+  long a;
+};
+
 
 int main(unsigned int argc, char** argv){
 	
-  printf("%i\n", main);
+  double x = .1;
+  Test test;
+  test.a = x;
 
 }
