@@ -97,7 +97,7 @@ class Compiler:
         if(fn is None):
             return None
 
-        return self.getGlob(fn.getCallingLabel())
+        return self.getGlob(fn.getCallingLabel()) if not fn.extern else self.getGlob(fn.name)
 
     def getTemplateType(self, q):
         return next((t for t in self.template_types if t[0].name == q), None)
@@ -840,6 +840,9 @@ class Compiler:
             if f.name == "main":
                 self.entry = f
                 f.extern = True
+                self.globals.append(
+                    Variable(INT.up(), "main", glob=True, initializer=f)
+                )
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.
