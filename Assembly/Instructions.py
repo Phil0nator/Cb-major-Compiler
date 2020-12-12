@@ -255,6 +255,7 @@ class Peephole:
         splitted = self.instructions.split("\n")
         lines = []
         for i in range(len(splitted)):
+
             lines.append(self.parseLine(splitted[i], i))
 
         lines = list(filter(line_filter, lines))
@@ -313,7 +314,9 @@ class Peephole:
                         splitted[line.idx] = f"{line.op} {sizesp}{prev.source}, {line.source}\n"
 
                 # remove repetitive / impossible jmp instructions
-                elif (prev.op == "jmp" and prev.op == line.op):
+                elif (prev.op == "jmp" and prev.op == line.op and prev.idx == line.idx-1):
+                    splitted[line.idx] = ""
+                elif (line.op == "jmp" and splitted[line.idx+1] == line.dest+":"):
                     splitted[line.idx] = ""
 
                 # incorperate memory operands for suitable instructions

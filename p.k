@@ -3,19 +3,11 @@
 
 
 
-
-
-
-
-struct Test{
-  long a;
-};
-
-
 int main(unsigned int argc, char** argv){
-	
-  double x = .1;
-  Test test;
-  test.a = x;
 
+  while(true){
+    fprintf(-1, "true\n");
+  }
+
+  return NULL;
 }

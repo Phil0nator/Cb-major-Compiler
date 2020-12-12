@@ -789,7 +789,6 @@ class Function:
         # if the expression inside the while loop header always evaluates to False,
         # the body of the loop is not compiled.
         dontGetBody = False
-
         if(not resultant.isconstint()):
             cmpinst += f"{checkTrue(resultant)}jnz {startlabel}\n"
         elif(resultant.accessor != 0):
