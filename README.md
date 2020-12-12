@@ -30,7 +30,7 @@ optional arguments:
 The following is a basic hello world program to get started.
 
 ```C
-#include "std.k"
+#include "cblib.cb"
 
 function int main(int argc, char** argv){
   
@@ -87,7 +87,7 @@ bool
 Synonymous to ```char```, with implied usage for true or false
 
 ```C
-double`
+double
 ```
 64 bit signed double precision floating point value
 
