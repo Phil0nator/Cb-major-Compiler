@@ -118,7 +118,7 @@ Type Qualifiers apply extra properties to a variable.
 
 ```||``` bitwize or
 
-```@``` dereference
+```@``` de-reference
 
 ```&``` reference
 
