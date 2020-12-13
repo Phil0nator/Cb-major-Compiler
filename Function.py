@@ -2047,7 +2047,12 @@ class Function:
             instr, value = self.evaluateExpression()
             evaluator = ExpressionEvaluator(self)
             pfix = [None, value, EC.ExpressionComponent("=", VOID,isoperation=True)]
-            
+            if (isinstance(value, Variable) and value.register is None) or not value.isRegister():
+                reg = ralloc(t.isflt())
+                instr+=loadToReg(reg, value.accessor)
+                value.accessor = reg
+                value.type = t
+
 
             for v in dests:
                 pfix[0] = EC.ExpressionComponent(v, v.t)

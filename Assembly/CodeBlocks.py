@@ -322,7 +322,11 @@ def loadToReg(reg, value):
             elif(isinstance(value, str) and "xmm" in value):
                 return f"movsd {reg}, {value}\n"
             else:
-                return f"mov {reg}, {valueOf(value)} ;<-\n"
+                if isinstance(value, int):
+                    if value == 0:
+                        return f"xorpd {reg}, {reg}\n"
+                    else:
+                        return f"mov rax, {value}\ncvtsi2sd {reg}, rax\n"
 
         if(isinstance(value, Variable) and value.isStackarr):
             return f"lea {setSize(reg,8)}, [{value.baseptr}{value.offset+value.stackarrsize}] \n"
