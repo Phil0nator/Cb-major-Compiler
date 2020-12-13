@@ -1943,6 +1943,25 @@ class Function:
                     self.buildStackStructure(
                         v, starter=f"{starter}{var.name}.", startoffset=var.offset)
 
+    def constructVar(self, t, name, register):
+        # create prototype variable
+        vprot = Variable(t, name)
+
+        # set the variable's register if one is given
+        vprot.register = ralloc(
+            t.isflt()) if register != False else None
+
+        # add variable correctly to get extra properties added to it
+        self.addVariable(vprot)
+
+        # pull variable back out from the array in order to determine its offset
+        # which is set by self.addVariable
+        var = self.variables[-1]
+        var.isptr = t.ptrdepth > 0
+
+        return var
+
+
     def buildDeclaration(self, register=False):                     # declare new var
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):
             self.buildRegdecl()
@@ -1963,20 +1982,7 @@ class Function:
         if(self.compiler.getType(name) is not None):
             throw(UsingTypenameAsVariable(self.tokens[self.ctidx - 1]))
 
-        # create prototype variable
-        vprot = Variable(t, name)
-
-        # set the variable's register if one is given
-        vprot.register = ralloc(
-            t.isflt()) if register != False else None
-
-        # add variable correctly to get extra properties added to it
-        self.addVariable(vprot)
-
-        # pull variable back out from the array in order to determine its offset
-        # which is set by self.addVariable
-        var = self.variables[-1]
-        var.isptr = t.ptrdepth > 0
+        var = self.constructVar(t, name, register)
 
         # if the variable is a stack-based structure,
         #   add its member variables too.
@@ -2020,6 +2026,15 @@ class Function:
         if(self.current_token.tok == T_ENDL):
             self.advance()
             return
+
+        elif (self.current_token.tok == T_COMMA):
+            while self.current_token.tok == T_COMMA:
+                self.advance()
+                xname = self.checkForId()
+                xvar = self.constructVar(t, xname, register)
+            self.checkSemi()
+            return
+
 
         if(self.current_token.tok != T_EQUALS):
             throw(ExpectedToken(self.current_token, " = or ; "))

@@ -1,4 +1,5 @@
 
 benchmark/intelcoffeelakeinstructionspecs.pdf
 .vscode
-__pycache__
+__pycache__/
+format.sh
