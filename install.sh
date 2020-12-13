@@ -14,20 +14,29 @@ if ["$0" -ne 0]
 fi
 
 # check for pip
-which pip3
+which python3 -m pip
 if ["$0" -ne 0]
     then echo "Please first install a pip version for python 3."
     exit
 fi
 
 # setup dependencies
-pip3 install argparse
-pip3 install colorama
-pip3 install termcolor
-pip3 install cpuid
+
+# argparse is used to parse commandline arguments passed to the compiler
+python3 -m pip install argparse
+# colorama and termcolor are used for text formatting in errors and warnings
+# to give ansii encoded colors and styles.
+python3 -m pip install colorama
+python3 -m pip install termcolor
+
+# cpuid is used to get basic information about the cpu and what feature sets
+# it has available.
+python3 -m pip install cpuid
 
 
-
+# create program directory
 mkdir /lib/cbm
-cp -r -v * /lib/cbm
+# copy files
+cp -a -r -v * /lib/cbm
+# create symbolic link for terminal command
 ln -s /lib/cbm/cbm.sh /bin/cbm
