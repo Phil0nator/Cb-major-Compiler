@@ -1,1 +1,1 @@
-python3.8 /lib/cbm/compile.py "$@"
+python3 /lib/cbm/compile.py "$@"
