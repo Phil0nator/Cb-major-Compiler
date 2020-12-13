@@ -211,9 +211,15 @@ class ExpressionEvaluator:
 
             # the destination is a variable
             if(vardest):
+                
                 # do calculation with implicit cast, and store result in b
-                instrs, _, b = evaluator.performCastAndOperation(
-                    a, b, op[:-1], VOID.copy())
+                tmpstack = [None]
+                instrs = self.compile_aopb(EC.ExpressionComponent(a.accessor, a.type,token=a.token), op[:-1], b, evaluator, tmpstack)
+                b = tmpstack[1]
+                #instrs, _, b = evaluator.performCastAndOperation(
+                #    a, b, op[:-1], VOID.copy())
+
+
             # the destination is a pointer held by a register
             else:
                 # if a is not a register, the destination must be invalid (a
@@ -221,12 +227,16 @@ class ExpressionEvaluator:
                 if(not a.isRegister()):
                     throw(InvalidDestination(a.token))
 
-                avalreg, _, __, loadinst = optloadRegs(
-                    a, None, op, LONG.copy())
-                instrs += loadinst
+                #avalreg, _, __, loadinst = optloadRegs(
+                #    a, None, op, LONG.copy())
+                #instrs += loadinst
                 # do calculation with implicit cast, and store result in b
-                opinstr, _, b = evaluator.performCastAndOperation(
-                    EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1], VOID.copy())
+                tmpstack = [None]
+                opinstr = self.compile_aopb(EC.ExpressionComponent(a.accessor, a.type,token=a.token), op[:-1], b, evaluator, tmpstack)
+                b = tmpstack[1]
+                
+                #opinstr, _, b = evaluator.performCastAndOperation(
+                #    EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1], VOID.copy())
                 instrs += opinstr
 
             # at this point any arithmatic has been done, and the result
@@ -511,6 +521,85 @@ class ExpressionEvaluator:
 
         return newinstr, newt, apendee
 
+
+    def compile_aopb(self, a, op, b, evaluator, stack):
+        # special case
+        o = VOID.copy()
+        instr = ""
+        if(a.isconstint() and op in ["?"]):
+            stack.append(calculateConstant(a, b, op))
+
+            return ""
+
+        c = None
+        if(op in [":"]):
+            c = stack.pop()
+            stack.append(c)
+        # optimize for constant expressions
+        if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
+
+            stack.append(calculateConstant(a, b, op, c=c))
+            return ""
+
+        # if one operand is constant
+        elif a.isconstint() and not b.isconstint() and not b.type.isflt() and COMMUNITIVE[op]:
+            # setup for communitive property
+            tmp = a
+            a = b
+            b = tmp
+
+        # optimize for semi constexpr
+        if(b.isconstint() and not a.isconstint() and not a.type.isflt()):
+
+            # check for and do any possible optimizations
+            newinstr, newt, apendee = self.check_semiconstexpr_optimization(
+                a, b, op, evaluator)
+
+            # if no valid optimizations couild be made:
+            #       do the normal evaluation
+            if(newinstr is None):
+                newinstr, newt, apendee = evaluator.performCastAndOperation(
+                    a, b, op, o)
+
+            # push result
+            stack.append(apendee)
+            instr += newinstr
+            o = newt.copy()
+
+        else:  # no optimizations can be made:
+
+            if (op in SETTERS):
+                ninster, o, apendee = self.doAssignment(
+                    a, b, op, evaluator)
+                instr += ninster
+                stack.append(apendee)
+            # op is -> or .
+            elif(op == T_PTRACCESS or op == T_DOT):
+                ninster, o, apendee = evaluator.memberAccess(a, b)
+                instr += ninster
+                stack.append(apendee)
+            # ternary operators:
+            elif (op == T_TERNARYQ):
+
+                ninster, o, apendee = self.ternarypartA(a, b)
+                instr += ninster
+                stack.append(apendee)
+
+            elif (op == T_TERNARYELSE):
+
+                ninster, o, apendee = self.ternarypartB(a, b)
+                instr += ninster
+                stack.append(apendee)
+
+            # op is any other op
+            else:
+                newinstr, newt, apendee = evaluator.performCastAndOperation(
+                    a, b, op, o)
+                stack.append(apendee)
+                instr += newinstr
+                o = newt.copy()
+        return instr
+
     # evaluate a generated postfix list of EC's
 
     def evaluatePostfix(self, pfix, evaluator):
@@ -531,80 +620,10 @@ class ExpressionEvaluator:
                             throw(HangingOperator(pfix[-1].token))
                     else:
                         a = stack.pop()              # first operand
+                    
 
-                    # special case
-                    if(a.isconstint() and op in ["?"]):
-                        stack.append(calculateConstant(a, b, op))
-
-                        continue
-
-                    c = None
-                    if(op in [":"]):
-                        c = stack.pop()
-                        stack.append(c)
-                    # optimize for constant expressions
-                    if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
-
-                        stack.append(calculateConstant(a, b, op, c=c))
-                        continue
-
-                    # if one operand is constant
-                    elif a.isconstint() and not b.isconstint() and not b.type.isflt() and COMMUNITIVE[op]:
-                        # setup for communitive property
-                        tmp = a
-                        a = b
-                        b = tmp
-
-                    # optimize for semi constexpr
-                    if(b.isconstint() and not a.isconstint() and not a.type.isflt()):
-
-                        # check for and do any possible optimizations
-                        newinstr, newt, apendee = self.check_semiconstexpr_optimization(
-                            a, b, op, evaluator)
-
-                        # if no valid optimizations couild be made:
-                        #       do the normal evaluation
-                        if(newinstr is None):
-                            newinstr, newt, apendee = evaluator.performCastAndOperation(
-                                a, b, op, o)
-
-                        # push result
-                        stack.append(apendee)
-                        instr += newinstr
-                        o = newt.copy()
-
-                    else:  # no optimizations can be made:
-
-                        if (op in SETTERS):
-                            ninster, o, apendee = self.doAssignment(
-                                a, b, op, evaluator)
-                            instr += ninster
-                            stack.append(apendee)
-                        # op is -> or .
-                        elif(op == T_PTRACCESS or op == T_DOT):
-                            ninster, o, apendee = evaluator.memberAccess(a, b)
-                            instr += ninster
-                            stack.append(apendee)
-                        # ternary operators:
-                        elif (op == T_TERNARYQ):
-
-                            ninster, o, apendee = self.ternarypartA(a, b)
-                            instr += ninster
-                            stack.append(apendee)
-
-                        elif (op == T_TERNARYELSE):
-
-                            ninster, o, apendee = self.ternarypartB(a, b)
-                            instr += ninster
-                            stack.append(apendee)
-
-                        # op is any other op
-                        else:
-                            newinstr, newt, apendee = evaluator.performCastAndOperation(
-                                a, b, op, o)
-                            stack.append(apendee)
-                            instr += newinstr
-                            o = newt.copy()
+                    instr += self.compile_aopb(a, op, b, evaluator, stack)
+                    
                 else:  # op takes only one operand
 
                     if(len(stack) < 1):

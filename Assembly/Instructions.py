@@ -26,6 +26,8 @@ def line_filter(line):
         return False
     return True
 
+def splitfilter(line):
+    return line != ''
 
 class Line:
     def __init__(self, op, dest, source, flags, idx):
@@ -255,8 +257,8 @@ class Peephole:
         splitted = self.instructions.split("\n")
         lines = []
         for i in range(len(splitted)):
-
-            lines.append(self.parseLine(splitted[i], i))
+            if splitted[i] != '':
+                lines.append(self.parseLine(splitted[i], i))
 
         lines = list(filter(line_filter, lines))
 

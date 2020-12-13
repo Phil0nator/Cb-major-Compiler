@@ -239,7 +239,6 @@ def fncall(fn):
             # restore register state
             norm_scratch_registers_inuse = regstate
             sse_scratch_registers_inuse = regstatesse
-
             # re-enable warnings if necessary
             if resetcfg:
                 config.__nowarn__ = False
