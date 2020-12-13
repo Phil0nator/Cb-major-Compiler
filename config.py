@@ -30,9 +30,10 @@ if missing:
 
 parser = arg.ArgumentParser(
     description='Compile, link, and debug Cb major programs.')
-parser.add_argument("-o", "--output", required=True,
+
+parser.add_argument("input", help="Name of input file")
+parser.add_argument("-o", "--output", required=False, default = "a.out",
                     help="Name of output file")
-parser.add_argument("-i", "--input", required=True, help="Name of input file")
 parser.add_argument("-nasm", "--assembly", action="store_true", default=False,
                     help="Output compiled version in nasm assembly as well as the executable")
 parser.add_argument("-r", "--run", action="store_true", default=False,
@@ -41,7 +42,7 @@ parser.add_argument("-g", "--debug", action="store_true", default=False,
                     help="Add helpful comments in the outputted nasm code if [-nasm] option used")
 parser.add_argument("-O2", "--optimize2", action="store_true", default=False,
                     help="Use level 2 optimization (longer compiletime, but somewhat faster output)")
-parser.add_argument("-O3", "--optimize3", action="store_true", default=False,
+parser.add_argument("-O3", "--optimize3", action="store_true", default=True,
                     help="Use level 3 optimization (much longer compiletime, but faster output)")
 parser.add_argument("-OS", "--optimize-size", action="store_true", default=False,
                     help="Optimize output for executable size, rather than speed.")

@@ -1,1 +1,1 @@
-python3.8 compile.py -i include/cblib_compile.cb -o include/cblib -c -O3
+python3.8 compile.py include/cblib_compile.cb -o include/cblib -c -O3
