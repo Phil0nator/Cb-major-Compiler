@@ -17,15 +17,15 @@ import os
 import subprocess
 import pkg_resources
 
-required = {'argparse', 'colorama', "termcolor", "cpuid"}
-installed = {pkg.key for pkg in pkg_resources.working_set}
-missing = required - installed
+#required = {'argparse', 'colorama', "termcolor", "cpuid"}
+#installed = {pkg.key for pkg in pkg_resources.working_set}
+#missing = required - installed
 
 
-if missing:
-    python = sys.executable
-    subprocess.check_call(
-        [python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
+#if missing:
+#    python = sys.executable
+#    subprocess.check_call(
+#        [python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
 ###################################
 
 parser = arg.ArgumentParser(
@@ -46,11 +46,15 @@ parser.add_argument("-O3", "--optimize3", action="store_true", default=True,
                     help="Use level 3 optimization (much longer compiletime, but faster output)")
 parser.add_argument("-OS", "--optimize-size", action="store_true", default=False,
                     help="Optimize output for executable size, rather than speed.")
+parser.add_argument("-O0", "--optimize0", action="store_true", default=False,
+                    help="Disable all optimizations.")
 parser.add_argument("-p", "--profile", action="store_true", default=False,
                     help="Print profiling statistics about the compiler for debugging/optimization")
 parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
 parser.add_argument("-l", "--link", action="append", help="Link object files")
+
+
 
 parser.add_argument(
     "-nw",
@@ -104,7 +108,9 @@ __macrotext__ = ""
 __CEXTERNS__ = ""
 
 # optimization level
-if(args.optimize2):
+if (args.optimize0):
+    __oplevel__ = 0
+elif(args.optimize2):
     __oplevel__ = 2
 elif(args.optimize3):
     __oplevel__ = 3

@@ -333,6 +333,7 @@ def rfreeAll():
 
 
 def setSize(reg, size):
+    
 
     if("xmm" in reg):
         return reg
@@ -354,6 +355,8 @@ def setSize(reg, size):
 def sizeOf(reg):
     if(isinstance(reg, Variable)):
         return reg.t.csize()
+    elif(isinstance(reg, int)):
+        return 8
 
     if("xmm" in reg):
         return 8

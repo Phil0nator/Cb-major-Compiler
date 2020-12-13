@@ -33,7 +33,6 @@ def optloadRegs(a, b, op, o, constvalok=False):
     breg = ""
     needLoadA = True
     needLoadB = True
-
     overrideAload = False
 
     if (constvalok and isinstance(a.accessor, int)
@@ -123,27 +122,60 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
+    def swap_op(self, a, b):
+        apendee = b
+        newt = b.type
+        inst = self.normal_semiconstexprheader(a, b)
+        areg, breg, _, linstrs = optloadRegs(a,b, "<=>",VOID.copy())
+        inst += linstrs
+        if isinstance(a.accessor, Variable) and a.accessor.register is None:
+            inst += loadToReg(b.accessor, areg)
+            inst += loadToReg(a.accessor, breg)
+            b.accessor = breg
+            rfree(areg)
+
+        elif isinstance(b.accessor, Variable) and b.accessor.register is None:
+            inst += loadToReg(a.accessor, breg)
+            inst += loadToReg(b.accessor, areg)
+            b.accessor = breg
+            rfree(areg)
+        
+        else:
+            tmp = ralloc(b.type.isflt() and a.type.isflt())
+            inst += loadToReg(tmp, areg)
+            inst += loadToReg(a.accessor, breg)
+            inst += loadToReg(b.accessor, tmp)
+            rfree(tmp)
+            rfree(areg)
+            b.accessor = breg
+
+
+        return inst, newt, apendee
+
     # Any assignments will be handled in this function.
     # This includes operators like '+=', '-=', etc...
 
-    def doAssignment(self, a, b, op, evaluator):
+    def doAssignment(self, a, b, op, evaluator, depth=0):
+        ogb = EC.ExpressionComponent(b.accessor, b.type, constint=b.constint, token=b.token, memloc=b.memory_location)
+        # the swapping operator is passed on to its own function:
+        if op == "<=>":
+            return self.swap_op(a,b)
 
         instrs = ""
         # get the necessary opcode for the operation,
         # and determine if it can be done in one line.
-
         cmd, oneline = getOnelineAssignmentOp(a, b, op)
 
         # is the destination a variable...
         vardest = isinstance(a.accessor, Variable)
 
-        if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)):
+        if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)) or a.type.isflt() and b.isconstint():
             b.accessor, _, __, qwordinstr = optloadRegs(
                 b, None, "", VOID.copy())
             b.constint = False
             instrs += qwordinstr
 
-        constright = b.isconstint()  # is the right side of the equation constant
+        constright = b.isconstint() and not a.type.isflt()  # is the right side of the equation constant
 
         # invalid leftside
         if(a.isRegister() and not a.memory_location):
@@ -176,6 +208,7 @@ class ExpressionEvaluator:
                     rfree(b.accessor)
                     breg = castlock
                     instrs += cst
+
                 # perform operation
                 instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
                 rfree(breg)
@@ -243,9 +276,10 @@ class ExpressionEvaluator:
             # is stored in b. So, a recursive call the self.doAssignment with the same
             # a argument, and the new calculated b argument, and the plain "=" argument
             # should correctly move the new value into place.
-            movinstr, a.type, b = self.doAssignment(a, b, "=", evaluator)
+            movinstr, a.type, b = self.doAssignment(a, b, "=", evaluator, depth+1)
             instrs += movinstr
-
+        
+        
         return instrs, a.type.copy(), a
 
     def normal_semiconstexprheader(self, a, b):

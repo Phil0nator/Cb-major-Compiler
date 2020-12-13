@@ -1075,6 +1075,7 @@ class Function:
         else:
             s = self.current_token
             self.advance()
+            startvars = len(self.variables)
             if self.current_token.tok != T_KEYWORD:
                 self.buildDeclaration(register=True)
             else:
@@ -1082,16 +1083,18 @@ class Function:
                     self.buildAutoDefine(register=True)
                 else:
                     throw(UnexpectedToken(self.current_token))
+            for v in self.variables[startvars:]:
+                self.regdecls.append(
+                    EC.ExpressionComponent(
+                        v.register, v.t, token=s))
 
-            v = self.variables[-1]
-            self.regdecls.append(
-                EC.ExpressionComponent(
-                    v.register, v.t, token=s))
+                if(v.t.isflt()):
+                    self.regdeclremain_sse -= 1
+                else:
+                    self.regdeclremain_norm -= 1
 
-            if(v.t.isflt()):
-                self.regdeclremain_sse -= 1
-            else:
-                self.regdeclremain_norm -= 1
+                if(self.regdeclremain_norm < 0 or self.regdeclremain_sse < 0):
+                    warn(RegisterDeclWarning(s))
 
     def buildDoWhile(self):
         self.advance()
@@ -2028,10 +2031,32 @@ class Function:
             return
 
         elif (self.current_token.tok == T_COMMA):
+            dests = [var]
             while self.current_token.tok == T_COMMA:
                 self.advance()
                 xname = self.checkForId()
                 xvar = self.constructVar(t, xname, register)
+                dests.append(xvar)
+            if (self.current_token.tok == T_ENDL):
+                self.advance()
+                return
+            elif self.current_token.tok != T_EQUALS:
+                throw(ExpectedToken(self.current_token, "="))
+            
+            self.advance()
+            instr, value = self.evaluateExpression()
+            evaluator = ExpressionEvaluator(self)
+            pfix = [None, value, EC.ExpressionComponent("=", VOID,isoperation=True)]
+            
+
+            for v in dests:
+                pfix[0] = EC.ExpressionComponent(v, v.t)
+                loadInstr, _ = evaluator.evaluatePostfix(pfix, evaluator)
+                instr += loadInstr
+                rfree(_.accessor)
+
+            rfree(value.accessor)
+            self.addline(instr)
             self.checkSemi()
             return
 
