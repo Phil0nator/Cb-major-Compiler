@@ -1,26 +1,28 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
-int main() {
+template<typename T>
+struct Test{
 
+    T a;
     
-    long n;
-    int count = 0;
-    printf("Enter an integer: ");
-    scanf("%i", &n);
- 
-
-
-
-    // iterate until n becomes 0
-    // remove last digit from n in each iteration
-    // increase count by 1 in each iteration
-    while (n != 0) {
-        n /= 10;     // n = n/10
-        count++;
+    function T getA(){
+        return a;
     }
 
-    printf("Number of digits: %i", count);
-    return count;
+};
+
+
+
+
+int main(int argc) {
+
+    Test<double> t;
+    t.a = 3;
+    auto b = t.getA();
+    printf("%s\n", typeid(b));
+    printf("%f\n", t.a);
+    
+    
 }

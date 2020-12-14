@@ -69,8 +69,10 @@ class Postfixer:
 
                     else:  # variable is local or global or function pointer
                         v.referenced = True
-                        ec = EC.ExpressionComponent(v, v.t)
-
+                        if self.fn.isReturning == False or v.register is None:
+                            ec = EC.ExpressionComponent(v, v.t) 
+                        else:
+                            ec = EC.ExpressionComponent(v.register, v.t)
             # function calls are replaced by a pop because their return values are already pushed.
             # the Peephole optimizer will remove redundant push-pops and replace them with mov's
             # when possible, and with a high enough Optimization flag (set by

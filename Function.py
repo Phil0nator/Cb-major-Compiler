@@ -263,7 +263,7 @@ class Function:
     # get raw asm label used to denote the end of this function
     def getClosingLabel(self):
         return function_closer(self.getCallingLabel(), None, self).split(
-            "\n")[0] if not self.inline else (getLogicLabel("INLINERETURN") + ":")
+            "\n")[0] if not self.inline else (getLogicLabel("INLINERETURN") + ":" )
 
     # get a variable of name q from first local then global scope if necessary
 
@@ -456,18 +456,15 @@ class Function:
         self.advance()
 
         if(p == "typeof"):
+            asmrestore = len(self.asm)
 
-            final = self.evaluateLeftsideExpression()[1]
+            final = self.evaluateExpression(False)[1]
+            self.asm = self.asm[:asmrestore]
+
             pend = self.current_token
             rfree(final.accessor)
-            if(final.isconstint()):
-                return Token(T_INT, final.accessor,
-                             stp.start, stp.end)
-            if(not final.isRegister()):
-                return Token(T_INT, final.type.csize(),
-                             stp.start, stp.end)
-            return Token(T_INT, final.type.csize(),
-                         stp.start, stp.end)
+            return Token(T_ID, final.type.name, stp.start, stp.end)
+            
 
         elif (p == "sizeof"):
             startidx = self.ctidx
@@ -477,7 +474,9 @@ class Function:
             if (typeq is None):
                 self.ctidx = startidx - 1
                 self.advance()
+                asmrestore = len(self.asm)
                 final = self.evaluateExpression()[1]
+                self.asm = self.asm[:asmrestore]
                 return Token(T_INT, final.type.csize(
                 ), self.tokens[startidx].start, self.tokens[startidx].end)
             else:
@@ -488,7 +487,20 @@ class Function:
         elif (p == "typeid"):
 
             self.advance()
-            typeq = self.checkForType()
+            typeq = self.checkForType(False)
+            if typeq is not None:
+                pass
+            else:
+                self.ctidx-=2
+                self.advance()
+                asmrestore = len(self.asm)
+                final = self.evaluateExpression(False)[1]
+                rfree(final.accessor)
+                self.asm = self.asm[:asmrestore]
+                typeq = final.type
+            
+            if typeq.name == "&LITERAL&":
+                typeq = INT.copy()
             constant = createStringConstant(typeq.__repr__())
             self.compiler.constants += constant[0]
             self.compiler.globals.append(
@@ -496,7 +508,7 @@ class Function:
                     CHAR.up().up(),
                     constant[1],
                     glob=True))
-            self.advance()
+            #self.advance()
             return Token(T_ID, constant[1], stp.start, stp.end)
 
     # load parameters into memory (first instructions)
@@ -620,10 +632,11 @@ class Function:
         self.checkSemi()
         if self.recursive_depth == 1:
             self.hasReturned = True
-            self.fncalls = og_fncalls
+            #self.fncalls = og_fncalls
 
-        if self.recursive_depth > 1 or self.inline:
+        if self.recursive_depth > 1 or self.inline and self.current_token.tok != T_CLSSCOPE:
             self.addline(Instruction('jmp', [self.closinglabel[:-1]]))
+            
 
         self.isReturning = False
 
@@ -1232,6 +1245,9 @@ class Function:
         self.checkTok(T_EQUALS)
 
         instr, value = self.evaluateExpression()
+
+        if value.type.name == "&LITERAL&":
+            value.type = INT.copy()
 
         self.addline(instr)
         var = Variable(value.type, name)

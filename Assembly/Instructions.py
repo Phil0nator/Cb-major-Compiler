@@ -1,7 +1,7 @@
 import config
 from Classes.Token import isdigit
 from Assembly.TypeSizes import dwordImmediate, getSizeSpecifier
-from Assembly.Registers import REGISTERS, sizeOf
+from Assembly.Registers import REGISTERS, sizeOf, setSize
 import Classes.ExpressionComponent as EC
 import re
 import struct
@@ -12,6 +12,8 @@ SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
 
 CMP_INST = ["cmp", "ucomisd", "comisd"]
 
+def regeq(a, b):
+    return setSize(a, 8) == setSize(b, 8) if a in REGISTERS and b in REGISTERS else False
 
 def getMovop(a, b):
     if ("xmm" in a and ("xmm" in b or "[" in b)):
@@ -198,9 +200,14 @@ class Peephole:
                     #    splitted[prev.idx] = ""
                     #    splitted[nextline.idx] = f"{nextline.op} {nextline.dest}, {prev.source}\n"
 
+                    
+                            
+
+
+
                 # additions or subtractions by one can be substituted for their
                 # faster counterparts in 'inc' or 'dec' respectively
-                if(line.op == "add" or line.op == "sub") and line.constSource() and int(line.source) == 1:
+                if(line.op == "add" or line.op == "sub") and line.constSource() and int(line.source) == 1 and not line.hasAddr():
                     splitted[line.idx] = f"{shorthand_incrementation[line.op]} {line.dest}\n"
 
                 # The compiler naturally will produce structures like the following in the generation of control
@@ -232,6 +239,12 @@ class Peephole:
                     splitted[line.idx] = ""
                     splitted[nextline.idx] = f"{nextline.op.replace(condb, newcond)} {nextline.dest}\n"
                     optims += 1
+
+
+                
+
+
+
 
                 prev = line
 
@@ -293,8 +306,9 @@ class Peephole:
 
                 # ensure that there are no redundant movs like:
                 # e.g: mov rax, rax
-                elif (line.op == "mov" and line.dest == line.source):
+                if (line.op in MOV_INST and line.dest == line.source):
                     splitted[line.idx] = ""
+                    optims += 1
 
                 # replace the common structure:
                 #   lea reg, [addr]

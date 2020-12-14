@@ -7,6 +7,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 
-
+# remove main directory
 rm /lib/cbm -r
+# remove symbolic link
 rm /bin/cbm

@@ -588,25 +588,27 @@ class Compiler:
             if(member.t.name in tns):
                 # update type, but maintain pointer depth
                 pd = member.t.ptrdepth
-                member.t = assosiation[member.t.name]
+                member.t = assosiation[member.t.name].copy()
                 member.t.ptrdepth = pd
 
             if(isinstance(member.initializer, Function)):
+
                 member.initializer.parameters[0].t = struct.up()
+
                 member.initializer = self.buildTemplateFunction(
                     member.initializer, tns, types)
 
             # apply offset, and overall size
             member.offset = struct.s
             struct.s += member.t.s
-
         self.template_cache.append([template, types, struct])
         return struct.copy()
 
     # build / get a template function based on template parameters
     def buildTemplateFunction(self, templatefn, tns, types):
         # restore the types if necessary
-        restore_types = len(self.types) - 1
+        restore_types = len(self.types)
+        restore_tdefs = len(self.types)
 
         # create semi-copy function
         fn = Function(
@@ -616,7 +618,10 @@ class Compiler:
             self,
             templatefn.tokens,
             templatefn.inline,
-            templatefn.extern)
+            templatefn.extern,
+            0,
+            templatefn.memberfn,
+            templatefn.parentstruct)
 
         # update returntype standin if necessary
         if fn.returntype.name in tns:
@@ -644,9 +649,11 @@ class Compiler:
                 temptype = types[i].copy()
                 temptype.name = tns[i]
                 self.types.append(temptype)
+                self.tdefs.append((types[i], temptype))
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
+            
             # compile
             fn.compile()
             # save
@@ -659,6 +666,7 @@ class Compiler:
 
         # restore types if necessary
         self.types = self.types[:restore_types]
+        self.tdefs = self.tdefs[:restore_tdefs]
         return fn
 
     def compileLine(self, thisp=False, thispt=None):
