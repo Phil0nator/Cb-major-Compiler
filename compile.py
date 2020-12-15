@@ -85,6 +85,7 @@ def main():
             f.write(output.encode())
 
         return 0
+    
 
     del pp
     # global compilation
@@ -146,8 +147,8 @@ def main():
 
     if(not config.__tonasm__):
         os.remove(config.__fileoutput__ + ".asm")
-
-    print("Compiled and Linked symbols in %s s" % (time.time() - beginTime))
+    if config.__verbose__:
+        print("Compiled and Linked symbols in %s s" % (time.time() - beginTime))
 
 
 if(__name__ == "__main__"):

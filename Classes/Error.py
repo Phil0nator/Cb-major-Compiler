@@ -19,25 +19,30 @@ class Error:
 
         file = config.loadRawFile(file, None)
 
-        file = file[0:char] + error_indicator + \
-            file[char:self.tok.end.ch] + Style.RESET_ALL + file[char + diff:-1]
+        #file = file[0:char] + error_indicator + \
+        #    file[char:self.tok.end.ch] + Style.RESET_ALL + file[char + diff:-1]
+        
+        
         lines = file.split("\n")
-
+        line -= lines[0] != ""
+        lines[line-1] = lines[line-1].replace(self.tok.value, f"{error_indicator}{self.tok.value}{Style.RESET_ALL}", 1)
         lp = ""
         try:
-            if(len(lines) > 2 and line >= 2):
-                lp = f"|{line-1}\t" + lines[line - 2] + "\n"
             if(len(lines) > 1 and line >= 1):
-                lp += f"|{line}\t" + lines[line - 1] + "\n"
+                lp += f"|{line-1}\t" + lines[line-2] + "\n"
             if(line != len(lines) - 1 and len(lines) > 1):
-                lp += f"|{line+1}\t" + lines[line] + "\n"
+                lp += f"|{line}\t" + lines[line-1] + "\n"
         except IndexError:
             pass
-
+        # determine number of characters before error token on given line
+        beginchars = lp.rfind("\n", -1, 0)
+        # highlight problem token
         problem = lp
+        # add underline
+        problem += f"  \t{error_indicator}{' '*beginchars}^{'~'*(self.tok.end.ch-self.tok.start.ch-1)}{Style.RESET_ALL}"
 
-        return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
-
+        #return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
+        return f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}: {Fore.RED}fatal error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
 
 def throw(error):
     print(error)
@@ -349,3 +354,9 @@ class UnusedVariable(Warning):
     def __init__(self, tok, var, fn):
         self.tok = tok if tok is not None else fn.tokens[0]
         self.msg = f"Unused variable (' {var} ') in function {fn}: "
+
+
+class UnreachableCode(Warning):
+    def __init__(self, tok, fn):
+        self.tok = tok
+        self.msg = f"Ureachable code starting with ( '{tok}' ) in function {fn}: "

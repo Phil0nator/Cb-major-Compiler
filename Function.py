@@ -251,7 +251,12 @@ class Function:
         self.advance()
 
     def getUserlabel(self, name):
-        return self.userlabels[name] if name in self.userlabels else None
+            if name in self.userlabels:
+                return self.userlabels[name]  
+            else:
+                l = getLogicLabel(name)
+                self.userlabels[name] = l
+                return l
 
     def checkTok(self, tok):                        # check current token for given token
         if(self.current_token.tok != tok):
@@ -2193,13 +2198,10 @@ class Function:
         rfree(out.accessor)
 
     def buildLabel(self):
-        name = self.current_token.value
-        # ensure that this label does not already exist
-        if(name in self.userlabels):
-            throw(VariableRedeclaration(self.current_token, name))
+        name = self.current_token.value        
 
         # get an asm label to correspond with this label
-        asmname = getLogicLabel(f"USERDEF.{name}")
+        asmname = getLogicLabel(f"USERDEF.{name}") if name not in self.userlabels else self.userlabels[name]
 
         # add the asm label to the current compilation location for jumping
         self.addline(f"{asmname}:")
@@ -2269,7 +2271,9 @@ class Function:
                 opens -= 1
             else:
                 self.compileLine()
-                if self.hasReturned:
+                if self.hasReturned and len(self.userlabels) == 0:
+                    if self.current_token.tok != T_CLSSCOPE:
+                        warn(UnreachableCode(self.current_token, self))
                     return
 
         self.recursive_depth -= 1

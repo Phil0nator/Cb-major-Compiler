@@ -133,40 +133,23 @@ extern _void_thread_join_pthread_t.:
 	section .data
 	align 8
 LC.F0: dq 0x0.0p+0
-LC.S0: db `Enter: \n`, 0
-LC.S1: db `%i`, 0
-LC.S2: db `%i\n`, 0
+LC.S0: db `123`, 0
 M_MINZERO_MEM: DQ 0x0.0p+0
 	section .bss
 	align 16
 	section .text
 	align 8
 	global main
-_int._test_pint.:
-	mov rax, rdi
-___int._test_pint.__return:
-	ret
 main:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
 	mov rdi, LC.S0
 	push rdi
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	pop rdi
-.L0x4:
-	lea rbx, [rbp-8]
-	mov rsi, rbx
-	mov rdi, LC.S1
-	call scanf
-	lea rbx, [rbp-8]
-	mov rdi, rbx
-	call _int._test_pint.
-	mov esi, dword[rbp-8]
-	mov rdi, LC.S2
-	call printf
-	xor eax, eax
-	leave
+.L0x1:
+	jmp .L0x3
+	xor rax, rax
+.L0x3:
+__main__return:
 	ret
 	

@@ -28,7 +28,8 @@ number_regex = re.compile(r"(?!([0-9]|[.e\-]))", flags=re.ASCII)
 class Lexer:
     def __init__(self, fname, raw):
         self.loc = Location(fname, 1, 0)
-        self.raw = raw.replace("\t", "")
+        #self.raw = raw.replace("\t", "")
+        self.raw = raw
         self.raw += chr(1)
         self.ch = self.raw[0]
         self.chidx = 0
@@ -116,6 +117,10 @@ class Lexer:
             throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         content = self.raw[self.chidx:end]
         self.chidx = end
+        
+        #self.loc.ch   =  self.chidx
+        #self.loc.ch = end
+        #self.loc.line += content.count("\n")
 
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
@@ -175,7 +180,7 @@ class Lexer:
         advance = self.advance
         while self.ch != chr(1):
 
-            if(self.ch == "\n" or self.ch == " "):
+            if(self.ch == "\n" or self.ch == " " or self.ch == "\t"):
                 advance()
 
             elif(self.ch == "\\"):
@@ -198,7 +203,9 @@ class Lexer:
                 tokens.append(t)
                 if(self.chidx < self.size - 1):
                     if(self.raw[self.chidx + 1] == "<"):
-                        self.buildIncluder()
+                        t2 = self.buildIncluder()
+                        tokens.append(t2)
+
 
             elif(self.ch == "$"):
                 advance()
@@ -225,14 +232,14 @@ class Lexer:
                 # single line comments:
                 if(self.ch == "/"):
                     # find and jump to next newline
-                    self.chidx = self.raw.find("\n", self.chidx)
+                    self.chidx = self.raw.find("\n", self.chidx)-1
                     advance()
 
                 # multiline comments:
                 elif(self.ch == "*"):
                     # find and jump to next instance of '*/' in raw text
                     olchdx = self.chidx
-                    self.chidx = self.raw.find("*/", self.chidx) + 1
+                    self.chidx = self.raw.find("*/", self.chidx)+1
                     self.loc.ch += self.chidx - olchdx
                     self.loc.line += self.raw.count("\n", olchdx, self.chidx)
                     advance()

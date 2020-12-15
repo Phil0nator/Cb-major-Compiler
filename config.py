@@ -54,6 +54,8 @@ parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
 parser.add_argument("-l", "--link", action="append", help="Link object files")
 
+parser.add_argument("-v", "--verbose", action="store_true", default=False,
+                    help="Print extra information during compilation")
 
 
 parser.add_argument(
@@ -93,7 +95,7 @@ __oplevel__ = 1
 __executable__ = not args.object
 __linkables__ = args.link if args.link is not None else []
 __nowarn__ = args.nowarn
-
+__verbose__ = args.verbose
 __features__ = args.use if args.use is not None else []
 
 

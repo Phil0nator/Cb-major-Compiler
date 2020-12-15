@@ -643,6 +643,12 @@ class ExpressionEvaluator:
         for e in pfix:  # for each component
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):  # if the operator takes two operands
+                    
+                    # check for error condition
+                    if len(stack) == 0:
+                        throw(HangingOperator(pfix[-1].token))
+
+                    
                     b = stack.pop()              # second operand
                     op = e.accessor              # operation
 

@@ -229,6 +229,6 @@ class Token:
 
     def __repr__(self):  # pretty print
         if(self.tok != T_FUNCTIONCALL):
-            return f"[ {self.tok} : {self.value}]"
+            return f"[ {self.tok} : {self.value}]" if self.tok != self.value else f" {self.value} "
         else:
             return f"[ {T_FUNCTIONCALL} : {self.fn} ]"
