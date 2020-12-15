@@ -2,9 +2,7 @@
 
 
 
-int main(){
-
-    
-
+int main(int argc){
+return argc + argv;
 
 }
