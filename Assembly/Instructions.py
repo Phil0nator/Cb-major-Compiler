@@ -200,6 +200,19 @@ class Peephole:
                     #    splitted[prev.idx] = ""
                     #    splitted[nextline.idx] = f"{nextline.op} {nextline.dest}, {prev.source}\n"
 
+
+                    # Spread out adjacent lea instructions in common pattern formed in index operators in order
+                    # to keep port 1 open for lea instructions with three address components.
+                    # Often, these paterns can be broken up by moving an adjacent and unrelated instruction in between 
+                    # the two lea instructions.
+                    # This new pattern will also often be optimized again by the level 2 optimizer to reduce the three instruction
+                    # set into a single lea followed by a mov.
+                    elif (prev.op == "lea" and line.op == "lea" and line.dest == prev.dest):
+                        if(nextline.dest != prev.dest and nextline.source not in (prev.source+line.source)):
+                            tmp = splitted[line.idx]
+                            splitted[line.idx] = splitted[nextline.idx]
+                            splitted[nextline.idx] = tmp
+                            optims+=1
                     
                             
 
