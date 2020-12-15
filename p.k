@@ -1,9 +1,10 @@
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
-int main(int argc){
+int main(){
 
-    long test = 235;
-    printf("%i\n", test%10);
+    printf("%i\n", 256);
 
+    return 0x0;
 }

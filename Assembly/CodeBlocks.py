@@ -667,28 +667,35 @@ def magic_division(a, areg, b, internal=False):
     # new eq : f(n, d) = (n * m(d)) >> 33
     # m(x) = 2^33 / x + 1
 
+    postshift = math.ceil(math.log2(b))
     twopower = 8 * a.type.csize() + 1
 
         
     #                2^33     / x + 1
     if twopower < 60:
-        multiplicand = int(pow(2, twopower) / b + 1)
+        multiplicand = math.ceil(pow(2, twopower) / b)
     else:
-        multiplicand = int((2<<twopower) / (b))+1
-    
+        extrabit = math.ceil(pow(2, twopower) / (b)) > 9223372036854775807
+        multiplicand = (math.ceil(pow(2, twopower) / (b))) & 9223372036854775807
 
     mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
 
-    instr = f"{zeroize(rax)}mov rax, {setSize(areg, 8)}\n"
+    instr = f"mov rax, {setSize(areg, 8)}\n"
     instr += f"mov rcx, {multiplicand}\n"
     instr += f"{mulcmd} rcx\n"
     if a.type.csize() != 8:
         instr += f"{shiftcmd} rax, {twopower}\n"
         instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
     else: # 64bit magic division
-        instr += f"mov rax, {setSize(areg, 8)}\nsar rax, 63\nsar rdx, 2\nsub rdx, rax\n"
-        instr += getFromRdx(areg) if not internal else f"mov rax, rdx\n"
+        
+        if extrabit:
+            instr += f"mov rax, {setSize(areg, 8)}\nsub rax, rdx\nshr rax, 1\nadd rax, rdx\nshr rax, {math.ceil(math.log2(b))-1}\n"
+        else:
+            instr += f"mov rax, rdx\nshr rax, {1}\n"
+        
+        
+        instr += getFromRax(areg) if not internal else f"mov rax, rdx\n"
 
     return instr
 
