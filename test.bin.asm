@@ -141,9 +141,27 @@ M_MINZERO_MEM: DQ 0x0.0p+0
 	align 8
 	global main
 main:
-	mov rsi, 8
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov qword[rbp-8], 235
+	mov rbx, qword[rbp-8]
+	xor rax, rax
+	mov rax, rbx
+	mov rcx, 7378697629483821057
+	imul rcx
+	mov rax, rbx
+	sar rax, 63
+	sar rdx, 2
+	sub rdx, rax
+	mov rax, rdx
+	mov rcx, 10
+	imul rcx
+	sub rbx, rax
+	mov rsi, rbx
 	mov rdi, LC.S0
 	call printf
 	xor eax, eax
+	leave
 	ret
 	

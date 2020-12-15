@@ -669,8 +669,13 @@ def magic_division(a, areg, b, internal=False):
 
     twopower = 8 * a.type.csize() + 1
 
+        
     #                2^33     / x + 1
-    multiplicand = int(pow(2, twopower) / b + 1)
+    if twopower < 60:
+        multiplicand = int(pow(2, twopower) / b + 1)
+    else:
+        multiplicand = int((2<<twopower) / (b))+1
+    
 
     mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
@@ -681,9 +686,8 @@ def magic_division(a, areg, b, internal=False):
     if a.type.csize() != 8:
         instr += f"{shiftcmd} rax, {twopower}\n"
         instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
-    else:
-        instr += f"shrd rdx, rax, 1\n"
-
+    else: # 64bit magic division
+        instr += f"mov rax, {setSize(areg, 8)}\nsar rax, 63\nsar rdx, 2\nsub rdx, rax\n"
         instr += getFromRdx(areg) if not internal else f"mov rax, rdx\n"
 
     return instr

@@ -393,7 +393,7 @@ class ExpressionEvaluator:
             a.accessor = areg
             apendee = a
 
-        elif (op == "/" and a.type.csize() != 8):
+        elif (op == "/" and a.type.csize() != 9):
 
             # standard loading...
             newinstr = self.normal_semiconstexprheader(a, b)
@@ -457,7 +457,7 @@ class ExpressionEvaluator:
         newt = None
         apendee = None
 
-        if (a.type.csize() < 8 or (canShiftmul(
+        if (a.type.csize() < 9 or (canShiftmul(
                 b.accessor) and not a.type.isSigned())):
             newinstr = self.normal_semiconstexprheader(a, b)
             areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())

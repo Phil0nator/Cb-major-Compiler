@@ -1,9 +1,9 @@
 #include "cblib.cb"
 
-#define TEST __python("pow(2,3)")
 
 int main(int argc){
 
-    printf("%i\n", TEST);
+    long test = 235;
+    printf("%i\n", test%10);
 
 }
