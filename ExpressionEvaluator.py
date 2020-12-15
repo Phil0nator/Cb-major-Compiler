@@ -812,7 +812,7 @@ class RightSideEvaluator(ExpressionEvaluator):
                 instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
 
-                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n" if not a.accessor.glob else f"mov {result}, {a.accessor.name}\n"
+                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(

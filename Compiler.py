@@ -633,7 +633,9 @@ class Compiler:
             p = fn.parameters[i]
             if p.t.name in tns:
                 fn.parameters[i] = fn.parameters[i].copy()
+                pd = fn.parameters[i].t.ptrdepth
                 fn.parameters[i].t = types[tns.index(p.t.name)]
+                fn.parameters[i].t.ptrdepth = pd
 
         # check if the function has already been built before
         fnexist = templatefn.getFunction(
