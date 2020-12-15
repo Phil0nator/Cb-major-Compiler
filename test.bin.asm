@@ -133,7 +133,7 @@ extern _void_thread_join_pthread_t.:
 	section .data
 	align 8
 LC.F0: dq 0x0.0p+0
-LC.S0: db `123`, 0
+LC.S0: db `%i\n`, 0
 M_MINZERO_MEM: DQ 0x0.0p+0
 	section .bss
 	align 16
@@ -141,15 +141,9 @@ M_MINZERO_MEM: DQ 0x0.0p+0
 	align 8
 	global main
 main:
+	mov rsi, 8
 	mov rdi, LC.S0
-	push rdi
-	call _size_t_puts_pchar.
-	mov rbx, rax
-	pop rdi
-.L0x1:
-	jmp .L0x3
-	xor rax, rax
-.L0x3:
-__main__return:
+	call printf
+	xor eax, eax
 	ret
 	

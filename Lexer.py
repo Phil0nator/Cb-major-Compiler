@@ -113,6 +113,7 @@ class Lexer:
         #ch = self.advance()
 
         end = self.raw.find("\"", self.chidx)
+        
         if(end == -1 or end >= len(self.raw)):
             throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         content = self.raw[self.chidx:end]

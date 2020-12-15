@@ -307,6 +307,23 @@ class PreProcessor:
                 self.tkidx = startidx
                 
                 self.update()
+            
+            elif (id == "__python"):
+                self.delmov()
+                self.delmov()
+                code = self.current_token.value.replace('\\"', '"').replace("\\n","\n")
+                try:
+                    value = eval(code)
+                except RuntimeError as e:
+                    throw(Error(self.current_token, f"Python error: {e}"))
+                except EnvironmentError as e:
+                    throw(Error(self.current_token, f"Python error: {e}"))
+                except SyntaxError as e:
+                    throw(Error(self.current_token, f"Python error: {e}"))
+
+                self.tokens[startidx:self.tkidx+2] = [
+                    Token(T_STRING if not isinstance(value, int) else T_INT, str(value) if not isinstance(value, int) else value, starttok.start, starttok.end)
+                ]
 
             else:
                 self.advance()
