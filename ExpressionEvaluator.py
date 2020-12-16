@@ -774,7 +774,7 @@ class RightSideEvaluator(ExpressionEvaluator):
     def evalNot(self, a):
         # must be bool compatible
         instr = ""
-        if(not typematch(BOOL, a.type) and not a.isconstint()):
+        if(not typematch(BOOL, a.type, True) and not a.isconstint()):
             throw(TypeMismatch(a.token, BOOL, a.type))
 
         # bring down memory location
@@ -1005,7 +1005,7 @@ class RightSideEvaluator(ExpressionEvaluator):
 
             rfree(breg)
         else:  # situation is different when casting is directional
-            if(not typematch(a.type, b.type) and not typematch(b.type, a.type) and not (a.isconstint() or b.isconstint())):
+            if(not typematch(a.type, b.type, True) and not typematch(b.type, a.type, True) and not (a.isconstint() or b.isconstint())):
                 throw(TypeMismatch(a.token, a.type, b.type))
             newtype, toConvert = determinePrecedence(a.type, b.type, self.fn)
             o = newtype.copy()
@@ -1300,7 +1300,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
     # evaluate logical NOT
     def evalNot(self, a):
         instr = ""
-        if(not typematch(BOOL, a.type) and not a.isconstint()):
+        if(not typematch(BOOL, a.type, True) and not a.isconstint()):
             throw(TypeMismatch(a.token, BOOL, a.type))
 
         areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())

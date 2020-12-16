@@ -223,6 +223,9 @@ class Function:
         self.fncalls = 0
         self.implicit_paramregdecl = False
 
+        # track unused / removable variables that can be optimized out in oplvl3
+        self.unreferenced = []
+
         # Size optimization:
 
         # When size optimization is being ran, functions are not inlined. This
@@ -2054,31 +2057,45 @@ class Function:
             self.advance()
             return
 
+        # multidecl
         elif (self.current_token.tok == T_COMMA):
             dests = [var]
+            # parse destinations
             while self.current_token.tok == T_COMMA:
                 self.advance()
                 xname = self.checkForId()
                 xvar = self.constructVar(t, xname, register)
-                dests.append(xvar)
+                # assignment is optimized out in oplvl3
+                if v.name not in self.unreferenced:
+                    dests.append(xvar)
+            
+            # declaration only
             if (self.current_token.tok == T_ENDL):
                 self.advance()
                 return
+
+            # multi-assignment
             elif self.current_token.tok != T_EQUALS:
                 throw(ExpectedToken(self.current_token, "="))
             
             self.advance()
+            # get assignment value
             instr, value = self.evaluateExpression()
+            # custom evaluator for multi-assignment
             evaluator = ExpressionEvaluator(self)
+            # template postfix for assignment (Replace None with destination)
             pfix = [None, value, EC.ExpressionComponent("=", VOID,isoperation=True)]
             if (isinstance(value, Variable) and value.register is None) or not value.isRegister():
+                # load value to register if not already in one, for faster assignment to multiple
+                # locations
                 reg = ralloc(t.isflt())
                 instr+=loadToReg(reg, value.accessor)
                 value.accessor = reg
                 value.type = t
 
-
+            # loop through destinations and perform assignment
             for v in dests:
+                
                 pfix[0] = EC.ExpressionComponent(v, v.t)
                 loadInstr, _ = evaluator.evaluatePostfix(pfix, evaluator)
                 instr += loadInstr
@@ -2100,10 +2117,16 @@ class Function:
 
             self.ctidx -= 3
             self.advance()
+            asmrestore = len(self.asm)
             instr, __ = self.evaluateExpression(destination=False)
-            self.addline(instr)
+            if var.name not in self.unreferenced:
+                self.addline(instr)
+            else:
+                self.asm = self.asm[:asmrestore]
+                self.variables.pop()
+            
             var.referenced = False
-
+            var.refcount = 0
             # self.addline(self.evaluateRightsideExpression(
             #    EC.ExpressionComponent(var, var.t, token=self.current_token)))
 
@@ -2397,7 +2420,9 @@ class Function:
         if not self.contains_rawasm:
             for v in self.variables:
                 if(not v.referenced and not v.name == "this"):
+                    self.unreferenced.append(v.name)
                     warn(UnusedVariable(v.dtok, v, self))
+                
 
         if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
             for v in self.variables:
@@ -2412,8 +2437,9 @@ class Function:
             # WIP
             if self.compileCount == 0:
                 # implicit parameter register declaration...
-                needs_recompile = False
+                needs_recompile = len(self.unreferenced) > 0
                 newfunc = self.reset()
+                newfunc.unreferenced = self.unreferenced
                 newfunc.stackCounter = 8
                 newfunc.hasReturned = False
                 newfunc.compileCount += 1

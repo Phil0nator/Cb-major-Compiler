@@ -34,12 +34,14 @@ class Variable:
         # ExpressionEvaluator)
         self.tmp_register = False
         self.referenced = False         # for warnings
+        self.refcount = 0               # number of times referenced (for optimization)
         self.dtok = None
 
     def copy(self):
         out = Variable(self.t, self.name, self.glob, self.offset, self.initializer,
                         self.isptr, self.mutable, self.signed, self.isStackarr, self.static)
         out.referenced = self.referenced
+        out.refcount = self.refcount
         return out
 
     def isflt(self):  # redundant to DType.isflt
