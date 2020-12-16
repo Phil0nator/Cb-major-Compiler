@@ -69,8 +69,9 @@ function long toStr(long val, char* buffer, bool signed, long base){
     while(val != 0){
 
         long mod;
-        val = divmod(val,base,&mod);
-        
+        //val = divmod(val,base,&mod);
+        mod = val % 10;
+        val /= 10;
         
         
 

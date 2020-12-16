@@ -695,7 +695,7 @@ def magic_division(a, areg, b, internal=False):
             instr += f"mov rax, rdx\nshr rax, {1}\n"
         
         
-        instr += getFromRax(areg) if not internal else f"mov rax, rdx\n"
+        instr += getFromRax(areg) if not internal else f""
 
     return instr
 

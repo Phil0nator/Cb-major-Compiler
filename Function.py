@@ -522,6 +522,9 @@ class Function:
         countn = 0
         counts = 0
 
+        if self.implicit_paramregdecl and sum((v.t.isflt() for v in self.parameters)) < 6:
+            countn = 1
+
         if self.memberfn:
             for member in self.parentstruct.members:
                 if not isinstance(member.initializer, Function):
@@ -551,7 +554,7 @@ class Function:
                     countn += 1
                 continue
 
-            cond = (self.inline or self.implicit_paramregdecl and not ((not p.isflt()) and countn == 2) )
+            cond = (self.inline or self.implicit_paramregdecl and not ((not p.isflt()) and countn == 2) and not(p.isflt() and counts==0))
 
             if cond:
                 if(p.isflt()):
