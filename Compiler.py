@@ -117,7 +117,7 @@ class Compiler:
         if(ta == tb):
             return True
         return next((True for tdef in self.tdefs if (
-            (tdef[0].name == ta and tdef[1].name == tb) or tdef[0].name == tb and tdef[1].name == ta)), False)
+            (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
 
     def getType(self, qu):               # get type of name q
         pd = 0

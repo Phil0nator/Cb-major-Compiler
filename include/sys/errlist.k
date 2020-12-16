@@ -285,7 +285,7 @@ char** __linux_errstrlist = {
  * @param err the error code to search (can be positive or negative)
  * @returns a cstring with the associated message.
  */
-CBLIBENTRY char* get_errstr(int err)
+CBLIBENTRY char* get_errstr(void err)
 #ifndef __CBLIB_SOURCE
 ;
 #endif

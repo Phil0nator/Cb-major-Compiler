@@ -12,10 +12,10 @@
 #define _fopen_ac 140
 
 
-FILE fopen(char* fname, char* mode){
+fd_t fopen(char* fname, char* mode){
     long modehash = mode[0]+mode[1];
     long m = DEFFILEMODE;
-    long f = 0;
+    int f = 0;
 
     switch(modehash){
 
@@ -45,7 +45,7 @@ FILE fopen(char* fname, char* mode){
 
     }
 
-    FILE out = open(fname, f, m);
+    fd_t out = open(fname, f, m);
     if(modehash == _fopen_ac || modehash == _fopen_append){
         lseek(out,0, SEEK_END);
     }
@@ -54,7 +54,7 @@ FILE fopen(char* fname, char* mode){
 }
 
 
-size_t fputs(FILE fd, char* text){
+size_t fputs(fd_t fd, char* text){
     size_t l = strlen(text);
     size_t out = write(fd, text, l);
     return out;
@@ -66,17 +66,17 @@ size_t puts(char* text){
     return out;
 }
 
-long fgets(FILE fd, char* buffer, size_t amt){
+long fgets(fd_t fd, char* buffer, size_t amt){
     long out = read(fd, buffer, amt);
     return out;
 }
 
-void* floads(FILE fd){
+void* floads(fd_t fd){
 
     int fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0-fsize, SEEK_END);
-    char* buffer = mapalloc(fsize);
-    size_t out = read(fd,buffer,fsize);
+    char* buffer = mapalloc($size_t fsize);
+    size_t out = read(fd,buffer,$size_t fsize);
     if(out < 0){
         return out;
     }

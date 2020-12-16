@@ -253,8 +253,8 @@ def typematch(a, b, implicit):
             return True
 
         # two equal types with different signs are compatible
-        #if(DType(a.name, a.size, a.members, a.ptrdepth, False, a.destructor, a.constructor).__eq__(DType(b.name, b.size, b.members, b.ptrdepth, False, b.destructor, b.constructor))):
-        #    return True
+        if(DType(a.name, a.size, a.members, a.ptrdepth, False, a.destructor, a.constructor).__eq__(DType(b.name, b.size, b.members, b.ptrdepth, False, b.destructor, b.constructor))):
+            return True
 
         # two integer values are compatible in implicit situations
         if(not a.isflt() and not b.isflt() and implicit):

@@ -37,7 +37,7 @@ char getchar(){
 void getString(char* buffer, int maxlen, char* msg){
     
     printf(msg);
-    fgets(STDIN, buffer, maxlen);
+    fgets(STDIN, buffer, $size_t maxlen);
 
 }
 

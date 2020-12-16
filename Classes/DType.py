@@ -113,7 +113,7 @@ type_precedence = {
     "long": 11,
     "unsigned long": 12,
     "double": 13,
-    "void": 12,
+    "void": 14,
     "&LITERAL&": -1
 
 

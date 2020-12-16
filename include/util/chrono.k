@@ -53,10 +53,15 @@ tm* gmtime(time_t timer){
     int mday = 0;
 
 
-
-    timer = divmod(timer, 60, &seconds);
-    timer = divmod(timer, 60, &minutes);
-    timer = divmod(timer, 24, &hours);
+    seconds = timer%60;
+    timer /= 60;
+    minutes = timer % 60;
+    timer /= 60;
+    hours = timer%60;
+    timer /= 60;
+    //timer = divmod(timer, 60, &seconds);
+    //timer = divmod(timer, 60, &minutes);
+    //timer = divmod(timer, 24, &hours);
     
     yday  = ((ogt / 60) / 60) / 24;
     years = floor(yday / 365.25);

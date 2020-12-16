@@ -40,10 +40,10 @@ void native_cpuid(cpuidreg_t* eax, cpuidreg_t* ebx, cpuidreg_t* ecx, cpuidreg_t*
 
 bool cpuid_getfeature(unsigned long feature){
 
-    unsigned long eax = CPUID_GET_FEATURE;
-    unsigned long ebx = 0;
-    unsigned long ecx = 0;
-    unsigned long edx = 0;
+    unsigned int eax = CPUID_GET_FEATURE;
+    unsigned int ebx = 0;
+    unsigned int ecx = 0;
+    unsigned int edx = 0;
 
     native_cpuid(&eax, &ebx, &ecx, &edx);
 
@@ -57,12 +57,12 @@ bool cpuid_getfeature(unsigned long feature){
 
 bool cpuid_getextended(unsigned long feature){
 
-    unsigned long eax = CPUID_GET_EXTENDED;
-    unsigned long ebx = 0;
-    unsigned long ecx = 0;
-    unsigned long edx = 0;
+    unsigned int eax = CPUID_GET_EXTENDED;
+    unsigned int ebx = 0;
+    unsigned int ecx = 0;
+    unsigned int edx = 0;
 
-    unsigned long reg = feature&&11b;
+    unsigned int reg = feature&&11b;
     feature >>= 2;
 
 

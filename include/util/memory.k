@@ -31,7 +31,7 @@ void avx_memcpy(void* dest, void* source, size_t bytes){
         __simd 4 char (source, i) {} (dest, i);
     }
     if(offset != 0){
-        memcpy(dest+avxcount, source+avxcount, offset);
+        memcpy(dest+avxcount, source+avxcount, $size_t offset);
     }
 }
 
@@ -56,7 +56,7 @@ void avx_memzer(void* dest, size_t bytes){
     avx_memzeraligned(dest, avxcount);
 
     if(offset != 0){
-        memset(dest+avxcount, 0, offset);
+        memset(dest+avxcount, 0, $size_t offset);
     }
 }
 
