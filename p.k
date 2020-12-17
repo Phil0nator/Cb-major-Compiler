@@ -1,10 +1,9 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
-int main(){
+int main(int argc){
     
-
 
     return 0;
 }

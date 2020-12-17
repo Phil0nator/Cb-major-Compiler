@@ -23,8 +23,7 @@ typedef long ssize_t; /* The type ssize_t holds all signed results of the sizeof
 
 typedef int ptrdiff_t;
 
-typedef void any_t;
-
+typedef void any;
 
 typedef char i8_t; /* 8 bit signed type */
 typedef short i16_t; /* 16 bit signed type */

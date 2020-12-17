@@ -1677,7 +1677,10 @@ class Function:
             # If the push and pop operations are adjacent, the peephole optimizer will replace them with a
             # faster mov operation, but it can be noted that with a good cache hit a push/pop will not be
             # too much slower than a mov.
-            elif(self.current_token.tok == T_ID):
+            elif(self.current_token.tok == T_ID) or (self.current_token.tok == T_KEYWORD and self.current_token.value == 'unsigned'):
+                starttok = self.current_token
+                startidx = self.ctidx
+                start = self.current_token.start
                 if(self.tokens[self.ctidx + 1].tok in "(" or self.qgettfn(self.current_token.value) is not None):
 
                     if(self.current_token.value in predefs):
@@ -1692,6 +1695,14 @@ class Function:
                         token, inst = self.wrapExpressionFunctionCall()
                         exprtokens.append(token)
                         instructions += inst
+
+                elif(self.checkForType(False) is not None):
+                    self.ctidx = startidx-1
+                    self.advance()
+                    t = self.checkForType()
+                    self.ctidx-=1
+                    exprtokens.append(Token(T_TYPECAST, t, start, self.current_token.start))
+                    wasfunc = True
 
                 # Member variables accessed from stack based structures can be abstracted as Variable objects
                 #   because they are effectively stored the same.

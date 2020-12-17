@@ -28,7 +28,7 @@ class Error:
         line -= lines[0] != ""
         beginchars = lines[line-1].find(str(self.tok.value))
 
-        lines[line-1] = lines[line-1].replace(self.tok.value, f"{error_indicator}{self.tok.value}{Style.RESET_ALL}", 1)
+        lines[line-1] = lines[line-1].replace(str(self.tok.value), f"{error_indicator}{self.tok.value}{Style.RESET_ALL}", 1)
         lp = ""
         try:
             if(len(lines) > 1 and line >= 1):

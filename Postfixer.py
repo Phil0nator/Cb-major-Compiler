@@ -32,10 +32,13 @@ class Postfixer:
     # add a given token to the final output as an ExpressionComponent object
     def addtok(self, t):
         ec = None
+
         # operators are passed directly into ExpressionComponents
         if self.isOperator(t):
             ec = EC.ExpressionComponent(t.tok, t.value, isoperation=True)
         else:
+            
+            
             # Int literals are given type void, and constint flag
             if(t.tok == T_INT):
                 ec = EC.ExpressionComponent(
@@ -63,9 +66,11 @@ class Postfixer:
                                 throw(UnkownIdentifier(t))
                         else:  # variable is type, so it is replace by its size
 
-                            ec = EC.ExpressionComponent(
-                                v.csize(), LITERAL.copy(), constint=True, token=t)
-                            ec.memory_location = valueOf(v)
+                            #ec = EC.ExpressionComponent(
+                            #    v.csize(), LITERAL.copy(), constint=True, token=t)
+                            #ec.memory_location = valueOf(v)
+                            print("ERR")
+                            ec = EC.ExpressionComponent(T_TYPECAST, v ,isoperation=True, token=t)
 
                     else:  # variable is local or global or function pointer
                         v.referenced = True
@@ -81,11 +86,7 @@ class Postfixer:
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop", t.fn.returntype)
 
-            # indexer values are also poped
-            # \depricated
-            elif(t.tok == T_IDXER):
-                ec = EC.ExpressionComponent("pop", t.value)
-
+            
             # char literals can be replaced by their value, and given type char
             elif(t.tok == T_CHAR):
                 ec = EC.ExpressionComponent(
@@ -97,8 +98,9 @@ class Postfixer:
         if(ec is None):
             throw(InvalidExpressionComponent(t))
         ec.token = t
+    
         self.pfix.append(ec)
-
+    
     def createPostfix(self):        # main function
 
         # standard infix to postfix algorithm
