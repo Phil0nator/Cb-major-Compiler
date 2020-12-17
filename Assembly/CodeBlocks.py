@@ -137,7 +137,7 @@ stringconstant_counter = 0
 # create specifically a string literal in .data
 
 
-def createStringConstant(s):
+def createStringConstant(s) -> tuple:
     global stringconstant_counter
     out = []
     name = ("LC.S%s" % stringconstant_counter)

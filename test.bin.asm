@@ -143,12 +143,7 @@ main:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 16
-	mov rdi, 350
-	call _void._malloc_psize_t
-	push rax
-	movq xmm7, pop
-	movsd qword[rbp-8], xmm7
-	cvttsd2si rax, qword[rbp-8]
+	xor rax, rax
 __main__return:
 	leave
 	ret
