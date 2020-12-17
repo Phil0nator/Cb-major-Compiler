@@ -21,15 +21,6 @@ from globals import BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID
 from Lexer import Lexer
 from Structure import Structure
 
-
-
-
-
-
-
-
-
-
 #####################################
 #
 #   The Compiler class is used to compile global variables,
@@ -738,7 +729,7 @@ class Compiler:
 
     # unsigned keyword is always followed by a normal variable
     # declaration.
-    def buildUnsigned(self, thisp=False, thispt=None):
+    def buildUnsigned(self, thisp=False, thispt=None) -> None:
         s = self.current_token
         self.advance()
         self.createConstant()
@@ -752,7 +743,7 @@ class Compiler:
         v.glob = True
 
     # typedef is always followed by two types and an endline:
-    def buildTypedef(self, thisp=False, thispt=None):
+    def buildTypedef(self, thisp=False, thispt=None) -> None:
 
         # start token
         s = self.current_token
@@ -784,7 +775,7 @@ class Compiler:
         self.advance()
 
 
-    def determineFunctionOrVar(self):
+    def determineFunctionOrVar(self) -> None:
         self.advance()
         # record location to jump back to
         backto = self.ctidx - 1
@@ -805,7 +796,8 @@ class Compiler:
 
     # extern is followed by either a function declaration or a
     # variable declaration
-    def buildExtern(self, thisp=False, thispt=None):
+    def buildExtern(self, thisp=False, thispt=None) -> None:
+        # function determinant
         fndp = self.determineFunctionOrVar()
 
         if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):  # if is function
@@ -825,7 +817,7 @@ class Compiler:
                 self.globals[-1].name + "\n"
 
     # same code as extern, with slight modification for cextern
-    def buildCextern(self, thisp=False, thispt=None):
+    def buildCextern(self, thisp=False, thispt=None) -> None:
         fndp = self.determineFunctionOrVar()
 
         if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):
@@ -844,7 +836,7 @@ class Compiler:
             config.__CEXTERNS__ += "extern " + \
                 self.globals[-1].name + "\n"
     # __cdecl is always followed by a function declaration
-    def buildCdecl(self, thisp=False, thispt=None):
+    def buildCdecl(self, thisp=False, thispt=None) -> None:
         self.advance()
 
         self.buildFunction(thisp=thisp, thispt=thispt)
@@ -856,7 +848,7 @@ class Compiler:
         glob = self.globals[-1]
         glob.name = fn.getCallingLabel()
     # global is always followed by a function declaration
-    def buildGlobalfn(self, thisp=False, thispt=None):
+    def buildGlobalfn(self, thisp=False, thispt=None) -> None:
         self.advance()
 
         self.buildFunction(thisp=thisp, thispt=thispt)
@@ -868,7 +860,7 @@ class Compiler:
         glob.name = fn.getCallingLabel()
 
     # inline is always followed by a function declaration
-    def buildInlinefn(self, thisp=False, thispt=None):
+    def buildInlinefn(self, thisp=False, thispt=None) -> None:
         self.advance()
         self.buildFunction(thisp=thisp, thispt=thispt)
         # apply new properties
@@ -878,7 +870,7 @@ class Compiler:
         else:
             self.functions[-1].wouldbe_inline = True
 
-    def buildNormalfn(self, thisp=False, thispt=None):
+    def buildNormalfn(self, thisp=False, thispt=None) -> None:
         self.advance()
         self.buildFunction(thisp=thisp, thispt=thispt)
 

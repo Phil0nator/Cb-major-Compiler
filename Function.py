@@ -18,7 +18,7 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  loadToReg, maskset, movMemVar, movRegToVar,
                                  movVarToReg, raw_regmov, spop, spush, valueOf,
                                  zeroize)
-from Assembly.Instructions import Instruction, Peephole, floatTo64h
+from Assembly.Instructions import Instruction, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat
 from Classes.Constexpr import buildConstantSet, determineConstexpr
@@ -31,6 +31,7 @@ from ExpressionEvaluator import (ExpressionEvaluator, LeftSideEvaluator,
 from globals import (BOOL, CHAR, DOUBLE, INT, LONG, OPERATORS, SHORT, VOID,
                      TsCompatible, isIntrinsic)
 from Postfixer import Postfixer
+from Optimizers.Peephole import Peephole
 
 # multiply all items in an array
 
@@ -41,7 +42,7 @@ def product(arr):
         total *= i
     return total
 
-
+# pre-defined builtin functions
 predefs = [
     "typeof",
     "sizeof",
@@ -234,26 +235,30 @@ class Function:
         self.wouldbe_inline = False
         # Count the number of times this function is called
         self.references = 0
-
-    def advance(self):                              # advance token
+    # advance token
+    def advance(self) -> Token:                              
+        # increment
         self.ctidx += 1
+        # ensure bounds
         if(self.ctidx == self.maxtokens):
             throw(UnexepectedEOFError(self.tokens[-1]))
-
+        # update token
         self.current_token = self.tokens[self.ctidx]
+        # return token
         return self.current_token
 
     # get the raw asm label used to call this function
 
-    def getCallingLabel(self):
+    def getCallingLabel(self) ->str:
         return functionlabel(self).replace(":", "").replace("\n", "")
-
-    def checkSemi(self):                            # check current token for semicolon
+    
+    # check current token for semicolon
+    def checkSemi(self) ->None:                            
         if(self.current_token.tok != T_ENDL):
             throw(ExpectedSemicolon(self.current_token))
         self.advance()
 
-    def getUserlabel(self, name):
+    def getUserlabel(self, name) ->str:
             if name in self.userlabels:
                 return self.userlabels[name]  
             else:
@@ -1270,108 +1275,64 @@ class Function:
         rfree(value.accessor)
         self.checkSemi()
 
+
+    def buildBreak(self):
+        if(len(self.breaks) == 0):
+                throw(UnmatchedBreak(self.current_token))
+        l = self.breaks[-1]
+        self.addline(f"jmp {l}\n")
+        self.advance()
+        self.checkSemi()
+
+    def buildContinue(self):
+        l = self.continues[-1]
+        self.addline(f"jmp {l}\n")
+        self.advance()
+        self.checkSemi()
+
+    def buildRegisterDel(self):
+        self.advance()
+        vname = self.checkTok(T_ID)
+        v = self.getVariable(vname)
+        if(v is None):
+            throw(UnkownIdentifier(self.tokens[self.ctidx - 1]))
+        if(v.glob):
+            throw(GlobalDeletion(self.tokens[self.ctidx - 2]))
+        if(v.register is None):
+            throw(NonRegisterDeletion(self.tokens[self.ctidx - 2]))
+
+        self.variables.remove(v)
+        rfree(v.register)
+
+        if("xmm" in v.register):
+            self.regdeclremain_sse -= 1
+        else:
+            self.regdeclremain_norm -= 1
+        self.advance()
+
+    def buildGoto(self):
+        self.advance()
+        # get label name
+        lname = self.checkTok(T_ID)
+        asmlabel = self.getUserlabel(lname)
+        # ensure that this label exists
+        if(asmlabel is None):
+            throw(UnkownIdentifier(self.current_token))
+        # jump to it
+        self.addline(f"jmp {asmlabel}")
+        self.checkSemi()
+
+
     # build a statement that starts with a keyword
 
     def buildKeywordStatement(self):
         word = self.current_token.value
-
-        # inline assembly:
-        if(word == "__asm"):
-            self.buildASMBlock()
-        elif(word == "return"):
-            self.buildReturnStatement()
-
-        elif (word == "function"):
-            self.buildInlineFunction()
-
-        elif (word == "auto"):
-            self.buildAutoDefine()
-
-        # wrapper for declaration with unsigned type
-        elif(word == "unsigned"):
-            s = self.current_token
-            self.advance()
-            self.buildDeclaration()
-            v = self.variables[-1]
-            if(v.isflt()):
-                throw(InvalidSignSpecifier(s))
-            v.signed = False
-            v.t.signed = False
-
-        # register declaration
-        elif(word == "register"):
-
-            self.buildRegdecl()
-
-        elif (word == "static"):
-
-            self.buildStaticdecl()
-
-        elif(word == "if"):
-            self.buildIfStatement()
-
-        elif(word == "while"):
-            self.buildWhileloop()
-
-        elif(word == "for"):
-            self.buildForloop()
-
-        elif(word == "break"):
-            if(len(self.breaks) == 0):
-                throw(UnmatchedBreak(self.current_token))
-            l = self.breaks[-1]
-            self.addline(f"jmp {l}\n")
-            self.advance()
-            self.checkSemi()
-
-        elif(word == "continue"):
-            l = self.continues[-1]
-            self.addline(f"jmp {l}\n")
-            self.advance()
-            self.checkSemi()
-
-        elif(word == "__simd"):
-            self.buildSIMD()
-
-        elif(word == "switch"):
-            self.buildSwitch()
-
-        elif(word == "del"):
-            self.advance()
-            vname = self.checkTok(T_ID)
-            v = self.getVariable(vname)
-            if(v is None):
-                throw(UnkownIdentifier(self.tokens[self.ctidx - 1]))
-            if(v.glob):
-                throw(GlobalDeletion(self.tokens[self.ctidx - 2]))
-            if(v.register is None):
-                throw(NonRegisterDeletion(self.tokens[self.ctidx - 2]))
-
-            self.variables.remove(v)
-            rfree(v.register)
-
-            if("xmm" in v.register):
-                self.regdeclremain_sse -= 1
-            else:
-                self.regdeclremain_norm -= 1
-            self.advance()
-
-        elif (word == "goto"):
-            self.advance()
-            # get label name
-            lname = self.checkTok(T_ID)
-            asmlabel = self.getUserlabel(lname)
-            # ensure that this label exists
-            if(asmlabel is None):
-                throw(UnkownIdentifier(self.current_token))
-            # jump to it
-            self.addline(f"jmp {asmlabel}")
-            self.checkSemi()
-
-        elif(word == "do"):
-            self.buildDoWhile()
-
+        # check available response
+        if word in function_keyword_responses:
+            #execute response
+            function_keyword_responses[word](self)
         else:
+            # no response available, throw error
             throw(UnexpectedToken(self.current_token))
 
     # push all register declarations before function call
@@ -2494,3 +2455,28 @@ class Function:
     def GC(self):
         self.asm = ""
         self.peephole = Peephole()
+
+
+
+# function keyword responses outlines the responses that a Function
+# object generates for different keywords.
+function_keyword_responses = {
+            "__asm"     : Function.buildASMBlock,
+            "return"    : Function.buildReturnStatement,
+            "function"  : Function.buildInlineFunction,
+            "auto"      : Function.buildAutoDefine,
+            "unsigned"  : Function.buildDeclaration,
+            "register"  : Function.buildRegdecl,
+            "static"    : Function.buildStaticdecl,
+            "if"        : Function.buildIfStatement,
+            "while"     : Function.buildWhileloop,
+            "for"       : Function.buildForloop,
+            "break"     : Function.buildBreak,
+            "continue"  : Function.buildContinue,
+            "__simd"    : Function.buildSIMD,
+            "switch"    : Function.buildSwitch,
+            "del"       : Function.buildRegisterDel,
+            "goto"      : Function.buildGoto,
+            "do"        : Function.buildDoWhile
+
+        }
