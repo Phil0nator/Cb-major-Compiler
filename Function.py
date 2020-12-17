@@ -2077,7 +2077,7 @@ class Function:
                 xname = self.checkForId()
                 xvar = self.constructVar(t, xname, register)
                 # assignment is optimized out in oplvl3
-                if v.name not in self.unreferenced:
+                if xvar.name not in self.unreferenced:
                     dests.append(xvar)
             
             # declaration only

@@ -5,5 +5,8 @@
 int main(int argc){
     
 
-    return 0;
+    double c = malloc(350);
+
+
+    return c;
 }

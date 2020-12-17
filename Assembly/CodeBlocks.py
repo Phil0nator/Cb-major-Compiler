@@ -617,6 +617,7 @@ def raw_regmov(a, b):
 
 def getOnelineAssignmentOp(a, b, op):
     cmd = ""
+    
     if(op in ONELINE_ASSIGNMENTS):
         cmd = onelineAssignment(op, a)
     elif(op in [">>=", "<<="]):

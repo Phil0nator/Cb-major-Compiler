@@ -140,7 +140,16 @@ M_MINZERO_MEM: DQ 0x0.0p+0
 	align 8
 	global main
 main:
-	xor rax, rax
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov rdi, 350
+	call _void._malloc_psize_t
+	push rax
+	movq xmm7, pop
+	movsd qword[rbp-8], xmm7
+	cvttsd2si rax, qword[rbp-8]
 __main__return:
+	leave
 	ret
 	
