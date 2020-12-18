@@ -284,6 +284,7 @@ def valueOf(x, dflt=False, exactSize=True):
         x.referenced = True
         if(x.glob):
             if(x.t.ptrdepth > 1 or x.isptr):
+                
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:
@@ -618,6 +619,11 @@ def raw_regmov(a, b):
 def getOnelineAssignmentOp(a, b, op):
     cmd = ""
     
+    if isinstance(a.accessor, Variable) and a.accessor.register is not None and \
+        isinstance(b.accessor, Variable) and b.accessor.register is not None:
+        return cmd, False
+
+
     if(op in ONELINE_ASSIGNMENTS):
         cmd = onelineAssignment(op, a)
     elif(op in [">>=", "<<="]):
@@ -679,15 +685,23 @@ def magic_division(a, areg, b, internal=False):
         extrabit = math.ceil(pow(2, twopower) / (b)) > 9223372036854775807
         multiplicand = (math.ceil(pow(2, twopower) / (b))) & 9223372036854775807
 
-    mulcmd = "imul" if a.type.signed else "mul"
+    #mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
 
-    instr = f"mov rax, {setSize(areg, 8)}\n"
-    instr += f"mov rcx, {multiplicand}\n"
-    instr += f"{mulcmd} rcx\n"
-    if a.type.csize() != 8:
-        instr += f"{shiftcmd} rax, {twopower}\n"
-        instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
+    #TODO:
+    # Make work for signed integers
+
+    ax = setSize('rax', sizeOf(areg))
+    cx = setSize('rcx', sizeOf(areg))
+    dx = setSize('rdx', sizeOf(areg))
+
+    instr = f"{zeroize('rax')}\nmov {ax}, {areg}\n"
+    instr += f"mov {cx}, {multiplicand}\n"
+    instr += f"imul {cx}\n"
+    
+    if a.type.csize() != 8 :
+        instr += f"{shiftcmd} {dx}, 1\n"
+        instr += f"mov {areg}, {dx}\n" if not internal else ""
     else: # 64bit magic division
         
         if extrabit:

@@ -1,13 +1,10 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
 int main(int argc){
-    
-    char* test = malloc(50);
-    strcpy(test, "test123\n");
-    puts(test);
-    printf("123hd: %i%s",123,"hd\n");
-
+    int a = -206;
+    auto b = a/36;
+    printf("%i\n", b);
     return 0;
 }

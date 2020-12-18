@@ -169,6 +169,8 @@ class ExpressionEvaluator:
         # is the destination a variable...
         vardest = isinstance(a.accessor, Variable)
 
+        
+
         if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)) or a.type.isflt() and b.isconstint():
             b.accessor, _, __, qwordinstr = optloadRegs(
                 b, None, "", VOID.copy())
@@ -393,7 +395,7 @@ class ExpressionEvaluator:
             a.accessor = areg
             apendee = a
 
-        elif (op == "/" and a.type.csize() != 9):
+        elif (op == "/" and not a.type.signed):
 
             # standard loading...
             newinstr = self.normal_semiconstexprheader(a, b)
@@ -993,7 +995,6 @@ def depositFinal(dest, final):
         dest.accessor = setSize(dest.accessor, final.type.csize())
 
     if(final.type.__eq__(dest.type)):
-
         if(isinstance(final.accessor, Variable)):
             tmp = ralloc(final.type.isflt(), final.type.csize())
             instr += loadToReg(tmp, final.accessor)

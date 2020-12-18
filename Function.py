@@ -521,9 +521,11 @@ class Function:
             self.compiler.constants += constant[0]
             self.compiler.globals.append(
                 Variable(
-                    CHAR.up().up(),
+                    CHAR.up(),
                     constant[1],
-                    glob=True))
+                    glob=True, 
+                    isptr=True,
+                    initializer = typeq.__repr__()))
             #self.advance()
             return Token(T_ID, constant[1], stp.start, stp.end)
 
@@ -1263,13 +1265,23 @@ class Function:
         if value.type.name == "&LITERAL&":
             value.type = INT.copy()
 
-        self.addline(instr)
-        var = Variable(value.type, name)
-        if register:
-            var.register = ralloc(value.type.isflt())
+        # restore point for dead code elimination
+        asmrestore = len(self.asm)
 
-        self.addVariable(var)
-        self.addline(loadToReg(var, value.accessor))
+        # only emit symbols if the declaration is not dead code
+        if name not in self.unreferenced:
+
+            self.addline(instr)
+            var = Variable(value.type, name)
+            if register:
+                var.register = ralloc(value.type.isflt())
+
+            self.addVariable(var)
+            self.addline(depositFinal(EC.ExpressionComponent(var, var.t), value))
+            var.referenced = False
+        else:
+            self.asm = self.asm[:asmrestore]
+
         rfree(value.accessor)
         self.checkSemi()
 

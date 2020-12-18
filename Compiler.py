@@ -913,7 +913,7 @@ class Compiler:
                 self.entry = f
                 f.extern = True
                 self.globals.append(
-                    Variable(INT.up(), "main", glob=True, initializer=f)
+                    Variable(INT.up(), "main", glob=True, initializer=f, isptr=True)
                 )
 
         # at this point all functions exist as Function objects, but have not
