@@ -96,7 +96,8 @@ def bringdown_memloc(a):
             a.accessor = out
         else:
             instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-            instr += maskset(a.accessor, a.type.csize())
+            #instr += maskset(a.accessor, a.type.csize())
+            a.accessor = setSize( a.accessor, a.type.csize())
 
         a.memory_location = False
 
@@ -395,7 +396,7 @@ class ExpressionEvaluator:
             a.accessor = areg
             apendee = a
 
-        elif (op == "/" and not a.type.signed):
+        elif (op == "/"):
 
             # standard loading...
             newinstr = self.normal_semiconstexprheader(a, b)
@@ -795,8 +796,18 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 #instr += zeroize(setSize(breg, 8))
                 instr += ninstr
-                instr += maskset(setSize(breg, 8), sizeOf(breg))
+                
+                if sizeOf(breg) < 8:
+                    #instr += maskset(setSize(breg, 8), sizeOf(breg))
+                    rfree(breg)
+                    ax = "rax"
+                    instr += zeroize(ax)+loadToReg(setSize(ax, sizeOf(breg)), breg)
+                    breg = ax
+                
+                
                 areg = setSize(areg, 8)
+                
+                
                 if(a.type.size(1) in [1, 2, 4, 8]):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
                 else:
@@ -1094,7 +1105,13 @@ def performCastAndOperation(fn, a, b, op, o):
             else:
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 instr += ninstr
-                instr += maskset(setSize(breg, 8), sizeOf(breg))
+                
+                if sizeOf(breg) < 8:
+                    ax = "rax"
+                    instr += zeroize(ax) + loadToReg(setSize(ax, sizeOf(breg)), breg)
+                    rfree(breg)
+                    breg = ax
+                
                 areg = setSize(areg, 8)
                 if(a.type.size(1) in [1, 2, 4, 8]):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"

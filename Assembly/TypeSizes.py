@@ -88,7 +88,7 @@ def getSizeSpecifier(t):
 
 # use a mask to truncate reg to size
 
-
+@DeprecationWarning
 def maskset(reg, size):
     if(size == 8):
         return ""

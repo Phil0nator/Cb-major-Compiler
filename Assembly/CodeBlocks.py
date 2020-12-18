@@ -582,12 +582,19 @@ def castABD(a, b, areg, breg, newbreg):
         return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
 
     if(not a.type.isflt() and not b.type.isflt()):
-        if(a.type.csize() != b.type.csize()):
+        if(a.type.csize() < b.type.csize()):
             #out = maskset(newbreg, a.type.csize())
 
             out = loadToReg(newbreg, breg)
 
             return out
+        elif a.type.csize() > b.type.csize():
+
+            out = zeroize(setSize(newbreg, 8))
+            out += loadToReg(newbreg, breg)
+
+            return out
+
         return False
     if(a.type.isflt() and not b.type.isflt()):
         if sizeOf(breg) < 4:
@@ -701,7 +708,7 @@ def magic_division(a, areg, b, internal=False):
     
     if a.type.csize() != 8 :
         instr += f"{shiftcmd} {dx}, 1\n"
-        instr += f"mov {areg}, {dx}\n" if not internal else ""
+        instr += f"mov {areg}, {dx}\n" if not internal else f"mov {ax}, {dx}\n"
     else: # 64bit magic division
         
         if extrabit:
