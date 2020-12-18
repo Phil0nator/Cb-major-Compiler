@@ -25,14 +25,17 @@ void memcpy(void *dest, void* source, size_t bytes){
 
 void avx_memcpy(void* dest, void* source, size_t bytes){
 
+    return memcpy(dest, source, bytes);
+    /* TODO:
     int offset = bytes%32;
     size_t avxcount = (bytes-offset)/4;
     for(int i = 0; i < avxcount;i=i+4){
-        __simd 4 char (source, i) {} (dest, i);
+        //__simd 4 char (source, i) {} (dest, i);
     }
     if(offset != 0){
         memcpy(dest+avxcount, source+avxcount, $size_t offset);
     }
+    */
 }
 
 

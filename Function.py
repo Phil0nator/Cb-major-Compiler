@@ -27,7 +27,7 @@ from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
 from ExpressionEvaluator import (ExpressionEvaluator, LeftSideEvaluator,
-                                 RightSideEvaluator, optloadRegs)
+                                optloadRegs, depositFinal)
 from globals import (BOOL, CHAR, DOUBLE, INT, LONG, OPERATORS, SHORT, VOID,
                      TsCompatible, isIntrinsic)
 from Postfixer import Postfixer
@@ -624,22 +624,16 @@ class Function:
 
         if(self.current_token.tok != T_ENDL):
 
-            # instr = self.evaluateRightsideExpression(
-            #    EC.ExpressionComponent(
-            #        sse_return_register if self.returntype.isflt() else setSize(
-            #            norm_return_register,
-            #            self.returntype.csize()),
-            #        self.returntype,
-            #        token=self.current_token))
+            
 
             instr, val = self.evaluateExpression()
             oreg = sse_return_register if self.returntype.isflt() else setSize(
                 norm_return_register,
                 self.returntype.csize()
             )
-            ninstr, o = RightSideEvaluator.depositFinal(
-                None, val, None, EC.ExpressionComponent(
-                    oreg, self.returntype.copy()))
+            
+            ninstr = depositFinal(EC.ExpressionComponent(
+                    oreg, self.returntype.copy()), val )
             instr += ninstr
             rfree(val.accessor)
             self.returnsConstexpr = val.isconstint()
@@ -851,7 +845,8 @@ class Function:
 
     def buildSIMD(self):
         self.advance()
-
+        print("SIMD is under development")
+        exit(1)
         # check for opsize
         if(self.current_token.tok != T_INT):
             throw(ExpectedToken(self.current_token, "SIMD opsize"))
@@ -881,8 +876,8 @@ class Function:
         self.checkTok(T_COMMA)
 
         # build instructions to evaluate for the first given index
-        determine_index1 = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
+        #determine_index1 = self.evaluateRightsideExpression(
+        #    EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
 
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
@@ -915,8 +910,8 @@ class Function:
 
             # build evaluation for the index
             idxn = ralloc(False)
-            determine_idxn = self.evaluateRightsideExpression(
-                EC.ExpressionComponent(idxn, LONG.copy(), token=self.current_token))
+            #determine_idxn = self.evaluateRightsideExpression(
+            #    EC.ExpressionComponent(idxn, LONG.copy(), token=self.current_token))
             self.advance()
             avxn = avx_ralloc()
 
@@ -939,8 +934,8 @@ class Function:
         self.checkTok(T_COMMA)
 
         # evaluate destination index
-        determineidxf = self.evaluateRightsideExpression(
-            EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
+        #determineidxf = self.evaluateRightsideExpression(
+        #    EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
         self.checkTok(T_CLSP)
 
         self.checkSemi()
@@ -1011,15 +1006,15 @@ class Function:
 
     def buildSwitch(self):
         self.advance()
-        o = LONG.copy()
+        #o = LONG.copy()
 
         # determine datatype
-        retrace = self.ctidx
-        p = len(self.asm)
-        voider = self.evaluateRightsideExpression("AMB", o)
-        self.asm = self.asm[:p]
-        self.ctidx = retrace - 1
-        self.advance()
+        # retrace = self.ctidx
+        # p = len(self.asm)
+        # voider = self.evaluateRightsideExpression("AMB", o)
+        # self.asm = self.asm[:p]
+        # self.ctidx = retrace - 1
+        # self.advance()
 
         # create label marking end of structure
         endlabel = getLogicLabel("SWITCHEND")
@@ -1379,9 +1374,17 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
-                    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
-                )
+                #inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
+                #    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
+                #)
+
+                result = EC.ExpressionComponent(
+                    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token)
+
+                inst, final = self.evaluateExpression()
+                inst += depositFinal(result, final)
+                rfree(final.accessor)
+
                 sseused += 1
             # else, load to normal register of the correct size
             else:
@@ -1394,7 +1397,14 @@ class Function:
                 ec = EC.ExpressionComponent(
                     result, fn.parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
-                inst = f"{self.evaluateRightsideExpression(ec)}"
+                inst, final = self.evaluateExpression()
+                inst += depositFinal(ec, final)
+                rfree(final.accessor)
+                
+                
+                #inst = f"{self.evaluateRightsideExpression(ec)}"
+
+
                 # finalize with mov of correct size
 
                 # if(fn.parameters[i].t.csize() != 8):
@@ -1488,10 +1498,7 @@ class Function:
         # build parameters, without storing instructions in order to determine
         # the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
-            o = LONG.copy()
-            p = len(self.asm)
-            tmp = self.evaluateRightsideExpression("AMB", o)
-            self.asm = self.asm[:p] # remove tmp code
+            o = self.determineExpressionType(False)
 
             if(self.current_token.tok == ","):
                 self.advance()
@@ -1816,36 +1823,54 @@ class Function:
             self.advance()
         return exprtokens, instructions
 
+
+    def determineExpressionType(self, restore_token):
+
+        restoreAsm = len(self.asm)
+        restoreToken = self.ctidx-1
+        _, value = self.evaluateExpression(destination=False)
+
+        rfree(value.accessor)
+        self.asm = self.asm[:restoreAsm]
+        if restore_token:
+            self.ctidx = restoreToken
+            self.advance()
+        
+        return value.type
+
+
+
     # evaluate the next tokens and return the asm instructions
-    def evaluateRightsideExpression(self, destination, otyperef=None):
-        instructions = ""
-        comment = ""
-        exprtokens = []
+    # def evaluateRightsideExpression(self, destination, otyperef=None):
+    #     instructions = ""
+    #     comment = ""
+    #     exprtokens = []
 
-        # get tokens, and instructions
-        exprtokens, instructions = self.buildExpressionComponents()
+    #     # get tokens, and instructions
+    #     exprtokens, instructions = self.buildExpressionComponents()
 
-        # using __repr__()
-        comment = exprtokens
+    #     # using __repr__()
+    #     comment = exprtokens
 
-        # \see Postfixer
-        pf = Postfixer(exprtokens, self)
+    #     # \see Postfixer
+    #     pf = Postfixer(exprtokens, self)
 
-        if(config.DO_DEBUG):
-            instructions += f";{comment}\n\n"
+    #     if(config.DO_DEBUG):
+    #         instructions += f";{comment}\n\n"
 
-        # \see RightSideEvaluator
-        ev = RightSideEvaluator(self)
+    #     # \see RightSideEvaluator
+    #     ev = ExpressionEvaluator(self)
 
-        # get instructions, and returntype of the now postifixed equation
-        ins, ot = ev.evaluate(destination, pf.createPostfix())
-        instructions += ins
+    #     # get instructions, and returntype of the now postifixed equation
+    #     ins, ot = ev.evaluate(destination, pf.createPostfix())
+        
+    #     instructions += ins
 
-        # load returntype properties to the given reference
-        if(otyperef is not None):
-            otyperef.load(ot)
+    #     # load returntype properties to the given reference
+    #     if(otyperef is not None):
+    #         otyperef.load(ot)
 
-        return instructions
+    #     return instructions
 
     # evaluate the destination for a rightside expression.
     def evaluateLeftsideExpression(self):
