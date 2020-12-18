@@ -296,7 +296,6 @@ class Function:
         v.offset = self.stackCounter
         v.dtok = self.current_token
         # self.stackCounter += v.t.size(0)
-
         if(v.register is None):
             if v.t.size(0) <= 8:
                 self.stackCounter += 8
@@ -324,12 +323,12 @@ class Function:
                 opens -= 1
 
     def addline(self, l):                           # add a line of assembly to raw
-        if(config.__oplevel__ > 1):
-            self.peephole.addline(l)
-            self.asm = f"{self.asm}{self.peephole.get()}\n"
-            self.peephole.flush()
-        else:
-            self.asm = f"{self.asm}{l}\n"
+        #if(config.__oplevel__ > 1):
+        #    self.peephole.addline(l)
+        #    self.asm = f"{self.asm}{self.peephole.get()}\n"
+        #    self.peephole.flush()
+        #else:
+        self.asm = f"{self.asm}{l}\n"
 
     def addcomment(self, c):                        # add a comment to the assembly
         self.asm += ";" + c + "\n"
@@ -534,8 +533,9 @@ class Function:
         countn = 0
         counts = 0
 
-        if self.implicit_paramregdecl and sum((v.t.isflt() for v in self.parameters)) < 6:
-            countn = 1
+        #TODO: re-interperate problem
+        #if self.implicit_paramregdecl and sum((v.t.isflt() for v in self.parameters)) < 6:
+        #    countn = 1
 
         if self.memberfn:
             for member in self.parentstruct.members:
@@ -577,7 +577,7 @@ class Function:
                 self.regdecls.append(
                     EC.ExpressionComponent(
                         p.register, p.t, token=self.tokens[0]))
-
+            
             self.addVariable(p)
             #p.referenced = False
 
@@ -1972,6 +1972,9 @@ class Function:
             self.buildRegdecl()
             return
 
+        # keep track of the old stack counter for dead code elimination
+        stackRestore = self.stackCounter
+
         # declaration datatype
         t = self.checkForType()
 
@@ -2110,6 +2113,7 @@ class Function:
             self.advance()
             # record asm state in case this turns out to be dead code
             asmrestore = len(self.asm)
+
             instr, __ = self.evaluateExpression(destination=False)
             if var.name not in self.unreferenced:
                 self.addline(instr)
@@ -2117,6 +2121,8 @@ class Function:
                 # if this is dead code, remove all the assembly and delete the variable
                 self.asm = self.asm[:asmrestore]
                 self.variables.pop()
+                self.stackCounter = stackRestore
+                
             
             var.referenced = False
             var.refcount = 0
@@ -2401,6 +2407,12 @@ class Function:
 
             intraprocedural = IntraproceduralOptimizer(self)
             intraprocedural.optimize()
+
+        elif (config.__oplevel__ == 2):
+
+            peephole = Peephole()
+            peephole.addline(self.asm)
+            self.asm = peephole.get()
 
 
     def compile(self):      # main

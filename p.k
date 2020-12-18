@@ -4,6 +4,8 @@
 
 int main(int argc){
     
+    char* test = malloc(50);
+    strcpy(test, "test123");
 
-    return argc;
+    return 0;
 }
