@@ -32,6 +32,10 @@ from globals import (BOOL, CHAR, DOUBLE, INT, LONG, OPERATORS, SHORT, VOID,
                      TsCompatible, isIntrinsic)
 from Postfixer import Postfixer
 from Optimizers.Peephole import Peephole
+from Optimizers.Intraprocedural import IntraproceduralOptimizer
+from Optimizers.LoopOptimizer import LoopOptimizer
+
+
 
 # multiply all items in an array
 
@@ -563,7 +567,6 @@ class Function:
                 continue
 
             cond = (self.inline or self.implicit_paramregdecl and not ((not p.isflt()) and countn == 2) and not(p.isflt() and counts==0))
-
             if cond:
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
@@ -1969,11 +1972,14 @@ class Function:
             self.buildRegdecl()
             return
 
+        # declaration datatype
         t = self.checkForType()
 
+        # ensure that non-valuetype structures cannot be declared in registers
         if(not (isIntrinsic(t.name)) and t.ptrdepth == 0 and register):
             throw(RegsiterStructure(self.current_token))
 
+        # get either the name, or the first name
         name = self.checkForId()
 
         # check if variable exists already
@@ -1984,6 +1990,7 @@ class Function:
         if(self.compiler.getType(name) is not None):
             throw(UsingTypenameAsVariable(self.tokens[self.ctidx - 1]))
 
+        # build a variable
         var = self.constructVar(t, name, register)
 
         # if the variable is a stack-based structure,
@@ -2004,24 +2011,34 @@ class Function:
         while self.current_token.tok == "[":
             isarr = True
             self.advance()
+            
+            # collect tokens for a constexpr that will be the size of the array
             exprtokens = [self.current_token]
             self.advance()
+            
             while self.current_token.tok != T_CLSIDX:
                 exprtokens.append(self.current_token)
                 self.advance()
 
+            # evaluate for size
             size = determineConstexpr(False, exprtokens, self)
+            # ensure that the size is not a variable
             if isinstance(size.accessor, Variable):
                 throw(ExpectedToken(self.current_token, "constexpr"))
             sizes.append(size.accessor)
             self.checkTok(T_CLSIDX)
-
+        # stack arrays:
         if(isarr):
+            # build properties:
             totalsize = product(sizes) * t.csize()
+            # stack size
             var.stackarrsize = totalsize
             var.isStackarr = True
+            # sizes plural for multi-dimentional
             var.stacksizes = sizes
+            # extra specification
             var.t.stackarr = True
+            # update stackCounter
             self.stackCounter += totalsize
 
         # check for same-line assignment, or not
@@ -2067,12 +2084,14 @@ class Function:
 
             # loop through destinations and perform assignment
             for v in dests:
-                
+                # fill in pfix template
                 pfix[0] = EC.ExpressionComponent(v, v.t)
+                # evaluate expression
                 loadInstr, _ = evaluator.evaluatePostfix(pfix, evaluator)
                 instr += loadInstr
+                # cleanup
                 rfree(_.accessor)
-
+            # final cleanup
             rfree(value.accessor)
             self.addline(instr)
             self.checkSemi()
@@ -2086,21 +2105,22 @@ class Function:
 
         # normal inline assignment
         if(not isarr):
-
+            # move back for complete expression
             self.ctidx -= 3
             self.advance()
+            # record asm state in case this turns out to be dead code
             asmrestore = len(self.asm)
             instr, __ = self.evaluateExpression(destination=False)
             if var.name not in self.unreferenced:
                 self.addline(instr)
             else:
+                # if this is dead code, remove all the assembly and delete the variable
                 self.asm = self.asm[:asmrestore]
                 self.variables.pop()
             
             var.referenced = False
             var.refcount = 0
-            # self.addline(self.evaluateRightsideExpression(
-            #    EC.ExpressionComponent(var, var.t, token=self.current_token)))
+            
 
         # array assignment
         else:
@@ -2358,6 +2378,31 @@ class Function:
         self.asm = self.asm.replace(
             "/*ALLOCATOR*/", realValue)
 
+    def finalWarningCheck(self):
+        # warning checking:
+        if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned and not self.contains_rawasm):
+            warn(NoReturnStatement(self.tokens[0], self))
+        if not self.contains_rawasm:
+            for v in self.variables:
+                if(not v.referenced and not v.name == "this"):
+                    self.unreferenced.append(v.name)
+                    warn(UnusedVariable(v.dtok, v, self))
+    
+    def finalCleanup(self):
+        if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
+            for v in self.variables:
+                rfree(v.register)
+
+
+    def optimize(self):
+        # extra optimization:
+
+        if(config.__oplevel__ == 3) and (self.compileCount == 0):
+
+            intraprocedural = IntraproceduralOptimizer(self)
+            intraprocedural.optimize()
+
+
     def compile(self):      # main
         if(self.current_token is None):
             return
@@ -2386,61 +2431,11 @@ class Function:
 
         self.asm += self.suffix           # readonly memory
 
-        # warning checking:
-        if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned and not self.contains_rawasm):
-            warn(NoReturnStatement(self.tokens[0], self))
-        if not self.contains_rawasm:
-            for v in self.variables:
-                if(not v.referenced and not v.name == "this"):
-                    self.unreferenced.append(v.name)
-                    warn(UnusedVariable(v.dtok, v, self))
+        self.finalWarningCheck()
+
+        self.finalCleanup()
                 
-
-        if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
-            for v in self.variables:
-                rfree(v.register)
-
-        # extra optimization:
-
-        if(config.__oplevel__ == 3):
-
-            # functions that are found to be simple enough, can be optimized:
-
-            # WIP
-            if self.compileCount == 0:
-                # implicit parameter register declaration...
-                needs_recompile = len(self.unreferenced) > 0
-                newfunc = self.reset()
-                newfunc.unreferenced = self.unreferenced
-                newfunc.stackCounter = 8
-                newfunc.hasReturned = False
-                newfunc.compileCount += 1
-                newfunc.returnsConstexpr = self.returnsConstexpr
-                if(self.fncalls == 0 and self.extra_params <= 0 and not self.implicit_paramregdecl and not self.inline):
-                    newfunc.implicit_paramregdecl = True
-                    needs_recompile = True
-
-                for p in self.parameters:
-                    if not p.referenced:
-                        needs_recompile = True
-
-                # TODO:
-                # if self.returnsConstexpr and self.fncalls == 0 and not self.inline and not self.contains_rawasm and self.max_depth == 0:
-                #    needs_recompile = False
-                #    self.asm = f"{self.getCallingLabel()}:\nmov rax, {self.constexpr_returnvalue}\nret\n"
-
-                if needs_recompile:
-                    self.GC()
-                    og = config.__nowarn__
-                    config.__nowarn__ = True
-                    newfunc.compile()
-                    config.__nowarn__ = og
-                    self.asm = newfunc.asm
-
-            pfinal = Peephole()
-            pfinal.addline(self.asm)
-
-            self.asm = pfinal.get()
+        self.optimize()
 
         self.isCompiled = True
 

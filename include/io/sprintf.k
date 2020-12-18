@@ -62,7 +62,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
     
 
-
+    base;
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
     long len = 0;

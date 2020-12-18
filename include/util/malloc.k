@@ -125,14 +125,14 @@ bool scan_merge(mblock* b){
  * @returns None
  */
 void add_block(mblock* block){
-    
     if(free_head == nullptr){
+
         free_head = block;
         block->prev = block;
+
         block->next = nullptr;
         return;
     }
-
     free_head->prev->next = block;
     free_head->prev = block;
 
@@ -198,8 +198,14 @@ void printstate(){
  * @param size number of bytes to allocate
  * @returns a newly mapped pointer of size bytes
  */
-inline mblock* create_ptr(size_t size){
-    return qmmap(size);
+mblock* create_ptr(size_t size){
+    void* ptr = qmmap(size);
+    if (ptr > 0){
+        return ptr;
+    }
+    printf("Malloc:%i: Bad mmap: ", __LINE__, strerror(ptr));
+    exit(1);
+    return nullptr;
 }
 /**
  * Unmap memory of an old pointer.
