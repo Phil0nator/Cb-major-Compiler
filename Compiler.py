@@ -401,7 +401,8 @@ class Compiler:
 
             # add new variable
             parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
-
+            parameters[-1].dtok = self.currentTokens[self.ctidx-1]
+            
             # loop handle:
             if (self.current_token.tok == T_CLSP):
 

@@ -316,10 +316,11 @@ class Function:
 
     # add a given variable, and set its stack offset
 
-    def addVariable(self, v):
+    def addVariable(self, v, add_token=True):
 
         v.offset = self.stackCounter
-        v.dtok = self.current_token
+        if add_token:
+            v.dtok = self.tokens[self.ctidx+1]
         # self.stackCounter += v.t.size(0)
         if(v.register is None):
             if v.t.size(0) <= 8:
@@ -377,47 +378,67 @@ class Function:
 
     def getFunction(self, fn, types, rettype=None,
                     searchlist=None, loose=True):
+        
+        # searchlist is by default the global function list
         if searchlist is None:
             searchlist = self.compiler.functions
 
         for f in searchlist:  # first seach exact matches
             if f.name == fn:
+                # for functions with the same name:
+
+                # if the two functions have a different number of parameters,
+                # they are not compatible
                 if(len(f.parameters) != len(types) and not f.variardic):
                     continue
+                
+                # handle variardic functions
                 types = types[:len(f.parameters)] if f.variardic else types
                 valid = True
+                
+                # ensure functions share types
                 for i in range(len(types)):
+                    # check for inequal parameter types
                     if(not f.parameters[i].t.__eq__(types[i])):
 
                         valid = False
                         break
-
+                
+                # check for equal returntypes (if specified by caller)
                 if rettype is not None and not rettype.__eq__(f.returntype):
                     valid = False
 
                 if(valid):
                     return f
+        
+        # 'loose' means search with loose typematching.
+        # this would mean that the types specified in types could be implicitly
+        # casted to the types outlined in the function's parameters.
         if loose:
             for f in searchlist:  # seach others for valid casts
                 if f.name == fn:
+                    # for function of the same name
+                    
                     lt = len(types)
                     if(len(f.parameters) != lt):
                         continue
                     valid = True
+                    # check matching / compatible types
                     for i in range(lt):
-                        # if f.parameters[i].t.__repr__() !=
-                        # types[i].__repr__():
+                        # determine compatiblity
                         if (not TsCompatible(
                                 f.parameters[i].t, types[i], self)):
                             valid = False
                             break
-
+                    # check for valid returntype matching
                     if rettype is not None and not TsCompatible(
                             rettype, f.returntype, self):
                         valid = False
 
                     if(valid):
                         return f
+        
+        # if no function was found, return None
         return None
 
     def push_stackstate(self):
@@ -608,7 +629,7 @@ class Function:
                     EC.ExpressionComponent(
                         p.register, p.t, token=self.tokens[0]))
 
-            self.addVariable(p)
+            self.addVariable(p, False)
             #p.referenced = False
 
             if not cond:
@@ -2448,8 +2469,13 @@ class Function:
 
         self.isCompiled = True
 
-    def __repr__(self):     # pretty print
+    # debug pretty print
+    def __repr__(self):
         return f"[ function {self.returntype} {self.name}( {self.parameters} ) ]"
+
+    # error message pretty print
+    def pretty_print_err(self):
+        return f"{self.returntype} {self.name}({', '.join((p.t.__repr__() for p in self.parameters))})"
 
     def reset(self):
 

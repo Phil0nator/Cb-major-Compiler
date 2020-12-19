@@ -43,16 +43,6 @@ class Lexer:
         self.loc.line += self.ch == "\n"
         return self.ch
 
-        # self.chidx += 1
-        # if(self.chidx < self.size):
-        #     self.ch = self.raw[self.chidx]
-        #     self.loc.ch += 1
-        #     if self.ch == "\n":
-        #         self.loc.line += 1
-        #     return self.ch
-        # else:
-        #     throw(UnexepectedEOFError(
-        #         Token(self.ch, self.ch, self.loc.copy(), self.loc)))
 
     # build math operators that use more than one character (max = 3)
     def buildMultichar(self) -> Token:
@@ -151,6 +141,8 @@ class Lexer:
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
+        if self.size-self.chidx < 3:
+            throw(UnexepectedEOFError(Token(T.T_CHAR, self.ch, begin, self.loc)))
         self.advance()
         self.advance()
         return Token(T.T_CHAR, v, begin, self.loc.copy())

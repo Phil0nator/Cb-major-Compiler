@@ -4,18 +4,6 @@
 
 
 int main(int argc){
-    
-
-
-    int a = 123;
-    printf("onetwothree %i\n", a);
-
-    char* c = malloc(256);
-    
-    strcpy(c, "This is a string.\n");
-    puts(c);
-    free(c);
-
 
     /*
     char nullb[1000];
@@ -25,8 +13,6 @@ int main(int argc){
     }
     puts(&nullb);
     */
-
-
 
     return 0;
 }
