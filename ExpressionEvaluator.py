@@ -26,15 +26,22 @@ from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
 ############################
 
 
-def optloadRegs(a, b, op, o, constvalok=False):
+def optloadRegs(a:EC.ExpressionComponent, b:EC.ExpressionComponent, op:str, o:DType, constvalok:bool=False) -> (str, str, DType, str):
     instr = ""
+    # o represents an output type to classify the two given components 
     o = a.type.copy()
+    # areg is a register for a, and breg is a register for b
     areg = ""
     breg = ""
+    # if a and b already have registers allocated to them, they might not need to 
+    # be loaded again
     needLoadA = True
     needLoadB = True
+    # sometimes a does not need to be loaded if it is an immediate and the operation
+    # allows it
     overrideAload = False
 
+    # check if a constant can be used in place of a register
     if (constvalok and isinstance(a.accessor, int)
             and dwordImmediate(a.accessor)):
         areg = a.accessor
@@ -42,38 +49,44 @@ def optloadRegs(a, b, op, o, constvalok=False):
             return areg, None, o, ""
         overrideAload = True
 
+    # check if a constant can be used in place of a register
     if (b is not None and constvalok and isinstance(
             b.accessor, int) and dwordImmediate(a.accessor)):
         breg = b.accessor
         return areg, breg, o, instr
 
+    # override a load if constant can be used
     if(a.isRegister() or overrideAload):
         areg = a.accessor
         needLoadA = False
-    #elif isinstance(a.accessor, Variable) and a.accessor.register is not None:
-    #    areg = a.accessor.register
-    #    needLoadA = False
+
     else:
+        # if not, a new register can be allocated
         areg = ralloc(a.type.isflt(), size=a.type.csize())
 
+    # sometimes this function is called with None for b if the caller just wants to load a,
+    # so if b is not None, it will be loaded in a similar way to a.
     if(b is not None):
+        
+        # when b is a constant, it adopts a's type
         if (b.isconstint()):
             b.type.s = a.type.s
 
+        # if b is a register, it doesn't need to be loaded
         if(b.isRegister()):
             breg = b.accessor
             needLoadB = False
-        #elif isinstance(b.accessor, Variable) and b.accessor.register is not None:
-        #    breg = b.accessor.register
-        #    needLoadB = False
-        else:
 
+        else:
+            # if b needs to be loaded, a new register is allocated for it
             breg = ralloc(b.type.isflt(), size=b.type.csize())
 
         if(needLoadB):
+            # when necessary, b's value is loaded to it's new register
             instr += loadToReg(breg, b.accessor)
 
     if(needLoadA):
+        # when necessary, a's value is loaded to it's new register
         instr += loadToReg(areg, a.accessor)
 
     return areg, breg, o, instr
@@ -85,10 +98,11 @@ def optloadRegs(a, b, op, o, constvalok=False):
 #       to reduce its pointer depth by one.
 #       (used for member access and arrays)
 ############################
-def bringdown_memloc(a):
+def bringdown_memloc(a:EC.ExpressionComponent) ->str:
     instr = ""
     if(a.memory_location):
 
+        # floats need to use their own 'movsd' instruction
         if a.type.isflt():
             out = ralloc(True)
             instr += f"movsd {out}, [{setSize(a.accessor, 8)}]\n"
@@ -96,17 +110,17 @@ def bringdown_memloc(a):
             a.accessor = out
         else:
             instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-            #instr += maskset(a.accessor, a.type.csize())
             a.accessor = setSize( a.accessor, a.type.csize())
-
+        # once a memloc has been lowered, it is no longer representable, for compiler purposes, as a 
+        # memory location.
+        # It can still be dereferenced again by the user, but the compiler will not see it strictly as
+        # an address anymore.
         a.memory_location = False
 
     return instr
 
 # do two bringdown_memloc calls in one
-
-
-def bringdown_memlocs(a, b):
+def bringdown_memlocs(a:EC.ExpressionComponent, b:EC.ExpressionComponent) -> str:
     return bringdown_memloc(a) + bringdown_memloc(b)
 
 
@@ -123,24 +137,37 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
-    def swap_op(self, a, b):
+    # swap_op refers to the swap operator '<=>'
+    def swap_op(self, a : EC.ExpressionComponent, b : EC.ExpressionComponent) -> (str, DType, EC.ExpressionComponent):
+        
+        # normal setup:
         apendee = b
         newt = b.type
         inst = self.normal_semiconstexprheader(a, b)
+
+        # load registers:
         areg, breg, _, linstrs = optloadRegs(a,b, "<=>",VOID.copy())
         inst += linstrs
-        if isinstance(a.accessor, Variable) and a.accessor.register is None:
-            inst += loadToReg(b.accessor, areg)
-            inst += loadToReg(a.accessor, breg)
-            b.accessor = breg
-            rfree(areg)
 
-        elif isinstance(b.accessor, Variable) and b.accessor.register is None:
-            inst += loadToReg(a.accessor, breg)
+        # When a is a stack-based variable:
+        if isinstance(a.accessor, Variable) and a.accessor.register is None:
+            # This sort of swapping between memory is already implimented
+            # in the loadToReg function:
             inst += loadToReg(b.accessor, areg)
+            inst += loadToReg(a.accessor, breg)
+            # cleanup
             b.accessor = breg
             rfree(areg)
-        
+        # When b is a stack-based variable:
+        elif isinstance(b.accessor, Variable) and b.accessor.register is None:
+            # This sort of swapping between memory is already implimented
+            # in the loadToReg function:
+            inst += loadToReg(a.accessor, breg)
+            inst += loadToReg(b.accessor, areg)
+            # cleanup
+            b.accessor = breg
+            rfree(areg)
+        # When a and b are both held in registers
         else:
             tmp = ralloc(b.type.isflt() and a.type.isflt())
             inst += loadToReg(tmp, areg)
@@ -150,13 +177,13 @@ class ExpressionEvaluator:
             rfree(areg)
             b.accessor = breg
 
-
+        # (The value of b is returned in the expression)
         return inst, newt, apendee
 
     # Any assignments will be handled in this function.
     # This includes operators like '+=', '-=', etc...
 
-    def doAssignment(self, a, b, op, evaluator, depth=0):
+    def doAssignment(self, a, b, op, evaluator, depth=0) -> (str, DType, EC.ExpressionComponent):
         ogb = EC.ExpressionComponent(b.accessor, b.type, constint=b.constint, token=b.token, memloc=b.memory_location)
         # the swapping operator is passed on to its own function:
         if op == "<=>":
@@ -285,37 +312,47 @@ class ExpressionEvaluator:
         
         return instrs, a.type.copy(), a
 
-    def normal_semiconstexprheader(self, a, b):
+    # normal_semiconstexprheader is a wrapper for the normal operations needed at the begining
+    # of a semiconstexpr handler, and often also in other handlers.
+    def normal_semiconstexprheader(self, a, b) -> (str, DType, EC.ExpressionComponent):
         return bringdown_memlocs(a, b)
 
+    # Compile the first half of a ternary operation
     def ternarypartA(self, a, b):  # op == "?"
+        # standard header
         newinstr = self.normal_semiconstexprheader(a, b)
-
+        # check for other half
         if(len(ternarystack) <= 0):
             throw(UnmatchedTernary(a.token))
-
+        # load regs
         reg, _, __, newinstr = optloadRegs(a, None, "?", LONG.copy())
+        # load info from other half
         cmpinstr, aregec, bregec = ternarystack.pop()
+        # test value of ternary
         newinstr += f"test {reg}, {reg}\n"
         newinstr += cmpinstr
-
+        # cleanup
         rfree(aregec.accessor)
         rfree(bregec.accessor)
         rfree(reg)
         return newinstr, b.type.copy(), b
 
-    def ternarypartB(self, a, b):  # op == ':'
+    # Compile the second half of a ternary operation
+    def ternarypartB(self, a, b)-> (str, DType, EC.ExpressionComponent):  # op == ':'
+        # standard header
         newinstr = self.normal_semiconstexprheader(a, b)
 
+        # check type mismatch
         if(a.type.isflt() != b.type.isflt()):
             throw(TypeMismatch(a.token, a.type, b.type))
-
+        # load regs
         areg, breg, __, outinstr = optloadRegs(a, b, ":", LONG.copy())
         areg = setSize(areg, 8)
         breg = setSize(breg, 8)
         resultreg = ralloc(False, size=8)
-
+        # conditional move the new values in
         newinstr += f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
+        # place info on the ternary stack for the ternarypartA function
         ternarystack.append(
             (newinstr, EC.ExpressionComponent(
                 areg, a.type), EC.ExpressionComponent(
@@ -324,7 +361,7 @@ class ExpressionEvaluator:
             resultreg, a.type.copy(), token=a.token)
 
     # Bitshift optimization for multiplication and division by multiples of 2
-    def mult_div_optimization(self, a, b, op):
+    def mult_div_optimization(self, a, b, op)-> (str, DType, EC.ExpressionComponent):
         newinstr = None
         newt = None
         apendee = None
@@ -414,52 +451,59 @@ class ExpressionEvaluator:
         return newinstr, newt, apendee
 
     # shifting by constant value optimization
-    def const_shift_optimization(self, a, b, op):
+    def const_shift_optimization(self, a, b, op)-> (str, DType, EC.ExpressionComponent):
+        #standard header
         newinstr = self.normal_semiconstexprheader(a, b)
-
+        # load regs
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
-
+        # shift operation
         newinstr += shiftInt(setSize(areg, a.type.csize()),
                              b.accessor, op, a.type.signed)
+        # closing
         a.accessor = areg
         apendee = a
         newt = a.type.copy()
         return newinstr, newt, apendee
     # addition or subtraction by one optimization
 
-    def inc_dec_optimization(self, a, b, op):
+    def inc_dec_optimization(self, a, b, op)-> (str, DType, EC.ExpressionComponent):
+        # header
         newinstr = bringdown_memloc(a)
-
+        # load reg
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
 
+        # deterine opcode
         cmd = "inc" if op == '+' else "dec"
-
+        # actual instruction
         newinstr += Instruction(cmd, [setSize(areg, a.type.csize())])
+        # cleanup
         a.accessor = areg
         apendee = a
         newt = a.type.copy()
         return newinstr, newt, apendee
     # use of smaller 'test' instruction in place of 'cmp' for particular
     # comparisons
-
-    def test_optimization(self, a, b, op):
-
+    def test_optimization(self, a, b, op) -> (str, DType, EC.ExpressionComponent):
+        # header
         newinstr = bringdown_memlocs(a, b)
+        # load regs
         areg, breg, o, ninst = optloadRegs(a, None, op, None)
         newinstr += ninst
+        # determine conditional opcode
         cmp = "z" if op == "==" else "nz"
+        # instruction
         newinstr += f"test {setSize(areg, a.type.csize())}, {setSize(areg, a.type.csize())}\nset{cmp} {setSize(areg, 1)}\n"
 
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
 
-    def mod_opt(self, a, b, op):
+    def mod_opt(self, a, b, op)-> (str, DType, EC.ExpressionComponent):
         newinstr = None
         newt = None
         apendee = None
-
+        # magic modulo optimization:
         if (a.type.csize() < 9 or (canShiftmul(
                 b.accessor) and not a.type.isSigned())):
             newinstr = self.normal_semiconstexprheader(a, b)
@@ -469,15 +513,19 @@ class ExpressionEvaluator:
             a.accessor = areg
 
         return newinstr, a.type, a
+    
     # optimization for operations which do not require both operands in
     # registers
+    def noloadOp(self, a, b, op)-> (str, DType, EC.ExpressionComponent):
 
-    def noloadOp(self, a, b, op):
-
+        # load regs
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
         newinstr += bringdown_memlocs(a, b)
+        # determine opcode
         cmd = "add" if op == "+" else "sub"
+        # instruction
         newinstr += f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
+
         return newinstr, a.type.copy(), EC.ExpressionComponent(
             areg, a.type.copy(), token=a.token)
 

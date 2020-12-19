@@ -108,8 +108,15 @@ class PreProcessor:
         self.tkidx = 0                          # current position
 
         # predefined macros are generated here
-        # \see getCompilerDefines()
-        self.definitions = getCompilerDefines()
+        definitions = getCompilerDefines()
+        # hash table for faster access to definitions
+        self.definitions = {}
+        
+        for d in definitions:
+            self.definitions[d[0]] = d
+
+        # macros are #defines that define a function-like directive:
+        # e.g: #define MY_MACRO(x) (x*x-x+x/x)
         self.macros = []
         self.dels = 0                           # number of tokens deleted
 
@@ -126,7 +133,8 @@ class PreProcessor:
         self.dels += 1
 
     def getDefn(self, name):                    # get a definition by name
-        return next((d for d in self.definitions if d[0] == name), None)
+        return self.definitions[name] if name in self.definitions else None
+        #return next((d for d in self.definitions if d[0] == name), None)
 
     def getMacro(self, name):
         return next((m for m in self.macros if m.name == name), None)
@@ -171,16 +179,23 @@ class PreProcessor:
             return
 
         if(self.current_token.start.line != sline):
-            self.definitions.append(
-                [name, [Token(T_INT, 0, self.current_token.start, self.current_token.end)]])
+            self.definitions[name] = [name, [Token(T_INT, 0, self.current_token.start, self.current_token.end)]]
+            
             return
 
         definitionTokens = [self.current_token]
         self.delmov()
         while(self.current_token.start.line == sline):
             definitionTokens.append(self.current_token)
+            if self.current_token.tok == T_STRING:
+                # account for multi-line strings:
+                linestops = self.current_token.value.count("\\")
+                sline += linestops-1 if linestops else 0
+            
+            
             self.delmov()
-        self.definitions.append([name, definitionTokens])
+
+        self.definitions[name] = [name, definitionTokens]
     # check if current token (id) is a macro
     # if so, replace it with the actual values for that macro
 

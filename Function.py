@@ -80,6 +80,14 @@ class Function:
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.stackTotal = 8                     # maintain total count
         self.variables = []                     # all local variables
+
+        # a hash table of indexes in self.variables
+        # for faster access during compiletime
+        # fmt: "<name>": <idx>
+        # idx being the index in self.variables
+        self.variable_reference = {}            
+
+
         # inline functions behave like macros, and are not called
         self.inline = inline
         # stack containing labels to jump to if the "continue" keyword is used
@@ -285,9 +293,26 @@ class Function:
     # get a variable of name q from first local then global scope if necessary
 
     def getVariable(self, q):
+        if q in self.variable_reference:
+            return self.variables[self.variable_reference[q]]
+        elif q in self.staticnameref:
+            return self.variables[self.variable_reference[self.staticnameref[q]]]
+        else:    
+            return self.compiler.getGlob(q)
 
-        return next((v for v in self.variables if (v.name if not v.static else self.staticnameref[v.name]) == q),
-                    self.compiler.getGlob(q))
+        #return next((v for v in self.variables if (v.name if not v.static else self.staticnameref[v.name]) == q),
+        #            self.compiler.getGlob(q))
+
+
+    def append_rawVariable(self, var):
+        self.variables.append(var)
+        self.variable_reference[var.name] = len(self.variables)-1
+        return var
+
+    def popVar(self):
+        v = self.variables.pop()
+        del self.variable_reference[v.name]
+        return v
 
     # add a given variable, and set its stack offset
 
@@ -302,7 +327,7 @@ class Function:
             else:
                 self.stackCounter += v.t.csize()
                 v.stackarrsize = v.t.csize()
-        self.variables.append(v)
+        self.append_rawVariable(v)
 
     # skip a open and close scope body. Example:
     # if ( ... ) { ... }
@@ -404,7 +429,7 @@ class Function:
             return
         self.stackCounter, newidx = self.localstate_stack.pop()
         for i in range(len(self.variables) - newidx):
-            oldvar = self.variables.pop()
+            oldvar = self.popVar()            
             if(oldvar.register is not None):
                 rfree(oldvar.register)
 
@@ -551,7 +576,8 @@ class Function:
                         signed=member.signed,
                         bpr="rdi+")
                     v.referenced = True
-                    self.variables.append(v)
+                    self.append_rawVariable(v)
+                    
             self.regdecls.append(
                 EC.ExpressionComponent('rdi', self.parentstruct)
             )
@@ -1115,7 +1141,12 @@ class Function:
             for v in self.variables[startvars:]:
                 self.regdecls.append(
                     EC.ExpressionComponent(
-                        v.register, v.t, token=s))
+                        v.register, 
+                        v.t, 
+                        token=s, 
+                        ))
+                # supposed_value is used to denote the suggested original name of the variable
+                self.regdecls[-1].supposed_value = v.name
 
                 if(v.t.isflt()):
                     self.regdeclremain_sse -= 1
@@ -1175,7 +1206,7 @@ class Function:
         self.staticnameref[label] = name
 
         self.compiler.heap += createIntrinsicHeap(var)
-        self.variables.append(var)
+        self.append_rawVariable(var)
 
         self.ctidx -= 2
         self.advance()
@@ -1312,6 +1343,7 @@ class Function:
             throw(NonRegisterDeletion(self.tokens[self.ctidx - 2]))
 
         self.variables.remove(v)
+        del self.variable_reference[v.name]
         rfree(v.register)
 
         if("xmm" in v.register):
@@ -1351,7 +1383,16 @@ class Function:
 
         out = ""
         for r in self.regdecls:
-            out += spush(r)
+            
+            # if a regdecl is not referenced again in the current function,
+            # it does not need to be pushed, and can be discarded
+            usedagain = next((t for t in self.tokens[self.ctidx:] if t.tok == T_ID and t.value == r.supposed_value), None) is not None
+            if usedagain:
+                out += spush(r)
+            else:
+                self.regdecls.remove(r)
+                rfree(r.accessor)
+        
         return out
     # restore all register declarations after function call
     # to preserve their state.
@@ -1557,10 +1598,12 @@ class Function:
         sseused = 0
         normused = 0
 
-        instructions += (self.pushregs())
-
+        # load parameters
         paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
-
+        # save regdecls
+        reginst = (self.pushregs())
+        # reverse order of instructions:
+        instructions += reginst
         instructions += paraminst
 
         # follow c varargs standard:
@@ -1600,14 +1643,13 @@ class Function:
     def memberCall(self, fn, this):
         # prevent warnings
         this.referenced = True
-        # save regdecls
-        self.addline(self.pushregs())
+        
         # load 'this'
-
+        paraminst = ""
         if(isinstance(this, Variable)):
-            self.addline(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
+            paraminst+=(f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
         elif(isinstance(this, EC.ExpressionComponent)):
-            self.addline(f"mov rdi, {valueOf(this.accessor)}\n")
+            paraminst+=(f"mov rdi, {valueOf(this.accessor)}\n")
 
         # remaining parameters:
         normused = 1
@@ -1615,12 +1657,16 @@ class Function:
         pcount = len(fn.parameters)
         self.advance()
         self.advance()
-        paraminst = self.rawFNParameterLoad(
+        paraminst+=self.rawFNParameterLoad(
                 fn,
                 sseused,
                 normused,
                 pcount,
                 True)
+
+        # save regdecls
+        self.addline(self.pushregs())
+        # add parameter loading instructions
         self.addline(paraminst)
         
         # actual function call, and restore
@@ -1971,10 +2017,12 @@ class Function:
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
 
-                    self.variables.append(Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed))
-                    # initialize to null
+                    newvar = Variable(v.t.copy(
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed)
+
+                    self.append_rawVariable(newvar)
                     
+                    # initialize to null
                     if v.initializer is not None:
                         self.addline(Instruction(
                             "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
@@ -2157,7 +2205,7 @@ class Function:
             else:
                 # if this is dead code, remove all the assembly and delete the variable
                 self.asm = self.asm[:asmrestore]
-                self.variables.pop()
+                self.popVar()
                 self.stackCounter = stackRestore
                 
             

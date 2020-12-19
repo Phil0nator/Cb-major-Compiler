@@ -38,15 +38,21 @@ class Lexer:
     def advance(self):  # increment the current character
 
         self.chidx += 1
-        if(self.chidx < self.size):
-            self.ch = self.raw[self.chidx]
-            self.loc.ch += 1
-            if self.ch == "\n":
-                self.loc.line += 1
-            return self.ch
-        else:
-            throw(UnexepectedEOFError(
-                Token(self.ch, self.ch, self.loc.copy(), self.loc)))
+        self.loc.ch += 1
+        self.ch = self.raw[self.chidx]
+        self.loc.line += self.ch == "\n"
+        return self.ch
+
+        # self.chidx += 1
+        # if(self.chidx < self.size):
+        #     self.ch = self.raw[self.chidx]
+        #     self.loc.ch += 1
+        #     if self.ch == "\n":
+        #         self.loc.line += 1
+        #     return self.ch
+        # else:
+        #     throw(UnexepectedEOFError(
+        #         Token(self.ch, self.ch, self.loc.copy(), self.loc)))
 
     # build math operators that use more than one character (max = 3)
     def buildMultichar(self):
@@ -109,8 +115,6 @@ class Lexer:
         if(self.ch == "\""):
             self.advance()
             return Token(T.T_STRING, "", begin, self.loc.copy())
-        #content = self.ch
-        #ch = self.advance()
 
         end = self.raw.find("\"", self.chidx)
         
@@ -118,10 +122,9 @@ class Lexer:
             throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         content = self.raw[self.chidx:end]
         self.chidx = end
-        
-        #self.loc.ch   =  self.chidx
-        #self.loc.ch = end
-        #self.loc.line += content.count("\n")
+        # account for multi-line strings
+        newlines = content.count("\n")
+        self.loc.line += newlines-1 if newlines else 0
 
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())

@@ -66,6 +66,8 @@ class Compiler:
 
         # typedefs listed as (old, new):(DType,DType)
         self.tdefs:list = []
+        # a hash table for faster access to typedefs
+        self.tdef_hash = {}
 
         for i in INTRINSICS:            # fill types with primitives
             self.types.append(i.copy())
@@ -129,9 +131,17 @@ class Compiler:
         # if given names are equal, the types must be
         if(ta == tb):
             return True
+        
+        if ta in self.tdef_hash:
+            return tb in self.tdef_hash[ta]
+        elif tb in self.tdef_hash:
+            return ta in self.tdef_hash[tb]
+
+        return False
+
         # find a typedef pair in the list which equates the two types
-        return next((True for tdef in self.tdefs if (
-            (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
+        #return next((True for tdef in self.tdefs if (
+        #    (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
 
     def getType(self, qu:str) -> DType:               # get type of name q
         q:str = f"{qu}" # copy of querry
@@ -767,6 +777,19 @@ class Compiler:
         # add new type to types and tdefs
         self.types.append(newtype.copy())
         self.tdefs.append((ta, newtype))
+        
+        # setup hash table for fast access
+        if ta.name in self.tdef_hash:
+            self.tdef_hash[ta.name].append(newtype.name)
+        else:
+            self.tdef_hash[ta.name] = [newtype.name]
+        
+        if newtype.name in self.tdef_hash:
+            self.tdef_hash[newtype.name].append(ta.name)
+        else:
+            self.tdef_hash[newtype.name] = [ta.name]
+        
+        
         if(self.isIntrinsic(ntn)):
             INTRINSICS.append(newtype.copy())
         self.advance()
