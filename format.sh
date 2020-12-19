@@ -1,3 +1,3 @@
 cd ..
-autopep8 CompiledLanguage2 -r -a --in-place
-cd CompiledLanguage2
+autopep8 "Cb-major-Compiler" -r -a --in-place
+cd "Cb-major-Compiler"

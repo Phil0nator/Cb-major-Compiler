@@ -19,32 +19,36 @@ class Error:
 
         file = config.loadRawFile(file, None)
 
-        #file = file[0:char] + error_indicator + \
+        # file = file[0:char] + error_indicator + \
         #    file[char:self.tok.end.ch] + Style.RESET_ALL + file[char + diff:-1]
-        
-        
+
         lines = file.split("\n")
         # determine number of characters before error token on given line
         line -= lines[0] != ""
-        beginchars = lines[line-1].find(str(self.tok.value))
+        beginchars = lines[line - 1].find(str(self.tok.value))
 
-        lines[line-1] = lines[line-1].replace(str(self.tok.value), f"{error_indicator}{self.tok.value}{Style.RESET_ALL}", 1)
+        lines[line - 1] = lines[line - 1].replace(
+            str(self.tok.value), f"{error_indicator}{self.tok.value}{Style.RESET_ALL}", 1)
         lp = ""
         try:
             if(len(lines) > 1 and line >= 1):
-                lp += f"|{line-1}\t" + lines[line-2] + "\n"
+                lp += f"|{line-1}\t" + lines[line - 2] + "\n"
             if(line != len(lines) - 1 and len(lines) > 1):
-                lp += f"|{line}\t" + lines[line-1] + "\n"
+                lp += f"|{line}\t" + lines[line - 1] + "\n"
         except IndexError:
             pass
-        
+
         # highlight problem token
         problem = lp
         # add underline
         problem += f"  \t{error_indicator}{' '*beginchars}^{'~'*(self.tok.end.ch-self.tok.start.ch-1)}{Style.RESET_ALL}"
 
-        #return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
+        # return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL}
+        # \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL}
+        # \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at:
+        # \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
         return f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}: {Fore.RED}fatal error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
+
 
 def throw(error):
     print(error)

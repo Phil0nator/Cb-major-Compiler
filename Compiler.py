@@ -39,46 +39,47 @@ from Structure import Structure
 class Compiler:
 
     def __init__(self):
-        self.globals:list = []               # all global variables
-        self.constants:str = ""             # raw assembly for constant definitions
+        self.globals: list = []               # all global variables
+        self.constants: str = ""             # raw assembly for constant definitions
         # raw assembly for heap definitions (.bss)
-        self.heap:str = ""
-        self.initializers:str = ""          # raw assembly for initialization of heap definitions
+        self.heap: str = ""
+        # raw assembly for initialization of heap definitions
+        self.initializers: str = ""
         # raw assembly to call the given entrypoint (usually main)
-        self.entry:str = ""
-        self.text:str = ""                  # raw .text assembly
-        self.currentfname:str = ""          # current filename
-        self.currentTokens:list = []         # current tokens: Token
+        self.entry: str = ""
+        self.text: str = ""                  # raw .text assembly
+        self.currentfname: str = ""          # current filename
+        self.currentTokens: list = []         # current tokens: Token
 
-        self.currentfunction:Function = None     # for fn compiletime
+        self.currentfunction: Function = None     # for fn compiletime
 
-        self.current_token:Token = None       # current token
-        self.ctidx:int = 0                  # index of current_token in self.currentTokens
-        self.prevtok:Token = Token(T_AMBIGUOUS, T_AMBIGUOUS, None, None)
+        self.current_token: Token = None       # current token
+        self.ctidx: int = 0                  # index of current_token in self.currentTokens
+        self.prevtok: Token = Token(T_AMBIGUOUS, T_AMBIGUOUS, None, None)
 
-        self.functions:list = []             # all Function objects
-        self.template_functions:list = []    # function templates
-        self.templatefunction_cache:list = []  # already created function templates
+        self.functions: list = []             # all Function objects
+        self.template_functions: list = []    # function templates
+        self.templatefunction_cache: list = []  # already created function templates
 
-        self.types:list = []                 # all datatypes: DType
-        self.template_types:list = []        # templated types
-        self.template_cache:list = []        # already filled templates for speed
+        self.types: list = []                 # all datatypes: DType
+        self.template_types: list = []        # templated types
+        self.template_cache: list = []        # already filled templates for speed
 
         # typedefs listed as (old, new):(DType,DType)
-        self.tdefs:list = []
+        self.tdefs: list = []
         # a hash table for faster access to typedefs
         self.tdef_hash = {}
 
         for i in INTRINSICS:            # fill types with primitives
             self.types.append(i.copy())
 
-        self.possible_members:list = []
+        self.possible_members: list = []
 
-        self.heap_unnamed:int = 0           # int counter for unnamed heap variables
+        self.heap_unnamed: int = 0           # int counter for unnamed heap variables
 
         # panicmode means continue compiling, but there has already been an
         # error
-        self.panicmode:bool = False
+        self.panicmode: bool = False
 
     # ensure a semicolon was used, and move on
     def checkSemi(self) -> None:
@@ -86,35 +87,36 @@ class Compiler:
             throw(ExpectedSemicolon(self.current_token))
         self.advance()
 
-    def isType(self, q:str) -> bool:                # return: if q is type
+    def isType(self, q: str) -> bool:                # return: if q is type
         return self.getType(
             q) is not None or self.getTemplateType(q) is not None
 
-    def isIntrinsic(self, q:str) -> DType:           # return: if q is primitive
+    def isIntrinsic(self, q: str) -> DType:           # return: if q is primitive
         return next((t for t in INTRINSICS if self.Tequals(t.name, q)), None)
 
-    def ismember(self, q:str) -> bool:
+    def ismember(self, q: str) -> bool:
         return q in self.possible_members
 
-    def getGlob(self, q:str) -> Variable:               # get global variable of name q
-        
+    def getGlob(self, q: str) -> Variable:               # get global variable of name q
+
         # find a variable based on name
-        out:Variable = next((g for g in self.globals if g.name == q), None)
+        out: Variable = next((g for g in self.globals if g.name == q), None)
         # return out if found
         if(out is not None):
             return out
         # check for functions of that name
-        fn:Function = self.getFunction(q)
+        fn: Function = self.getFunction(q)
         # return None if none found
         if(fn is None):
             return None
         # if function is found, find it's corresponding global variable:
-        return self.getGlob(fn.getCallingLabel()) if not fn.extern else self.getGlob(fn.name)
+        return self.getGlob(fn.getCallingLabel()
+                            ) if not fn.extern else self.getGlob(fn.name)
 
-    def getTemplateType(self, q:str) -> DType:
+    def getTemplateType(self, q: str) -> DType:
         return next((t for t in self.template_types if t[0].name == q), None)
 
-    def getFunction(self, q:str) -> Function:           # get first function of name q
+    def getFunction(self, q: str) -> Function:           # get first function of name q
         return next((f for f in self.functions if f.name == q), None)
 
     def advance(self):                  # move to next token
@@ -127,11 +129,12 @@ class Compiler:
         except BaseException:
             throw(UnexepectedEOFError(self.current_token))
 
-    def Tequals(self, ta:str, tb:str) -> bool:          # determine DType equality (including typedefs)
+    # determine DType equality (including typedefs)
+    def Tequals(self, ta: str, tb: str) -> bool:
         # if given names are equal, the types must be
         if(ta == tb):
             return True
-        
+
         if ta in self.tdef_hash:
             return tb in self.tdef_hash[ta]
         elif tb in self.tdef_hash:
@@ -140,16 +143,16 @@ class Compiler:
         return False
 
         # find a typedef pair in the list which equates the two types
-        #return next((True for tdef in self.tdefs if (
+        # return next((True for tdef in self.tdefs if (
         #    (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
 
-    def getType(self, qu:str) -> DType:               # get type of name q
-        q:str = f"{qu}" # copy of querry
-        pd:PointerDepth = q.count(".")   # pointer depth
+    def getType(self, qu: str) -> DType:               # get type of name q
+        q: str = f"{qu}"  # copy of querry
+        pd: PointerDepth = q.count(".")   # pointer depth
         q = q.replace(".", "")            # remove points from name for search
 
         # search types for a datatype that shares a name with the querry
-        out:DType = next((t for t in self.types if t.name == q), None)
+        out: DType = next((t for t in self.types if t.name == q), None)
         # if none exists, return
         if(out is None):
             return None
@@ -163,7 +166,7 @@ class Compiler:
         # loop through layer of decorator (' <int, double ... > '  )
         while self.current_token.tok != ">":
             self.advance()
-            t:Dtype = self.checkType()
+            t: Dtype = self.checkType()
             types.append(t)
         return types
 
@@ -195,15 +198,15 @@ class Compiler:
         # check for decorator (template types)
         if (self.currentTokens[self.ctidx + 1].tok == "<"):
             # construct template type:
-            template:str = self.current_token.value
-            ttok:Token = self.current_token
+            template: str = self.current_token.value
+            ttok: Token = self.current_token
             self.advance()
-            types:list = self.parseTemplate()
-            t:DType = self.buildTemplateType(template, types, ttok).copy()
+            types: list = self.parseTemplate()
+            t: DType = self.buildTemplateType(template, types, ttok).copy()
         else:
             # get existing type
-            t:DType = self.getType(self.current_token.value).copy()
-            
+            t: DType = self.getType(self.current_token.value).copy()
+
         self.advance()
         ptrdepth = 0    # track pointer depth specified by '*' token
         while self.current_token.tok == "*":
@@ -226,9 +229,9 @@ class Compiler:
     def createStringConstant(self, content) -> None:
 
         # d = (.data instructions, varname)
-        d:tuple = createStringConstant(content)
-        name:str = d[1]
-        cnst:str = d[0]
+        d: tuple = createStringConstant(content)
+        name: str = d[1]
+        cnst: str = d[0]
         # add constant info
         self.constants += cnst
         # add new Variable
@@ -237,13 +240,13 @@ class Compiler:
 
     # create an arbitrary constant in self.constants
     def createConstant(self, extern=False) -> None:
-        # track start 
+        # track start
         startidx = self.ctidx
         # check for a datatype
         intr = self.checkType()
         # check for an identifier
         name = self.checkId()
-        
+
         # check for simple C style function declarations
         if(self.current_token.tok == T_OPENP or self.current_token.tok == T_NAMESPACE):
             # update indexes, and pass control onto the buildFunction function
@@ -277,7 +280,8 @@ class Compiler:
                         name,
                         glob=True,
                         initializer=0))
-                # since the var has no initializer, it is stored in the .bss section
+                # since the var has no initializer, it is stored in the .bss
+                # section
                 self.heap += f"{name}: resb {intr.csize()}\n"
                 # close
                 self.advance()
@@ -304,7 +308,7 @@ class Compiler:
             self.advance()
 
         # use the constexpr evaluator to find the value for the global
-        value:EC.ExpressionComponent = determineConstexpr(intr.isflt(), exprtokens, Function(
+        value: EC.ExpressionComponent = determineConstexpr(intr.isflt(), exprtokens, Function(
             "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], LONG.copy(), self, exprtokens))
 
@@ -342,7 +346,7 @@ class Compiler:
         # for external definitions of member functions:
         # (The '::' token will be in place of an '(')
         if(self.currentTokens[self.ctidx + 1].tok == T_NAMESPACE):
-            #if(self.current_token.tok != T_ID):
+            # if(self.current_token.tok != T_ID):
             #    throw(ExpectedIdentifier(self.current_token))
             sname = self.checkId()
 
@@ -355,7 +359,7 @@ class Compiler:
             # setup function for a 'this' value
             thisp = True
             thispt = struct
-            #self.advance()
+            # self.advance()
             self.advance()
 
         # get fnname
@@ -369,7 +373,8 @@ class Compiler:
 
         # construct parameters:
         parameters = []
-        # thisp means that this function is a member, and should have 'this' as it's first parameter
+        # thisp means that this function is a member, and should have 'this' as
+        # it's first parameter
         if(thisp):
             parameters.append(Variable(thispt, "this", isptr=True))
         # denoted by '...'
@@ -396,7 +401,7 @@ class Compiler:
 
             # add new variable
             parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
-            
+
             # loop handle:
             if (self.current_token.tok == T_CLSP):
 
@@ -423,8 +428,6 @@ class Compiler:
                     mutable=False,
                     signed=f.returntype.signed))
 
-            
-
             self.functions.append(f)
 
             return
@@ -437,7 +440,7 @@ class Compiler:
         # (keep track of scope open / scope close)
         opens = 1
         start = self.ctidx
-        # loop through one layer of { ... } scope to 
+        # loop through one layer of { ... } scope to
         # catch range of tokens used as function body
         while opens > 0:
             if(self.current_token.tok == T_OPENSCOPE):
@@ -458,7 +461,7 @@ class Compiler:
         f.variardic = variardic
 
         # handle additional parameters...
-        # the extra parameters needed are any parameters not able to be stored in the 
+        # the extra parameters needed are any parameters not able to be stored in the
         # SSE registers and the regular registers
 
         # extra params from sse
@@ -489,13 +492,14 @@ class Compiler:
                 mutable=False,
                 signed=f.returntype.signed))
 
-    def buildStruct(self, thisp = False, thispt=None) -> None:                  # isolate and build a structure
+    # isolate and build a structure
+    def buildStruct(self, thisp=False, thispt=None) -> None:
         # \see Structure
         # structure wrapper
         parser = Structure(self)
         parser.construct()
 
-    def compile(self, ftup:list) -> None:            # main function to perform Compiler tasks
+    def compile(self, ftup: list) -> None:            # main function to perform Compiler tasks
         self.currentTokens = ftup
 
         # The first step in compilation is finding all string constants (except inline asm blocks) and float constants
@@ -509,9 +513,9 @@ class Compiler:
                 # preserve assembly blocks
                 if(self.currentTokens[c - 2].tok != T_KEYWORD and self.currentTokens[c - 2].value != "__asm"):
                     # construct a string constant
-                    data:tuple = createStringConstant(t.value)
-                    name:str = data[1]
-                    instruct:str = data[0]
+                    data: tuple = createStringConstant(t.value)
+                    name: str = data[1]
+                    instruct: str = data[0]
                     # get datatype for string
                     tp = CHAR.copy()
                     tp.ptrdepth = 1
@@ -527,11 +531,15 @@ class Compiler:
             # convert float constants to global variables
             elif t.tok == T_DOUBLE:
                 # generate float constant
-                data:tuple = createFloatConstant(t.value)
-                name:str = data[1]
-                instruct:str = data[0]
-                #build Variable
-                v = Variable(DOUBLE.copy(), name, glob=True, initializer=t.value)
+                data: tuple = createFloatConstant(t.value)
+                name: str = data[1]
+                instruct: str = data[0]
+                # build Variable
+                v = Variable(
+                    DOUBLE.copy(),
+                    name,
+                    glob=True,
+                    initializer=t.value)
                 self.globals.append(v)
                 # update token for later use
                 t.tok = T_ID
@@ -547,7 +555,7 @@ class Compiler:
 
         # actual compilation step
         while self.current_token.tok != T_EOF:
-            
+
             self.compileLine()
 
     def buildTemplate(self):
@@ -721,7 +729,7 @@ class Compiler:
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
-            
+
             # compile
             fn.compile()
             # save
@@ -777,26 +785,24 @@ class Compiler:
         # add new type to types and tdefs
         self.types.append(newtype.copy())
         self.tdefs.append((ta, newtype))
-        
+
         # setup hash table for fast access
         if ta.name in self.tdef_hash:
             self.tdef_hash[ta.name].append(newtype.name)
         else:
             self.tdef_hash[ta.name] = [newtype.name]
-        
+
         if newtype.name in self.tdef_hash:
             self.tdef_hash[newtype.name].append(ta.name)
         else:
             self.tdef_hash[newtype.name] = [ta.name]
-        
-        
+
         if(self.isIntrinsic(ntn)):
             INTRINSICS.append(newtype.copy())
         self.advance()
         if(self.current_token.tok != T_ENDL):
             throw(ExpectedSemicolon(self.current_token))
         self.advance()
-
 
     def determineFunctionOrVar(self) -> None:
         self.advance()
@@ -859,6 +865,7 @@ class Compiler:
             config.__CEXTERNS__ += "extern " + \
                 self.globals[-1].name + "\n"
     # __cdecl is always followed by a function declaration
+
     def buildCdecl(self, thisp=False, thispt=None) -> None:
         self.advance()
 
@@ -871,6 +878,7 @@ class Compiler:
         glob = self.globals[-1]
         glob.name = fn.getCallingLabel()
     # global is always followed by a function declaration
+
     def buildGlobalfn(self, thisp=False, thispt=None) -> None:
         self.advance()
 
@@ -904,8 +912,9 @@ class Compiler:
     # compileLine is responsible for determining the categorie of a general unscoped statement.
     # e.g: unsigned int i = 0;
     # e.g: int main(int argc) {}
-    # And then either compiling the line if its just a global variable, or sectioning it off to 
-    # be handled by the Structure element or the Function element for more complex statements.
+    # And then either compiling the line if its just a global variable, or sectioning it off to
+    # be handled by the Structure element or the Function element for more
+    # complex statements.
     def compileLine(self, thisp=False, thispt=None):
         # lines begining with an ID will be a global variable
         # (Or function, but that is handled in createConstant())
@@ -915,8 +924,9 @@ class Compiler:
 
             # check if a response exists for given keyword
             if self.current_token.value in keyword_responses:
-                #execute respnse
-                keyword_responses[self.current_token.value](self, thisp, thispt)
+                # execute respnse
+                keyword_responses[self.current_token.value](
+                    self, thisp, thispt)
             else:
                 # if not, throw error
                 throw(UnexpectedToken(self.current_token))
@@ -936,7 +946,12 @@ class Compiler:
                 self.entry = f
                 f.extern = True
                 self.globals.append(
-                    Variable(INT.up(), "main", glob=True, initializer=f, isptr=True)
+                    Variable(
+                        INT.up(),
+                        "main",
+                        glob=True,
+                        initializer=f,
+                        isptr=True)
                 )
 
         # at this point all functions exist as Function objects, but have not
@@ -971,14 +986,14 @@ class Compiler:
 # keyword.
 
 keyword_responses = {
-                "unsigned"  :   Compiler.buildUnsigned,
-                "typedef"   :   Compiler.buildTypedef,
-                "extern"    :   Compiler.buildExtern,
-                "cextern"   :   Compiler.buildCextern,
-                "__cdecl"   :   Compiler.buildCdecl,
-                "global"    :   Compiler.buildGlobalfn,
-                "struct"    :   Compiler.buildStruct,
-                "inline"    :   Compiler.buildInlinefn,
-                "function"  :   Compiler.buildNormalfn,
-                "template"  :   Compiler.beginTemplate
-            }
+    "unsigned": Compiler.buildUnsigned,
+    "typedef": Compiler.buildTypedef,
+    "extern": Compiler.buildExtern,
+    "cextern": Compiler.buildCextern,
+    "__cdecl": Compiler.buildCdecl,
+    "global": Compiler.buildGlobalfn,
+    "struct": Compiler.buildStruct,
+    "inline": Compiler.buildInlinefn,
+    "function": Compiler.buildNormalfn,
+    "template": Compiler.beginTemplate
+}

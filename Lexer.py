@@ -117,14 +117,14 @@ class Lexer:
             return Token(T.T_STRING, "", begin, self.loc.copy())
 
         end = self.raw.find("\"", self.chidx)
-        
+
         if(end == -1 or end >= len(self.raw)):
             throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         content = self.raw[self.chidx:end]
         self.chidx = end
         # account for multi-line strings
         newlines = content.count("\n")
-        self.loc.line += newlines-1 if newlines else 0
+        self.loc.line += newlines - 1 if newlines else 0
 
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
@@ -162,8 +162,7 @@ class Lexer:
         raw = self.raw
         chidx = self.chidx
 
-
-        #r"\W", flags=re.ASCII
+        # r"\W", flags=re.ASCII
         end = ambiguous_regex.search(raw, chidx).end() - 1
         value = (raw[chidx - 1:end])
         lv = end - (chidx - 1) - 2
@@ -198,7 +197,7 @@ class Lexer:
                         self.loc.copy(),
                         self.loc.copy()))
                 advance()
-            
+
             # pre-compiler directives
             elif (self.ch == "#"):
 
@@ -225,18 +224,17 @@ class Lexer:
                     t.value += "."
 
                 tokens.append(t)
-            
+
             # semicolon
             elif(self.ch == ";"):
                 tokens.append(Token(T.T_ENDL, T.T_ENDL,
                                     self.loc.copy(), self.loc.copy()))
                 advance()
-            
-            
+
             elif(self.ch == "+"):
-            
+
                 tokens.append(self.buildMultichar())
-            
+
             elif(self.ch == "/"):
                 advance()
 
@@ -245,14 +243,14 @@ class Lexer:
                 # single line comments:
                 if(self.ch == "/"):
                     # find and jump to next newline
-                    self.chidx = self.raw.find("\n", self.chidx)-1
+                    self.chidx = self.raw.find("\n", self.chidx) - 1
                     advance()
 
                 # multiline comments:
                 elif(self.ch == "*"):
                     # find and jump to next instance of '*/' in raw text
                     olchdx = self.chidx
-                    self.chidx = self.raw.find("*/", self.chidx)+1
+                    self.chidx = self.raw.find("*/", self.chidx) + 1
                     self.loc.ch += self.chidx - olchdx
                     self.loc.line += self.raw.count("\n", olchdx, self.chidx)
                     advance()
@@ -286,9 +284,9 @@ class Lexer:
                 tokens.append(token)
 
             elif (self.ch == "."):
-                
-                if self.raw[self.chidx+1].isdigit():
-                    token=self.buildNumber()
+
+                if self.raw[self.chidx + 1].isdigit():
+                    token = self.buildNumber()
                 else:
                     token = self.buildMultichar()
                 tokens.append(token)
@@ -308,8 +306,6 @@ class Lexer:
             elif (T.isidchar(ord(self.ch))):
                 token = self.buildAmbiguous()
                 tokens.append(token)
-
-            
 
             else:
                 throw(UnkownCharSequence(

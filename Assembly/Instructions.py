@@ -7,7 +7,6 @@ import re
 import struct
 
 
-
 # these comparison specifiers can be added onto the end
 # of conditional instructions like cmovcc, jcc, setcc, etc...
 signed_comparisons = {

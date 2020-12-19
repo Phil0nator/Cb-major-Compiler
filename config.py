@@ -22,7 +22,7 @@ import pkg_resources
 #missing = required - installed
 
 
-#if missing:
+# if missing:
 #    python = sys.executable
 #    subprocess.check_call(
 #        [python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
@@ -32,7 +32,7 @@ parser = arg.ArgumentParser(
     description='Compile, link, and debug Cb major programs.')
 
 parser.add_argument("input", help="Name of input file")
-parser.add_argument("-o", "--output", required=False, default = "a.out",
+parser.add_argument("-o", "--output", required=False, default="a.out",
                     help="Name of output file")
 parser.add_argument("-nasm", "--assembly", action="store_true", default=False,
                     help="Output compiled version in nasm assembly as well as the executable")

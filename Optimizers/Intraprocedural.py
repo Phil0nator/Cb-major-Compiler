@@ -3,15 +3,13 @@ from Assembly.Instructions import Instruction
 from Optimizers.Peephole import Peephole
 
 
-
 class IntraproceduralOptimizer:
 
     def __init__(self, fn):
         self.fn = fn
 
-
     def optimize(self):
-        
+
         # functions that are found to be simple enough, can be optimized:
 
         # implicit parameter register declaration...

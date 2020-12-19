@@ -1,5 +1,6 @@
 from Classes.Token import *
 
+
 class Macro:
     def __init__(self, name, params, body):
         self.name = name

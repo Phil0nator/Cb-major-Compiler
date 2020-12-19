@@ -87,11 +87,6 @@ def getCompilerDefines():
     return defines
 
 
-
-
-
-
-
 ##############################
 #
 #   The PreProcessor class is used to execute directive tokens from
@@ -120,10 +115,9 @@ class PreProcessor:
         #   "<name>" : ["<name>", [<token_list>]],
         #   ...
         # }
-        
+
         self.definitions = {}
 
-        
         for d in definitions:
             self.definitions[d[0]] = d
 
@@ -138,7 +132,7 @@ class PreProcessor:
         self.current_token = self.tokens[self.tkidx]
 
     # correct current_token to potentially changed index
-    def update(self) -> None:                           
+    def update(self) -> None:
         self.current_token = self.tokens[self.tkidx]
 
     # delete current token, and move to the next
@@ -148,7 +142,7 @@ class PreProcessor:
         self.dels += 1
 
     # get a definition by name
-    def getDefn(self, name) -> list:                    
+    def getDefn(self, name) -> list:
         return self.definitions[name] if name in self.definitions else None
 
     # get a macro by name
@@ -161,16 +155,16 @@ class PreProcessor:
                      name and len(m.params) == params), None)
 
      # check for specific tokens
-    def checkToks(self, tok) -> None:                  
+    def checkToks(self, tok) -> None:
         if(self.current_token.tok not in tok):
             throw(ExpectedToken(self.current_token, ' '.join(tok)))
 
     # load a raw file based on a given path
-    def loadRaw(self, path) -> str:  
+    def loadRaw(self, path) -> str:
         return config.loadRawFile(path, self.current_token)
 
     # #include directive
-    def buildIncludeStatement(self) -> None:            
+    def buildIncludeStatement(self) -> None:
         self.delmov()
 
         # verify syntax
@@ -182,7 +176,7 @@ class PreProcessor:
         # create tokens from new file, and insert them in this PreProcessor's
         # tokenlist
         lex = Lexer(path, rawdata)
-        
+
         tokens = lex.getTokens()
         self.delmov()
         # emplace the new tokens ahead of the current position
@@ -190,11 +184,11 @@ class PreProcessor:
         self.update()
 
     # #define directive
-    def buildDefine(self) -> None:                      
+    def buildDefine(self) -> None:
         self.delmov()
         # verify syntax
         self.checkToks([T_ID])
-        
+
         # collect token info
         name = self.current_token.value
         sline = self.current_token.start.line
@@ -206,11 +200,14 @@ class PreProcessor:
             # Macro function
             self.buildMacro(name)
             return
-        
+
         # if the define is one token long, the definition ends here:
         if(self.current_token.start.line != sline):
             # add new defn
-            self.definitions[name] = [name, [Token(T_INT, 0, self.current_token.start, self.current_token.end)]]
+            self.definitions[name] = [
+                name, [
+                    Token(
+                        T_INT, 0, self.current_token.start, self.current_token.end)]]
             return
 
         # begin collecting tokens for a longer definition
@@ -222,19 +219,17 @@ class PreProcessor:
             if self.current_token.tok == T_STRING:
                 # account for multi-line strings:
                 linestops = self.current_token.value.count("\\")
-                sline += linestops-1 if linestops else 0
-            
-            
+                sline += linestops - 1 if linestops else 0
+
             self.delmov()
 
         # add new defn
         self.definitions[name] = [name, definitionTokens]
 
-
     # check if current token (id) is a macro
     # if so, replace it with the actual values for that macro
-    def checkDefn(self)-> None:
-       
+    def checkDefn(self) -> None:
+
         # if the definition is actually a macro, control is passed to
         # the checkMacro function
         if (self.tokens[self.tkidx + 1].tok == T_OPENP):
@@ -243,7 +238,7 @@ class PreProcessor:
 
         # get the define if it exists
         dq = self.getDefn(self.current_token.value)
-        
+
         # if this is not a define, or it is a builtin:
         if(dq is None):
 
@@ -265,7 +260,7 @@ class PreProcessor:
         self.tokens[self.tkidx:self.tkidx] = dq[1]
 
     # #ifdef directive
-    def buildifdef(self)-> None:
+    def buildifdef(self) -> None:
         self.delmov()
         # verify syntax
         self.checkToks([T_ID])
@@ -281,7 +276,7 @@ class PreProcessor:
             self.delmov()
 
     # skip an #if ... #endif body
-    def skipIfbody(self)-> None:
+    def skipIfbody(self) -> None:
         opens = 1
         # opens mark the number of nested if's that are started
 
@@ -295,13 +290,13 @@ class PreProcessor:
                     opens -= 1
 
     # #ifndef directive
-    def buildifndef(self)-> None:
+    def buildifndef(self) -> None:
         self.delmov()
         # verify syntax
         self.checkToks([T_ID])
         # check for a definition
         q = self.getDefn(self.current_token.value)
-        
+
         if(q is None):
             # continue as if nothing happened
             self.delmov()
@@ -310,7 +305,7 @@ class PreProcessor:
             self.skipIfbody()
 
     # build a new macro
-    def buildMacro(self, name)-> None:
+    def buildMacro(self, name) -> None:
         # verify syntax
         self.checkToks([T_OPENP])
         self.delmov()
@@ -331,7 +326,6 @@ class PreProcessor:
             self.delmov()
         self.delmov()
 
-        
         body = []
         mline = self.current_token.start.line
         # for all tokens on the same line (excluding those denoted by a '\')
@@ -382,20 +376,23 @@ class PreProcessor:
             elif (id == "defined"):
                 self.delmov()
                 self.delmov()
-                value = self.getMacro(self.current_token.value) is not None or self.getDefn(self.current_token.value) is not None
-                
-                self.tokens[startidx:self.tkidx+2] = [
+                value = self.getMacro(
+                    self.current_token.value) is not None or self.getDefn(
+                    self.current_token.value) is not None
+
+                self.tokens[startidx:self.tkidx + 2] = [
                     Token(T_INT, int(value), starttok.start, starttok.end)
                 ]
-                
+
                 self.tkidx = startidx
-                
+
                 self.update()
-            
+
             elif (id == "__python"):
                 self.delmov()
                 self.delmov()
-                code = self.current_token.value.replace('\\"', '"').replace("\\n","\n")
+                code = self.current_token.value.replace(
+                    '\\"', '"').replace("\\n", "\n")
                 try:
                     value = eval(code)
                 except RuntimeError as e:
@@ -405,8 +402,11 @@ class PreProcessor:
                 except SyntaxError as e:
                     throw(Error(self.current_token, f"Python error: {e}"))
 
-                self.tokens[startidx:self.tkidx+2] = [
-                    Token(T_STRING if not isinstance(value, int) else T_INT, str(value) if not isinstance(value, int) else value, starttok.start, starttok.end)
+                self.tokens[startidx:self.tkidx + 2] = [
+                    Token(
+                        T_STRING if not isinstance(
+                            value, int) else T_INT, str(value) if not isinstance(
+                            value, int) else value, starttok.start, starttok.end)
                 ]
 
             else:
@@ -461,11 +461,11 @@ class PreProcessor:
         self.delmov()
 
         sline = self.current_token.start.line
-        
+
         if(self.current_token.start.line != sline):
             throw(ExpectedValue(self.current_token))
             return
-        
+
         if self.current_token.tok == T_ID:
             self.checkDefn()
             self.update()
@@ -481,16 +481,13 @@ class PreProcessor:
                 continue
             definitionTokens.append(self.current_token)
             self.delmov()
-        
-        
-        tmpfn = Function("empty",[],None,config.GlobalCompiler,[])
+
+        tmpfn = Function("empty", [], None, config.GlobalCompiler, [])
         value = determineConstexpr(False, definitionTokens, tmpfn)
         if value.accessor == 0:
             self.skipIfbody()
         else:
             pass
-
-
 
     # main function
 
@@ -547,5 +544,3 @@ class PreProcessor:
 
 def badfilter(token):
     return token is not None and token.tok != T_BSLASH
-
-

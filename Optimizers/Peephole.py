@@ -11,8 +11,11 @@ SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
 
 CMP_INST = ["cmp", "ucomisd", "comisd"]
 
+
 def regeq(a, b):
-    return setSize(a, 8) == setSize(b, 8) if a in REGISTERS and b in REGISTERS else False
+    return setSize(a, 8) == setSize(
+        b, 8) if a in REGISTERS and b in REGISTERS else False
+
 
 def getMovop(a, b):
     if ("xmm" in a and ("xmm" in b or "[" in b)):
@@ -27,8 +30,10 @@ def line_filter(line):
         return False
     return True
 
+
 def splitfilter(line):
     return line != ''
+
 
 class Line:
     def __init__(self, op, dest, source, flags, idx):
@@ -199,23 +204,18 @@ class Peephole:
                     #    splitted[prev.idx] = ""
                     #    splitted[nextline.idx] = f"{nextline.op} {nextline.dest}, {prev.source}\n"
 
-
                     # Spread out adjacent lea instructions in common pattern formed in index operators in order
                     # to keep port 1 open for lea instructions with three address components.
-                    # Often, these paterns can be broken up by moving an adjacent and unrelated instruction in between 
+                    # Often, these paterns can be broken up by moving an adjacent and unrelated instruction in between
                     # the two lea instructions.
                     # This new pattern will also often be optimized again by the level 2 optimizer to reduce the three instruction
                     # set into a single lea followed by a mov.
                     elif (prev.op == "lea" and line.op == "lea" and line.dest == prev.dest):
-                        if(nextline.dest != prev.dest and nextline.source not in (prev.source+line.source)):
+                        if(nextline.dest != prev.dest and nextline.source not in (prev.source + line.source)):
                             tmp = splitted[line.idx]
                             splitted[line.idx] = splitted[nextline.idx]
                             splitted[nextline.idx] = tmp
-                            optims+=1
-                    
-                            
-
-
+                            optims += 1
 
                 # additions or subtractions by one can be substituted for their
                 # faster counterparts in 'inc' or 'dec' respectively
@@ -251,12 +251,6 @@ class Peephole:
                     splitted[line.idx] = ""
                     splitted[nextline.idx] = f"{nextline.op.replace(condb, newcond)} {nextline.dest}\n"
                     optims += 1
-
-
-                
-
-
-
 
                 prev = line
 
@@ -313,14 +307,12 @@ class Peephole:
 
                     elif (line.source == prev.dest and line.dest == prev.source):
                         splitted[line.idx] = ""
-                        optims+=1
+                        optims += 1
 
                 # replace 'mov %r, 0' with the faster 'xor %r, %r'
                 elif(line.op == "mov" and (line.constSource() and int(line.source) == 0) and not line.hasAddr()):
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
-
-                
 
                 # ensure that there are no redundant movs like:
                 # e.g: mov rax, rax
@@ -348,9 +340,9 @@ class Peephole:
                         splitted[line.idx] = f"{line.op} {sizesp}{prev.source}, {line.source}\n"
 
                 # remove repetitive / impossible jmp instructions
-                elif (prev.op == "jmp" and prev.op == line.op and prev.idx == line.idx-1):
+                elif (prev.op == "jmp" and prev.op == line.op and prev.idx == line.idx - 1):
                     splitted[line.idx] = ""
-                elif (line.op == "jmp" and splitted[line.idx+1] == line.dest+":"):
+                elif (line.op == "jmp" and splitted[line.idx + 1] == line.dest + ":"):
                     splitted[line.idx] = ""
 
                 # incorperate memory operands for suitable instructions
@@ -377,7 +369,7 @@ class Peephole:
                 #TODO: FIX
                 # many add instructions can be optimized to use the lea instruction in order to diversify
                 # port usage, and increase overall microarchitecture usage.
-                #elif (prev.op == "add" and line.op == "mov" and line.source == prev.dest and not (prev.hasAddr() or line.hasAddr())):
+                # elif (prev.op == "add" and line.op == "mov" and line.source == prev.dest and not (prev.hasAddr() or line.hasAddr())):
                 #    splitted[prev.idx] = ""
                 #    splitted[line.idx] = f"lea {line.dest}, [{prev.dest}+{prev.source}]\n"
                 #    optims += 1

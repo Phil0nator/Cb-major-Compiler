@@ -284,7 +284,7 @@ def valueOf(x, dflt=False, exactSize=True):
         x.referenced = True
         if(x.glob):
             if(x.t.ptrdepth > 1 or x.isptr):
-                
+
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:
@@ -625,11 +625,10 @@ def raw_regmov(a, b):
 
 def getOnelineAssignmentOp(a, b, op):
     cmd = ""
-    
-    if isinstance(a.accessor, Variable) and a.accessor.register is not None and \
-        isinstance(b.accessor, Variable) and b.accessor.register is not None:
-        return cmd, False
 
+    if isinstance(a.accessor, Variable) and a.accessor.register is not None and \
+            isinstance(b.accessor, Variable) and b.accessor.register is not None:
+        return cmd, False
 
     if(op in ONELINE_ASSIGNMENTS):
         cmd = onelineAssignment(op, a)
@@ -684,18 +683,18 @@ def magic_division(a, areg, b, internal=False):
     postshift = math.ceil(math.log2(b))
     twopower = 8 * a.type.csize() + 1
 
-        
     #                2^33     / x + 1
     if twopower < 60:
         multiplicand = math.ceil(pow(2, twopower) / b)
     else:
         extrabit = math.ceil(pow(2, twopower) / (b)) > 9223372036854775807
-        multiplicand = (math.ceil(pow(2, twopower) / (b))) & 9223372036854775807
+        multiplicand = (math.ceil(pow(2, twopower) / (b))
+                        ) & 9223372036854775807
 
     #mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
 
-    #TODO:
+    # TODO:
     # Make work for signed integers
 
     ax = setSize('rax', sizeOf(areg))
@@ -705,18 +704,17 @@ def magic_division(a, areg, b, internal=False):
     instr = f"{zeroize('rax')}\nmov {ax}, {areg}\n"
     instr += f"mov {cx}, {multiplicand}\n"
     instr += f"imul {cx}\n"
-    
-    if a.type.csize() != 8 :
+
+    if a.type.csize() != 8:
         instr += f"{shiftcmd} {dx}, 1\n"
         instr += f"mov {areg}, {dx}\n" if not internal else f"mov {ax}, {dx}\n"
-    else: # 64bit magic division
-        
+    else:  # 64bit magic division
+
         if extrabit:
             instr += f"mov rax, {setSize(areg, 8)}\nsub rax, rdx\nshr rax, 1\nadd rax, rdx\nshr rax, {math.ceil(math.log2(b))-1}\n"
         else:
             instr += f"mov rax, rdx\nshr rax, {1}\n"
-        
-        
+
         instr += getFromRax(areg) if not internal else f""
 
     return instr
