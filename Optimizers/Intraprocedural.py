@@ -20,7 +20,7 @@ class IntraproceduralOptimizer:
         newfunc.hasReturned = False
         newfunc.compileCount += 1
         newfunc.returnsConstexpr = self.fn.returnsConstexpr
-        if(self.fn.fncalls == 0 and self.fn.extra_params <= 0):
+        if(self.fn.fncalls == 0 and self.fn.extra_params <= 0 and self.fn.variardic == False):
             newfunc.implicit_paramregdecl = True
             needs_recompile = True
             pass

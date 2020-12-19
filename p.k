@@ -3,16 +3,17 @@
 
 
 
+void test(int argc, ...){
+    argc++;
+    return argc;
+}
 
 
 
 
-
-int main(){
+int main(int argc){
 
     
-    
-    benchmark();
     return 0;
 }
 

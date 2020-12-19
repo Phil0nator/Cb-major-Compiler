@@ -599,15 +599,41 @@ class Function:
             # return the string as a token
             return Token(T_ID, constant[1], starttok.start, starttok.end)
 
+    
+
+    def loadVariardicParameters(self, countn, counts):
+        
+        
+        self.stackCounter = 8
+        nosse = getLogicLabel('NOSSE')
+        sseloadinst = f"test al, al\njz {nosse}\n"
+        for i in reversed(range(len(norm_parameter_registers[countn:]) + len(sse_parameter_registers[counts:]))):
+            
+            if i < len(norm_parameter_registers[countn:]):
+                regn = norm_parameter_registers[i]
+                var = Variable(VOID.copy(), f'~variardic~{regn}')
+                self.stackCounter += 8
+                var.offset = self.stackCounter
+                self.addline(movRegToVar(var.offset, regn))
+            if i < len(sse_parameter_registers[counts:]):
+                regs = sse_parameter_registers[i]
+                var = Variable(VOID.copy(), f"~variardic~{regs}")
+                self.stackCounter += 8
+                var.offset = self.stackCounter
+                sseloadinst+=(movRegToVar(var.offset,regs)+"\n")
+        self.addline(sseloadinst)
+        self.addline(f"{nosse}:")
+
+
+
     # load parameters into memory (first instructions)
 
     def loadParameters(self):
         countn = 0
         counts = 0
 
-        # TODO: re-interperate problem
-        # if self.implicit_paramregdecl and sum((v.t.isflt() for v in self.parameters)) < 6:
-        #    countn = 1
+        if self.variardic:
+            self.stackCounter += (len(norm_parameter_registers)+len(sse_parameter_registers))*8
 
         # for member functions, the this parameter needs to be assigned a regdecl (rdi),
         # and the members of the parent structure need to be added as variables to this function
@@ -633,6 +659,12 @@ class Function:
                 EC.ExpressionComponent('rdi', self.parentstruct)
             )
             self.regdecls[-1].supposed_value = "this"
+
+        
+        
+
+
+
 
         # This function's parameters now need to be loaded as variables.
         # The parameters may be given regdecls depending on the contents of this
@@ -703,6 +735,10 @@ class Function:
             self.addline(movMemVar(
                 (self.variables[-1]), f"[{extra_parameterlabel(self, epcounter)[:-1]}]"))
             epcounter -= 1
+
+
+        if self.variardic:
+            return self.loadVariardicParameters(countn, counts)
 
     def createClosing(self):                    # create end of the function
 
@@ -1428,7 +1464,8 @@ class Function:
 
         # load the function's extra params
         epcounter = fn.extra_params
-
+        if fn.variardic:
+            paraminst += f"mov al, {sseused}\n"
         while epcounter > 0:
             # extra parameters are loaded into rax, and then into their BSS
             # memory location
@@ -1446,6 +1483,8 @@ class Function:
             if(self.current_token.tok == ","):
                 self.advance()
             epcounter -= 1
+
+
 
         return paraminst
 
@@ -2469,7 +2508,7 @@ class Function:
 
     # error message pretty print
     def pretty_print_err(self):
-        return f"{self.returntype} {self.name}({', '.join((p.t.__repr__() for p in self.parameters))})"
+        return f"{self.returntype} {self.name}({', '.join((p.t.__repr__() for p in self.parameters))}{', ...' if self.variardic else ''})"
 
     def reset(self):
 
