@@ -2,21 +2,19 @@
 #include "cblib.cb"
 
 
+
 int main(int argc){
     
-    
-    __asm{"
-    
-    
-    
-    
-    
-    
-    
-    "}
 
-    register int a = 123;
-    printf("onetwothree %i", a);
+
+    int a = 123;
+    printf("onetwothree %i\n", a);
+
+    char* c = malloc(256);
+    
+    strcpy(c, "This is a string.\n");
+    puts(c);
+    free(c);
 
 
     /*

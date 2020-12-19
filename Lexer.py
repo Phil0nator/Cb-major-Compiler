@@ -35,7 +35,7 @@ class Lexer:
         self.chidx = 0
         self.size = len(self.raw)
 
-    def advance(self):  # increment the current character
+    def advance(self) -> str:  # increment the current character
 
         self.chidx += 1
         self.loc.ch += 1
@@ -55,7 +55,7 @@ class Lexer:
         #         Token(self.ch, self.ch, self.loc.copy(), self.loc)))
 
     # build math operators that use more than one character (max = 3)
-    def buildMultichar(self):
+    def buildMultichar(self) -> Token:
         op = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -75,7 +75,7 @@ class Lexer:
 
     # build a number based on digits, . for floats, and e for scientific
     # notation
-    def buildNumber(self):
+    def buildNumber(self) -> Token:
         num = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -109,7 +109,7 @@ class Lexer:
 
         return Token(t, val, begin, self.loc.copy())
 
-    def buildString(self):  # build a string value with escape characters
+    def buildString(self) -> Token:  # build a string value with escape characters
         self.advance()
         begin = self.loc.copy()
         if(self.ch == "\""):
@@ -129,7 +129,7 @@ class Lexer:
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
-    def buildIncluder(self):
+    def buildIncluder(self) -> Token:
         self.advance()
         begin = self.loc.copy()
         if(self.ch == ">"):
@@ -147,7 +147,7 @@ class Lexer:
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
-    def buildChar(self):  # build a char token with one char
+    def buildChar(self) -> Token:  # build a char token with one char
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
@@ -156,16 +156,17 @@ class Lexer:
         return Token(T.T_CHAR, v, begin, self.loc.copy())
 
     # build unkown identifier. Could be : ID, Keyword, Type, etc...
-    def buildAmbiguous(self):
+    def buildAmbiguous(self) -> Token:
         begin = self.loc.copy()
         self.advance()
         raw = self.raw
         chidx = self.chidx
 
+
+        #r"\W", flags=re.ASCII
         end = ambiguous_regex.search(raw, chidx).end() - 1
         value = (raw[chidx - 1:end])
         lv = end - (chidx - 1) - 2
-        #lv = len(value) - 2
 
         self.chidx += lv
         self.loc.ch += lv
@@ -178,15 +179,17 @@ class Lexer:
     # main function to get all tokens for a given text file.
     # getDirectives can be set to True by the PreProcessor to only see directives
     # \see PreParser
-    def getTokens(self, getDirectives=False):
+    def getTokens(self, getDirectives=False) -> list:
         tokens = []
         directives = []
         advance = self.advance
+        # a [1] character marks the end of the raw text
         while self.ch != chr(1):
-
+            # newlines, spaces, and indents have no response
             if(self.ch == "\n" or self.ch == " " or self.ch == "\t"):
                 advance()
 
+            # backslash characters
             elif(self.ch == "\\"):
                 tokens.append(
                     Token(
@@ -195,7 +198,8 @@ class Lexer:
                         self.loc.copy(),
                         self.loc.copy()))
                 advance()
-
+            
+            # pre-compiler directives
             elif (self.ch == "#"):
 
                 advance()
@@ -210,7 +214,7 @@ class Lexer:
                         t2 = self.buildIncluder()
                         tokens.append(t2)
 
-
+            # typecasts
             elif(self.ch == "$"):
                 advance()
                 t = self.buildAmbiguous()
@@ -221,13 +225,18 @@ class Lexer:
                     t.value += "."
 
                 tokens.append(t)
-
+            
+            # semicolon
             elif(self.ch == ";"):
                 tokens.append(Token(T.T_ENDL, T.T_ENDL,
                                     self.loc.copy(), self.loc.copy()))
                 advance()
+            
+            
             elif(self.ch == "+"):
+            
                 tokens.append(self.buildMultichar())
+            
             elif(self.ch == "/"):
                 advance()
 

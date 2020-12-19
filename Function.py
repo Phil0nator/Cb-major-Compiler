@@ -875,105 +875,7 @@ class Function:
         self.advance()
         print("SIMD is under development")
         exit(1)
-        # check for opsize
-        if(self.current_token.tok != T_INT):
-            throw(ExpectedToken(self.current_token, "SIMD opsize"))
-
-        op = self.current_token.value
-        self.advance()
-
-        # check for dtype
-        if(self.current_token.tok != T_ID):
-            throw(ExpectedType(self.current_token))
-        t = self.compiler.getType(self.current_token.value)
-        vsize = t.csize()
-        flt = t.isflt()
-        if(t is None):
-            throw(UnkownIdentifier(self.current_token))
-        self.advance()
-
-        self.checkTok(T_OPENP)
-
-        # check for the first array
-        arr1 = self.getVariable(self.current_token.value)
-        if(arr1 is None):
-            throw(UnkownIdentifier(self.current_token))
-        self.advance()
-        idx1 = ralloc(False)
-
-        self.checkTok(T_COMMA)
-
-        # build instructions to evaluate for the first given index
-        #determine_index1 = self.evaluateRightsideExpression(
-        #    EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
-
-        self.checkTok(T_CLSP)
-        self.checkTok(T_OPENSCOPE)
-
-        avx1 = avx_ralloc()
-        avx1 = avx_correctSize(avx1, op)
-        self.addline(determine_index1)
-        self.addline(avx_loadToReg(op, avx1, arr1, idx1))
-
-        # evaluate the inner operations
-        while self.current_token.tok != T_CLSSCOPE:
-
-            self.checkTok(T_OPENP)
-
-            # check for operator
-            opn = self.current_token.tok
-            if(not Postfixer.isOperator(None, self.current_token)):
-                throw(ExpectedToken(self.current_token, "operator"))
-            if(opn not in ["+", "-", "*"] and not flt):
-                throw(InvalidSimdOperation(self.current_token, opn))
-            self.advance()
-            self.checkTok(T_COMMA)
-
-            # check for array
-            arrn = self.getVariable(self.current_token.value)
-            if(arrn is None):
-                throw(UnkownIdentifier(self.current_token))
-            self.advance()
-            self.checkTok(T_COMMA)
-
-            # build evaluation for the index
-            idxn = ralloc(False)
-            #determine_idxn = self.evaluateRightsideExpression(
-            #    EC.ExpressionComponent(idxn, LONG.copy(), token=self.current_token))
-            self.advance()
-            avxn = avx_ralloc()
-
-            # fill in instruction blocks
-            avxn = avx_correctSize(avxn, opn)
-            self.addline(determine_idxn)
-            self.addline(avx_loadToReg(opn, avxn, arrn, idxn))
-            self.addline(avx_doToReg(opn, op, vsize, avx1, avxn, flt))
-
-            avx_rfree(avxn)
-            rfree(idxn)
-
-        self.advance()
-        self.checkTok(T_OPENP)
-        # check destination array
-        destarr = self.getVariable(self.current_token.value)
-        if(destarr is None):
-            throw(UnkownIdentifier(self.current_token))
-        self.advance()
-        self.checkTok(T_COMMA)
-
-        # evaluate destination index
-        #determineidxf = self.evaluateRightsideExpression(
-        #    EC.ExpressionComponent(idx1, LONG.copy(), token=self.current_token))
-        self.checkTok(T_CLSP)
-
-        self.checkSemi()
-
-        # fill in instruction blocks
-        self.addline(determineidxf)
-        self.addline(avx_dropToAddress(op, avx1, destarr, idx1))
-
-        rfree(idx1)
-        avx_rfree(avx1)
+        
 
     def buildASMBlock(self):  # build inline assembly block
         self.advance()
@@ -1482,9 +1384,20 @@ class Function:
         while epcounter > 0:
             # extra parameters are loaded into rax, and then into their BSS
             # memory location
-            paraminst += (self.evaluateRightsideExpression(EC.ExpressionComponent(
-                "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token))
-            )
+            
+            
+            
+            
+            result = EC.ExpressionComponent(
+                "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token)
+            
+            newinst, final = self.evaluateExpression()
+            paraminst+=newinst+depositFinal(result, final)
+
+
+            rfree(final.accessor)
+
+            
             paraminst += loadToReg(
                 f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
             if(self.current_token.tok == ","):

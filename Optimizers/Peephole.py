@@ -311,10 +311,16 @@ class Peephole:
                         splitted[prev.idx] = ""
                         optims += 1
 
+                    elif (line.source == prev.dest and line.dest == prev.source):
+                        splitted[line.idx] = ""
+                        optims+=1
+
                 # replace 'mov %r, 0' with the faster 'xor %r, %r'
                 elif(line.op == "mov" and (line.constSource() and int(line.source) == 0) and not line.hasAddr()):
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
+
+                
 
                 # ensure that there are no redundant movs like:
                 # e.g: mov rax, rax
