@@ -340,6 +340,8 @@ LC.S167: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 LC.S168: db `sudo`, 0
 LC.S169: db `-c`, 0
 LC.S170: db `LOCKED`, 0
+LC.S171: db `test123hd: \t %s%i%c%c`, 0
+LC.S172: db `test`, 0
 __linux_errstrlist: DQ LC.S0, LC.S1, LC.S2, LC.S3, LC.S4, LC.S5, LC.S6, LC.S7, LC.S8, LC.S9, LC.S10, LC.S11, LC.S12, LC.S13, LC.S14, LC.S15, LC.S16, LC.S17, LC.S18, LC.S19, LC.S20, LC.S21, LC.S22, LC.S23, LC.S24, LC.S25, LC.S26, LC.S27, LC.S28, LC.S29, LC.S30, LC.S31, LC.S32, LC.S33, LC.S34, LC.S35, LC.S36, LC.S37, LC.S38, LC.S39, LC.S40, LC.S41, LC.S42, LC.S43, LC.S44, LC.S45, LC.S46, LC.S47, LC.S48, LC.S49, LC.S50, LC.S51, LC.S52, LC.S53, LC.S54, LC.S55, LC.S56, LC.S57, LC.S58, LC.S59, LC.S60, LC.S61, LC.S62, LC.S63, LC.S64, LC.S65, LC.S66, LC.S67, LC.S68, LC.S69, LC.S70, LC.S71, LC.S72, LC.S73, LC.S74, LC.S75, LC.S76, LC.S77, LC.S78, LC.S79, LC.S80, LC.S81, LC.S82, LC.S83, LC.S84, LC.S85, LC.S86, LC.S87, LC.S88, LC.S89, LC.S90, LC.S91, LC.S92, LC.S93, LC.S94, LC.S95, LC.S96, LC.S97, LC.S98, LC.S99, LC.S100, LC.S101, LC.S102, LC.S103, LC.S104, LC.S105, LC.S106, LC.S107, LC.S108, LC.S109, LC.S110, LC.S111, LC.S112, LC.S113, LC.S114, LC.S115, LC.S116, LC.S117, LC.S118, LC.S119, LC.S120, LC.S121, LC.S122, LC.S123, LC.S124, LC.S125, LC.S126, LC.S127, LC.S128
 M_MINZERO_MEM: DQ 0x0.0p+0
 __numbercharactersbase1016: DQ "0123456789abcdef"
@@ -697,8 +699,8 @@ _long_log_plong:
 	mov rbx, rax
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 3074457345618257920
-	imul rcx
+	mov rdx, 3074457345618257920
+	imul rdx
 	mov rax, rbx
 	sub rax, rdx
 	shr rax, 1
@@ -1479,18 +1481,18 @@ _long_divmod10_plonglong.:
 	mov r10, rdi
 	xor rax, rax
 	mov rax, r10
-	mov rcx, 3689348814741910528
-	imul rcx
+	mov rdx, 3689348814741910528
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
-	mov rcx, 10
-	imul rcx
+	mov rdx, 10
+	imul rdx
 	sub r10, rax
 	mov [rbx], r10
 	xor rax, rax
 	mov rax, rdi
-	mov rcx, 3689348814741910528
-	imul rcx
+	mov rdx, 3689348814741910528
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 ___long_divmod10_plonglong.__return:
@@ -2087,12 +2089,12 @@ _long_toStr_pintchar.boollong:
 	mov ebx, dword[rbp-8]
 	xor rax, rax
 	mov eax, ebx
-	mov ecx, 858993460
-	imul ecx
+	mov edx, 858993460
+	imul edx
 	sar edx, 1
 	mov eax, edx
-	mov rcx, 10
-	imul rcx
+	mov rdx, 10
+	imul rdx
 	sub ebx, eax
 	xor r10, r10
 	mov r10d, ebx
@@ -2100,8 +2102,8 @@ _long_toStr_pintchar.boollong:
 	mov ebx, dword[rbp-8]
 	xor rax, rax
 	mov eax, ebx
-	mov ecx, 858993460
-	imul ecx
+	mov edx, 858993460
+	imul edx
 	sar edx, 1
 	mov ebx, edx
 	mov dword[rbp-8], ebx
@@ -3222,8 +3224,8 @@ _void_avx_memzer_pvoid.size_t:
 	mov rbx, qword[rbp-16]
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 1152921504606846976
-	imul rcx
+	mov rdx, 1152921504606846976
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	sal rax, 5
@@ -3325,8 +3327,8 @@ _clock_t_clock_p:
 	mov r10, qword[rbp-16]
 	xor rax, rax
 	mov rax, r10
-	mov rcx, 36893488147419104
-	imul rcx
+	mov rdx, 36893488147419104
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov r10, rax
@@ -3350,8 +3352,8 @@ _clock_t_clock_p:
 	mov r10, qword[rbp-16]
 	xor rax, rax
 	mov rax, r10
-	mov rcx, 36893488147419104
-	imul rcx
+	mov rdx, 36893488147419104
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	add rbx, rax
@@ -3374,60 +3376,60 @@ _tm._gmtime_ptime_t:
 	mov rbx, qword[rbp-8]
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
-	mov rcx, 60
-	imul rcx
+	mov rdx, 60
+	imul rdx
 	sub rbx, rax
 	mov r10, rbx
 	mov dword[rbp-32], r10d
 	mov rbx, qword[rbp-8]
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov rbx, rax
 	mov qword[rbp-8], rbx
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
-	mov rcx, 60
-	imul rcx
+	mov rdx, 60
+	imul rdx
 	sub rbx, rax
 	mov r10, rbx
 	mov dword[rbp-40], r10d
 	mov rbx, qword[rbp-8]
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov rbx, rax
 	mov qword[rbp-8], rbx
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
-	mov rcx, 60
-	imul rcx
+	mov rdx, 60
+	imul rdx
 	sub rbx, rax
 	mov r10, rbx
 	mov dword[rbp-48], r10d
 	mov rbx, qword[rbp-8]
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov rbx, rax
@@ -3435,22 +3437,22 @@ _tm._gmtime_ptime_t:
 	mov rbx, qword[rbp-16]
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov rbx, rax
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 614891469123651712
-	imul rcx
+	mov rdx, 614891469123651712
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov rbx, rax
 	xor rax, rax
 	mov rax, rbx
-	mov rcx, 1537228672809129216
-	imul rcx
+	mov rdx, 1537228672809129216
+	imul rdx
 	mov rax, rdx
 	shr rax, 1
 	mov r10, rax
@@ -3479,12 +3481,12 @@ _tm._gmtime_ptime_t:
 	add ebx, 4
 	xor rax, rax
 	mov eax, ebx
-	mov ecx, 1227133514
-	imul ecx
+	mov edx, 1227133514
+	imul edx
 	sar edx, 1
 	mov eax, edx
-	mov rcx, 7
-	imul rcx
+	mov rdx, 7
+	imul rdx
 	sub ebx, eax
 	mov dword[rbp-72], ebx
 	mov r10d, dword[rbp-56]
@@ -4690,6 +4692,12 @@ _void_thread_join_pthread_t.:
 	leave
 	ret
 main:
+	mov r8b, 100
+	mov cl, 104
+	mov rdx, 123
+	mov rsi, LC.S172
+	mov rdi, LC.S171
+	call printf
 	xor rax, rax
 __main__return:
 	ret

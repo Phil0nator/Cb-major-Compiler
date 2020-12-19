@@ -236,6 +236,8 @@ class Lexer:
                 if(self.ch == "/"):
                     # find and jump to next newline
                     self.chidx = self.raw.find("\n", self.chidx) - 1
+                    if self.chidx <= 0:
+                        throw(UnexepectedEOFError(Token('', '',self.loc, self.loc)))
                     advance()
 
                 # multiline comments:
@@ -243,6 +245,8 @@ class Lexer:
                     # find and jump to next instance of '*/' in raw text
                     olchdx = self.chidx
                     self.chidx = self.raw.find("*/", self.chidx) + 1
+                    if self.chidx <= 0:
+                        throw(UnexepectedEOFError(Token('', '',self.loc, self.loc)))
                     self.loc.ch += self.chidx - olchdx
                     self.loc.line += self.raw.count("\n", olchdx, self.chidx)
                     advance()

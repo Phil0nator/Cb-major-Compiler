@@ -349,11 +349,7 @@ class Function:
                 opens -= 1
 
     def addline(self, l):                           # add a line of assembly to raw
-        # if(config.__oplevel__ > 1):
-        #    self.peephole.addline(l)
-        #    self.asm = f"{self.asm}{self.peephole.get()}\n"
-        #    self.peephole.flush()
-        # else:
+        
         self.asm = f"{self.asm}{l}\n"
 
     def addcomment(self, c):                        # add a comment to the assembly
@@ -454,7 +450,6 @@ class Function:
             if(oldvar.register is not None):
                 rfree(oldvar.register)
 
-        #self.variables = self.variables[:newidx]
 
     def checkForId(self):               # check next tokens for ID
 
@@ -476,92 +471,124 @@ class Function:
     # check next tokens for Type, and return it as a DType
 
     def checkForType(self, err=True):
+        
+        
+        # within checkForType, if err is set to True,
+        # an error can be thrown on bad syntax or undefined
+        # types. When err is not set, None is returned in 
+        # cases where it would normally throw an error.
+        
         signed = True
+        # check for a sign specifier
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
                 signed = False
                 self.advance()
-
+        # ensure syntax
         if(self.current_token.tok != T_ID):
+            # respond to bad syntax based on err flag
             if err:
                 throw(ExpectedIdentifier(self.current_token))
             else:
                 return None
+        
+        # make sure that the type exists
         if(not self.compiler.isType(self.current_token.value)):
+            # respond to bad type based on err flag
             if err:
                 throw(ExpectedType(self.current_token))
             else:
                 return None
+
+        # check for a decorator (template types specifier)
         if (self.tokens[self.ctidx + 1].tok == "<"):
+            # collect template info:
             template = self.current_token.value
             ttok = self.current_token
             self.advance()
             types = self.parseTemplate()
-            t = self.compiler.buildTemplateType(template, types, ttok)
+            # querry compiler for a new type based on template types
+            t = self.compiler.buildTemplateType(template, types, ttok).copy()
         else:
+            # otherwise, querry compiler for a type based on a typename
             t = self.compiler.getType(self.current_token.value).copy()
 
         self.advance()
+        # get pointer depth:
         ptrdepth = 0
         while self.current_token.tok == "*":
             ptrdepth += 1
             self.advance()
+        
+        # update type properties
         t.ptrdepth = ptrdepth
         t.signed = signed
         return t
 
-    def buildPredef(self):
-        p = self.current_token.value
-        stp = self.current_token
-        assert p in predefs
+    # construct a result for a builtin function
+    def buildPredef(self) -> Token:
+        
+        # requested builtin
+        predef = self.current_token.value
+
+        # start token
+        starttok = self.current_token
 
         self.advance()
 
-        if(p == "typeof"):
-            asmrestore = len(self.asm)
+        # check predef
+        if(predef == "typeof"):
 
-            final = self.evaluateExpression(False)[1]
-            self.asm = self.asm[:asmrestore]
+            # get type of expression
+            dtype = self.determineExpressionType(False)
+            # return as a token
+            return Token(T_ID, dtype.name, starttok.start, starttok.end)
 
-            pend = self.current_token
-            rfree(final.accessor)
-            return Token(T_ID, final.type.name, stp.start, stp.end)
-
-        elif (p == "sizeof"):
+        elif (predef == "sizeof"):
             startidx = self.ctidx
             self.advance()
+            # check if argument is a type
             typeq = self.checkForType(False)
-
+            # if not,
             if (typeq is None):
                 self.ctidx = startidx - 1
                 self.advance()
-                asmrestore = len(self.asm)
-                final = self.evaluateExpression()[1]
-                self.asm = self.asm[:asmrestore]
-                return Token(T_INT, final.type.csize(
-                ), self.tokens[startidx].start, self.tokens[startidx].end)
+                # determine type of the argument
+                dtype = self.determineExpressionType(False)
+                # return as a token
+                return Token(T_INT, dtype.csize(
+                ), starttok.start, starttok.end)
+            
+            # if so,
             else:
                 self.advance()
+                # return as a token
                 return Token(T_INT, typeq.csize(
                 ), self.tokens[startidx].start, self.tokens[startidx].end)
 
-        elif (p == "typeid"):
+        elif (predef == "typeid"):
 
             self.advance()
+            startidx = self.ctidx-2
+            # check if argument is a type
             typeq = self.checkForType(False)
+            # if so,
             if typeq is not None:
-                pass
-            else:
-                self.ctidx -= 2
+                # move on
                 self.advance()
-                asmrestore = len(self.asm)
-                final = self.evaluateExpression(False)[1]
-                rfree(final.accessor)
-                self.asm = self.asm[:asmrestore]
-                typeq = final.type
-
+            # if not,
+            else:
+                self.ctidx = startidx
+                self.advance()
+                
+                # determine argument type
+                typeq = self.determineExpressionType(False)
+            
+            # fix literal
             if typeq.name == "&LITERAL&":
                 typeq = INT.copy()
+            
+            # build a string constant based on the id
             constant = createStringConstant(typeq.__repr__())
             self.compiler.constants += constant[0]
             self.compiler.globals.append(
@@ -571,8 +598,8 @@ class Function:
                     glob=True,
                     isptr=True,
                     initializer=typeq.__repr__()))
-            # self.advance()
-            return Token(T_ID, constant[1], stp.start, stp.end)
+            # return the string as a token
+            return Token(T_ID, constant[1], starttok.start, starttok.end)
 
     # load parameters into memory (first instructions)
 
@@ -584,9 +611,15 @@ class Function:
         # if self.implicit_paramregdecl and sum((v.t.isflt() for v in self.parameters)) < 6:
         #    countn = 1
 
+        # for member functions, the this parameter needs to be assigned a regdecl (rdi),
+        # and the members of the parent structure need to be added as variables to this function
+        # with a base pointer of rdi+ instead of rbp- for access.
         if self.memberfn:
+            # load members:
             for member in self.parentstruct.members:
+                # not member functions
                 if not isinstance(member.initializer, Function):
+                    # create a rdi+ based variable for each member
                     v = Variable(
                         member.t,
                         member.name,
@@ -597,28 +630,44 @@ class Function:
                         bpr="rdi+")
                     v.referenced = True
                     self.append_rawVariable(v)
-
+            # build this regdecl
             self.regdecls.append(
                 EC.ExpressionComponent('rdi', self.parentstruct)
             )
-
+            self.regdecls[-1].supposed_value = "this"
+        
+        # This function's parameters now need to be loaded as variables.
+        # The parameters may be given regdecls depending on the contents of this
+        # function, and how much of an improvement that would give. (@see Intraprocedural.py)
         for p in self.parameters:
 
+            # if the next parameter is an extra parameter (more than 6)
             if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
                 break
-
+            
+            # if the compiler has already identified this parameter as dead,
+            # add to the register counters and continue to next parameter.
             if self.compileCount and p.referenced == False:
                 if p.t.isflt():
                     counts += 1
                 else:
                     countn += 1
                 continue
-
-            cond = (
+            
+            
+            makeParameterRegdecl = (
+                # (1) inline functions will always use regdecls for parameters.
+                # 
+                # (2) if the intraprocedural optimizer has determined it to be benificial,
+                # the self.implicit_paramregdecl flag will imply that parameters for this function
+                # should be made regdecls.
+                # 
+                # Certain registers are reserved for use in expressions, and cannot be used as
+                # regdecls for parameters. (Specifically, 'rdx' and 'xmm0')
                 self.inline or self.implicit_paramregdecl and not (
                     (not p.isflt()) and countn == 2) and not(
                     p.isflt() and counts == 0))
-            if cond:
+            if makeParameterRegdecl:
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
                     counts += 1
@@ -632,7 +681,7 @@ class Function:
             self.addVariable(p, False)
             #p.referenced = False
 
-            if not cond:
+            if not makeParameterRegdecl:
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
                 if(p.isflt()):
@@ -1813,7 +1862,7 @@ class Function:
             self.advance()
         return exprtokens, instructions
 
-    def determineExpressionType(self, restore_token):
+    def determineExpressionType(self, restore_token) -> DType:
 
         restoreAsm = len(self.asm)
         restoreToken = self.ctidx - 1

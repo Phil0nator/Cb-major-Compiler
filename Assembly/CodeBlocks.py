@@ -698,12 +698,11 @@ def magic_division(a, areg, b, internal=False):
     # Make work for signed integers
 
     ax = setSize('rax', sizeOf(areg))
-    cx = setSize('rcx', sizeOf(areg))
     dx = setSize('rdx', sizeOf(areg))
 
     instr = f"{zeroize('rax')}\nmov {ax}, {areg}\n"
-    instr += f"mov {cx}, {multiplicand}\n"
-    instr += f"imul {cx}\n"
+    instr += f"mov {dx}, {multiplicand}\n"
+    instr += f"imul {dx}\n"
 
     if a.type.csize() != 8:
         instr += f"{shiftcmd} {dx}, 1\n"
@@ -737,8 +736,8 @@ def magic_modulo(a, areg, b):
         if canShiftmul(b):
             instr += f"{shiftcmd[:-1]}l rax, {shiftmul(b)}\n"
         else:
-            instr += f"mov rcx, {b}\n"
-            instr += f"{'imul' if a.type.signed else 'mul'} rcx\n"
+            instr += f"mov rdx, {b}\n"
+            instr += f"{'imul' if a.type.signed else 'mul'} rdx\n"
 
         instr += f"sub {areg}, {setSize(rax, a.type.csize())}\n"
 
