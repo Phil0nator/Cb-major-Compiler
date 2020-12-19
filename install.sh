@@ -33,6 +33,9 @@ python3 -m pip install termcolor
 # it has available.
 python3 -m pip install cpuid
 
+# satisfy assembler dependency 
+sudo apt-get install nasm
+
 
 # create program directory
 mkdir /lib/cbm

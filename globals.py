@@ -263,14 +263,13 @@ def typematch(a, b, implicit):
         if(a.isflt() and b.isflt()):
             return True
         #
-        #elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
+        # elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
         #    return True
 
         # two variables with different pointer depths are not compatible (at
         # this point no void types)
         if(a.ptrdepth != b.ptrdepth):
             return False
-        
 
         # if the type precedence checks out, they are compatible, else not
         if(isIntrinsic(a.name) and isIntrinsic(b.name) and implicit):

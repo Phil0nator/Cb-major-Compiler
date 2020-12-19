@@ -34,12 +34,13 @@ class Variable:
         # ExpressionEvaluator)
         self.tmp_register = False
         self.referenced = False         # for warnings
-        self.refcount = 0               # number of times referenced (for optimization)
+        # number of times referenced (for optimization)
+        self.refcount = 0
         self.dtok = None
 
     def copy(self):
         out = Variable(self.t, self.name, self.glob, self.offset, self.initializer,
-                        self.isptr, self.mutable, self.signed, self.isStackarr, self.static)
+                       self.isptr, self.mutable, self.signed, self.isStackarr, self.static)
         out.referenced = self.referenced
         out.refcount = self.refcount
         return out

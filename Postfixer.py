@@ -37,8 +37,7 @@ class Postfixer:
         if self.isOperator(t):
             ec = EC.ExpressionComponent(t.tok, t.value, isoperation=True)
         else:
-            
-            
+
             # Int literals are given type void, and constint flag
             if(t.tok == T_INT):
                 ec = EC.ExpressionComponent(
@@ -66,17 +65,18 @@ class Postfixer:
                                 throw(UnkownIdentifier(t))
                         else:  # variable is type, so it is replace by its size
 
-                            #ec = EC.ExpressionComponent(
+                            # ec = EC.ExpressionComponent(
                             #    v.csize(), LITERAL.copy(), constint=True, token=t)
                             #ec.memory_location = valueOf(v)
                             print("ERR")
-                            ec = EC.ExpressionComponent(T_TYPECAST, v ,isoperation=True, token=t)
+                            ec = EC.ExpressionComponent(
+                                T_TYPECAST, v, isoperation=True, token=t)
 
                     else:  # variable is local or global or function pointer
                         v.referenced = True
                         v.refcount += 1
                         if self.fn.isReturning == False or v.register is None:
-                            ec = EC.ExpressionComponent(v, v.t) 
+                            ec = EC.ExpressionComponent(v, v.t)
                         else:
                             ec = EC.ExpressionComponent(v.register, v.t)
             # function calls are replaced by a pop because their return values are already pushed.
@@ -86,7 +86,6 @@ class Postfixer:
             elif(t.tok == T_FUNCTIONCALL):
                 ec = EC.ExpressionComponent("pop", t.fn.returntype)
 
-            
             # char literals can be replaced by their value, and given type char
             elif(t.tok == T_CHAR):
                 ec = EC.ExpressionComponent(
@@ -98,9 +97,9 @@ class Postfixer:
         if(ec is None):
             throw(InvalidExpressionComponent(t))
         ec.token = t
-    
+
         self.pfix.append(ec)
-    
+
     def createPostfix(self):        # main function
 
         # standard infix to postfix algorithm

@@ -26,15 +26,23 @@ from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
 ############################
 
 
-def optloadRegs(a, b, op, o, constvalok=False):
+def optloadRegs(a: EC.ExpressionComponent, b: EC.ExpressionComponent,
+                op: str, o: DType, constvalok: bool = False) -> (str, str, DType, str):
     instr = ""
+    # o represents an output type to classify the two given components
     o = a.type.copy()
+    # areg is a register for a, and breg is a register for b
     areg = ""
     breg = ""
+    # if a and b already have registers allocated to them, they might not need to
+    # be loaded again
     needLoadA = True
     needLoadB = True
+    # sometimes a does not need to be loaded if it is an immediate and the operation
+    # allows it
     overrideAload = False
 
+    # check if a constant can be used in place of a register
     if (constvalok and isinstance(a.accessor, int)
             and dwordImmediate(a.accessor)):
         areg = a.accessor
@@ -42,38 +50,44 @@ def optloadRegs(a, b, op, o, constvalok=False):
             return areg, None, o, ""
         overrideAload = True
 
+    # check if a constant can be used in place of a register
     if (b is not None and constvalok and isinstance(
             b.accessor, int) and dwordImmediate(a.accessor)):
         breg = b.accessor
         return areg, breg, o, instr
 
+    # override a load if constant can be used
     if(a.isRegister() or overrideAload):
         areg = a.accessor
         needLoadA = False
-    #elif isinstance(a.accessor, Variable) and a.accessor.register is not None:
-    #    areg = a.accessor.register
-    #    needLoadA = False
+
     else:
+        # if not, a new register can be allocated
         areg = ralloc(a.type.isflt(), size=a.type.csize())
 
+    # sometimes this function is called with None for b if the caller just wants to load a,
+    # so if b is not None, it will be loaded in a similar way to a.
     if(b is not None):
+
+        # when b is a constant, it adopts a's type
         if (b.isconstint()):
             b.type.s = a.type.s
 
+        # if b is a register, it doesn't need to be loaded
         if(b.isRegister()):
             breg = b.accessor
             needLoadB = False
-        #elif isinstance(b.accessor, Variable) and b.accessor.register is not None:
-        #    breg = b.accessor.register
-        #    needLoadB = False
-        else:
 
+        else:
+            # if b needs to be loaded, a new register is allocated for it
             breg = ralloc(b.type.isflt(), size=b.type.csize())
 
         if(needLoadB):
+            # when necessary, b's value is loaded to it's new register
             instr += loadToReg(breg, b.accessor)
 
     if(needLoadA):
+        # when necessary, a's value is loaded to it's new register
         instr += loadToReg(areg, a.accessor)
 
     return areg, breg, o, instr
@@ -85,10 +99,11 @@ def optloadRegs(a, b, op, o, constvalok=False):
 #       to reduce its pointer depth by one.
 #       (used for member access and arrays)
 ############################
-def bringdown_memloc(a):
+def bringdown_memloc(a: EC.ExpressionComponent) -> str:
     instr = ""
     if(a.memory_location):
 
+        # floats need to use their own 'movsd' instruction
         if a.type.isflt():
             out = ralloc(True)
             instr += f"movsd {out}, [{setSize(a.accessor, 8)}]\n"
@@ -96,8 +111,11 @@ def bringdown_memloc(a):
             a.accessor = out
         else:
             instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-            instr += maskset(a.accessor, a.type.csize())
-
+            a.accessor = setSize(a.accessor, a.type.csize())
+        # once a memloc has been lowered, it is no longer representable, for compiler purposes, as a
+        # memory location.
+        # It can still be dereferenced again by the user, but the compiler will not see it strictly as
+        # an address anymore.
         a.memory_location = False
 
     return instr
@@ -105,7 +123,8 @@ def bringdown_memloc(a):
 # do two bringdown_memloc calls in one
 
 
-def bringdown_memlocs(a, b):
+def bringdown_memlocs(a: EC.ExpressionComponent,
+                      b: EC.ExpressionComponent) -> str:
     return bringdown_memloc(a) + bringdown_memloc(b)
 
 
@@ -122,24 +141,38 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
-    def swap_op(self, a, b):
+    # swap_op refers to the swap operator '<=>'
+    def swap_op(self, a: EC.ExpressionComponent,
+                b: EC.ExpressionComponent) -> (str, DType, EC.ExpressionComponent):
+
+        # normal setup:
         apendee = b
         newt = b.type
         inst = self.normal_semiconstexprheader(a, b)
-        areg, breg, _, linstrs = optloadRegs(a,b, "<=>",VOID.copy())
-        inst += linstrs
-        if isinstance(a.accessor, Variable) and a.accessor.register is None:
-            inst += loadToReg(b.accessor, areg)
-            inst += loadToReg(a.accessor, breg)
-            b.accessor = breg
-            rfree(areg)
 
-        elif isinstance(b.accessor, Variable) and b.accessor.register is None:
-            inst += loadToReg(a.accessor, breg)
+        # load registers:
+        areg, breg, _, linstrs = optloadRegs(a, b, "<=>", VOID.copy())
+        inst += linstrs
+
+        # When a is a stack-based variable:
+        if isinstance(a.accessor, Variable) and a.accessor.register is None:
+            # This sort of swapping between memory is already implimented
+            # in the loadToReg function:
             inst += loadToReg(b.accessor, areg)
+            inst += loadToReg(a.accessor, breg)
+            # cleanup
             b.accessor = breg
             rfree(areg)
-        
+        # When b is a stack-based variable:
+        elif isinstance(b.accessor, Variable) and b.accessor.register is None:
+            # This sort of swapping between memory is already implimented
+            # in the loadToReg function:
+            inst += loadToReg(a.accessor, breg)
+            inst += loadToReg(b.accessor, areg)
+            # cleanup
+            b.accessor = breg
+            rfree(areg)
+        # When a and b are both held in registers
         else:
             tmp = ralloc(b.type.isflt() and a.type.isflt())
             inst += loadToReg(tmp, areg)
@@ -149,17 +182,23 @@ class ExpressionEvaluator:
             rfree(areg)
             b.accessor = breg
 
-
+        # (The value of b is returned in the expression)
         return inst, newt, apendee
 
     # Any assignments will be handled in this function.
     # This includes operators like '+=', '-=', etc...
 
-    def doAssignment(self, a, b, op, evaluator, depth=0):
-        ogb = EC.ExpressionComponent(b.accessor, b.type, constint=b.constint, token=b.token, memloc=b.memory_location)
+    def doAssignment(self, a, b, op, evaluator,
+                     depth=0) -> (str, DType, EC.ExpressionComponent):
+        ogb = EC.ExpressionComponent(
+            b.accessor,
+            b.type,
+            constint=b.constint,
+            token=b.token,
+            memloc=b.memory_location)
         # the swapping operator is passed on to its own function:
         if op == "<=>":
-            return self.swap_op(a,b)
+            return self.swap_op(a, b)
 
         instrs = ""
         # get the necessary opcode for the operation,
@@ -175,7 +214,8 @@ class ExpressionEvaluator:
             b.constint = False
             instrs += qwordinstr
 
-        constright = b.isconstint() and not a.type.isflt()  # is the right side of the equation constant
+        # is the right side of the equation constant
+        constright = b.isconstint() and not a.type.isflt()
 
         # invalid leftside
         if(a.isRegister() and not a.memory_location):
@@ -244,14 +284,14 @@ class ExpressionEvaluator:
 
             # the destination is a variable
             if(vardest):
-                
+
                 # do calculation with implicit cast, and store result in b
                 tmpstack = [None]
-                instrs = self.compile_aopb(EC.ExpressionComponent(a.accessor, a.type,token=a.token), op[:-1], b, evaluator, tmpstack)
+                instrs = self.compile_aopb(EC.ExpressionComponent(
+                    a.accessor, a.type, token=a.token), op[:-1], b, evaluator, tmpstack)
                 b = tmpstack[1]
-                #instrs, _, b = evaluator.performCastAndOperation(
+                # instrs, _, b = evaluator.performCastAndOperation(
                 #    a, b, op[:-1], VOID.copy())
-
 
             # the destination is a pointer held by a register
             else:
@@ -260,59 +300,72 @@ class ExpressionEvaluator:
                 if(not a.isRegister()):
                     throw(InvalidDestination(a.token))
 
-                #avalreg, _, __, loadinst = optloadRegs(
+                # avalreg, _, __, loadinst = optloadRegs(
                 #    a, None, op, LONG.copy())
                 #instrs += loadinst
                 # do calculation with implicit cast, and store result in b
                 tmpstack = [None]
-                opinstr = self.compile_aopb(EC.ExpressionComponent(a.accessor, a.type,token=a.token), op[:-1], b, evaluator, tmpstack)
+                opinstr = self.compile_aopb(EC.ExpressionComponent(
+                    a.accessor, a.type, token=a.token), op[:-1], b, evaluator, tmpstack)
                 b = tmpstack[1]
-                
-                #opinstr, _, b = evaluator.performCastAndOperation(
-                #    EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1], VOID.copy())
+
+                # opinstr, _, b = evaluator.performCastAndOperation(
+                # EC.ExpressionComponent(avalreg, a.type.copy()), b, op[:-1],
+                # VOID.copy())
                 instrs += opinstr
 
             # at this point any arithmatic has been done, and the result
             # is stored in b. So, a recursive call the self.doAssignment with the same
             # a argument, and the new calculated b argument, and the plain "=" argument
             # should correctly move the new value into place.
-            movinstr, a.type, b = self.doAssignment(a, b, "=", evaluator, depth+1)
+            movinstr, a.type, b = self.doAssignment(
+                a, b, "=", evaluator, depth + 1)
             instrs += movinstr
-        
-        
+
         return instrs, a.type.copy(), a
 
-    def normal_semiconstexprheader(self, a, b):
+    # normal_semiconstexprheader is a wrapper for the normal operations needed at the begining
+    # of a semiconstexpr handler, and often also in other handlers.
+    def normal_semiconstexprheader(
+            self, a, b) -> (str, DType, EC.ExpressionComponent):
         return bringdown_memlocs(a, b)
 
+    # Compile the first half of a ternary operation
     def ternarypartA(self, a, b):  # op == "?"
+        # standard header
         newinstr = self.normal_semiconstexprheader(a, b)
-
+        # check for other half
         if(len(ternarystack) <= 0):
             throw(UnmatchedTernary(a.token))
-
+        # load regs
         reg, _, __, newinstr = optloadRegs(a, None, "?", LONG.copy())
+        # load info from other half
         cmpinstr, aregec, bregec = ternarystack.pop()
+        # test value of ternary
         newinstr += f"test {reg}, {reg}\n"
         newinstr += cmpinstr
-
+        # cleanup
         rfree(aregec.accessor)
         rfree(bregec.accessor)
         rfree(reg)
         return newinstr, b.type.copy(), b
 
-    def ternarypartB(self, a, b):  # op == ':'
+    # Compile the second half of a ternary operation
+    def ternarypartB(self, a, b) -> (str, DType, EC.ExpressionComponent):  # op == ':'
+        # standard header
         newinstr = self.normal_semiconstexprheader(a, b)
 
+        # check type mismatch
         if(a.type.isflt() != b.type.isflt()):
             throw(TypeMismatch(a.token, a.type, b.type))
-
+        # load regs
         areg, breg, __, outinstr = optloadRegs(a, b, ":", LONG.copy())
         areg = setSize(areg, 8)
         breg = setSize(breg, 8)
         resultreg = ralloc(False, size=8)
-
+        # conditional move the new values in
         newinstr += f"cmovnz {resultreg}, {areg}\ncmovz {resultreg}, {breg}\n"
+        # place info on the ternary stack for the ternarypartA function
         ternarystack.append(
             (newinstr, EC.ExpressionComponent(
                 areg, a.type), EC.ExpressionComponent(
@@ -321,7 +374,8 @@ class ExpressionEvaluator:
             resultreg, a.type.copy(), token=a.token)
 
     # Bitshift optimization for multiplication and division by multiples of 2
-    def mult_div_optimization(self, a, b, op):
+    def mult_div_optimization(self, a, b, op) -> (str,
+                                                  DType, EC.ExpressionComponent):
         newinstr = None
         newt = None
         apendee = None
@@ -393,7 +447,7 @@ class ExpressionEvaluator:
             a.accessor = areg
             apendee = a
 
-        elif (op == "/" and a.type.csize() != 9):
+        elif (op == "/"):
 
             # standard loading...
             newinstr = self.normal_semiconstexprheader(a, b)
@@ -411,29 +465,36 @@ class ExpressionEvaluator:
         return newinstr, newt, apendee
 
     # shifting by constant value optimization
-    def const_shift_optimization(self, a, b, op):
+    def const_shift_optimization(
+            self, a, b, op) -> (str, DType, EC.ExpressionComponent):
+        # standard header
         newinstr = self.normal_semiconstexprheader(a, b)
-
+        # load regs
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
-
+        # shift operation
         newinstr += shiftInt(setSize(areg, a.type.csize()),
                              b.accessor, op, a.type.signed)
+        # closing
         a.accessor = areg
         apendee = a
         newt = a.type.copy()
         return newinstr, newt, apendee
     # addition or subtraction by one optimization
 
-    def inc_dec_optimization(self, a, b, op):
+    def inc_dec_optimization(self, a, b, op) -> (str,
+                                                 DType, EC.ExpressionComponent):
+        # header
         newinstr = bringdown_memloc(a)
-
+        # load reg
         areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
         newinstr += i
 
+        # deterine opcode
         cmd = "inc" if op == '+' else "dec"
-
+        # actual instruction
         newinstr += Instruction(cmd, [setSize(areg, a.type.csize())])
+        # cleanup
         a.accessor = areg
         apendee = a
         newt = a.type.copy()
@@ -441,22 +502,26 @@ class ExpressionEvaluator:
     # use of smaller 'test' instruction in place of 'cmp' for particular
     # comparisons
 
-    def test_optimization(self, a, b, op):
-
+    def test_optimization(self, a, b, op) -> (str, DType,
+                                              EC.ExpressionComponent):
+        # header
         newinstr = bringdown_memlocs(a, b)
+        # load regs
         areg, breg, o, ninst = optloadRegs(a, None, op, None)
         newinstr += ninst
+        # determine conditional opcode
         cmp = "z" if op == "==" else "nz"
+        # instruction
         newinstr += f"test {setSize(areg, a.type.csize())}, {setSize(areg, a.type.csize())}\nset{cmp} {setSize(areg, 1)}\n"
 
         return newinstr, BOOL.copy(), EC.ExpressionComponent(
             areg, BOOL.copy(), token=a.token)
 
-    def mod_opt(self, a, b, op):
+    def mod_opt(self, a, b, op) -> (str, DType, EC.ExpressionComponent):
         newinstr = None
         newt = None
         apendee = None
-
+        # magic modulo optimization:
         if (a.type.csize() < 9 or (canShiftmul(
                 b.accessor) and not a.type.isSigned())):
             newinstr = self.normal_semiconstexprheader(a, b)
@@ -466,15 +531,19 @@ class ExpressionEvaluator:
             a.accessor = areg
 
         return newinstr, a.type, a
+
     # optimization for operations which do not require both operands in
     # registers
+    def noloadOp(self, a, b, op) -> (str, DType, EC.ExpressionComponent):
 
-    def noloadOp(self, a, b, op):
-
+        # load regs
         areg, breg, o, newinstr = optloadRegs(a, None, op, None)
         newinstr += bringdown_memlocs(a, b)
+        # determine opcode
         cmd = "add" if op == "+" else "sub"
+        # instruction
         newinstr += f"{cmd} {setSize(areg, a.type.csize())}, {b.accessor}\n"
+
         return newinstr, a.type.copy(), EC.ExpressionComponent(
             areg, a.type.copy(), token=a.token)
 
@@ -486,7 +555,7 @@ class ExpressionEvaluator:
         apendee = None
         # if one arg is 0, and can be optimized, add no extra
         # code.
-        if(b.accessor == 0 and op in ["+","-","||","|",">>","<<"] and op not in signed_comparisons):
+        if(b.accessor == 0 and op in ["+", "-", "||", "|", ">>", "<<"] and op not in signed_comparisons):
             apendee = a
             newinstr = ""
             newt = a.type.copy()
@@ -554,7 +623,6 @@ class ExpressionEvaluator:
             return self.doAssignment(a, b, op, evaluator)
 
         return newinstr, newt, apendee
-
 
     def compile_aopb(self, a, op, b, evaluator, stack):
         # special case
@@ -643,12 +711,11 @@ class ExpressionEvaluator:
         for e in pfix:  # for each component
             if(e.isoperation):
                 if(not operatorISO(e.accessor)):  # if the operator takes two operands
-                    
+
                     # check for error condition
                     if len(stack) == 0:
                         throw(HangingOperator(pfix[-1].token))
 
-                    
                     b = stack.pop()              # second operand
                     op = e.accessor              # operation
 
@@ -660,10 +727,9 @@ class ExpressionEvaluator:
                             throw(HangingOperator(pfix[-1].token))
                     else:
                         a = stack.pop()              # first operand
-                    
 
                     instr += self.compile_aopb(a, op, b, evaluator, stack)
-                    
+
                 else:  # op takes only one operand
 
                     if(len(stack) < 1):
@@ -733,460 +799,6 @@ class ExpressionEvaluator:
 
 ############################################
 #
-#   The RightSideEvaluator is used to evaluate expressions
-#       for a final value (as opposed to an address). The RightSizeEvaluator
-#       is specially designed for specific expressions. The LeftsizeEvaluator
-#       is the default for general expressions.
-#
-#   In most situations a general ExpressionEvaluator is fine, but a RightSideEvaluator
-#       can also be used in special cases.
-#
-#   For example:
-#       int a = 210 / x + y;
-#               ~~~~~~~~~~~
-#
-#   The underlined region would be passed into the RightSideEvaluator
-#       as a postfix of Expression Components:
-#
-#   [ 210, x, /, y, + ]
-#
-###############################################
-class RightSideEvaluator(ExpressionEvaluator):
-    def __init__(self, fn):
-        self.fn = fn
-
-    # optimization for addition or subtraction by one using 'inc' or 'dec'
-    # instructions
-    def incdec(self, a, op, o):
-        needload = True
-        instr = ""
-        instr += bringdown_memloc(a)
-        #areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
-        #instr += i
-
-        cmd = "inc" if op == "++" else "dec"
-
-        instr += Instruction(cmd, [valueOf(a.accessor)])
-        o = a.type.copy()
-        return instr, o, a
-
-    # evaluate logical NOT
-    def evalNot(self, a):
-        # must be bool compatible
-        instr = ""
-        if(not typematch(BOOL, a.type, True) and not a.isconstint()):
-            throw(TypeMismatch(a.token, BOOL, a.type))
-
-        # bring down memory location
-        instr += bringdown_memloc(a)
-
-        # load to register if necessary
-        areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())
-        instr += i
-
-        # do not
-        instr += boolmath(areg, None, T_NOT)
-        o = BOOL.copy()
-        return instr, o, EC.ExpressionComponent(
-            areg, BOOL.copy(), token=a.token)
-
-    # evaluate bitwise not (~ operator)
-    def evalANOT(self, a):
-        needload = True
-        instr = ""
-        instr += bringdown_memloc(a)
-        areg, ___, _, i = optloadRegs(a, None, "op", LONG.copy())
-        instr += i
-        instr += doOperation(a.type, areg, areg, T_ANOT, a.type.signed)
-        o = a.type.copy()
-        return instr, o, EC.ExpressionComponent(areg, o.copy(), token=a.token)
-
-    # take a reference of a variable
-    def refrize(self, a):
-        instr = ""
-        if(a.isconstint()):
-
-            throw(AddressOfConstant(a.token))
-
-        elif(isinstance(a.accessor, Variable) and not a.accessor.glob):
-
-            if(a.accessor.register is not None):
-                throw(AddressOfConstant(a.token))
-
-            result = ralloc(False)
-            if(a.accessor.isStackarr or a.accessor.t.members is not None):
-                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
-            else:
-
-                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
-            o = a.type.copy()
-            o.ptrdepth += 1
-            return instr, o, EC.ExpressionComponent(
-                result, o.copy(), token=a.token)
-
-        elif(isinstance(a.accessor, Variable)):
-
-            result = ralloc(False)
-            instr += f"mov {result}, {a.accessor.name}\n"
-            o = a.type.up()
-            return instr, o, EC.ExpressionComponent(
-                result, o.copy(), token=a.token)
-
-        elif(a.memory_location):
-            a.memory_location = False
-            o = a.type.copy()
-            o.ptrdepth += 1
-            return instr, o, EC.ExpressionComponent(
-                a.accessor, o.copy(), token=a.token)
-
-        else:
-            throw(AddressOfConstant(a.token))
-
-    # find the value pointed to by a. (same as a[0])
-    def derefrence(self, a):
-        instr = ""
-
-        if(a.isconstint()):
-
-            throw(AddressOfConstant(a.token))
-
-        # a is variable
-        elif(isinstance(a.accessor, Variable)):
-
-            tmp = ralloc(False, a.accessor.t.csize())
-            instr += f"mov {tmp}, {valueOf(a.accessor)}\n"
-            if(a.accessor.t.isflt()):
-                oreg = ralloc(True, a.accessor.t.csize())
-                instr += f"movsd {oreg}, [{tmp}]\n"
-            else:
-                oreg = ralloc(False, a.accessor.t.csize())
-                #instr += maskset(oreg, a.type.size(1))
-                oreg = setSize(oreg, a.type.size(1))
-                instr += f"mov {oreg}, {psizeoft(a.type, 1)}[{tmp}]\n"
-            o = a.accessor.t.copy()
-            o.ptrdepth -= 1
-            rfree(tmp)
-
-            return instr, o, EC.ExpressionComponent(
-                oreg, o.copy(), token=a.token)
-
-        # a is register
-        elif(a.isRegister()):
-            result = ralloc(a.type.isflt(), a.type.csize())
-            if(a.type.isflt()):
-                instr += f"movsd {result}, [{a.accessor}]\n"
-            else:
-                #instr += maskset(result, a.type.size(1))
-                result = setSize(result, a.type.size(1))
-                instr += f"mov {result}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
-            rfree(a.accessor)
-            o = a.type.copy()
-            o.ptrdepth -= 1
-            return instr, o, EC.ExpressionComponent(
-                result, o.copy(), token=a.token)
-        # a exists next on the stack
-        elif(a.accessor == "pop"):
-
-            result = ralloc(False, a.type.csize())
-            instr += loadToReg(result, a.accessor)
-            a.accessor = result
-            areg = ralloc(a.type.isflt(), a.type.csize())
-
-            if(a.type.isflt()):
-                instr += f"movsd {areg}, [{a.accessor}]\n"
-            else:
-                #instr += maskset(areg, a.type.size(1))
-                areg = setSize(areg, a.type.size(1))
-                instr += f"mov {areg}, {psizeoft(a.type, 1)}[{a.accessor}]\n"
-            rfree(a.accessor)
-            rfree(result)
-
-            o = a.type.copy()
-            o.ptrdepth -= 1
-            return instr, o, EC.ExpressionComponent(
-                areg, o.copy(), token=a.token)
-
-    # cast a to type e
-    def typecast(self, a, e, o):
-        instr = ""
-        t = self.fn.compiler.getType(
-            e.type) if isinstance(
-            e.type,
-            str) else e.type
-        if(t is None):
-            throw(UnkownType(e.token))
-        
-        if t.isflt() == a.type.isflt():
-            a.type = t
-            if a.isRegister():
-                a.accessor = setSize(a.accessor, t.csize())
-            return "", t, a
-        
-        
-        
-        aval = ralloc(a.type.isflt(), a.type.csize())
-        result = ralloc(t.isflt(), t.csize())
-        
-        
-        
-        instr += bringdown_memloc(a)
-        cst = castABD(EC.ExpressionComponent("", t),
-                      EC.ExpressionComponent("", a.type), "", aval, result)
-        if(cst != False):
-            instr += loadToReg(aval, a.accessor)
-            instr += cst
-            rfree(aval)
-            rfree(a.accessor)
-            return instr, o, EC.ExpressionComponent(
-                result, t.copy(), token=a.token)
-        else:
-            rfree(aval)
-            rfree(result)
-            return instr, o, EC.ExpressionComponent(
-                a.accessor, t.copy(), token=a.token)
-
-    # (used for rightside evaluation)
-
-    # Do an operation with a op b -> o:DType
-    def performCastAndOperation(self, a, b, op, o):
-        instr = ""
-        apendee = None
-        if(op in ["<<", ">>"]):
-            if((a.type.isflt() or b.type.isflt())):
-                throw(InvalidOperationOperands(a.token, op, a.type, b.type))
-
-        instr += bringdown_memlocs(a, b)
-
-        if(op == "["):
-            if(b.type.isflt()):
-                throw(UsingFloatAsIndex(b.token))
-            if(isinstance(b.accessor, int) and b.accessor == 0):
-                areg, breg, o, ninstr = optloadRegs(a, None, op, o)
-                instr += ninstr
-
-            else:
-                areg, breg, o, ninstr = optloadRegs(a, b, op, o)
-                instr += ninstr
-                instr += maskset(setSize(breg, 8), sizeOf(breg))
-                areg = setSize(areg, 8)
-                if(a.type.size(1) in [1, 2, 4, 8]):
-                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
-                else:
-                    if(canShiftmul(a.type.size(1))):
-                        instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
-                    else:
-                        instr += f"imul {breg}, {a.type.size(1)}\n"
-                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
-            apendee = (EC.ExpressionComponent(
-                areg, a.type.down(), token=a.token))
-
-            # TODO
-            #
-            # Sometimes setting this to true causes errors
-
-            apendee.memory_location = True
-
-            rfree(breg)
-
-        elif(a.type.__eq__(b.type)):
-            # same type
-
-            areg, breg, o, ninstr = optloadRegs(a, b, op, o)
-            instr += ninstr
-            instr += doOperation(a.type, areg, breg, op,
-                                 a.type.signed or b.type.signed)
-            if(op in ["==", "!=", ">", "<", "<=", ">="]):
-                if(a.type.isflt() or b.type.isflt()):
-                    rfree(areg)
-                    areg = ralloc_last()
-                a.type = BOOL.copy()
-
-            apendee = (EC.ExpressionComponent(areg, a.type, token=a.token))
-
-            rfree(breg)
-        else:  # situation is different when casting is directional
-            if(not typematch(a.type, b.type, True) and not typematch(b.type, a.type, True) and not (a.isconstint() or b.isconstint())):
-                throw(TypeMismatch(a.token, a.type, b.type))
-            newtype, toConvert = determinePrecedence(a.type, b.type, self.fn)
-            o = newtype.copy()
-
-            reverse = False
-            if(newtype.__eq__(a.type)):
-                # cast to a
-                castee = b
-                caster = a
-            else:
-                # cast to b
-                castee = a
-                caster = b
-                reverse = True
-
-            creg, coreg, __, loadinstr = optloadRegs(caster, castee, "op", o)
-            instr += loadinstr
-
-            newcoreg = ralloc(caster.type.isflt(), caster.type.csize())
-
-            cst = castABD(caster, castee, creg, coreg, newcoreg)
-            # cst represents if actual extra instructions are needed to cast
-            if(cst != False):
-                instr += cst
-            else:
-                rfree(newcoreg)
-                newcoreg = coreg
-
-            if(reverse):
-                tmp = creg
-                creg = newcoreg
-                newcoreg = tmp
-            instr += doOperation(caster.type, creg,
-                                 newcoreg, op, caster.type.signed)
-
-            # handle float comparison
-            if(op in ["==", "!=", ">", "<", "<=", ">="]):
-
-                if(caster.type.isflt() or castee.type.isflt()):
-                    rfree(creg)
-                    creg = ralloc_last()
-                caster.type = BOOL.copy()
-                o = BOOL.copy()
-
-            apendee = (EC.ExpressionComponent(
-                creg, caster.type, token=caster.token))
-            rfree(newcoreg)
-            rfree(coreg)
-
-        return instr, o, apendee
-
-    # access member b of struct a
-    def memberAccess(self, a, b):
-
-        temp = LeftSideEvaluator(self.fn)
-        return temp.memberAccess(a, b)
-
-        instr = ""
-        member = b.accessor
-        if(isinstance(member, Variable)):
-            member = member.name
-        # member as a Variable object
-        memv = a.type.getMember(member)
-        if(memv is None):
-            throw(UnkownIdentifier(b.token))
-        o = memv.t.copy()
-        # new register
-
-        tmpaddr = ralloc(False)
-        instr += loadToReg(tmpaddr, a.accessor)
-
-        rfree(a.accessor)
-
-        instr += f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
-        apendee = EC.ExpressionComponent(tmpaddr, memv.t.copy(), token=b.token)
-        apendee.memory_location = True
-        return instr, o, apendee
-
-    # take final result and cast it properly to the destination specified
-
-    def depositFinal(self, final, o, dest):
-        instr = ""
-        instr += bringdown_memloc(final)
-
-        if(dest == "AMB"):
-            if(final.isRegister()):
-                rfree(final.accessor)
-            return instr, o
-
-        if(isinstance(final.accessor, str) and final.accessor != "pop"):
-            final.accessor = setSize(final.accessor, (dest.type.csize()))
-
-        if(isinstance(dest.accessor, str)):
-            dest.accessor = setSize(dest.accessor, final.type.csize())
-
-        if(final.type.__eq__(dest.type)):
-
-            if(isinstance(final.accessor, Variable)):
-                tmp = ralloc(final.type.isflt(), final.type.csize())
-                instr += loadToReg(tmp, final.accessor)
-
-                final.accessor = tmp
-                rfree(tmp)
-            else:
-                rfree(final.accessor)
-            instr += loadToReg(dest.accessor, final.accessor)
-
-        else:
-
-            # not needed error
-            # if(not typematch(dest.type, final.type)):
-            #throw(TypeMismatch(dest.token, dest.type, final.type))
-
-            twoStep = False
-            if(isinstance(dest.accessor, Variable)):
-
-                castdest = ralloc(dest.type.isflt(), dest.type.csize())
-                twoStep = True
-            else:
-                castdest = dest.accessor
-
-            if(dest.type.isflt() and not final.type.isflt()):
-                if(isinstance(final.accessor, int)):
-                    instr += f"mov {rax}, {final.accessor}\n"
-                    final.accessor = setSize("rax", final.type.csize())
-                elif(final.accessor == "pop"):
-                    instr += f"pop {rax}\n"
-                    final.accessor = setSize("rax", final.type.csize())
-                if(config.GlobalCompiler.Tequals(final.type.name, "void")):
-
-                    cmd = "movq" if(
-                        "[" not in valueOf(castdest) +
-                        valueOf(
-                            final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
-                    cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-
-                else:
-                    cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-            elif(not dest.type.isflt() and final.type.isflt()):
-                if(final.accessor == "pop"):
-                    instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
-                    final.accessor = "xmm7"
-                if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
-                    cmd = "movq" if(
-                        "[" not in valueOf(castdest) +
-                        valueOf(
-                            final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
-                    cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-
-                else:
-                    cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-            else:
-                cst = False
-
-            if(cst != False):
-                instr += cst
-                if(twoStep):
-                    instr += loadToReg(dest.accessor, castdest)
-
-            else:
-                source = final.accessor
-                if(isinstance(final.accessor, Variable)):
-                    instr += loadToReg(castdest, final.accessor)
-                    source = castdest
-                instr += loadToReg(dest.accessor, source)
-
-            if(final.isRegister()):
-                rfree(final.accessor)
-
-            rfree(castdest)
-        return instr, o
-
-    def evaluate(self, dest, pfix):
-        instr, final = self.evaluatePostfix(pfix, self)
-        ninster, o = self.depositFinal(final, final.type, dest)
-
-        return instr + ninster, o
-
-
-############################################
-#
 #   The LeftSideEvaluator is used to evaluate expressions
 #       for a destination address.
 #
@@ -1244,8 +856,17 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 #instr += zeroize(setSize(breg, 8))
                 instr += ninstr
-                instr += maskset(setSize(breg, 8), sizeOf(breg))
+
+                if sizeOf(breg) < 8:
+                    #instr += maskset(setSize(breg, 8), sizeOf(breg))
+                    rfree(breg)
+                    ax = "rax"
+                    instr += zeroize(ax) + \
+                        loadToReg(setSize(ax, sizeOf(breg)), breg)
+                    breg = ax
+
                 areg = setSize(areg, 8)
+
                 if(a.type.size(1) in [1, 2, 4, 8]):
                     instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
                 else:
@@ -1265,8 +886,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         # Leftside evaluation for general operations is the same as rightside evaluation,
         # so unless the above conditions are met, a RightSideEvaluator can be used for common
         # operations.
-        rev = RightSideEvaluator(self.fn)
-        return rev.performCastAndOperation(a, b, op, o)
+        return performCastAndOperation(self.fn, a, b, op, o)
 
     # access member b of struct a
     def memberAccess(self, a, b):
@@ -1349,6 +969,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
             o = a.type.up()
             return instr, o, EC.ExpressionComponent(
                 result, o.copy(), token=a.token)
+        elif (a.isRegister() and a.memory_location):
+
+            a.memory_location = False
+            a.type = a.type.up()
+            return "", a.type.up(), a
 
         else:
             throw(AddressOfConstant(a.token))
@@ -1370,15 +995,24 @@ class LeftSideEvaluator(ExpressionEvaluator):
     # cast a to type e
     def typecast(self, a, e, o):
 
-        return RightSideEvaluator(self.fn).typecast(a, e, o)
-
         instr = ""
-        tid = e.type
-        t = self.fn.compiler.getType(tid)
+        t = self.fn.compiler.getType(
+            e.type) if isinstance(
+            e.type,
+            str) else e.type
         if(t is None):
             throw(UnkownType(e.token))
+
+        if t.isflt() == a.type.isflt():
+            a.type = t
+            if a.isRegister():
+                a.accessor = setSize(a.accessor, t.csize())
+            return "", t, a
+
         aval = ralloc(a.type.isflt(), a.type.csize())
         result = ralloc(t.isflt(), t.csize())
+
+        instr += bringdown_memloc(a)
         cst = castABD(EC.ExpressionComponent("", t),
                       EC.ExpressionComponent("", a.type), "", aval, result)
         if(cst != False):
@@ -1386,13 +1020,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr += cst
             rfree(aval)
             rfree(a.accessor)
-            appendee = EC.ExpressionComponent(result, t.copy(), token=a.token)
+            return instr, o, EC.ExpressionComponent(
+                result, t.copy(), token=a.token)
         else:
             rfree(aval)
             rfree(result)
-            appendee = EC.ExpressionComponent(
+            return instr, o, EC.ExpressionComponent(
                 a.accessor, t.copy(), token=a.token)
-        return instr, o, appendee
 
     # no deposit is necessary for leftside evaluation
     def depositFinal(self, final):
@@ -1405,3 +1039,214 @@ class LeftSideEvaluator(ExpressionEvaluator):
         out = self.evaluatePostfix(pfix, self)
 
         return out
+
+
+# take final result and cast it properly to the destination specified
+
+def depositFinal(dest, final):
+    instr = ""
+    instr += bringdown_memloc(final)
+
+    if(dest == "AMB"):
+        if(final.isRegister()):
+            rfree(final.accessor)
+        return instr
+
+    if(isinstance(final.accessor, str) and final.accessor != "pop"):
+        final.accessor = setSize(final.accessor, (dest.type.csize()))
+
+    if(isinstance(dest.accessor, str)):
+        dest.accessor = setSize(dest.accessor, final.type.csize())
+
+    if(final.type.__eq__(dest.type)):
+        if(isinstance(final.accessor, Variable)):
+            tmp = ralloc(final.type.isflt(), final.type.csize())
+            instr += loadToReg(tmp, final.accessor)
+
+            final.accessor = tmp
+            rfree(tmp)
+        else:
+            rfree(final.accessor)
+        instr += loadToReg(dest.accessor, final.accessor)
+
+    else:
+
+        # not needed error
+        # if(not typematch(dest.type, final.type)):
+        #throw(TypeMismatch(dest.token, dest.type, final.type))
+
+        twoStep = False
+        if(isinstance(dest.accessor, Variable)):
+
+            castdest = ralloc(dest.type.isflt(), dest.type.csize())
+            twoStep = True
+        else:
+            castdest = dest.accessor
+
+        if(dest.type.isflt() and not final.type.isflt()):
+            if(isinstance(final.accessor, int)):
+                instr += f"mov {rax}, {final.accessor}\n"
+                final.accessor = setSize("rax", final.type.csize())
+            elif(final.accessor == "pop"):
+                instr += f"pop {rax}\n"
+                final.accessor = setSize("rax", final.type.csize())
+            if(config.GlobalCompiler.Tequals(final.type.name, "void")):
+
+                cmd = "movq" if(
+                    "[" not in valueOf(castdest) +
+                    valueOf(
+                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
+                cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+
+            else:
+                cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+        elif(not dest.type.isflt() and final.type.isflt()):
+            if(final.accessor == "pop"):
+                instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
+                final.accessor = "xmm7"
+            if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
+                cmd = "movq" if(
+                    "[" not in valueOf(castdest) +
+                    valueOf(
+                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
+                cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+
+            else:
+                cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+        else:
+            cst = False
+
+        if(cst != False):
+            instr += cst
+            if(twoStep):
+                instr += loadToReg(dest.accessor, castdest)
+
+        else:
+            source = final.accessor
+            if(isinstance(final.accessor, Variable)):
+                instr += loadToReg(castdest, final.accessor)
+                source = castdest
+            instr += loadToReg(dest.accessor, source)
+
+        if(final.isRegister()):
+            rfree(final.accessor)
+
+        rfree(castdest)
+    return instr
+
+
+def performCastAndOperation(fn, a, b, op, o):
+    instr = ""
+    apendee = None
+    if(op in ["<<", ">>"]):
+        if((a.type.isflt() or b.type.isflt())):
+            throw(InvalidOperationOperands(a.token, op, a.type, b.type))
+
+    instr += bringdown_memlocs(a, b)
+
+    if(op == "["):
+        if(b.type.isflt()):
+            throw(UsingFloatAsIndex(b.token))
+        if(isinstance(b.accessor, int) and b.accessor == 0):
+            areg, breg, o, ninstr = optloadRegs(a, None, op, o)
+            instr += ninstr
+
+        else:
+            areg, breg, o, ninstr = optloadRegs(a, b, op, o)
+            instr += ninstr
+
+            if sizeOf(breg) < 8:
+                ax = "rax"
+                instr += zeroize(ax) + \
+                    loadToReg(setSize(ax, sizeOf(breg)), breg)
+                rfree(breg)
+                breg = ax
+
+            areg = setSize(areg, 8)
+            if(a.type.size(1) in [1, 2, 4, 8]):
+                instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
+            else:
+                if(canShiftmul(a.type.size(1))):
+                    instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
+                else:
+                    instr += f"imul {breg}, {a.type.size(1)}\n"
+                instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
+        apendee = (EC.ExpressionComponent(
+            areg, a.type.down(), token=a.token))
+
+        # TODO
+        #
+        # Sometimes setting this to true causes errors
+
+        apendee.memory_location = True
+
+        rfree(breg)
+
+    elif(a.type.__eq__(b.type)):
+        # same type
+
+        areg, breg, o, ninstr = optloadRegs(a, b, op, o)
+        instr += ninstr
+        instr += doOperation(a.type, areg, breg, op,
+                             a.type.signed or b.type.signed)
+        if(op in ["==", "!=", ">", "<", "<=", ">="]):
+            if(a.type.isflt() or b.type.isflt()):
+                rfree(areg)
+                areg = ralloc_last()
+            a.type = BOOL.copy()
+
+        apendee = (EC.ExpressionComponent(areg, a.type, token=a.token))
+
+        rfree(breg)
+    else:  # situation is different when casting is directional
+        if(not typematch(a.type, b.type, True) and not typematch(b.type, a.type, True) and not (a.isconstint() or b.isconstint())):
+            throw(TypeMismatch(a.token, a.type, b.type))
+        newtype, toConvert = determinePrecedence(a.type, b.type, fn)
+        o = newtype.copy()
+
+        reverse = False
+        if(newtype.__eq__(a.type)):
+            # cast to a
+            castee = b
+            caster = a
+        else:
+            # cast to b
+            castee = a
+            caster = b
+            reverse = True
+
+        creg, coreg, __, loadinstr = optloadRegs(caster, castee, "op", o)
+        instr += loadinstr
+
+        newcoreg = ralloc(caster.type.isflt(), caster.type.csize())
+
+        cst = castABD(caster, castee, creg, coreg, newcoreg)
+        # cst represents if actual extra instructions are needed to cast
+        if(cst != False):
+            instr += cst
+        else:
+            rfree(newcoreg)
+            newcoreg = coreg
+
+        if(reverse):
+            tmp = creg
+            creg = newcoreg
+            newcoreg = tmp
+        instr += doOperation(caster.type, creg,
+                             newcoreg, op, caster.type.signed)
+
+        # handle float comparison
+        if(op in ["==", "!=", ">", "<", "<=", ">="]):
+
+            if(caster.type.isflt() or castee.type.isflt()):
+                rfree(creg)
+                creg = ralloc_last()
+            caster.type = BOOL.copy()
+            o = BOOL.copy()
+
+        apendee = (EC.ExpressionComponent(
+            creg, caster.type, token=caster.token))
+        rfree(newcoreg)
+        rfree(coreg)
+
+    return instr, o, apendee

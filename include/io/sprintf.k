@@ -2,17 +2,17 @@
 #   error "sprintf.k should only be included through sprintf.cb"
 #endif
 
-#define FORMAT_INT64 'i'
-#define FORMAT_UINT64 'u'
+#define FORMAT_INT64 'l'
+#define FORMAT_UNSIGNED 'u'
 #define FORMAT_CHAR 'c'
 #define FORMAT_BOOL 'B'
 #define FORMAT_BINARY 'b'
-#define FORMAT_DOUBLE 'd'
+#define FORMAT_DOUBLE 'f'
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
-#define FORMAT_FLOAT 'f'
 #define FORMAT_HEX 'x'
 #define FORMAT_OCTAL 'o'
+#define FORMAT_INT 'i'
 
 char* __numbercharactersbase1016 = "0123456789abcdef";
 
@@ -47,7 +47,8 @@ function long divmod10(long x, long* mod){
     return x / 10;
 }
 
-function long toStr(long val, char* buffer, bool signed, long base){
+template<typename T>
+function long toStr(T val, char* buffer, bool signed, long base){
     if(val == 0){
         @buffer = '0';
         return 1;
@@ -62,24 +63,23 @@ function long toStr(long val, char* buffer, bool signed, long base){
 
     
 
-
+    base;
     char tmpbuf[64];
     memset(&tmpbuf, 0, 64);
     long len = 0;
     while(val != 0){
 
         long mod;
-        //val = divmod(val,base,&mod);
+        //val = divmod($long val,base,&mod);
         mod = val % 10;
         val /= 10;
-        
-        
 
         tmpbuf[len] = __numbercharactersbase1016[mod];
         
         len++;
 
     }
+    buffer--;
     for(int i = len;i>0;i--){
         buffer[i]=tmpbuf[len-i];
     }
@@ -94,7 +94,7 @@ function long toStr(long val, char* buffer, bool signed, long base){
 }
 
 
-size_t toBinary(char* buffer, unsigned long val, long bits){
+size_t toBinary(char* buffer, unsigned long val, int bits){
     buffer += bits;
     for(int i = 0 ; i < bits;i++){
         if( (val&&1) ){
@@ -113,8 +113,7 @@ size_t toBinary(char* buffer, unsigned long val, long bits){
 
 
 function long toStr(double val, char* buffer, long multiplier){
-
-
+    buffer--;
     if(isQNaN(val)){
         strcpy(buffer, "QNaN");
         return 4;
@@ -144,11 +143,11 @@ function long toStr(double val, char* buffer, long multiplier){
     }
 
 
-    l += toStr(mantissa, buffer, 1, 10);
+    l += toStr<long>(mantissa, buffer, 1, 10);
     buffer+=l;
     
     val = (abs(val)-abs(mantissa))*multiplier;
-    long leading = toStr(abs(round(val)), buffer, 1, 10)-1;
+    long leading = toStr<long>(abs(round(val)), buffer, 1, 10)-1;
     @buffer = '.';
     buffer++;
     leading = 7-leading;
@@ -157,11 +156,10 @@ function long toStr(double val, char* buffer, long multiplier){
         buffer++;
         l++;
     }
-    buffer--;
 
 
     
-    l += toStr(abs(round(val)), buffer, 1, 10);
+    l += toStr<long>(abs(round(val)), buffer, 1, 10);
     return l+1;
 
 
@@ -203,9 +201,16 @@ int __sprintf(char* str, char* fmt, void* args){
 
 
             switch(c){
+                case FORMAT_INT{
+                    int inum = args[argc];
+                    size_t isize = toStr<int>(inum, str, 1, 10);
+                    str += isize-1;
+                    break;
+                }
+
                 case FORMAT_INT64 {
                     long num = (args[argc]);
-                    long size = toStr(num, str, 1, 10);
+                    long size = toStr<long>(num, str, 1, 10);
                     str+=size-1;
                     break;
                 }
@@ -218,25 +223,37 @@ int __sprintf(char* str, char* fmt, void* args){
                 case FORMAT_HEX {
 
                     long numx = (args[argc]);
-                    long sx = toStr(numx, str, 0, 16);
+                    long sx = toStr<long>(numx, str, 0, 16);
                     str+=sx-1;
                     break;
                 }
                 case FORMAT_OCTAL {
 
                     long numo = (args[argc]);
-                    long so = toStr(numo, str, 0, 8);
+                    long so = toStr<int>(numo, str, 0, 8);
                     str+=so-1;
                     break;
                 }
-                case FORMAT_UINT64 {
-                    long unum = (args[argc]);
-                    int usize = toStr(unum, str, 0, 10);
-                    str+=usize-1;
+                case FORMAT_UNSIGNED {
+
+                    char typespec = fmt[1];
+                    if (typespec == FORMAT_INT64){
+                        long unum = (args[argc]);
+                        int usize = toStr<long>(unum, str, 0, 10);
+                        str+=usize-1;
+                        fmt++;
+                    }else{
+                        long unum = (args[argc]);
+                        int usize = toStr<int>(unum, str, 0, 10);
+                        str+=usize-1;
+                    }
                     break;
+
+
+                    
                 }
                 case FORMAT_STRING {
-                    int ssize = strcpy(str,args[argc]);
+                    int ssize = strcpy(str-1,args[argc]);
                     str+=ssize-1;
                     break;
                 }
@@ -258,17 +275,12 @@ int __sprintf(char* str, char* fmt, void* args){
                     break;
                 }
 
-                case FORMAT_FLOAT{
-                    double f = args[argc];
-                    int fsize = toStr(f, str, FLOAT_PRECISION_MULTIPLIER);
-                    str += fsize-1;
-                    break;
-                }
+                
 
                 case FORMAT_BINARY{
                     long numb = args[argc];
                     char bitind = @(fmt+1);
-                    long bits = 64;
+                    int bits = 64;
                     if(bitind == '8'){
                         fmt++;
                     }else if (bitind == '4'){
@@ -281,7 +293,7 @@ int __sprintf(char* str, char* fmt, void* args){
                         bits = 8;
                         fmt++;
                     }
-
+                    fmt++;
                     long sb = toBinary(str,numb, bits);
                     str+=sb;
                     break;

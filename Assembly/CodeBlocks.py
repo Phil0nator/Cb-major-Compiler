@@ -23,12 +23,8 @@ from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
 
 from globals import canShiftmul
 
-# bitmasks for boolean values
-ensure_boolean = "and al, 1\n"
 
 # check if a value is true
-
-
 def checkTrue(checkval: EC.ExpressionComponent):
     if(checkval.isRegister() and not checkval.type.isflt()):
         return f"test {setSize(checkval.accessor, checkval.type.csize())}, {setSize(checkval.accessor, checkval.type.csize())}\n"
@@ -57,16 +53,13 @@ def extra_parameterlabel(fn, num):
 
 
 # get the code block to allocate a stack frame at the begining of a function
-
-
 def function_allocator(amt):
 
     return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % (
         (amt)) if amt > 8 else ""
 
+
 # set a register to zero using the faster 'xor' instruction
-
-
 def zeroize(reg):
     return Instruction("xor", [reg, reg])
 
@@ -76,13 +69,11 @@ def allocate_readonly(value):
 
 
 # make name a label
-
 def label(name):
     return "%s:\n" % name
 
+
 # generate the closing for a function (exit stack frame, and return)
-
-
 def function_closer(name, destructions, fn):
     return """__%s__return:
 %s
@@ -90,10 +81,9 @@ leave
 ret
 """ % (name, destructions) if fn.stackCounter > 8 else f"__{name}__return:\nret\n"
 
+
 # Get the value of a number that is within a set ( a set refers to this
 # notation: { ... , ... , ... })
-
-
 def setValueOf(val, flt, ptr):
 
     if(isinstance(val, float)):
@@ -108,9 +98,8 @@ def setValueOf(val, flt, ptr):
         else:
             return setValueOf(val.accessor.initializer, flt, False)
 
+
 # generate .data code for an intrinsic constant (can be a set)
-
-
 def createIntrinsicConstant(variable):
 
     # if it is a set
@@ -134,10 +123,9 @@ def createIntrinsicConstant(variable):
 # keep string IDS
 stringconstant_counter = 0
 
+
 # create specifically a string literal in .data
-
-
-def createStringConstant(s):
+def createStringConstant(s) -> tuple:
     global stringconstant_counter
     out = []
     name = ("LC.S%s" % stringconstant_counter)
@@ -150,9 +138,8 @@ def createStringConstant(s):
 # keep float IDs
 floatconstant_counter = 0
 
+
 # create specifically a float literal in .data
-
-
 def createFloatConstant(s):
     global floatconstant_counter
     out = []
@@ -163,15 +150,13 @@ def createFloatConstant(s):
     floatconstant_counter += 1
     return out
 
+
 # create .bss variable
-
-
 def createIntrinsicHeap(variable):
     return "%s: %s\n" % (variable.name, getHeapReserver(variable))
 
+
 # load source (any type) to dest (also any type)
-
-
 def loadToPtr(dest, source):
 
     if(isinstance(dest, EC.ExpressionComponent)):
@@ -189,9 +174,8 @@ def loadToPtr(dest, source):
         return loadToReg(dest, source)
     return loadToReg(f"[{setSize(dest,8)}]", source)
 
+
 # push v to the stack
-
-
 def spush(v: EC.ExpressionComponent):
     if(v.type.isflt()):
         return f"movq {rax}, {v.accessor}\npush {rax}\n"
@@ -199,9 +183,8 @@ def spush(v: EC.ExpressionComponent):
         return f"mov {rax}, {valueOf(v.accessor)}\npush {rax}\n"
     return f"push {v.accessor}\n"
 
+
 # pop from the stack into v
-
-
 def spop(v: EC.ExpressionComponent):
     if(v.type.isflt()):
         return f"pop {rax}\nmovq {valueOf(v.accessor)}, {rax}\n"
@@ -209,12 +192,11 @@ def spop(v: EC.ExpressionComponent):
         return f"pop {rax}\nmov {valueOf(v.accessor)}, {rax}\n"
     return f"pop {v.accessor}\n"
 
+
 # call a function
 # (for regular functions this is as simple as using the 'call' instruction)
 # for inline functions this means recompiling the function, and pasting its
 # raw assembly
-
-
 def fncall(fn):
     global norm_scratch_registers_inuse, sse_scratch_registers_inuse
     fn.references += 1
@@ -245,9 +227,8 @@ def fncall(fn):
 
         return fn.asm
 
+
 # mov variable var into register reg
-
-
 def movVarToReg(reg, var):
     if isfloat(var):
         if isfloat(reg):
@@ -284,6 +265,7 @@ def valueOf(x, dflt=False, exactSize=True):
         x.referenced = True
         if(x.glob):
             if(x.t.ptrdepth > 1 or x.isptr):
+
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:
@@ -581,12 +563,19 @@ def castABD(a, b, areg, breg, newbreg):
         return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
 
     if(not a.type.isflt() and not b.type.isflt()):
-        if(a.type.csize() != b.type.csize()):
+        if(a.type.csize() < b.type.csize()):
             #out = maskset(newbreg, a.type.csize())
 
             out = loadToReg(newbreg, breg)
 
             return out
+        elif a.type.csize() > b.type.csize():
+
+            out = zeroize(setSize(newbreg, 8))
+            out += loadToReg(newbreg, breg)
+
+            return out
+
         return False
     if(a.type.isflt() and not b.type.isflt()):
         if sizeOf(breg) < 4:
@@ -617,7 +606,11 @@ def raw_regmov(a, b):
 
 def getOnelineAssignmentOp(a, b, op):
     cmd = ""
-    
+
+    if isinstance(a.accessor, Variable) and a.accessor.register is not None and \
+            isinstance(b.accessor, Variable) and b.accessor.register is not None:
+        return cmd, False
+
     if(op in ONELINE_ASSIGNMENTS):
         cmd = onelineAssignment(op, a)
     elif(op in [">>=", "<<="]):
@@ -671,31 +664,37 @@ def magic_division(a, areg, b, internal=False):
     postshift = math.ceil(math.log2(b))
     twopower = 8 * a.type.csize() + 1
 
-        
     #                2^33     / x + 1
     if twopower < 60:
         multiplicand = math.ceil(pow(2, twopower) / b)
     else:
         extrabit = math.ceil(pow(2, twopower) / (b)) > 9223372036854775807
-        multiplicand = (math.ceil(pow(2, twopower) / (b))) & 9223372036854775807
+        multiplicand = (math.ceil(pow(2, twopower) / (b))
+                        ) & 9223372036854775807
 
-    mulcmd = "imul" if a.type.signed else "mul"
+    #mulcmd = "imul" if a.type.signed else "mul"
     shiftcmd = "sar" if a.type.signed else "shr"
 
-    instr = f"mov rax, {setSize(areg, 8)}\n"
-    instr += f"mov rcx, {multiplicand}\n"
-    instr += f"{mulcmd} rcx\n"
+    # TODO:
+    # Make work for signed integers
+
+    ax = setSize('rax', sizeOf(areg))
+    dx = setSize('rdx', sizeOf(areg))
+
+    instr = f"{zeroize('rax')}\nmov {ax}, {areg}\n"
+    instr += f"mov {dx}, {multiplicand}\n"
+    instr += f"imul {dx}\n"
+
     if a.type.csize() != 8:
-        instr += f"{shiftcmd} rax, {twopower}\n"
-        instr += f"mov {setSize(areg, 8)}, rax\n" if not internal else ""
-    else: # 64bit magic division
-        
+        instr += f"{shiftcmd} {dx}, 1\n"
+        instr += f"mov {areg}, {dx}\n" if not internal else f"mov {ax}, {dx}\n"
+    else:  # 64bit magic division
+
         if extrabit:
             instr += f"mov rax, {setSize(areg, 8)}\nsub rax, rdx\nshr rax, 1\nadd rax, rdx\nshr rax, {math.ceil(math.log2(b))-1}\n"
         else:
             instr += f"mov rax, rdx\nshr rax, {1}\n"
-        
-        
+
         instr += getFromRax(areg) if not internal else f""
 
     return instr
@@ -718,8 +717,8 @@ def magic_modulo(a, areg, b):
         if canShiftmul(b):
             instr += f"{shiftcmd[:-1]}l rax, {shiftmul(b)}\n"
         else:
-            instr += f"mov rcx, {b}\n"
-            instr += f"{'imul' if a.type.signed else 'mul'} rcx\n"
+            instr += f"mov rdx, {b}\n"
+            instr += f"{'imul' if a.type.signed else 'mul'} rdx\n"
 
         instr += f"sub {areg}, {setSize(rax, a.type.csize())}\n"
 

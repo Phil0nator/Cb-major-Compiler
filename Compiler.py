@@ -39,104 +39,134 @@ from Structure import Structure
 class Compiler:
 
     def __init__(self):
-        self.globals = []               # all global variables
-        self.constants = ""             # raw assembly for constant definitions
+        self.globals: list = []               # all global variables
+        self.constants: str = ""             # raw assembly for constant definitions
         # raw assembly for heap definitions (.bss)
-        self.heap = ""
-        self.initializers = ""          # raw assembly for initialization of heap definitions
+        self.heap: str = ""
+        # raw assembly for initialization of heap definitions
+        self.initializers: str = ""
         # raw assembly to call the given entrypoint (usually main)
-        self.entry = ""
-        self.text = ""                  # raw .text assembly
-        self.currentfname = ""          # current filename
-        self.currentTokens = []         # current tokens: Token
+        self.entry: str = ""
+        self.text: str = ""                  # raw .text assembly
+        self.currentfname: str = ""          # current filename
+        self.currentTokens: list = []         # current tokens: Token
 
-        self.currentfunction = None     # for fn compiletime
+        self.currentfunction: Function = None     # for fn compiletime
 
-        self.current_token = None       # current token
-        self.ctidx = 0                  # index of current_token in self.currentTokens
-        self.prevtok = Token(T_AMBIGUOUS, T_AMBIGUOUS, None, None)
+        self.current_token: Token = None       # current token
+        self.ctidx: int = 0                  # index of current_token in self.currentTokens
+        self.prevtok: Token = Token(T_AMBIGUOUS, T_AMBIGUOUS, None, None)
 
-        self.functions = []             # all Function objects
-        self.template_functions = []    # function templates
-        self.templatefunction_cache = []  # already created function templates
+        self.functions: list = []             # all Function objects
+        self.template_functions: list = []    # function templates
+        self.templatefunction_cache: list = []  # already created function templates
 
-        self.types = []                 # all datatypes: DType
-        self.template_types = []        # templated types
-        self.template_cache = []        # already filled templates for speed
+        self.types: list = []                 # all datatypes: DType
+        self.template_types: list = []        # templated types
+        self.template_cache: list = []        # already filled templates for speed
 
         # typedefs listed as (old, new):(DType,DType)
-        self.tdefs = []
+        self.tdefs: list = []
+        # a hash table for faster access to typedefs
+        self.tdef_hash = {}
 
         for i in INTRINSICS:            # fill types with primitives
             self.types.append(i.copy())
 
-        self.possible_members = []
+        self.possible_members: list = []
 
-        self.heap_unnamed = 0           # int counter for unnamed heap variables
+        self.heap_unnamed: int = 0           # int counter for unnamed heap variables
 
         # panicmode means continue compiling, but there has already been an
         # error
-        self.panicmode = False
+        self.panicmode: bool = False
 
-    def isType(self, q):                # return: if q is type
+    # ensure a semicolon was used, and move on
+    def checkSemi(self) -> None:
+        if(self.current_token.tok != T_ENDL):
+            throw(ExpectedSemicolon(self.current_token))
+        self.advance()
+
+    def isType(self, q: str) -> bool:                # return: if q is type
         return self.getType(
             q) is not None or self.getTemplateType(q) is not None
 
-    def isIntrinsic(self, q):           # return: if q is primitive
+    def isIntrinsic(self, q: str) -> DType:           # return: if q is primitive
         return next((t for t in INTRINSICS if self.Tequals(t.name, q)), None)
 
-    def ismember(self, q):
+    def ismember(self, q: str) -> bool:
         return q in self.possible_members
 
-    def getGlob(self, q):               # get global variable of name q
-        out = next((g for g in self.globals if g.name == q), None)
+    def getGlob(self, q: str) -> Variable:               # get global variable of name q
+
+        # find a variable based on name
+        out: Variable = next((g for g in self.globals if g.name == q), None)
+        # return out if found
         if(out is not None):
             return out
-
-        fn = self.getFunction(q)
+        # check for functions of that name
+        fn: Function = self.getFunction(q)
+        # return None if none found
         if(fn is None):
             return None
+        # if function is found, find it's corresponding global variable:
+        return self.getGlob(fn.getCallingLabel()
+                            ) if not fn.extern else self.getGlob(fn.name)
 
-        return self.getGlob(fn.getCallingLabel()) if not fn.extern else self.getGlob(fn.name)
-
-    def getTemplateType(self, q):
+    def getTemplateType(self, q: str) -> DType:
         return next((t for t in self.template_types if t[0].name == q), None)
 
-    def getFunction(self, q):           # get first function of name q
+    def getFunction(self, q: str) -> Function:           # get first function of name q
         return next((f for f in self.functions if f.name == q), None)
 
     def advance(self):                  # move to next token
+        # increment index
         self.ctidx += 1
+        # set previous token
         self.prevtok = self.current_token
         try:
             self.current_token = self.currentTokens[self.ctidx]
         except BaseException:
             throw(UnexepectedEOFError(self.current_token))
 
-    def Tequals(self, ta, tb):          # determine DType equality (including typedefs)
+    # determine DType equality (including typedefs)
+    def Tequals(self, ta: str, tb: str) -> bool:
+        # if given names are equal, the types must be
         if(ta == tb):
             return True
-        return next((True for tdef in self.tdefs if (
-            (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
 
-    def getType(self, qu):               # get type of name q
-        pd = 0
-        q = f"{qu}"
-        pd = q.count(".")
-        q = q.replace(".", "")
+        if ta in self.tdef_hash:
+            return tb in self.tdef_hash[ta]
+        elif tb in self.tdef_hash:
+            return ta in self.tdef_hash[tb]
 
-        out = next((t for t in self.types if t.name == q), None)
+        return False
+
+        # find a typedef pair in the list which equates the two types
+        # return next((True for tdef in self.tdefs if (
+        #    (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
+
+    def getType(self, qu: str) -> DType:               # get type of name q
+        q: str = f"{qu}"  # copy of querry
+        pd: PointerDepth = q.count(".")   # pointer depth
+        q = q.replace(".", "")            # remove points from name for search
+
+        # search types for a datatype that shares a name with the querry
+        out: DType = next((t for t in self.types if t.name == q), None)
+        # if none exists, return
         if(out is None):
             return None
+        # return safe copy of the type with the restored pointer depth
         out = out.copy()
         out.ptrdepth = pd
         return out
 
-    def parseTemplate(self):
+    def parseTemplate(self) -> list:
         types = []
+        # loop through layer of decorator (' <int, double ... > '  )
         while self.current_token.tok != ">":
             self.advance()
-            t = self.checkType()
+            t: Dtype = self.checkType()
             types.append(t)
         return types
 
@@ -144,77 +174,97 @@ class Compiler:
     def checkType(self, err=True):
 
         signed = True
+        # check for sign specification
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
                 signed = False
                 self.advance()
-
+        # check for correct token Type
         if(self.current_token.tok != T_ID):
+            # if instructed to error out, throw error.
+            # else, return None
             if err:
                 throw(ExpectedIdentifier(self.current_token))
             else:
                 return None
+        # check if the current token represents a type
         if(not self.isType(self.current_token.value)):
+            # if instructed to error out, throw error.
+            # else, return None
             if err:
                 throw(ExpectedType(self.current_token))
             else:
                 return None
+        # check for decorator (template types)
         if (self.currentTokens[self.ctidx + 1].tok == "<"):
-            template = self.current_token.value
-            ttok = self.current_token
+            # construct template type:
+            template: str = self.current_token.value
+            ttok: Token = self.current_token
             self.advance()
-            types = self.parseTemplate()
-            t = self.buildTemplateType(template, types, ttok)
+            types: list = self.parseTemplate()
+            t: DType = self.buildTemplateType(template, types, ttok).copy()
         else:
-            t = self.getType(self.current_token.value).copy()
+            # get existing type
+            t: DType = self.getType(self.current_token.value).copy()
 
         self.advance()
-        ptrdepth = 0
+        ptrdepth = 0    # track pointer depth specified by '*' token
         while self.current_token.tok == "*":
+            # loop through the '*' tokens
             ptrdepth += 1
             self.advance()
+        # return final datatype
         t.ptrdepth = ptrdepth
         t.signed = signed
         return t
 
+    def checkId(self) -> str:
+        if self.current_token.tok != T_ID:
+            throw(ExpectedIdentifier(self.current_token))
+        out = self.current_token.value
+        self.advance()
+        return out
+
     # create a constant string value in self.constants
-    def createStringConstant(self, content):
+    def createStringConstant(self, content) -> None:
 
         # d = (.data instructions, varname)
-        d = createStringConstant(content)
-        name = d[1]
-        cnst = d[0]
+        d: tuple = createStringConstant(content)
+        name: str = d[1]
+        cnst: str = d[0]
+        # add constant info
         self.constants += cnst
+        # add new Variable
         v = Variable(CHAR.copy(), name, glob=True)
         self.globals.append(v)
 
     # create an arbitrary constant in self.constants
-    def createConstant(self, extern=False):
-        # dtype
+    def createConstant(self, extern=False) -> None:
+        # track start
         startidx = self.ctidx
+        # check for a datatype
         intr = self.checkType()
-        if (self.current_token.tok != T_ID):
-            throw(ExpectedIdentifier(self.current_token))
-        name = self.current_token.value
-
-        self.advance()
+        # check for an identifier
+        name = self.checkId()
 
         # check for simple C style function declarations
         if(self.current_token.tok == T_OPENP or self.current_token.tok == T_NAMESPACE):
+            # update indexes, and pass control onto the buildFunction function
             self.ctidx = startidx - 1
             self.advance()
-            self.createFunction()
+            self.buildFunction()
             return
 
         # variables declared with extern are not placed in the data section, and are simply
         # recorded for use by the compiler.
         if(extern):
+            # cannot assign values declared with extern
             if(self.current_token.tok == T_EQUALS):
                 throw(AssigningExternedValue(self.current_token))
+            # add new variable
             self.globals.append(Variable(intr.copy(), name, glob=True))
-            if(self.current_token.tok != T_ENDL):
-                throw(ExpectedSemicolon(self.current_token))
-            self.advance()
+            # close
+            self.checkSemi()
             return
 
         # test for early endline
@@ -223,16 +273,21 @@ class Compiler:
             # if there is no assignment, these variables can be moved to the bss section because they
             # are uninitialized.
             if(self.current_token.tok == T_ENDL):
+                # create uninilitialized var
                 self.globals.append(
                     Variable(
                         intr.copy(),
                         name,
                         glob=True,
                         initializer=0))
+                # since the var has no initializer, it is stored in the .bss
+                # section
                 self.heap += f"{name}: resb {intr.csize()}\n"
+                # close
                 self.advance()
                 return
             else:
+                # if there is no initializer, there must be a semicolon
                 throw(ExpectedValue(self.current_token))
 
         self.advance()
@@ -240,17 +295,20 @@ class Compiler:
         # Tokens need to be collected to be passed through the constexpr evaluator.
         # \see Classes.Constexpr
 
+        # tokens representing an expression:
         exprtokens = []
+        # determine if the expression is a set literal: (e.g {1,2,3})
         isSet = False
         if(self.current_token.tok == T_OPENSCOPE):
             isSet = True
 
+        # loop through expression tokens until a semicolon
         while(self.current_token.tok != T_ENDL):
             exprtokens.append(self.current_token)
             self.advance()
 
         # use the constexpr evaluator to find the value for the global
-        value = determineConstexpr(intr.isflt(), exprtokens, Function(
+        value: EC.ExpressionComponent = determineConstexpr(intr.isflt(), exprtokens, Function(
             "CMAININIT", [], LONG.copy(), self, exprtokens)) if not isSet else buildConstantSet(intr.isflt(), exprtokens, Function(
                 "CMAININIT", [], LONG.copy(), self, exprtokens))
 
@@ -262,61 +320,64 @@ class Compiler:
                 1 else value.accessor.initializer
             isptr = True
 
+        # add new Variable
         self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor, isptr=isptr))
 
         # add .data instructions to self.constants
         self.constants += createIntrinsicConstant(self.globals[-1])
-
-        if(self.current_token.tok != T_ENDL):
-            throw(ExpectedSemicolon(self.current_token))
-        self.advance()
+        # close
+        self.checkSemi()
 
     # isolate a function and build a Function object
-    def createFunction(self, thisp=False, thispt=None):
+    def buildFunction(self, thisp=False, thispt=None) -> None:
+        # track if the function is explicitly inline
         inline = False
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "inline"):
                 inline = True
 
+        # check for a returntype
         rettype = self.checkType()
 
+        # parent structure
         struct = None
 
         # for external definitions of member functions:
         # (The '::' token will be in place of an '(')
         if(self.currentTokens[self.ctidx + 1].tok == T_NAMESPACE):
-            if(self.current_token.tok != T_ID):
-                throw(ExpectedIdentifier(self.current_token))
+            # if(self.current_token.tok != T_ID):
+            #    throw(ExpectedIdentifier(self.current_token))
+            sname = self.checkId()
 
             # get parent
-            struct = self.getType(self.current_token.value)
+            struct = self.getType(sname)
 
             if(struct is None):
-                throw(UnkownType(self.current_token))
+                throw(UnkownType(self.prevtok))
 
             # setup function for a 'this' value
             thisp = True
             thispt = struct
+            # self.advance()
             self.advance()
-            self.advance()
 
-        if(self.current_token.tok != T_ID):
-            throw(ExpectedIdentifier(self.current_token))
+        # get fnname
+        name = self.checkId()
 
-        name = self.current_token.value
-
-        self.advance()
-
+        # ensure syntax
         if(self.current_token.tok != T_OPENP):
             throw(ExpectedParethesis(self.current_token))
 
         self.advance()
 
+        # construct parameters:
         parameters = []
+        # thisp means that this function is a member, and should have 'this' as
+        # it's first parameter
         if(thisp):
             parameters.append(Variable(thispt, "this", isptr=True))
-
+        # denoted by '...'
         variardic = False
 
         # count of each type of parameter
@@ -325,29 +386,28 @@ class Compiler:
 
         # load parameters until end of fn header at ')'
         while self.current_token.tok != T_CLSP:
-
+            # check for variardic
             if(self.current_token.tok == T_ELIPSES):
                 variardic = True
                 self.advance()
                 break
-
+            # get parameter type
             t = self.checkType()
             # increment param types
             ssecount += t.isflt()
             normcount += not t.isflt()
+            # get parameter name
+            varname = self.checkId()
 
-            if(self.current_token.tok != T_ID):
-                throw(ExpectedIdentifier(self.current_token))
-
-            varname = self.current_token.value
-
-            self.advance()
-
+            # add new variable
             parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
+            parameters[-1].dtok = self.currentTokens[self.ctidx - 1]
+
+            # loop handle:
             if (self.current_token.tok == T_CLSP):
 
                 break
-
+            # ensure syntax
             if(self.current_token.tok != T_COMMA):
                 throw(ExpectedComma(self.current_token))
 
@@ -358,7 +418,7 @@ class Compiler:
         # check for early end (just declaration, no assignment)
         if(self.current_token.tok == T_ENDL):
             self.advance()
-
+            # create empty function for assignment later
             f = Function(name, parameters, rettype, self, [])
             self.globals.append(
                 Variable(
@@ -369,16 +429,10 @@ class Compiler:
                     mutable=False,
                     signed=f.returntype.signed))
 
-            # self.globals.append(
-            #    Variable(
-            #        f.returntype.copy(),
-            #        f.name,
-            #        glob=True))
-
             self.functions.append(f)
 
             return
-
+        # if not declaration, it must be an assignment
         if(self.current_token.tok != T_OPENSCOPE):
             throw(ExpectedToken(self.current_token, T_OPENSCOPE))
 
@@ -387,6 +441,8 @@ class Compiler:
         # (keep track of scope open / scope close)
         opens = 1
         start = self.ctidx
+        # loop through one layer of { ... } scope to
+        # catch range of tokens used as function body
         while opens > 0:
             if(self.current_token.tok == T_OPENSCOPE):
                 opens += 1
@@ -402,18 +458,26 @@ class Compiler:
         if thisp:
             f.memberfn = True
             f.parentstruct = thispt
-
+        # variardic
         f.variardic = variardic
 
         # handle additional parameters...
+        # the extra parameters needed are any parameters not able to be stored in the
+        # SSE registers and the regular registers
+
+        # extra params from sse
         extra_params = (ssecount - len(sse_parameter_registers))
         if extra_params < 0:
             extra_params = 0
+        # extra params from regular
         extra_params += (normcount - len(norm_parameter_registers))
 
+        # load info to f
         f.extra_params = extra_params
         f.ssepcount = ssecount
         f.normpcount = normcount
+        # generate destinations for the extra parameters in the .bss section
+        # TODO: modify to be thread safe
         while extra_params > 0:
             self.heap += f"{extra_parameterlabel(f, extra_params)} resb 8\n"
             extra_params -= 1
@@ -429,12 +493,14 @@ class Compiler:
                 mutable=False,
                 signed=f.returntype.signed))
 
-    def buildStruct(self):                  # isolate and build a structure
+    # isolate and build a structure
+    def buildStruct(self, thisp=False, thispt=None) -> None:
         # \see Structure
+        # structure wrapper
         parser = Structure(self)
         parser.construct()
 
-    def compile(self, ftup):            # main function to perform Compiler tasks
+    def compile(self, ftup: list) -> None:            # main function to perform Compiler tasks
         self.currentTokens = ftup
 
         # The first step in compilation is finding all string constants (except inline asm blocks) and float constants
@@ -447,30 +513,41 @@ class Compiler:
             if t.tok == T_STRING:
                 # preserve assembly blocks
                 if(self.currentTokens[c - 2].tok != T_KEYWORD and self.currentTokens[c - 2].value != "__asm"):
-                    data = createStringConstant(t.value)
-                    name = data[1]
-                    instruct = data[0]
+                    # construct a string constant
+                    data: tuple = createStringConstant(t.value)
+                    name: str = data[1]
+                    instruct: str = data[0]
+                    # get datatype for string
                     tp = CHAR.copy()
                     tp.ptrdepth = 1
+                    # build Variable
                     v = Variable(tp, name, glob=True,
                                  isptr=True, initializer=f"\"{t.value}\"")
                     self.globals.append(v)
+                    # update token for later use
                     t.tok = T_ID
                     t.value = name
-
+                    # add allocator to constants
                     self.constants += instruct
             # convert float constants to global variables
             elif t.tok == T_DOUBLE:
-
-                data = createFloatConstant(t.value)
-                name = data[1]
-                instruct = data[0]
-                v = Variable(DOUBLE, name, glob=True, initializer=t.value)
+                # generate float constant
+                data: tuple = createFloatConstant(t.value)
+                name: str = data[1]
+                instruct: str = data[0]
+                # build Variable
+                v = Variable(
+                    DOUBLE.copy(),
+                    name,
+                    glob=True,
+                    initializer=t.value)
                 self.globals.append(v)
+                # update token for later use
                 t.tok = T_ID
                 t.value = name
-
+                # add allocator to constants
                 self.constants += instruct
+            # counter
             c += 1
 
         # reset
@@ -497,11 +574,9 @@ class Compiler:
             if(self.current_token.tok != T_KEYWORD):
                 throw(ExpectedToken(self.current_token, "type-specifier"))
             self.advance()
-            if(self.current_token.tok != T_ID):
-                throw(ExpectedIdentifier(self.current_token))
-            # collect name
-            tns.append(self.current_token.value)
-            self.advance()
+            # check for typename
+            tname = self.checkId()
+            tns.append(tname)
         self.advance()
 
         # keep track of the current number of types to restore back to after
@@ -655,7 +730,7 @@ class Compiler:
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
-            
+
             # compile
             fn.compile()
             # save
@@ -671,169 +746,190 @@ class Compiler:
         self.tdefs = self.tdefs[:restore_tdefs]
         return fn
 
-    def compileLine(self, thisp=False, thispt=None):
+    # unsigned keyword is always followed by a normal variable
+    # declaration.
+    def buildUnsigned(self, thisp=False, thispt=None) -> None:
+        s = self.current_token
+        self.advance()
+        self.createConstant()
+        v = self.globals[-1]
+        if(v.isflt()):
+            throw(InvalidSignSpecifier(s))
 
+        v.signed = False
+        v.t = v.t.copy()
+        v.t.signed = False
+        v.glob = True
+
+    # typedef is always followed by two types and an endline:
+    def buildTypedef(self, thisp=False, thispt=None) -> None:
+
+        # start token
+        s = self.current_token
+
+        self.advance()
+
+        # type a
+        ta = self.checkType()
+        if(self.current_token.tok != T_ID):
+            throw(ExpectedIdentifier(self.current_token))
+
+        # new type name
+        ntn = self.current_token.value
+        newtype = ta.copy()
+        newtype.name = ntn
+
+        # add new typename to precedence list, if applicable
+        if ta.name in type_precedence:
+            type_precedence[ntn] = type_precedence[ta.name]
+
+        # add new type to types and tdefs
+        self.types.append(newtype.copy())
+        self.tdefs.append((ta, newtype))
+
+        # setup hash table for fast access
+        if ta.name in self.tdef_hash:
+            self.tdef_hash[ta.name].append(newtype.name)
+        else:
+            self.tdef_hash[ta.name] = [newtype.name]
+
+        if newtype.name in self.tdef_hash:
+            self.tdef_hash[newtype.name].append(ta.name)
+        else:
+            self.tdef_hash[newtype.name] = [ta.name]
+
+        if(self.isIntrinsic(ntn)):
+            INTRINSICS.append(newtype.copy())
+        self.advance()
+        if(self.current_token.tok != T_ENDL):
+            throw(ExpectedSemicolon(self.current_token))
+        self.advance()
+
+    def determineFunctionOrVar(self) -> None:
+        self.advance()
+        # record location to jump back to
+        backto = self.ctidx - 1
+        self.checkType()
+        self.advance()
+
+        # function determinant:
+        #   for function delcarations fndp.tok will always be a '(', and for variables
+        #   it will always be something else.
+        fndp = self.current_token
+
+        # with the determinant, jump back to the begining to
+        # perform the compilation
+        self.ctidx = backto
+        self.advance()
+
+        return fndp
+
+    # extern is followed by either a function declaration or a
+    # variable declaration
+    def buildExtern(self, thisp=False, thispt=None) -> None:
+        # function determinant
+        fndp = self.determineFunctionOrVar()
+
+        if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):  # if is function
+
+            self.buildFunction(thisp=thisp, thispt=thispt)
+            fn = self.functions[-1]
+            config.__CEXTERNS__ += "extern " + \
+                functionlabel(fn)[:-1] + "\n"
+            glob = self.globals[-1]
+            glob.name = fn.getCallingLabel()
+
+        else:  # if is variable
+
+            self.createConstant(True)
+
+            config.__CEXTERNS__ += "extern " + \
+                self.globals[-1].name + "\n"
+
+    # same code as extern, with slight modification for cextern
+    def buildCextern(self, thisp=False, thispt=None) -> None:
+        fndp = self.determineFunctionOrVar()
+
+        if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):
+
+            self.buildFunction(thisp=thisp, thispt=thispt)
+            fn = self.functions[-1]
+            fn.extern = True
+            config.__CEXTERNS__ += "extern " + \
+                functionlabel(fn)[:-1] + "\n"
+            glob = self.globals[-1]
+            glob.name = fn.getCallingLabel()
+
+        else:
+
+            self.createConstant(True)
+            config.__CEXTERNS__ += "extern " + \
+                self.globals[-1].name + "\n"
+    # __cdecl is always followed by a function declaration
+
+    def buildCdecl(self, thisp=False, thispt=None) -> None:
+        self.advance()
+
+        self.buildFunction(thisp=thisp, thispt=thispt)
+        fn = self.functions[-1]
+        fn.extern = True
+        # apply new properties to generated function:
+        config.__CEXTERNS__ += "global " + \
+            functionlabel(fn)[:-1] + "\n"
+        glob = self.globals[-1]
+        glob.name = fn.getCallingLabel()
+    # global is always followed by a function declaration
+
+    def buildGlobalfn(self, thisp=False, thispt=None) -> None:
+        self.advance()
+
+        self.buildFunction(thisp=thisp, thispt=thispt)
+        # apply global properties
+        fn = self.functions[-1]
+        config.__CEXTERNS__ += "global " + \
+            functionlabel(fn)[:-1] + "\n"
+        glob = self.globals[-1]
+        glob.name = fn.getCallingLabel()
+
+    # inline is always followed by a function declaration
+    def buildInlinefn(self, thisp=False, thispt=None) -> None:
+        self.advance()
+        self.buildFunction(thisp=thisp, thispt=thispt)
+        # apply new properties
+        if(not config.__Osize__):
+            self.functions[-1].inline = True
+            self.globals.pop()
+        else:
+            self.functions[-1].wouldbe_inline = True
+
+    def buildNormalfn(self, thisp=False, thispt=None) -> None:
+        self.advance()
+        self.buildFunction(thisp=thisp, thispt=thispt)
+
+    def beginTemplate(self, thisp=False, thispt=None) -> None:
+        self.advance()
+        self.buildTemplate()
+
+    # compileLine is responsible for determining the categorie of a general unscoped statement.
+    # e.g: unsigned int i = 0;
+    # e.g: int main(int argc) {}
+    # And then either compiling the line if its just a global variable, or sectioning it off to
+    # be handled by the Structure element or the Function element for more
+    # complex statements.
+    def compileLine(self, thisp=False, thispt=None):
+        # lines begining with an ID will be a global variable
+        # (Or function, but that is handled in createConstant())
         if (self.current_token.tok == T_ID):
             self.createConstant()
         elif (self.current_token.tok == T_KEYWORD):
 
-            # unsigned keyword is always followed by a normal variable
-            # declaration.
-            if(self.current_token.value == "unsigned"):
-
-                s = self.current_token
-                self.advance()
-                self.createConstant()
-                v = self.globals[-1]
-                if(v.isflt()):
-                    throw(InvalidSignSpecifier(s))
-
-                v.signed = False
-                v.t = v.t.copy()
-                v.t.signed = False
-                v.glob = True
-
-            # typedef is always followed by two types and an endline:
-            elif(self.current_token.value == "typedef"):
-
-                # start token
-                s = self.current_token
-
-                self.advance()
-
-                # type a
-                ta = self.checkType()
-                if(self.current_token.tok != T_ID):
-                    throw(ExpectedIdentifier(self.current_token))
-
-                # new type name
-                ntn = self.current_token.value
-                newtype = ta.copy()
-                newtype.name = ntn
-
-                # add new typename to precedence list, if applicable
-                if ta.name in type_precedence:
-                    type_precedence[ntn] = type_precedence[ta.name]
-
-                # add new type to types and tdefs
-                self.types.append(newtype.copy())
-                self.tdefs.append((ta, newtype))
-                if(self.isIntrinsic(ntn)):
-                    INTRINSICS.append(newtype.copy())
-                self.advance()
-                if(self.current_token.tok != T_ENDL):
-                    throw(ExpectedSemicolon(self.current_token))
-                self.advance()
-
-            # extern is followed by either a function declaration or a
-            # variable declaration
-            elif(self.current_token.value == "extern"):
-                self.advance()
-                # record location to jump back to
-                backto = self.ctidx - 1
-                self.checkType()
-                self.advance()
-
-                # function determinant:
-                #   for function delcarations fndp.tok will always be a '(', and for variables
-                #   it will always be something else.
-                fndp = self.current_token
-
-                # with the determinant, jump back to the begining to
-                # perform the compilation
-                self.ctidx = backto
-                self.advance()
-
-                if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):  # if is function
-
-                    self.createFunction(thisp=thisp, thispt=thispt)
-                    fn = self.functions[-1]
-                    config.__CEXTERNS__ += "extern " + \
-                        functionlabel(fn)[:-1] + "\n"
-                    glob = self.globals[-1]
-                    glob.name = fn.getCallingLabel()
-
-                else:  # if is variable
-
-                    self.createConstant(True)
-
-                    config.__CEXTERNS__ += "extern " + \
-                        self.globals[-1].name + "\n"
-            # same code as extern, with slight modification for cextern
-            elif(self.current_token.value == "cextern"):
-                self.advance()
-                backto = self.ctidx - 1
-                self.checkType()
-                self.advance()
-
-                fndp = self.current_token
-                self.ctidx = backto
-                self.advance()
-                if(fndp.tok == "(" or fndp.tok == T_NAMESPACE):
-
-                    self.createFunction(thisp=thisp, thispt=thispt)
-                    fn = self.functions[-1]
-                    fn.extern = True
-                    config.__CEXTERNS__ += "extern " + \
-                        functionlabel(fn)[:-1] + "\n"
-                    glob = self.globals[-1]
-                    glob.name = fn.getCallingLabel()
-
-                else:
-
-                    self.createConstant(True)
-                    config.__CEXTERNS__ += "extern " + \
-                        self.globals[-1].name + "\n"
-
-            # __cdecl is always followed by a function declaration
-            elif(self.current_token.value == "__cdecl"):
-                self.advance()
-
-                self.createFunction(thisp=thisp, thispt=thispt)
-                fn = self.functions[-1]
-                fn.extern = True
-                # apply new properties to generated function:
-                config.__CEXTERNS__ += "global " + \
-                    functionlabel(fn)[:-1] + "\n"
-                glob = self.globals[-1]
-                glob.name = fn.getCallingLabel()
-
-            # global is always followed by a function declaration
-            elif(self.current_token.value == "global"):
-                self.advance()
-
-                self.createFunction(thisp=thisp, thispt=thispt)
-                # apply global properties
-                fn = self.functions[-1]
-                config.__CEXTERNS__ += "global " + \
-                    functionlabel(fn)[:-1] + "\n"
-                glob = self.globals[-1]
-                glob.name = fn.getCallingLabel()
-
-            elif(self.current_token.value == "struct"):
-                self.buildStruct()
-            # inline is always followed by a function declaration
-            elif(self.current_token.value == "inline"):
-                self.advance()
-                self.createFunction(thisp=thisp, thispt=thispt)
-                # apply new properties
-                if(not config.__Osize__):
-                    self.functions[-1].inline = True
-                    self.globals.pop()
-                else:
-                    self.functions[-1].wouldbe_inline = True
-
-            elif (self.current_token.value == "function"):
-                self.advance()
-                self.createFunction(thisp=thisp, thispt=thispt)
-
-            elif(self.current_token.value == "template"):
-                self.advance()
-                self.buildTemplate()
-
-
-
+            # check if a response exists for given keyword
+            if self.current_token.value in keyword_responses:
+                # execute respnse
+                keyword_responses[self.current_token.value](
+                    self, thisp, thispt)
             else:
+                # if not, throw error
                 throw(UnexpectedToken(self.current_token))
 
         else:
@@ -851,7 +947,12 @@ class Compiler:
                 self.entry = f
                 f.extern = True
                 self.globals.append(
-                    Variable(INT.up(), "main", glob=True, initializer=f)
+                    Variable(
+                        INT.up(),
+                        "main",
+                        glob=True,
+                        initializer=f,
+                        isptr=True)
                 )
 
         # at this point all functions exist as Function objects, but have not
@@ -880,3 +981,20 @@ class Compiler:
 
                 # garbage collection
                 f.GC()
+
+
+# Keyword responses outlines the functions that the compiler will use for a given
+# keyword.
+
+keyword_responses = {
+    "unsigned": Compiler.buildUnsigned,
+    "typedef": Compiler.buildTypedef,
+    "extern": Compiler.buildExtern,
+    "cextern": Compiler.buildCextern,
+    "__cdecl": Compiler.buildCdecl,
+    "global": Compiler.buildGlobalfn,
+    "struct": Compiler.buildStruct,
+    "inline": Compiler.buildInlinefn,
+    "function": Compiler.buildNormalfn,
+    "template": Compiler.beginTemplate
+}

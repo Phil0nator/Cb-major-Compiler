@@ -4,6 +4,42 @@ from termcolor import colored
 error_indicator = f"{Fore.RED}{Style.BRIGHT}"
 
 
+def represent_code(token, indicator):
+    # build pretty print error message
+    line = token.start.line + 1
+    file = token.start.file
+    char = token.start.ch
+    diff = token.end.ch - char
+
+    file = config.loadRawFile(file, None)
+
+    # file = file[0:char] + error_indicator + \
+    #    file[char:self.tok.end.ch] + Style.RESET_ALL + file[char + diff:-1]
+
+    lines = file.split("\n")
+    # determine number of characters before error token on given line
+    line -= lines[0] != ""
+    beginchars = lines[line - 1].find(str(token.value))
+
+    lines[line - 1] = lines[line - 1].replace(
+        str(token.value), f"{indicator}{token.value}{Style.RESET_ALL}", 1)
+    lp = ""
+    try:
+        if(len(lines) > 1 and line >= 1):
+            lp += f"\t|{line-1}\t" + lines[line - 2] + "\n"
+        if(line != len(lines) - 1 and len(lines) > 1):
+            lp += f"\t|{line}\t" + lines[line - 1] + "\n"
+    except IndexError:
+        pass
+
+    # highlight problem token
+    problem = lp
+    # add underline
+    problem += f"  \t{indicator}\t{' '*beginchars}^{'~'*(token.end.ch-token.start.ch-1)}{Style.RESET_ALL}"
+    token.start.ch = beginchars + 1
+    return problem, line
+
+
 class Error:
     def __init__(self, tok, message):
         self.tok = tok
@@ -11,40 +47,13 @@ class Error:
 
     def __repr__(self):
 
-        # build pretty print error message
-        line = self.tok.start.line + 1
-        file = self.tok.start.file
-        char = self.tok.start.ch
-        diff = self.tok.end.ch - char
-
-        file = config.loadRawFile(file, None)
-
-        #file = file[0:char] + error_indicator + \
-        #    file[char:self.tok.end.ch] + Style.RESET_ALL + file[char + diff:-1]
-        
-        
-        lines = file.split("\n")
-        # determine number of characters before error token on given line
-        line -= lines[0] != ""
-        beginchars = lines[line-1].find(str(self.tok.value))
-
-        lines[line-1] = lines[line-1].replace(str(self.tok.value), f"{error_indicator}{self.tok.value}{Style.RESET_ALL}", 1)
-        lp = ""
-        try:
-            if(len(lines) > 1 and line >= 1):
-                lp += f"|{line-1}\t" + lines[line-2] + "\n"
-            if(line != len(lines) - 1 and len(lines) > 1):
-                lp += f"|{line}\t" + lines[line-1] + "\n"
-        except IndexError:
-            pass
-        
-        # highlight problem token
-        problem = lp
-        # add underline
-        problem += f"  \t{error_indicator}{' '*beginchars}^{'~'*(self.tok.end.ch-self.tok.start.ch-1)}{Style.RESET_ALL}"
-
-        #return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL} \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL} \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at: \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
+        problem, line = represent_code(self.tok, error_indicator)
+        # return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL}
+        # \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL}
+        # \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at:
+        # \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
         return f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}: {Fore.RED}fatal error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
+
 
 def throw(error):
     print(error)
@@ -326,6 +335,9 @@ class DivisionByZero(Error):
         self.message = f"Cannot divide by zero:"
 
 
+warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
+
+
 class Warning:
     def __init__(self, tok, msg):
         self.msg = msg
@@ -333,11 +345,11 @@ class Warning:
 
     def __repr__(self):
 
-        start = f"{Style.BRIGHT}{Fore.MAGENTA}Warning! :{Style.RESET_ALL}"
+        problem, _ = represent_code(self.tok, warning_indicator)
+        locline = f"{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+        start = f"{Style.BRIGHT}cbm: {locline} {Fore.MAGENTA+Style.BRIGHT}warning: {Style.RESET_ALL}"
 
-        locline = f"{Style.BRIGHT}{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
-
-        return f"{start}{self.msg}{locline}"
+        return f"{start}{self.msg}\n{problem}"
 
 
 class RegisterDeclWarning(Warning):
@@ -349,16 +361,16 @@ class RegisterDeclWarning(Warning):
 class NoReturnStatement(Warning):
     def __init__(self, tok, fn):
         self.tok = tok
-        self.msg = f"No guaranteed return statement in non-void function '{fn.returntype} {fn.name} {fn.parameters}' : "
+        self.msg = f"No guaranteed return statement in non-void function '{fn.pretty_print_err()}'\t: "
 
 
 class UnusedVariable(Warning):
     def __init__(self, tok, var, fn):
         self.tok = tok if tok is not None else fn.tokens[0]
-        self.msg = f"Unused variable (' {var} ') in function {fn}: "
+        self.msg = f"Unused variable (' {var} ') in function '{fn.pretty_print_err()}'\t: "
 
 
 class UnreachableCode(Warning):
     def __init__(self, tok, fn):
         self.tok = tok
-        self.msg = f"Ureachable code starting with ( '{tok}' ) in function {fn}: "
+        self.msg = f"Ureachable code starting with ( '{tok}' ) in function '{fn.pretty_print_err()}'\t: "

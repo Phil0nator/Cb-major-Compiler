@@ -35,21 +35,17 @@ class Lexer:
         self.chidx = 0
         self.size = len(self.raw)
 
-    def advance(self):  # increment the current character
+    def advance(self) -> str:  # increment the current character
 
         self.chidx += 1
-        if(self.chidx < self.size):
-            self.ch = self.raw[self.chidx]
-            self.loc.ch += 1
-            if self.ch == "\n":
-                self.loc.line += 1
-            return self.ch
-        else:
-            throw(UnexepectedEOFError(
-                Token(self.ch, self.ch, self.loc.copy(), self.loc)))
+        self.loc.ch += 1
+        self.ch = self.raw[self.chidx]
+        self.loc.line += self.ch == "\n"
+        return self.ch
 
     # build math operators that use more than one character (max = 3)
-    def buildMultichar(self):
+
+    def buildMultichar(self) -> Token:
         op = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -69,7 +65,7 @@ class Lexer:
 
     # build a number based on digits, . for floats, and e for scientific
     # notation
-    def buildNumber(self):
+    def buildNumber(self) -> Token:
         num = self.ch
         begin = self.loc.copy()
         self.advance()
@@ -103,30 +99,27 @@ class Lexer:
 
         return Token(t, val, begin, self.loc.copy())
 
-    def buildString(self):  # build a string value with escape characters
+    def buildString(self) -> Token:  # build a string value with escape characters
         self.advance()
         begin = self.loc.copy()
         if(self.ch == "\""):
             self.advance()
             return Token(T.T_STRING, "", begin, self.loc.copy())
-        #content = self.ch
-        #ch = self.advance()
 
         end = self.raw.find("\"", self.chidx)
-        
+
         if(end == -1 or end >= len(self.raw)):
             throw(TokenMismatch(Token("\"", "\"", begin, begin)))
         content = self.raw[self.chidx:end]
         self.chidx = end
-        
-        #self.loc.ch   =  self.chidx
-        #self.loc.ch = end
-        #self.loc.line += content.count("\n")
+        # account for multi-line strings
+        newlines = content.count("\n")
+        self.loc.line += newlines - 1 if newlines else 0
 
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
-    def buildIncluder(self):
+    def buildIncluder(self) -> Token:
         self.advance()
         begin = self.loc.copy()
         if(self.ch == ">"):
@@ -144,25 +137,33 @@ class Lexer:
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
-    def buildChar(self):  # build a char token with one char
+    def buildChar(self) -> Token:  # build a char token with one char
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
+        if self.size - self.chidx < 3:
+            throw(
+                UnexepectedEOFError(
+                    Token(
+                        T.T_CHAR,
+                        self.ch,
+                        begin,
+                        self.loc)))
         self.advance()
         self.advance()
         return Token(T.T_CHAR, v, begin, self.loc.copy())
 
     # build unkown identifier. Could be : ID, Keyword, Type, etc...
-    def buildAmbiguous(self):
+    def buildAmbiguous(self) -> Token:
         begin = self.loc.copy()
         self.advance()
         raw = self.raw
         chidx = self.chidx
 
+        # r"\W", flags=re.ASCII
         end = ambiguous_regex.search(raw, chidx).end() - 1
         value = (raw[chidx - 1:end])
         lv = end - (chidx - 1) - 2
-        #lv = len(value) - 2
 
         self.chidx += lv
         self.loc.ch += lv
@@ -175,15 +176,17 @@ class Lexer:
     # main function to get all tokens for a given text file.
     # getDirectives can be set to True by the PreProcessor to only see directives
     # \see PreParser
-    def getTokens(self, getDirectives=False):
+    def getTokens(self, getDirectives=False) -> list:
         tokens = []
         directives = []
         advance = self.advance
+        # a [1] character marks the end of the raw text
         while self.ch != chr(1):
-
+            # newlines, spaces, and indents have no response
             if(self.ch == "\n" or self.ch == " " or self.ch == "\t"):
                 advance()
 
+            # backslash characters
             elif(self.ch == "\\"):
                 tokens.append(
                     Token(
@@ -193,6 +196,7 @@ class Lexer:
                         self.loc.copy()))
                 advance()
 
+            # pre-compiler directives
             elif (self.ch == "#"):
 
                 advance()
@@ -207,7 +211,7 @@ class Lexer:
                         t2 = self.buildIncluder()
                         tokens.append(t2)
 
-
+            # typecasts
             elif(self.ch == "$"):
                 advance()
                 t = self.buildAmbiguous()
@@ -219,12 +223,16 @@ class Lexer:
 
                 tokens.append(t)
 
+            # semicolon
             elif(self.ch == ";"):
                 tokens.append(Token(T.T_ENDL, T.T_ENDL,
                                     self.loc.copy(), self.loc.copy()))
                 advance()
+
             elif(self.ch == "+"):
+
                 tokens.append(self.buildMultichar())
+
             elif(self.ch == "/"):
                 advance()
 
@@ -233,14 +241,30 @@ class Lexer:
                 # single line comments:
                 if(self.ch == "/"):
                     # find and jump to next newline
-                    self.chidx = self.raw.find("\n", self.chidx)-1
+                    self.chidx = self.raw.find("\n", self.chidx) - 1
+                    if self.chidx <= 0:
+                        throw(
+                            UnexepectedEOFError(
+                                Token(
+                                    '',
+                                    '',
+                                    self.loc,
+                                    self.loc)))
                     advance()
 
                 # multiline comments:
                 elif(self.ch == "*"):
                     # find and jump to next instance of '*/' in raw text
                     olchdx = self.chidx
-                    self.chidx = self.raw.find("*/", self.chidx)+1
+                    self.chidx = self.raw.find("*/", self.chidx) + 1
+                    if self.chidx <= 0:
+                        throw(
+                            UnexepectedEOFError(
+                                Token(
+                                    '',
+                                    '',
+                                    self.loc,
+                                    self.loc)))
                     self.loc.ch += self.chidx - olchdx
                     self.loc.line += self.raw.count("\n", olchdx, self.chidx)
                     advance()
@@ -274,9 +298,9 @@ class Lexer:
                 tokens.append(token)
 
             elif (self.ch == "."):
-                
-                if self.raw[self.chidx+1].isdigit():
-                    token=self.buildNumber()
+
+                if self.raw[self.chidx + 1].isdigit():
+                    token = self.buildNumber()
                 else:
                     token = self.buildMultichar()
                 tokens.append(token)
@@ -296,8 +320,6 @@ class Lexer:
             elif (T.isidchar(ord(self.ch))):
                 token = self.buildAmbiguous()
                 tokens.append(token)
-
-            
 
             else:
                 throw(UnkownCharSequence(
