@@ -43,8 +43,8 @@ class Lexer:
         self.loc.line += self.ch == "\n"
         return self.ch
 
-
     # build math operators that use more than one character (max = 3)
+
     def buildMultichar(self) -> Token:
         op = self.ch
         begin = self.loc.copy()
@@ -141,8 +141,14 @@ class Lexer:
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
-        if self.size-self.chidx < 3:
-            throw(UnexepectedEOFError(Token(T.T_CHAR, self.ch, begin, self.loc)))
+        if self.size - self.chidx < 3:
+            throw(
+                UnexepectedEOFError(
+                    Token(
+                        T.T_CHAR,
+                        self.ch,
+                        begin,
+                        self.loc)))
         self.advance()
         self.advance()
         return Token(T.T_CHAR, v, begin, self.loc.copy())
@@ -237,7 +243,13 @@ class Lexer:
                     # find and jump to next newline
                     self.chidx = self.raw.find("\n", self.chidx) - 1
                     if self.chidx <= 0:
-                        throw(UnexepectedEOFError(Token('', '',self.loc, self.loc)))
+                        throw(
+                            UnexepectedEOFError(
+                                Token(
+                                    '',
+                                    '',
+                                    self.loc,
+                                    self.loc)))
                     advance()
 
                 # multiline comments:
@@ -246,7 +258,13 @@ class Lexer:
                     olchdx = self.chidx
                     self.chidx = self.raw.find("*/", self.chidx) + 1
                     if self.chidx <= 0:
-                        throw(UnexepectedEOFError(Token('', '',self.loc, self.loc)))
+                        throw(
+                            UnexepectedEOFError(
+                                Token(
+                                    '',
+                                    '',
+                                    self.loc,
+                                    self.loc)))
                     self.loc.ch += self.chidx - olchdx
                     self.loc.line += self.raw.count("\n", olchdx, self.chidx)
                     advance()

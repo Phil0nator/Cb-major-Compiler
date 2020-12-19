@@ -13,7 +13,10 @@ def link(i, o):
 
     else:
         linktext = f"\"{i}.o\""
-    return f"gcc \"{config.includepath}/macro.c\" {linktext} -g -m64 -fno-pie -no-pie -lm -o \"{o}\""
+
+    debug = "-g" if config.__dbg__ else ""
+
+    return f"gcc \"{config.includepath}/macro.c\" {linktext} {debug} -m64 -fno-pie -no-pie -lm -o \"{o}\""
 
 
 def linkonly(i, o):
@@ -22,4 +25,5 @@ def linkonly(i, o):
 
 
 def assemble(o):
-    return f"nasm -felf64 -g -Fdwarf {o}.asm "
+    debug = "-g" if config.__dbg__ else ""
+    return f"nasm -felf64 {debug} -Fdwarf {o}.asm "

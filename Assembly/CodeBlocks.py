@@ -23,12 +23,8 @@ from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
 
 from globals import canShiftmul
 
-# bitmasks for boolean values
-ensure_boolean = "and al, 1\n"
 
 # check if a value is true
-
-
 def checkTrue(checkval: EC.ExpressionComponent):
     if(checkval.isRegister() and not checkval.type.isflt()):
         return f"test {setSize(checkval.accessor, checkval.type.csize())}, {setSize(checkval.accessor, checkval.type.csize())}\n"
@@ -57,16 +53,13 @@ def extra_parameterlabel(fn, num):
 
 
 # get the code block to allocate a stack frame at the begining of a function
-
-
 def function_allocator(amt):
 
     return """push rbp\nmov rbp, rsp\nsub rsp, %s\n""" % (
         (amt)) if amt > 8 else ""
 
+
 # set a register to zero using the faster 'xor' instruction
-
-
 def zeroize(reg):
     return Instruction("xor", [reg, reg])
 
@@ -76,13 +69,11 @@ def allocate_readonly(value):
 
 
 # make name a label
-
 def label(name):
     return "%s:\n" % name
 
+
 # generate the closing for a function (exit stack frame, and return)
-
-
 def function_closer(name, destructions, fn):
     return """__%s__return:
 %s
@@ -90,10 +81,9 @@ leave
 ret
 """ % (name, destructions) if fn.stackCounter > 8 else f"__{name}__return:\nret\n"
 
+
 # Get the value of a number that is within a set ( a set refers to this
 # notation: { ... , ... , ... })
-
-
 def setValueOf(val, flt, ptr):
 
     if(isinstance(val, float)):
@@ -108,9 +98,8 @@ def setValueOf(val, flt, ptr):
         else:
             return setValueOf(val.accessor.initializer, flt, False)
 
+
 # generate .data code for an intrinsic constant (can be a set)
-
-
 def createIntrinsicConstant(variable):
 
     # if it is a set
@@ -134,9 +123,8 @@ def createIntrinsicConstant(variable):
 # keep string IDS
 stringconstant_counter = 0
 
+
 # create specifically a string literal in .data
-
-
 def createStringConstant(s) -> tuple:
     global stringconstant_counter
     out = []
@@ -150,9 +138,8 @@ def createStringConstant(s) -> tuple:
 # keep float IDs
 floatconstant_counter = 0
 
+
 # create specifically a float literal in .data
-
-
 def createFloatConstant(s):
     global floatconstant_counter
     out = []
@@ -163,15 +150,13 @@ def createFloatConstant(s):
     floatconstant_counter += 1
     return out
 
+
 # create .bss variable
-
-
 def createIntrinsicHeap(variable):
     return "%s: %s\n" % (variable.name, getHeapReserver(variable))
 
+
 # load source (any type) to dest (also any type)
-
-
 def loadToPtr(dest, source):
 
     if(isinstance(dest, EC.ExpressionComponent)):
@@ -189,9 +174,8 @@ def loadToPtr(dest, source):
         return loadToReg(dest, source)
     return loadToReg(f"[{setSize(dest,8)}]", source)
 
+
 # push v to the stack
-
-
 def spush(v: EC.ExpressionComponent):
     if(v.type.isflt()):
         return f"movq {rax}, {v.accessor}\npush {rax}\n"
@@ -199,9 +183,8 @@ def spush(v: EC.ExpressionComponent):
         return f"mov {rax}, {valueOf(v.accessor)}\npush {rax}\n"
     return f"push {v.accessor}\n"
 
+
 # pop from the stack into v
-
-
 def spop(v: EC.ExpressionComponent):
     if(v.type.isflt()):
         return f"pop {rax}\nmovq {valueOf(v.accessor)}, {rax}\n"
@@ -209,12 +192,11 @@ def spop(v: EC.ExpressionComponent):
         return f"pop {rax}\nmov {valueOf(v.accessor)}, {rax}\n"
     return f"pop {v.accessor}\n"
 
+
 # call a function
 # (for regular functions this is as simple as using the 'call' instruction)
 # for inline functions this means recompiling the function, and pasting its
 # raw assembly
-
-
 def fncall(fn):
     global norm_scratch_registers_inuse, sse_scratch_registers_inuse
     fn.references += 1
@@ -245,9 +227,8 @@ def fncall(fn):
 
         return fn.asm
 
+
 # mov variable var into register reg
-
-
 def movVarToReg(reg, var):
     if isfloat(var):
         if isfloat(reg):

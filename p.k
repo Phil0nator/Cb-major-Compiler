@@ -12,13 +12,13 @@ int main(){
 
     
     
-    printf("test123hd: \t %s%i%c%c","test", 123,'h', 'd');
+    benchmark();
     return 0;
 }
 
 
 
-/*
+
 void benchmark(){
 
     
@@ -30,4 +30,4 @@ void benchmark(){
     puts(&nullb);
     
 }
-*/
+

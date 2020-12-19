@@ -320,7 +320,7 @@ class Function:
 
         v.offset = self.stackCounter
         if add_token:
-            v.dtok = self.tokens[self.ctidx+1]
+            v.dtok = self.tokens[self.ctidx + 1]
         # self.stackCounter += v.t.size(0)
         if(v.register is None):
             if v.t.size(0) <= 8:
@@ -349,7 +349,7 @@ class Function:
                 opens -= 1
 
     def addline(self, l):                           # add a line of assembly to raw
-        
+
         self.asm = f"{self.asm}{l}\n"
 
     def addcomment(self, c):                        # add a comment to the assembly
@@ -374,7 +374,7 @@ class Function:
 
     def getFunction(self, fn, types, rettype=None,
                     searchlist=None, loose=True):
-        
+
         # searchlist is by default the global function list
         if searchlist is None:
             searchlist = self.compiler.functions
@@ -387,11 +387,11 @@ class Function:
                 # they are not compatible
                 if(len(f.parameters) != len(types) and not f.variardic):
                     continue
-                
+
                 # handle variardic functions
                 types = types[:len(f.parameters)] if f.variardic else types
                 valid = True
-                
+
                 # ensure functions share types
                 for i in range(len(types)):
                     # check for inequal parameter types
@@ -399,14 +399,14 @@ class Function:
 
                         valid = False
                         break
-                
+
                 # check for equal returntypes (if specified by caller)
                 if rettype is not None and not rettype.__eq__(f.returntype):
                     valid = False
 
                 if(valid):
                     return f
-        
+
         # 'loose' means search with loose typematching.
         # this would mean that the types specified in types could be implicitly
         # casted to the types outlined in the function's parameters.
@@ -414,7 +414,7 @@ class Function:
             for f in searchlist:  # seach others for valid casts
                 if f.name == fn:
                     # for function of the same name
-                    
+
                     lt = len(types)
                     if(len(f.parameters) != lt):
                         continue
@@ -433,7 +433,7 @@ class Function:
 
                     if(valid):
                         return f
-        
+
         # if no function was found, return None
         return None
 
@@ -449,7 +449,6 @@ class Function:
             oldvar = self.popVar()
             if(oldvar.register is not None):
                 rfree(oldvar.register)
-
 
     def checkForId(self):               # check next tokens for ID
 
@@ -471,13 +470,12 @@ class Function:
     # check next tokens for Type, and return it as a DType
 
     def checkForType(self, err=True):
-        
-        
+
         # within checkForType, if err is set to True,
         # an error can be thrown on bad syntax or undefined
-        # types. When err is not set, None is returned in 
+        # types. When err is not set, None is returned in
         # cases where it would normally throw an error.
-        
+
         signed = True
         # check for a sign specifier
         if(self.current_token.tok == T_KEYWORD):
@@ -491,7 +489,7 @@ class Function:
                 throw(ExpectedIdentifier(self.current_token))
             else:
                 return None
-        
+
         # make sure that the type exists
         if(not self.compiler.isType(self.current_token.value)):
             # respond to bad type based on err flag
@@ -519,7 +517,7 @@ class Function:
         while self.current_token.tok == "*":
             ptrdepth += 1
             self.advance()
-        
+
         # update type properties
         t.ptrdepth = ptrdepth
         t.signed = signed
@@ -527,7 +525,7 @@ class Function:
 
     # construct a result for a builtin function
     def buildPredef(self) -> Token:
-        
+
         # requested builtin
         predef = self.current_token.value
 
@@ -558,7 +556,7 @@ class Function:
                 # return as a token
                 return Token(T_INT, dtype.csize(
                 ), starttok.start, starttok.end)
-            
+
             # if so,
             else:
                 self.advance()
@@ -569,7 +567,7 @@ class Function:
         elif (predef == "typeid"):
 
             self.advance()
-            startidx = self.ctidx-2
+            startidx = self.ctidx - 2
             # check if argument is a type
             typeq = self.checkForType(False)
             # if so,
@@ -580,14 +578,14 @@ class Function:
             else:
                 self.ctidx = startidx
                 self.advance()
-                
+
                 # determine argument type
                 typeq = self.determineExpressionType(False)
-            
+
             # fix literal
             if typeq.name == "&LITERAL&":
                 typeq = INT.copy()
-            
+
             # build a string constant based on the id
             constant = createStringConstant(typeq.__repr__())
             self.compiler.constants += constant[0]
@@ -635,16 +633,17 @@ class Function:
                 EC.ExpressionComponent('rdi', self.parentstruct)
             )
             self.regdecls[-1].supposed_value = "this"
-        
+
         # This function's parameters now need to be loaded as variables.
         # The parameters may be given regdecls depending on the contents of this
-        # function, and how much of an improvement that would give. (@see Intraprocedural.py)
+        # function, and how much of an improvement that would give. (@see
+        # Intraprocedural.py)
         for p in self.parameters:
 
             # if the next parameter is an extra parameter (more than 6)
             if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
                 break
-            
+
             # if the compiler has already identified this parameter as dead,
             # add to the register counters and continue to next parameter.
             if self.compileCount and p.referenced == False:
@@ -653,21 +652,22 @@ class Function:
                 else:
                     countn += 1
                 continue
-            
-            
+
             makeParameterRegdecl = (
                 # (1) inline functions will always use regdecls for parameters.
-                # 
+                #
                 # (2) if the intraprocedural optimizer has determined it to be benificial,
                 # the self.implicit_paramregdecl flag will imply that parameters for this function
                 # should be made regdecls.
-                # 
+                #
                 # Certain registers are reserved for use in expressions, and cannot be used as
                 # regdecls for parameters. (Specifically, 'rdx' and 'xmm0')
                 self.inline or self.implicit_paramregdecl and not (
                     (not p.isflt()) and countn == 2) and not(
                     p.isflt() and counts == 0))
+
             if makeParameterRegdecl:
+                # construct a variable that uses a register value
                 if(p.isflt()):
                     p.register = sse_parameter_registers[counts]
                     counts += 1
@@ -677,11 +677,13 @@ class Function:
                 self.regdecls.append(
                     EC.ExpressionComponent(
                         p.register, p.t, token=self.tokens[0]))
+                self.regdecls[-1].supposed_value = p.name
 
             self.addVariable(p, False)
             #p.referenced = False
 
             if not makeParameterRegdecl:
+                # construct a normal variable
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
                 if(p.isflt()):
@@ -704,11 +706,16 @@ class Function:
 
     def createClosing(self):                    # create end of the function
 
+        # for functions that contain a return statement, extra info is needed
+        # at the end of the function.
         if self.containsReturn:
             self.addline(function_closer(
                 self.getCallingLabel(), self.destructor_text, self))
         else:
+            # for functions that do not contain a return, and have no
+            # stack-based variables:
             if self.stackCounter <= 8:
+                # the leave instruction can be ommitted
                 self.addline("ret\n")
             else:
                 self.addline("leave\nret\n")
@@ -1004,17 +1011,7 @@ class Function:
 
     def buildSwitch(self):
         self.advance()
-        #o = LONG.copy()
 
-        # determine datatype
-        # retrace = self.ctidx
-        # p = len(self.asm)
-        # voider = self.evaluateRightsideExpression("AMB", o)
-        # self.asm = self.asm[:p]
-        # self.ctidx = retrace - 1
-        # self.advance()
-
-        # create label marking end of structure
         endlabel = getLogicLabel("SWITCHEND")
 
         self.breaks.append(endlabel)
@@ -1400,10 +1397,6 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(fn.parameters[i].isflt()):
 
-                # inst = (self.evaluateRightsideExpression(EC.ExpressionComponent(
-                #    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token))
-                # )
-
                 result = EC.ExpressionComponent(
                     sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token)
 
@@ -1426,22 +1419,8 @@ class Function:
                 inst, final = self.evaluateExpression()
                 inst += depositFinal(ec, final)
                 rfree(final.accessor)
-
-                #inst = f"{self.evaluateRightsideExpression(ec)}"
-
-                # finalize with mov of correct size
-
-                # if(fn.parameters[i].t.csize() != 8):
-
-                #    inst += (Instruction("mov", [setSize(norm_parameter_registers[normused],
-                # fn.parameters[i].t.csize()), setSize(result,
-                # fn.parameters[i].t.csize())]))
-
-                # inst += (maskset(
-                #    norm_parameter_registers[normused],
-                #    fn.parameters[i].t.csize()))
-                #    rfree(result)
                 normused += 1
+
             paraminst = f"{inst}{paraminst}"
 
             if(self.current_token.tok == ","):
@@ -1875,40 +1854,6 @@ class Function:
             self.advance()
 
         return value.type
-
-    # evaluate the next tokens and return the asm instructions
-    # def evaluateRightsideExpression(self, destination, otyperef=None):
-    #     instructions = ""
-    #     comment = ""
-    #     exprtokens = []
-
-    #     # get tokens, and instructions
-    #     exprtokens, instructions = self.buildExpressionComponents()
-
-    #     # using __repr__()
-    #     comment = exprtokens
-
-    #     # \see Postfixer
-    #     pf = Postfixer(exprtokens, self)
-
-    #     if(config.DO_DEBUG):
-    #         instructions += f";{comment}\n\n"
-
-    #     # \see RightSideEvaluator
-    #     ev = ExpressionEvaluator(self)
-
-    #     # get instructions, and returntype of the now postifixed equation
-    #     ins, ot = ev.evaluate(destination, pf.createPostfix())
-
-    #     instructions += ins
-
-    #     # load returntype properties to the given reference
-    #     if(otyperef is not None):
-    #         otyperef.load(ot)
-
-    #     return instructions
-
-    # evaluate the destination for a rightside expression.
 
     def evaluateLeftsideExpression(self):
         instructions = ""

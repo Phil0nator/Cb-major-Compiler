@@ -3,6 +3,7 @@ from colorama import Fore, Style
 from termcolor import colored
 error_indicator = f"{Fore.RED}{Style.BRIGHT}"
 
+
 def represent_code(token, indicator):
     # build pretty print error message
     line = token.start.line + 1
@@ -35,7 +36,7 @@ def represent_code(token, indicator):
     problem = lp
     # add underline
     problem += f"  \t{indicator}\t{' '*beginchars}^{'~'*(token.end.ch-token.start.ch-1)}{Style.RESET_ALL}"
-    token.start.ch = beginchars+1
+    token.start.ch = beginchars + 1
     return problem, line
 
 
@@ -46,7 +47,6 @@ class Error:
 
     def __repr__(self):
 
-        
         problem, line = represent_code(self.tok, error_indicator)
         # return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL}
         # \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL}
@@ -334,7 +334,10 @@ class DivisionByZero(Error):
         self.tok = tok
         self.message = f"Cannot divide by zero:"
 
+
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
+
+
 class Warning:
     def __init__(self, tok, msg):
         self.msg = msg
