@@ -113,7 +113,6 @@ size_t toBinary(char* buffer, unsigned long val, int bits){
 
 
 function long toStr(double val, char* buffer, long multiplier){
-    buffer--;
     if(isQNaN(val)){
         strcpy(buffer, "QNaN");
         return 4;
@@ -141,13 +140,11 @@ function long toStr(double val, char* buffer, long multiplier){
         l++;
         
     }
-
-
     l += toStr<long>(mantissa, buffer, 1, 10);
     buffer+=l;
-    
     val = (abs(val)-abs(mantissa))*multiplier;
-    long leading = toStr<long>(abs(round(val)), buffer, 1, 10)-1;
+    long decimal = abs(round(val));
+    long leading = toStr<long>(decimal, buffer, 1, 10)-1;
     @buffer = '.';
     buffer++;
     leading = 7-leading;
@@ -158,8 +155,7 @@ function long toStr(double val, char* buffer, long multiplier){
     }
 
 
-    
-    l += toStr<long>(abs(round(val)), buffer, 1, 10);
+    l += toStr<long>(decimal, buffer, 1, 10);
     return l+1;
 
 
@@ -254,7 +250,7 @@ int __sprintf(char* str, char* fmt, void* args){
                 }
                 case FORMAT_STRING {
                     int ssize = strcpy(str-1,args[argc]);
-                    str+=ssize-1;
+                    str+=ssize-2;
                     break;
                 }
                 case FORMAT_BOOL {

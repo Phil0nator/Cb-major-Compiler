@@ -6,5 +6,7 @@
 #define asm(op, a)                      __asm(a){__STRINGIFY__(op, a)}(0)
 #define asm(op)                         __asm{__STRINGIFY__(op)} (0)
 
+#define get_normalreg(dest, reg)     asm(mov, dest, reg)
+#define get_ssereg(dest, reg)        asm(movsd, dest, reg)
 
 #endif

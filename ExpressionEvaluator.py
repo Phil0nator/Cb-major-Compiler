@@ -208,7 +208,7 @@ class ExpressionEvaluator:
         # is the destination a variable...
         vardest = isinstance(a.accessor, Variable)
 
-        if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)) or a.type.isflt() and b.isconstint():
+        if(isinstance(b.accessor, int) and not dwordImmediate(b.accessor)) or (a.type.isflt() and b.isconstint()):
             b.accessor, _, __, qwordinstr = optloadRegs(
                 b, None, "", VOID.copy())
             b.constint = False
@@ -216,10 +216,11 @@ class ExpressionEvaluator:
 
         # is the right side of the equation constant
         constright = b.isconstint() and not a.type.isflt()
-
+        
+        
         # invalid leftside
-        if(a.isRegister() and not a.memory_location):
-            throw(InvalidDestination(a.token))
+        #if(a.isRegister() and not (a.memory_location or a.member_loc)):
+        #    throw(InvalidDestination(a.token))
 
         instrs += bringdown_memloc(b)
         # if the equation can be done in one 'line'
@@ -227,7 +228,9 @@ class ExpressionEvaluator:
 
             # if the destination is a variable, and the rightside is a constant
             if(vardest and constright):
+
                 instrs += f"{cmd} {valueOf(a.accessor)}, {valueOf(b.accessor)}\n"
+
             # if the destination is a variable, and the rightside is not a
             # constant
             elif(vardest):
@@ -305,8 +308,9 @@ class ExpressionEvaluator:
                 #instrs += loadinst
                 # do calculation with implicit cast, and store result in b
                 tmpstack = [None]
+                
                 opinstr = self.compile_aopb(EC.ExpressionComponent(
-                    a.accessor, a.type, token=a.token), op[:-1], b, evaluator, tmpstack)
+                    a.accessor, a.type, token=a.token), op, b, evaluator, tmpstack)
                 b = tmpstack[1]
 
                 # opinstr, _, b = evaluator.performCastAndOperation(
@@ -1184,7 +1188,6 @@ def performCastAndOperation(fn, a, b, op, o):
 
     elif(a.type.__eq__(b.type)):
         # same type
-
         areg, breg, o, ninstr = optloadRegs(a, b, op, o)
         instr += ninstr
         instr += doOperation(a.type, areg, breg, op,
@@ -1217,7 +1220,6 @@ def performCastAndOperation(fn, a, b, op, o):
 
         creg, coreg, __, loadinstr = optloadRegs(caster, castee, "op", o)
         instr += loadinstr
-
         newcoreg = ralloc(caster.type.isflt(), caster.type.csize())
 
         cst = castABD(caster, castee, creg, coreg, newcoreg)
@@ -1232,6 +1234,7 @@ def performCastAndOperation(fn, a, b, op, o):
             tmp = creg
             creg = newcoreg
             newcoreg = tmp
+
         instr += doOperation(caster.type, creg,
                              newcoreg, op, caster.type.signed)
 

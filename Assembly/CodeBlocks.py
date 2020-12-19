@@ -560,7 +560,11 @@ def doOperation(t, areg, breg, op, signed=False):
 def castABD(a, b, areg, breg, newbreg):
 
     if(a.type.isflt() and config.GlobalCompiler.Tequals(b.type.name, "void")) or (b.type.isflt() and config.GlobalCompiler.Tequals(a.type.name, "void")):
-        return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
+        if b.accessor == "pop":
+
+            return loadToReg(newbreg, breg)
+        else:
+            return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
 
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() < b.type.csize()):
@@ -610,6 +614,8 @@ def getOnelineAssignmentOp(a, b, op):
     if isinstance(a.accessor, Variable) and a.accessor.register is not None and \
             isinstance(b.accessor, Variable) and b.accessor.register is not None:
         return cmd, False
+
+    
 
     if(op in ONELINE_ASSIGNMENTS):
         cmd = onelineAssignment(op, a)

@@ -332,6 +332,7 @@ class Compiler:
     # isolate a function and build a Function object
     def buildFunction(self, thisp=False, thispt=None) -> None:
         # track if the function is explicitly inline
+        
         inline = False
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "inline"):

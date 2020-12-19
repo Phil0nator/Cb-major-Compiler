@@ -50,7 +50,8 @@ def product(arr):
 predefs = [
     "typeof",
     "sizeof",
-    "typeid"
+    "typeid",
+    "__isflt"
 ]
 
 
@@ -598,8 +599,13 @@ class Function:
                     initializer=typeq.__repr__()))
             # return the string as a token
             return Token(T_ID, constant[1], starttok.start, starttok.end)
+        elif predef == "__isflt":
 
-    
+            self.advance()
+            typeq = self.checkForType()
+            self.advance()
+            return Token(T_INT, int(typeq.isflt()), starttok.start, self.current_token.end)
+
 
     def loadVariardicParameters(self, countn, counts):
         
@@ -607,20 +613,20 @@ class Function:
         self.stackCounter = 8
         nosse = getLogicLabel('NOSSE')
         sseloadinst = f"test al, al\njz {nosse}\n"
-        for i in reversed(range(len(norm_parameter_registers[countn:]) + len(sse_parameter_registers[counts:]))):
-            
-            if i < len(norm_parameter_registers[countn:]):
-                regn = norm_parameter_registers[i]
-                var = Variable(VOID.copy(), f'~variardic~{regn}')
-                self.stackCounter += 8
-                var.offset = self.stackCounter
-                self.addline(movRegToVar(var.offset, regn))
-            if i < len(sse_parameter_registers[counts:]):
-                regs = sse_parameter_registers[i]
-                var = Variable(VOID.copy(), f"~variardic~{regs}")
-                self.stackCounter += 8
-                var.offset = self.stackCounter
-                sseloadinst+=(movRegToVar(var.offset,regs)+"\n")
+        
+        #for i in reversed(range(len(norm_parameter_registers[countn:]) + len(sse_parameter_registers[counts:]))):
+        #    
+        #    if i < len(norm_parameter_registers[countn:]):
+        for regn in reversed(norm_parameter_registers[countn:]):
+            var = Variable(VOID.copy(), f'~variardic~{regn}')
+            self.stackCounter += 8
+            var.offset = self.stackCounter
+            self.addline(movRegToVar(var.offset, regn))
+        for regs in reversed(sse_parameter_registers[counts:]):
+            var = Variable(VOID.copy(), f"~variardic~{regs}")
+            self.stackCounter += 8
+            var.offset = self.stackCounter
+            sseloadinst+=(movRegToVar(var.offset,regs)+"\n")
         self.addline(sseloadinst)
         self.addline(f"{nosse}:")
 
@@ -1376,7 +1382,7 @@ class Function:
         word = self.current_token.value
         # check available response
         if word in function_keyword_responses:
-            # execute response
+            # execute response            
             function_keyword_responses[word](self)
         else:
             # no response available, throw error
@@ -1414,27 +1420,32 @@ class Function:
         pass
 
     # load the parameters to call a function
-    def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False):
+    def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False, types=None):
         paraminst = ""
         # when parameters are being loaded it signifies that a function has been called,
         # so the counter needs to be incremented
         self.fncalls += 1
 
+        if fn.variardic:
+            parameters = fn.parameters + [Variable(t, "~empty~") for t in types[len(fn.parameters):]]
+        else:
+            parameters = fn.parameters
+        pcount = len(parameters)
         rng = range(1, pcount) if offset else range(pcount)
 
         # for each parameter
         for i in rng:
 
             # check for extra parameters
-            if(i >= pcount - fn.extra_params):
+            if(i >= pcount - fn.extra_params) and not fn.variardic:
 
                 break
 
             # if the parameter is a float, load to SSE register
-            if(fn.parameters[i].isflt()):
+            if(parameters[i].isflt()):
 
                 result = EC.ExpressionComponent(
-                    sse_parameter_registers[sseused], fn.parameters[i].t.copy(), token=self.current_token)
+                    sse_parameter_registers[sseused], parameters[i].t.copy(), token=self.current_token)
 
                 inst, final = self.evaluateExpression()
                 inst += depositFinal(result, final)
@@ -1447,10 +1458,10 @@ class Function:
 
                 result = setSize(
                     norm_parameter_registers[normused],
-                    fn.parameters[i].t.csize())
+                    parameters[i].t.csize())
 
                 ec = EC.ExpressionComponent(
-                    result, fn.parameters[i].t.copy(), token=self.current_token)
+                    result, parameters[i].t.copy(), token=self.current_token)
                 # build main instructions
                 inst, final = self.evaluateExpression()
                 inst += depositFinal(ec, final)
@@ -1471,7 +1482,7 @@ class Function:
             # memory location
 
             result = EC.ExpressionComponent(
-                "rax", fn.parameters[-epcounter].t.copy(), token=self.current_token)
+                "rax", parameters[-epcounter].t.copy(), token=self.current_token)
 
             newinst, final = self.evaluateExpression()
             paraminst += newinst + depositFinal(result, final)
@@ -1483,7 +1494,6 @@ class Function:
             if(self.current_token.tok == ","):
                 self.advance()
             epcounter -= 1
-
 
 
         return paraminst
@@ -1594,7 +1604,7 @@ class Function:
         normused = 0
 
         # load parameters
-        paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount)
+        paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount, types=types)
         # save regdecls
         reginst = (self.pushregs())
         # reverse order of instructions:
@@ -1657,7 +1667,8 @@ class Function:
             sseused,
             normused,
             pcount,
-            True)
+            True,
+            False)
 
         # save regdecls
         self.addline(self.pushregs())
@@ -2015,6 +2026,7 @@ class Function:
         return var
 
     def buildDeclaration(self, register=False):                     # declare new var
+        
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):
             self.buildRegdecl()
             return
@@ -2042,7 +2054,6 @@ class Function:
 
         # build a variable
         var = self.constructVar(t, name, register)
-
         # if the variable is a stack-based structure,
         #   add its member variables too.
         if(not var.isptr and var.t.members is not None):
