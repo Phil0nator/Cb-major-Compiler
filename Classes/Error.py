@@ -335,6 +335,12 @@ class DivisionByZero(Error):
         self.message = f"Cannot divide by zero:"
 
 
+class MultipleReturnTypes(Error):
+    def __init__(self, tok, a, b):
+        self.tok = tok
+        self.message = f"Multiple return types ('{a}', '{b}') found in auto-return function:"
+
+
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 
 

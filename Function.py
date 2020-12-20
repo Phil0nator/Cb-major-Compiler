@@ -65,7 +65,8 @@ predefs = [
 #####################################################
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
-                 tokens, inline=False, extern=False, compileCount=0, memberfn=False, parentstruct=None):
+                 tokens, inline=False, extern=False, compileCount=0, memberfn=False, 
+                 parentstruct=None, return_auto=False):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -163,6 +164,11 @@ class Function:
         # the above information is set externally by the compiler class
 
         # monitoring:
+
+        # Functions declared with the auto keyword as their type will have to determine
+        # their own returntype. This flag specifies that a function is declared with auto.
+        self.return_auto = return_auto
+
 
         # hasReturned keeps track of if a function has made a guarenteed return.
         # A guarenteed return is one not inside any other control structure, and that
@@ -753,6 +759,9 @@ class Function:
 
     def createClosing(self):                    # create end of the function
 
+        if self.destructor_text != "":
+            self.destructor_text = f"push rax\n{self.destructor_text}\npop rax\n"
+
         # for functions that contain a return statement, extra info is needed
         # at the end of the function.
         if self.containsReturn:
@@ -768,6 +777,7 @@ class Function:
                 self.addline("leave\nret\n")
 
     def buildReturnStatement(self):             # build a return statement
+        first_tok = self.current_token
         self.advance()
         # set flag
         # see declarations
@@ -779,6 +789,14 @@ class Function:
         if(self.current_token.tok != T_ENDL):
 
             instr, val = self.evaluateExpression()
+            
+            if self.return_auto:
+                if self.returntype.name == "auto":
+                    self.returntype = val.type.copy()
+                elif not typematch(self.returntype, val.type):
+                    throw(MultipleReturnTypes(first_tok, self.returntype, val.type))
+
+            
             oreg = sse_return_register if self.returntype.isflt() else setSize(
                 norm_return_register,
                 self.returntype.csize()
@@ -1998,13 +2016,14 @@ class Function:
             return ""
         call_label = functionlabel(var.t.destructor)
         if(var.t.ptrdepth > 0):
-            params = Instruction("mov", [rdi, valueOf(var)])
+           params = Instruction("mov", [rdi, valueOf(var)])
         else:
-            params = Instruction(
-                "lea", [
-                    rdi, f"[rbp-{var.offset+var.t.csize()}]"])
+           params = Instruction(
+               "lea", [
+                   rdi, f"[rbp-{var.offset+var.t.csize()}]"])
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
+
 
     def buildStackStructure(self, var, starter="", startoffset=0):
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
@@ -2084,9 +2103,14 @@ class Function:
 
         # if it is a stack-based structure, and it has a destructor
         #      add it's destructor to the end of the function
-        if(not isIntrinsic(var.t.name) and var.t.destructor is not None):
+        if(not isIntrinsic(var.t.name)):
+            if (var.t.destructor is not None):
+                self.destructor_text += self.createDestructor(var)
 
-            self.destructor_text += self.createDestructor(var)
+            if (self.current_token.tok == T_OPENP):
+                self.ctidx-=2
+                self.memberCall(var.t.constructor, var)
+
 
         # check for stack based array declaration
         while self.current_token.tok == "[":

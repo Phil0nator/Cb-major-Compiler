@@ -1,23 +1,26 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-template<typename T>
-void print(T x){
+template <typename T>
+struct unique_ptr{
 
-    if(__isflt(T)){
-        printf("%f\n", x);
-    }else{
-        printf("%l\n", x);
+    T* raw;
+
+    unique_ptr(T* data){
+        raw=data;
     }
-}
 
+    ~unique_ptr(){
+        free(raw);
+    }
 
+};
 
 
 int main(int argc){
 
-    print<long>(2.5);
-    //benchmark();
+    
+
     return 0;
 }
 

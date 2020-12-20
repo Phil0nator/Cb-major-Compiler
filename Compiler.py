@@ -330,16 +330,31 @@ class Compiler:
         self.checkSemi()
 
     # isolate a function and build a Function object
-    def buildFunction(self, thisp=False, thispt=None) -> None:
+    def buildFunction(self, thisp=False, thispt=None, constructor=False, destructor=False) -> None:
         # track if the function is explicitly inline
         
         inline = False
-        if(self.current_token.tok == T_KEYWORD):
-            if(self.current_token.value == "inline"):
-                inline = True
+        autodecl = False
+        if not constructor and not destructor:
+            if(self.current_token.tok == T_KEYWORD):
+                if(self.current_token.value == "inline"):
+                    inline = True
 
-        # check for a returntype
-        rettype = self.checkType()
+            if self.current_token.tok == T_KEYWORD and self.current_token.value == "auto":
+                # handle a function defined with auto
+                autodecl = True
+                rettype = DType("auto", 8)
+                self.advance()
+            
+            else:
+                # check for a returntype
+                rettype = self.checkType()
+
+        else:
+            assert thisp
+            rettype = VOID.copy()
+
+
 
         # parent structure
         struct = None
@@ -420,7 +435,7 @@ class Compiler:
         if(self.current_token.tok == T_ENDL):
             self.advance()
             # create empty function for assignment later
-            f = Function(name, parameters, rettype, self, [])
+            f = Function(name, parameters, rettype, self, [], return_auto=autodecl)
             self.globals.append(
                 Variable(
                     f.returntype.up(),
@@ -453,7 +468,26 @@ class Compiler:
 
         # construct final object
         f = Function(name, parameters, rettype, self,
-                     self.currentTokens[start:self.ctidx])
+                    self.currentTokens[start:self.ctidx], return_auto=autodecl)
+
+        # pre-compile f to determine it's returntype
+        if f.return_auto:
+            # track warning settings
+            ogwarn = config.__nowarn__
+            config.__nowarn__ = True
+            # compile f before other functions
+            f.compile()
+            # restore warning settings
+            config.__nowarn__ = ogwarn
+            # check if there was a return,
+            if f.returntype.name == "auto":
+                # if not, the default type is void
+                f.returntype = VOID.copy()
+            f.isCompiled = False
+
+            rettype = f.returntype
+
+
 
         # setup member fn
         if thisp:
@@ -658,6 +692,11 @@ class Compiler:
         struct.s = 0
         struct.name += ''.join([t.name for t in types])
 
+        if struct.constructor is not None:
+            struct.constructor = self.buildTemplateFunction(struct.constructor, tns, types)
+        if struct.destructor is not None:
+            struct.destructor = self.buildTemplateFunction(struct.destructor, tns, types)
+
         for member in struct.members:
 
             # if template has effect:
@@ -676,7 +715,7 @@ class Compiler:
 
             # apply offset, and overall size
             member.offset = struct.s
-            struct.s += member.t.s
+            struct.s += member.t.csize()
         self.template_cache.append([template, types, struct])
         return struct.copy()
 
@@ -915,6 +954,11 @@ class Compiler:
         self.advance()
         self.buildFunction(thisp=thisp, thispt=thispt)
 
+
+    def buildAutofn(self, thisp=False, thispt=None) -> None:
+        self.buildFunction(thisp=thisp, thispt=thispt)
+
+
     def beginTemplate(self, thisp=False, thispt=None) -> None:
         self.advance()
         self.buildTemplate()
@@ -1005,5 +1049,6 @@ keyword_responses = {
     "struct": Compiler.buildStruct,
     "inline": Compiler.buildInlinefn,
     "function": Compiler.buildNormalfn,
-    "template": Compiler.beginTemplate
+    "template": Compiler.beginTemplate,
+    "auto":     Compiler.buildAutofn
 }
