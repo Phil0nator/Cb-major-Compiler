@@ -10,6 +10,7 @@ from Assembly.Registers import (norm_parameter_registers,
                                 sse_scratch_registers,
                                 sse_scratch_registers_inuse)
 from Classes.Constexpr import buildConstantSet, determineConstexpr
+import Classes.ExpressionComponent as EC
 from Classes.DType import DType, type_precedence
 from Classes.Error import *
 from Classes.Location import Location
@@ -17,7 +18,7 @@ from Classes.Token import *
 from Classes.Token import Token
 from Classes.Variable import Variable
 from Function import Function
-from globals import BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID
+from globals import BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID, OPERATORS
 from Lexer import Lexer
 from Structure import Structure
 
@@ -148,7 +149,7 @@ class Compiler:
 
     def getType(self, qu: str) -> DType:               # get type of name q
         q: str = f"{qu}"  # copy of querry
-        pd: PointerDepth = q.count(".")   # pointer depth
+        pd = q.count(".")   # pointer depth
         q = q.replace(".", "")            # remove points from name for search
 
         # search types for a datatype that shares a name with the querry
@@ -166,7 +167,7 @@ class Compiler:
         # loop through layer of decorator (' <int, double ... > '  )
         while self.current_token.tok != ">":
             self.advance()
-            t: Dtype = self.checkType()
+            t: DType = self.checkType()
             types.append(t)
         return types
 
@@ -335,25 +336,43 @@ class Compiler:
         
         inline = False
         autodecl = False
+        operator = False
+
+        # constructor and destructor as special flags set by the Structure class
+        # for compiling constructors and destructors
         if not constructor and not destructor:
+            # under normal conditions:
+            
+
+            # check for extra info specifier
             if(self.current_token.tok == T_KEYWORD):
+                # inline specifier
                 if(self.current_token.value == "inline"):
                     inline = True
-
+                
+                
+            # Check for auto specifier
             if self.current_token.tok == T_KEYWORD and self.current_token.value == "auto":
                 # handle a function defined with auto
                 autodecl = True
                 rettype = DType("auto", 8)
                 self.advance()
             
+            # normal returntype:
             else:
                 # check for a returntype
                 rettype = self.checkType()
 
+        # if this is a destructor or constructor:
         else:
             assert thisp
             rettype = VOID.copy()
 
+        # operator specifier
+        if(self.current_token.value == "operator"):
+            inline = True
+            operator = True
+            self.advance()
 
 
         # parent structure
@@ -378,8 +397,18 @@ class Compiler:
             # self.advance()
             self.advance()
 
-        # get fnname
-        name = self.checkId()
+
+        if not operator:
+            # get fnname
+            name = self.checkId()
+        
+        else:
+
+            name = self.current_token.value
+            if name not in OPERATORS:
+                throw(UnkownOperator(name))
+            
+            self.advance()
 
         # ensure syntax
         if(self.current_token.tok != T_OPENP):

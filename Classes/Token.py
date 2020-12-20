@@ -135,6 +135,7 @@ KEYWORDS = [
     "typename",
     "auto",
     "constexpr",
+    "operator",
 
     "for",
     "while",

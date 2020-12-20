@@ -340,6 +340,16 @@ class MultipleReturnTypes(Error):
         self.tok = tok
         self.message = f"Multiple return types ('{a}', '{b}') found in auto-return function:"
 
+class UnkownOperator(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unkown operator (' {tok.value} '):"
+
+class TooManyOperatorArgs(Error):
+    def __init__(self, tok, op):
+        self.tok = tok
+        self.message = f"Too many parameters provided for overload of operator (' {op} '):"
+
 
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 

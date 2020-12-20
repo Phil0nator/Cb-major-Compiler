@@ -9,7 +9,7 @@ from Classes.Error import *
 
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0,
-                 signed=True, destructor=None, constructor=None, stackarr=False):
+                 signed=True, destructor=None, constructor=None, stackarr=False, operators={}):
         self.name = name
         self.s = size  # base size if not pointer
         self.members = members  # for structures
@@ -19,6 +19,7 @@ class DType:
         self.destructor = destructor  # only for structures
         self.constructor = constructor  # only for structures
         self.stackarr = stackarr        # is stack-based array
+        self.operators = operators
 
     def size(self, depth):  # determine the size at a given pointer depth
         if(depth < self.ptrdepth):
@@ -49,11 +50,11 @@ class DType:
 
     def load(self, other):  # accept properties of another DType object
         self.__init__(other.name, other.s, other.members.copy() if other.members is not None else None, other.ptrdepth,
-                      other.signed, other.destructor, other.constructor)
+                      other.signed, other.destructor, other.constructor, other.operators.copy())
 
     def copy(self):  # duplicate
         return DType(self.name, self.s, members=(self.members.copy()) if self.members is not None else None, ptrdepth=self.ptrdepth,
-                     signed=self.signed, constructor=self.constructor, destructor=self.destructor)
+                     signed=self.signed, constructor=self.constructor, destructor=self.destructor, operators=self.operators.copy())
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
         return config.GlobalCompiler.Tequals(

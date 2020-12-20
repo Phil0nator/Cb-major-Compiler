@@ -2,24 +2,28 @@
 #include "cblib.cb"
 
 template <typename T>
-struct unique_ptr{
+struct Twoer{
 
-    T* raw;
+    T value;
 
-    unique_ptr(T* data){
-        raw=data;
+    Twoer(T v){
+        value = v;
     }
 
-    ~unique_ptr(){
-        free(raw);
+    function T operator+(T a){
+        return value += a;
     }
+
+    ~Twoer(){}
+
 
 };
 
 
 int main(int argc){
 
-    
+    Twoer<double> x(2.5);
+    x+5;
 
     return 0;
 }

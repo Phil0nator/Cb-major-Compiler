@@ -4,7 +4,7 @@ from Classes.Constexpr import determineConstexpr
 from Classes.Error import *
 from Classes.Token import *
 from Function import Function
-from globals import VOID
+from globals import VOID, OPERATORS
 
 ####################################
 #
@@ -143,19 +143,37 @@ class Structure:
         else:
             pass
             # undefined behavior
+    def buildOperator(self, f, t1):
+
+        if len(f.parameters)> 2:
+            throw(TooManyOperatorArgs(t1, f.name))
+        
+        if f.name not in self.prototypeType.operators:
+            self.prototypeType.operators[f.name] = [f]
+        else:
+            self.prototypeType.operators[f.name].append(f) 
+
+        f.name = f"operator{OPERATORS.index(f.name)}"
 
 
 
     def buildMemberfn(self):
+        tok = self.current_token
         lf = len(self.compiler.functions)
         self.compiler.compileLine(thisp=True, thispt=self.prototypeType)
         self.compiler.ctidx -= 1
         self.update()
         if(len(self.compiler.functions) - lf > 0):
             f = self.compiler.functions[-1]
-            self.compiler.possible_members.append(f.name)
-            self.prototypeType.members.append(
-                Variable(f.returntype.up(), f.name, initializer=f))
+            
+            if f.name in OPERATORS:
+                
+                self.buildOperator(f, tok)
+
+            else:
+                self.compiler.possible_members.append(f.name)
+                self.prototypeType.members.append(
+                    Variable(f.returntype.up(), f.name, initializer=f))
 
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()

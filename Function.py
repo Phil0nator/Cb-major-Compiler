@@ -2110,7 +2110,7 @@ class Function:
             if (self.current_token.tok == T_OPENP):
                 self.ctidx-=2
                 self.memberCall(var.t.constructor, var)
-
+                self.addline("pop rax")
 
         # check for stack based array declaration
         while self.current_token.tok == "[":
