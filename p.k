@@ -1,12 +1,23 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
+template<typename T>
+void print(T x){
+
+    if(__isflt(T)){
+        printf("%f\n", x);
+    }else{
+        printf("l\n", x);
+    }
+}
+
 
 
 
 int main(int argc){
 
-    benchmark();
+    print<double>(2.5);
+    //benchmark();
     return 0;
 }
 

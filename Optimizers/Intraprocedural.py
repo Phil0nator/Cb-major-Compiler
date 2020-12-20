@@ -45,7 +45,7 @@ class IntraproceduralOptimizer:
             config.__nowarn__ = og
             self.fn.asm = newfunc.asm
 
-        pfinal = Peephole()
-        pfinal.addline(self.fn.asm)
-
-        self.fn.asm = pfinal.get()
+        if not self.fn.contains_rawasm:
+            pfinal = Peephole()
+            pfinal.addline(self.fn.asm)
+            self.fn.asm = pfinal.get()

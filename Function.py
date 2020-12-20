@@ -341,13 +341,10 @@ class Function:
     #
     def skipBody(self):
         self.advance()
-        opens = 1
-        while(opens != 0):
-            self.advance()
-            if(self.current_token.tok == T_OPENSCOPE):
-                opens += 1
-            elif(self.current_token.tok == T_CLSSCOPE):
-                opens -= 1
+        restore = len(self.asm)
+        self.compileBodyScope()
+        self.asm = self.asm[:restore]
+        
 
     def addline(self, l):                           # add a line of assembly to raw
 
