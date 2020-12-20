@@ -7,7 +7,7 @@ void print(T x){
     if(__isflt(T)){
         printf("%f\n", x);
     }else{
-        printf("l\n", x);
+        printf("%l\n", x);
     }
 }
 
@@ -16,7 +16,7 @@ void print(T x){
 
 int main(int argc){
 
-    print<double>(2.5);
+    print<long>(2.5);
     //benchmark();
     return 0;
 }

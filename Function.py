@@ -340,11 +340,19 @@ class Function:
     # body is skipped.
     #
     def skipBody(self):
+        #self.advance()
+        #restore = len(self.asm)
+        #self.compileBodyScope()
+        #self.asm = self.asm[:restore]
         self.advance()
-        restore = len(self.asm)
-        self.compileBodyScope()
-        self.asm = self.asm[:restore]
-        
+        opens = 1
+        while(opens != 0):
+            self.advance()
+            if(self.current_token.tok == T_OPENSCOPE):
+                opens += 1
+            elif(self.current_token.tok == T_CLSSCOPE):
+                opens -= 1
+
 
     def addline(self, l):                           # add a line of assembly to raw
 
@@ -816,8 +824,17 @@ class Function:
 
         self.continues.append(postlabel)
 
+        guarentee_if = resultant.isconstint() and resultant.accessor != 0
+        guarentee_else = resultant.isconstint() and resultant.accessor == 0
+        if guarentee_if:
+
+            self.checkTok(T_OPENSCOPE)
+            self.compileBodyScope()
+            guarentee_else = False
+
+        
         # check if the resultant will always evaluate to false
-        if(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
+        elif(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
 
             preInstructions += f"{checkTrue(resultant)}jz {postlabel}\n"
 
@@ -829,36 +846,42 @@ class Function:
             self.addline(f"jmp {jmpafter}")
             self.advance()
 
-            # check for else
-            if(self.current_token.tok == T_KEYWORD):
-
-                if(self.current_token.value == "else"):
-
-                    self.addline(postlabel + ":\n")
-                    self.advance()
-                    if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
-                        self.buildIfStatement()
-                    elif(self.current_token.tok == T_OPENSCOPE):
-                        self.advance()
-                        self.compileBodyScope()
-                        if(self.current_token.tok == T_CLSSCOPE):
-                            self.advance()
-                    else:
-                        throw(ExpectedToken(self.current_token, "{"))
-
-                    self.addline(jmpafter + ":\n")
-
-                else:
-                    self.addline(postlabel + ":\n")
-                    self.addline(jmpafter + ":\n")
-            else:
-                self.addline(postlabel + ":\n")
-                self.addline(jmpafter + ":\n")
-
         else:
             # the following is executed in an instance like this:
             # if(false) { ... }
             self.skipBody()
+            self.advance()
+        
+        # check for else
+        if(self.current_token.tok == T_KEYWORD):
+
+            if(self.current_token.value == "else"):
+
+                self.addline(postlabel + ":\n")
+                self.advance()
+                if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
+                
+                    self.buildIfStatement()
+                    guarentee_else = False
+                elif(self.current_token.tok == T_OPENSCOPE):
+                
+                    self.advance()
+                    self.compileBodyScope()
+                
+                    if(self.current_token.tok == T_CLSSCOPE):
+                        self.advance()
+                
+                else:
+                    throw(ExpectedToken(self.current_token, "{"))
+
+                self.addline(jmpafter + ":\n")
+
+            else:
+                self.addline(postlabel + ":\n")
+                self.addline(jmpafter + ":\n")
+        else:
+            self.addline(postlabel + ":\n")
+            self.addline(jmpafter + ":\n")
 
         self.continues.pop()
 

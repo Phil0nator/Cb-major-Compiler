@@ -684,7 +684,8 @@ class Compiler:
     def buildTemplateFunction(self, templatefn, tns, types):
         # restore the types if necessary
         restore_types = len(self.types)
-        restore_tdefs = len(self.types)
+        restore_tdefs = len(self.tdefs)
+        restore_tdefhash = self.tdef_hash.copy()
 
         # create semi-copy function
         fn = Function(
@@ -728,6 +729,10 @@ class Compiler:
                 temptype.name = tns[i]
                 self.types.append(temptype)
                 self.tdefs.append((types[i], temptype))
+                if types[i].name in self.tdef_hash:
+                    self.tdef_hash[types[i].name].append(temptype.name)
+                else:
+                    self.tdef_hash[types[i].name] = [temptype.name]
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
@@ -745,6 +750,9 @@ class Compiler:
         # restore types if necessary
         self.types = self.types[:restore_types]
         self.tdefs = self.tdefs[:restore_tdefs]
+        self.tdef_hash = restore_tdefhash
+        
+        
         return fn
 
     # unsigned keyword is always followed by a normal variable
