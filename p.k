@@ -5,9 +5,6 @@
 
 int main(int argc){
 
-    char* test = malloc(123);
-    free(test);
-
 
     return argc;
 }

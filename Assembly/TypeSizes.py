@@ -103,4 +103,7 @@ def maskset(reg, size):
 
 
 def dwordImmediate(number):
-    return number < INTMAX if isinstance(number, int) else 0
+    return abs(number) < INTMAX if isinstance(number, int) else 0
+
+
+

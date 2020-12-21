@@ -4720,19 +4720,7 @@ _void_thread_join_pthread_t.:
 	leave
 	ret
 main:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 24
-	mov [rbp-8], rdi
-	mov rdi, 123
-	call _void._malloc_psize_t
-	mov r10, rax
-	mov qword[rbp-16], r10
-	mov rdi, qword[rbp-16]
-	call _void_free_pvoid.
-	mov ebx, dword[rbp-8]
-	mov eax, ebx
+	mov eax, edi
 __main__return:
-	leave
 	ret
 	

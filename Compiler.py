@@ -66,6 +66,16 @@ class Compiler:
         self.template_types: list = []        # templated types
         self.template_cache: list = []        # already filled templates for speed
 
+
+        # Store enums:
+        # format: {
+        # 
+        #   "<Enum Item Name>" : (DType, value: int)
+        # 
+        # }
+        self.enums: dict    = {}              # all enums
+
+
         # typedefs listed as (old, new):(DType,DType)
         self.tdefs: list = []
         # a hash table for faster access to typedefs
@@ -582,6 +592,9 @@ class Compiler:
             self.advance()
             self.checkSemi()
             self.types.pop()
+
+    def buildEnum(self, thisp=False, thispt=None) -> None:
+        pass
 
 
     def compile(self, ftup: list) -> None:            # main function to perform Compiler tasks
@@ -1127,5 +1140,6 @@ keyword_responses = {
     "inline": Compiler.buildInlinefn,
     "function": Compiler.buildNormalfn,
     "template": Compiler.beginTemplate,
-    "auto":     Compiler.buildAutofn
+    "auto":     Compiler.buildAutofn,
+    "enum":     Compiler.buildEnum
 }
