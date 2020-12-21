@@ -162,7 +162,7 @@ def loadRawFile(path, token):
             pass
 
     if(rawdata is None):
-        E.throw(E.FileNotFound(token, path))
+        E.fatalThrow(E.FileNotFound(token, path))
     return rawdata
 
 

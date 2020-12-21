@@ -40,24 +40,29 @@ def represent_code(token, indicator):
     return problem, line
 
 
-class Error:
+class Error(BaseException):
     def __init__(self, tok, message):
         self.tok = tok
         self.message = message
 
-    def __repr__(self):
+    def __repr__(self, fatal=False):
 
         problem, line = represent_code(self.tok, error_indicator)
         # return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL}
         # \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL}
         # \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at:
         # \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
-        return f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}: {Fore.RED}fatal error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
+        return f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}:{Fore.RED}{' fatal' if fatal else ''} error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
 
 
 def throw(error):
-    print(error)
-    #config.GlobalCompiler.panicmode = True
+    config.GlobalCompiler.panicmode = True
+    raise(error)
+    #exit(1)
+
+def fatalThrow(error):
+    print(error.__repr__(True))
+    print("Compilation terminated.")
     exit(1)
 
 

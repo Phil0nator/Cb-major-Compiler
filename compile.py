@@ -55,6 +55,7 @@ from Lexer import Lexer
 from PreParser import PreProcessor
 from Compiler import Compiler
 from Linker import *
+from Classes.Error import Error, fatalThrow
 
 
 def asm_labelRepl(match):
@@ -91,19 +92,17 @@ def main():
     c = Compiler()
     config.GlobalCompiler = c
 
-    c.compile(totals)
+    try:
+        c.compile(totals)
+    except Error as e:
+        fatalThrow(e)
 
     # function compilation
-    try:
-        c.finalize()
-    except AttributeError as e:
-        traceback.print_tb(e.__traceback__)
-        print(e)
-        print(c.currentfunction.current_token.start)
-        exit(1)
+    c.finalize()
+    
 
     if(c.panicmode):
-        print("Could not finish compilation due to errors.")
+        print("Compilation terminated due to errors.")
         exit(1)
 
     # feed to template

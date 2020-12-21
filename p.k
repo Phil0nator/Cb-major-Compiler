@@ -1,36 +1,33 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-template <typename T>
 struct Twoer{
 
-    T value;
+    int a = NULL;
 
-    Twoer(T v){
-        value = v;
+    Twoer(int starter){
+        a=starter;
     }
 
-    function T operator+(T a){
-        return value += a;
+    function int operator+(int other){
+        return a += other+other;
     }
 
-    ~Twoer(){}
-
+    function operator int(){
+        return a;
+    }
 
 };
 
-
 int main(int argc){
 
-    Twoer<double> x(2.5);
-    x+5;
+    Twoer bruh;
 
     return 0;
 }
 
 
-
-
+/*
 void benchmark(){
 
     
@@ -43,3 +40,4 @@ void benchmark(){
     
 }
 
+*/

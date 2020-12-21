@@ -130,6 +130,17 @@ class Compiler:
         except BaseException:
             throw(UnexepectedEOFError(self.current_token))
 
+
+    def skipBody(self):
+        self.advance()
+        opens = 1
+        while(opens != 0):
+            self.advance()
+            if(self.current_token.tok == T_OPENSCOPE):
+                opens += 1
+            elif(self.current_token.tok == T_CLSSCOPE):
+                opens -= 1
+
     # determine DType equality (including typedefs)
     def Tequals(self, ta: str, tb: str) -> bool:
         # if given names are equal, the types must be
@@ -562,7 +573,16 @@ class Compiler:
         # \see Structure
         # structure wrapper
         parser = Structure(self)
-        parser.construct()
+
+        try:
+            parser.construct()
+        except Error as e:
+            print(e.__repr__())
+            self.skipBody()
+            self.advance()
+            self.checkSemi()
+            self.types.pop()
+
 
     def compile(self, ftup: list) -> None:            # main function to perform Compiler tasks
         self.currentTokens = ftup
@@ -1049,7 +1069,18 @@ class Compiler:
             if not f.inline and not f.isTemplate:
 
                 self.currentfunction = f
-                f.compile()
+                
+                # catch errors to continue compilation
+                try:
+                
+                    f.compile()
+                
+                except Error as e:
+                    # assuming the error is non fatal:
+                    print(e.__repr__())
+                    continue
+
+                
                 if(True in norm_scratch_registers_inuse or True in sse_scratch_registers_inuse):
                     print(
                         f"Warning:\n\tRegister leak of degree {norm_scratch_registers_inuse.count(True)+sse_scratch_registers_inuse.count(True)} found in function:\n\t {f}\n\t called from: {config.LAST_RALLOC}\n")

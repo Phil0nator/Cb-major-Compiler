@@ -706,8 +706,20 @@ class ExpressionEvaluator:
                 o = newt.copy()
         return instr
 
-    # evaluate a generated postfix list of EC's
+    # compile the overloaded operator of type a.type, with input b
+    def compile_AoverloadB(self, a, op, b, evaluator, stack):
+        pass
+    
+    # compile a implicit cast of struct b to type a.type
+    def compile_implicitCastBtoA(self, a, op, b, evaluator, stack):
+        pass
 
+    # compile the overloaded single operand operator for struct a
+    def compile_AoverloadSingleOperand(self, a, op, evaluator, stack):
+        pass
+
+
+    # evaluate a generated postfix list of EC's
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
         stack = []      # used for evaluation
@@ -732,6 +744,18 @@ class ExpressionEvaluator:
                     else:
                         a = stack.pop()              # first operand
 
+                    # check for non-primitive types for operator overloading:
+
+                    #if not a.type.isintrinsic():
+                        # check for operator accepting b's type
+                    #    self.compile_AoverloadB(a,op,b,evaluator,stack)
+
+                    #elif not b.type.isintrinsic():
+                    #    pass
+                        # check for implicit cast overload for b.type -> a.type
+
+                    #else:
+                        # normal conditions:
                     instr += self.compile_aopb(a, op, b, evaluator, stack)
 
                 else:  # op takes only one operand

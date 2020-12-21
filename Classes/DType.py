@@ -83,6 +83,9 @@ class DType:
         out.ptrdepth += 1
         return out
 
+    def isintrinsic(self):
+        return self.ptrdepth == 0 and config.GlobalCompiler.isIntrinsic(self.name) is not None
+
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
             return (self.name == other.name or config.GlobalCompiler.Tequals(
