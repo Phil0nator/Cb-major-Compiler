@@ -330,7 +330,7 @@ class Function:
             v.dtok = self.tokens[self.ctidx + 1]
         # self.stackCounter += v.t.size(0)
         if(v.register is None):
-            if v.t.size(0) <= 8:
+            if v.t.csize() <= 8:
                 self.stackCounter += 8
             else:
                 self.stackCounter += v.t.csize()
@@ -2029,10 +2029,8 @@ class Function:
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
-
                     newvar = Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed)
-
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s-v.offset, isptr=v.isptr, signed=v.signed)
                     self.append_rawVariable(newvar)
 
                     # initialize to null
@@ -2366,7 +2364,6 @@ class Function:
 
     # compile a single line
     def compileLine(self):
-
         if(self.current_token.tok == T_KEYWORD):
             # keyword statement
             self.buildKeywordStatement()

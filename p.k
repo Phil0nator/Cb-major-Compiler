@@ -1,29 +1,15 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-struct Twoer{
 
-    int a = NULL;
-
-    Twoer(int starter){
-        a=starter;
-    }
-
-    function int operator+(int other){
-        return a += other+other;
-    }
-
-    function operator int(){
-        return a;
-    }
-
-};
 
 int main(int argc){
 
-    Twoer bruh;
+    char* test = malloc(123);
+    free(test);
 
-    return 0;
+
+    return argc;
 }
 
 

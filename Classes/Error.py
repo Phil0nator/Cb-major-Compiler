@@ -355,6 +355,11 @@ class TooManyOperatorArgs(Error):
         self.tok = tok
         self.message = f"Too many parameters provided for overload of operator (' {op} '):"
 
+class NoOverloadOp(Error):
+    def __init__(self, tok, struct, ptype, op):
+        self.tok = tok
+        self.message = f"No overload of operator ('{op}') in type ('{struct}') with parameter type ('{ptype}'):"
+
 
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 

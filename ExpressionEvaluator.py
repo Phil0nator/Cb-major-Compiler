@@ -3,7 +3,8 @@ import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
-                                 maskset, shiftInt, shiftmul, valueOf, zeroize)
+                                 maskset, shiftInt, shiftmul, valueOf, zeroize, 
+                                 lea_struct, fncall)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
@@ -15,7 +16,7 @@ from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import Variable
 from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
-                     LONG, SHORT, VOID, canShiftmul, operatorISO, typematch)
+                     LONG, SHORT, VOID, canShiftmul, operatorISO)
 
 #############################
 # optloadRegs is used to load
@@ -708,8 +709,43 @@ class ExpressionEvaluator:
 
     # compile the overloaded operator of type a.type, with input b
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
-        pass
-    
+
+        overload = a.type.getOpOverload(op, b.type)
+        if overload is None:
+            throw(NoOverloadOp(a.token,a.type,b.type,op))
+
+        instr = ""
+        if a.memory_location and a.isRegister():
+            instr += f"mov rdi, {a.accessor}\n"
+        else:
+            instr += lea_struct('rdi', a)
+
+        fltret = overload.returntype.isflt()
+        fltparam = overload.parameters[1].t.isflt()
+
+        if b.type.isintrinsic():
+            instr += loadToReg(
+                norm_parameter_registers[1] if not fltparam 
+                else sse_parameter_registers[0], 
+                b.accessor)
+        else:
+            instr += lea_struct('rsi', b)
+        
+        instr += fncall(overload)
+
+
+        output = ralloc(fltret, overload.returntype.csize())
+        instr += loadToReg(output, norm_return_register if not fltret else sse_return_register)
+
+        stack.append(
+            EC.ExpressionComponent(output, overload.returntype.copy(), token=a.token)
+        )
+
+        return instr
+
+        
+
+
     # compile a implicit cast of struct b to type a.type
     def compile_implicitCastBtoA(self, a, op, b, evaluator, stack):
         pass
@@ -745,18 +781,17 @@ class ExpressionEvaluator:
                         a = stack.pop()              # first operand
 
                     # check for non-primitive types for operator overloading:
-
-                    #if not a.type.isintrinsic():
+                    if not a.type.isintrinsic():
                         # check for operator accepting b's type
-                    #    self.compile_AoverloadB(a,op,b,evaluator,stack)
+                        instr += self.compile_AoverloadB(a,op,b,evaluator,stack)
 
-                    #elif not b.type.isintrinsic():
-                    #    pass
+                    elif not b.type.isintrinsic():
+                        pass
                         # check for implicit cast overload for b.type -> a.type
 
-                    #else:
+                    else:
                         # normal conditions:
-                    instr += self.compile_aopb(a, op, b, evaluator, stack)
+                        instr += self.compile_aopb(a, op, b, evaluator, stack)
 
                 else:  # op takes only one operand
 

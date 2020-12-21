@@ -379,11 +379,7 @@ class Compiler:
             assert thisp
             rettype = VOID.copy()
 
-        # operator specifier
-        if(self.current_token.value == "operator"):
-            inline = True
-            operator = True
-            self.advance()
+        
 
 
         # parent structure
@@ -407,7 +403,12 @@ class Compiler:
             thispt = struct
             # self.advance()
             self.advance()
-
+        
+        # operator specifier
+        if(self.current_token.value == "operator"):
+            #inline = True
+            operator = True
+            self.advance()
 
         if not operator:
             # get fnname
@@ -418,7 +419,6 @@ class Compiler:
             name = self.current_token.value
             if name not in OPERATORS:
                 throw(UnkownOperator(name))
-            
             self.advance()
 
         # ensure syntax
@@ -508,7 +508,7 @@ class Compiler:
 
         # construct final object
         f = Function(name, parameters, rettype, self,
-                    self.currentTokens[start:self.ctidx], return_auto=autodecl)
+                    self.currentTokens[start:self.ctidx], return_auto=autodecl, inline=inline)
 
         # pre-compile f to determine it's returntype
         if f.return_auto:
@@ -765,6 +765,17 @@ class Compiler:
             # apply offset, and overall size
             member.offset = struct.s
             struct.s += member.t.csize()
+        
+
+        for op in struct.operators:
+            for i in range(len(struct.operators[op])):
+                struct.operators[op][i].parameters[0].t = struct.up()
+                struct.operators[op][i] = self.buildTemplateFunction(
+                    struct.operators[op][i], tns, types
+                )
+        
+        
+        
         self.template_cache.append([template, types, struct])
         return struct.copy()
 
@@ -907,7 +918,12 @@ class Compiler:
         # record location to jump back to
         backto = self.ctidx - 1
         self.checkType()
+        # account for operator overloads
+        if self.current_token.tok == T_KEYWORD and self.current_token.value == 'operator':
+            self.advance()
+
         self.advance()
+
 
         # function determinant:
         #   for function delcarations fndp.tok will always be a '(', and for variables
@@ -1078,6 +1094,7 @@ class Compiler:
                 except Error as e:
                     # assuming the error is non fatal:
                     print(e.__repr__())
+                    rfreeAll()
                     continue
 
                 

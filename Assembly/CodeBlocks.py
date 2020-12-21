@@ -21,7 +21,7 @@ from Assembly.Registers import *
 from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
                                 maskset, psizeof, psizeoft, dwordImmediate)
 
-from globals import canShiftmul
+from globals import canShiftmul, OPERATORS
 
 
 # check if a value is true
@@ -37,10 +37,13 @@ def checkTrue(checkval: EC.ExpressionComponent):
 
 
 def functionlabel(fn):
+    
+    name = fn.name if fn.name not in OPERATORS else f".operator{OPERATORS.index(fn.name)}"
+
     if(fn.extern):  # externs have no mangling
-        return fn.name + ":"
+        return name + ":"
     # _returntype_name_ptypetypetype...  :
-    out = "_%s_%s_%s:\n" % (fn.returntype, fn.name, "p#")
+    out = "_%s_%s_%s:\n" % (fn.returntype, name, "p#")
     types = ""
     for p in fn.parameters:
         types += p.t.__repr__()
@@ -344,14 +347,28 @@ def loadToReg(reg, value):
 
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
+
 # only for parameter loading
-
-
 def movRegToVar(od, reg):
     if("xmm" not in reg):
         return "mov [rbp-%s], %s" % ((od), reg)
     else:
         return "movsd [rbp-%s], %s" % ((od), reg)
+
+
+
+def lea_struct(dest: str, source: EC.ExpressionComponent) -> str:
+
+    if isinstance(source.accessor, Variable):
+        return f"lea {dest}, [{source.accessor.baseptr}{source.accessor.offset+source.type.s}]\n"
+    else:
+        return f"mov {dest}, {source.accessor}\n"
+
+
+
+
+
+
 
 
 # logic label handling

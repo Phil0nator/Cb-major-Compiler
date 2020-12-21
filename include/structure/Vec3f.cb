@@ -74,8 +74,38 @@ struct Vec3f{
      */
     CBLIBENTRY double dot(Vec3f* other);
 
+    /**
+     * Add two vectors
+     * @param other the vector to add
+     * @returns None
+     */
+    CBLIBENTRY void operator+=(Vec3f* other);
+
+    /**
+     * Subtract two vectors
+     * @param other the vector to subtract
+     * @returns None
+     */
+    CBLIBENTRY void operator-=(Vec3f*other);
+
+    /**
+     * Static divide of vectors.
+     *  [this / other] -> { this.x/other.x , this.y / other.y , this.z / other.z }
+     * @param other vector to divide by
+     * @returns None
+     */
+    CBLIBENTRY void operator /=(Vec3f* other);
+
+    /**
+     * Cross multiply two vectors
+     * (Cross product)
+     * @param other vector to multiply by
+     * @returns None
+     */
+    CBLIBENTRY void operator *=(Vec3f* other);
 
 
+    CBLIBENTRY double operator *(Vec3f* other);
 
 };
 
