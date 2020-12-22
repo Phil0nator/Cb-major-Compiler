@@ -395,12 +395,9 @@ class PreProcessor:
                     '\\"', '"').replace("\\n", "\n")
                 try:
                     value = eval(code)
-                except RuntimeError as e:
-                    throw(Error(self.current_token, f"Python error: {e}"))
-                except EnvironmentError as e:
-                    throw(Error(self.current_token, f"Python error: {e}"))
-                except SyntaxError as e:
-                    throw(Error(self.current_token, f"Python error: {e}"))
+                except BaseException as e:
+                    fatalThrow(Error(self.current_token, f"Python error: {e}"))
+
 
                 self.tokens[startidx:self.tkidx + 2] = [
                     Token(

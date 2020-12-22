@@ -110,7 +110,9 @@ def main():
     asm = asm.replace("%%HEAP%%", c.heap)
     if(not config.DO_DEBUG and config.__tonasm__):
         c.text = re.sub(";.*", "", c.text)
+    
     asm = asm.replace("%%ALIGN%%", str(16 if not config.__Osize__ else 0))
+    
     asm = asm.replace("%%TEXT%%", c.text)
     asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
     asm = asm.replace("%%CONSTANTS%%", c.constants)

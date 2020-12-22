@@ -1,19 +1,17 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-
-
-int main(int argc){
-
+int main(){
+    
+    
     benchmark();
-    return argc;
+    return 0;
 }
 
 
 
 void benchmark(){
 
-    
     char nullb[1000];
     memzer(&nullb, 1000);
     for range(i, 25000000){

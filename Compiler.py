@@ -419,7 +419,8 @@ class Compiler:
             #inline = True
             operator = True
             self.advance()
-
+        # record token that declared the function
+        dtok = self.current_token
         if not operator:
             # get fnname
             name = self.checkId()
@@ -485,7 +486,7 @@ class Compiler:
         if(self.current_token.tok == T_ENDL):
             self.advance()
             # create empty function for assignment later
-            f = Function(name, parameters, rettype, self, [], return_auto=autodecl)
+            f = Function(name, parameters, rettype, self, [], return_auto=autodecl, declare_token=dtok)
             self.globals.append(
                 Variable(
                     f.returntype.up(),
@@ -518,7 +519,7 @@ class Compiler:
 
         # construct final object
         f = Function(name, parameters, rettype, self,
-                    self.currentTokens[start:self.ctidx], return_auto=autodecl, inline=inline)
+                    self.currentTokens[start:self.ctidx], return_auto=autodecl, inline=inline, declare_token=dtok)
 
         # pre-compile f to determine it's returntype
         if f.return_auto:
@@ -1066,8 +1067,26 @@ class Compiler:
         else:
             throw(UnexpectedToken(self.current_token))
 
-    # compile all functions and fill in raw assembly info
 
+    def verify_entrypoint(self, f):
+        # check returntype
+        if f.returntype.isflt():
+            print(InvalidMainReturn(f.declare_token).__repr__())
+            self.panicmode=True
+        
+        # check valid parameters
+        if len(f.parameters) > 0:
+            # check parameter 1
+            if not (f.parameters[0].t.__eq__(INT) or f.parameters[0].t.__eq__(LONG)):
+                warn(InvalidMainParameters(f.parameters[0].dtok))
+            # check for parameter 2
+            if len(f.parameters) > 1:
+                # check the parameter 2 type
+                if not (f.parameters[1].t.__eq__(CHAR.up().up())):
+                    warn(InvalidMainParameters(f.parameters[1].dtok))
+
+
+    # compile all functions and fill in raw assembly info
     def finalize(self):
 
         # the Compiler needs to find the best suitable entrypoint.
@@ -1075,8 +1094,14 @@ class Compiler:
         # returntype, or parameters.
         for f in self.functions:
             if f.name == "main":
+                
+                self.verify_entrypoint(f)
+
+
                 self.entry = f
+                
                 f.extern = True
+                
                 self.globals.append(
                     Variable(
                         INT.up(),
@@ -1085,6 +1110,7 @@ class Compiler:
                         initializer=f,
                         isptr=True)
                 )
+
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.

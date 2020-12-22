@@ -22,7 +22,7 @@ from Assembly.Instructions import Instruction, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat
 from Classes.Constexpr import buildConstantSet, determineConstexpr
-from Classes.DType import DType
+from Classes.DType import DType, typematch
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
@@ -66,7 +66,7 @@ predefs = [
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
                  tokens, inline=False, extern=False, compileCount=0, memberfn=False, 
-                 parentstruct=None, return_auto=False):
+                 parentstruct=None, return_auto=False, declare_token=None):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -82,6 +82,8 @@ class Function:
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.stackTotal = 8                     # maintain total count
         self.variables = []                     # all local variables
+
+        self.declare_token = declare_token
 
         # a hash table of indexes in self.variables
         # for faster access during compiletime
@@ -1335,6 +1337,7 @@ class Function:
 
     def buildAutoDefine(self, register=False):
         self.advance()
+        nametok = self.current_token
         name = self.checkForId()
 
         # check if variable exists already
@@ -1360,10 +1363,11 @@ class Function:
 
             self.addline(instr)
             var = Variable(value.type, name)
+            var.dtok = nametok
             if register:
                 var.register = ralloc(value.type.isflt())
 
-            self.addVariable(var)
+            self.addVariable(var, False)
             self.addline(
                 depositFinal(
                     EC.ExpressionComponent(

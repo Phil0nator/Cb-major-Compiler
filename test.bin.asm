@@ -4686,15 +4686,9 @@ _void_thread_join_pthread_t.:
 	leave
 	ret
 main:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rdi
 	call _void_benchmark_p
-	mov ebx, dword[rbp-8]
-	mov eax, ebx
+	xor rax, rax
 __main__return:
-	leave
 	ret
 _void_benchmark_p:
 	push rbp
