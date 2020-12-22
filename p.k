@@ -5,12 +5,12 @@
 
 int main(int argc){
 
-
+    benchmark();
     return argc;
 }
 
 
-/*
+
 void benchmark(){
 
     
@@ -22,5 +22,3 @@ void benchmark(){
     puts(&nullb);
     
 }
-
-*/

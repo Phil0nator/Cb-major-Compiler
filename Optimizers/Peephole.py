@@ -393,6 +393,11 @@ class Peephole:
                         splitted[line.idx] = f"lea {line.dest}, {effective_address}\n"
                         optims += 1
 
+                elif not config.__Osize__ and line.op in ["inc", "dec"] and line.hasAddr():
+                    op = "add" if line.op == "inc" else "sub"
+                    splitted[line.idx] = f"{op} {line.dest}, 1\n"
+                    optims+=1
+
                 prev = line
         else:
             for line in lines:

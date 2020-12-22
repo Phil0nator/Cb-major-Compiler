@@ -2,6 +2,7 @@ import Classes.Token as T
 import Classes.Variable as V
 import Assembly.Registers as R
 
+
 INTMAX = 4294967295
 
 
@@ -105,5 +106,12 @@ def maskset(reg, size):
 def dwordImmediate(number):
     return abs(number) < INTMAX if isinstance(number, int) else 0
 
-
-
+def getSingleTypeSpecifierChar(size):
+    if size == 8:
+        return "q"
+    elif size == 4:
+        return "d"
+    elif size == 2:
+        return "w"
+    elif size == 1:
+        return "b"

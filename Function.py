@@ -1101,8 +1101,16 @@ class Function:
         # evaluate the lvalue to compare
         loadinstr, cmpvalue = self.evaluateExpression()
 
+
+        if isinstance(cmpvalue.accessor, Variable):
+            reg = ralloc(False, size=cmpvalue.type.csize())
+            loadinstr+= loadToReg(reg, cmpvalue.accessor)
+            cmpvalue.accessor = reg
         # ensure register hit
         reralloc(cmpvalue.accessor)
+
+
+
 
         # mark position for topcode
         topmarker = f"##SWITCHTOP##{len(self.asm)}"

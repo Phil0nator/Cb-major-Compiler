@@ -289,7 +289,6 @@ int __sprintf(char* str, char* fmt, void* args){
                         bits = 8;
                         fmt++;
                     }
-                    fmt++;
                     long sb = toBinary(str,numb, bits);
                     str+=sb;
                     break;

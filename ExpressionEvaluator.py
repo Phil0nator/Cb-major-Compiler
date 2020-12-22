@@ -4,7 +4,7 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize, 
-                                 lea_struct, fncall)
+                                 lea_struct, fncall, cast_regUp)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
@@ -780,6 +780,9 @@ class ExpressionEvaluator:
                     else:
                         a = stack.pop()              # first operand
 
+
+
+
                     # check for non-primitive types for operator overloading:
                     if not a.type.isintrinsic():
                         # check for operator accepting b's type
@@ -921,12 +924,9 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 instr += ninstr
 
                 if sizeOf(breg) < 8:
-                    #instr += maskset(setSize(breg, 8), sizeOf(breg))
+                    instr += cast_regUp("rax", breg, b.type.signed)
                     rfree(breg)
-                    ax = "rax"
-                    instr += zeroize(ax) + \
-                        loadToReg(setSize(ax, sizeOf(breg)), breg)
-                    breg = ax
+                    breg = "rax"
 
                 areg = setSize(areg, 8)
 
@@ -1220,11 +1220,9 @@ def performCastAndOperation(fn, a, b, op, o):
             instr += ninstr
 
             if sizeOf(breg) < 8:
-                ax = "rax"
-                instr += zeroize(ax) + \
-                    loadToReg(setSize(ax, sizeOf(breg)), breg)
+                instr += cast_regUp("rax", breg, b.type.signed)
                 rfree(breg)
-                breg = ax
+                breg = "rax"
 
             areg = setSize(areg, 8)
             if(a.type.size(1) in [1, 2, 4, 8]):

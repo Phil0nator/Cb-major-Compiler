@@ -358,6 +358,8 @@ def sizeOf(reg):
     elif(isinstance(reg, int)):
         return 8
 
+    
+
     if("xmm" in reg):
         return 8
     if(setSize(reg, 4) == reg):

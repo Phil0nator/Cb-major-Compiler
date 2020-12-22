@@ -592,8 +592,10 @@ def castABD(a, b, areg, breg, newbreg):
             return out
         elif a.type.csize() > b.type.csize():
 
-            out = zeroize(setSize(newbreg, 8))
-            out += loadToReg(newbreg, breg)
+            if b.type.csize() < 8 and b.type.signed:
+                out = cast_regUp(newbreg, (breg), b.type.signed)
+            else:
+                out=loadToReg(newbreg, breg)
 
             return out
 
@@ -608,9 +610,55 @@ def castABD(a, b, areg, breg, newbreg):
         return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False
 
+
+
+def cast_regUp(dest, source, signed):
+    instr = ""
+    
+    if source == "pop":
+        instr += loadToReg("rax", source)
+        source = "rax"
+    
+    
+    if sizeOf(dest) == 8:
+        if sizeOf(source) < 8:
+            if sizeOf(source) == 1:
+                
+                if signed:
+                    instr += f"movsx eax, {valueOf(source)}\n"
+                else:
+                    instr += f"movzx eax, {valueOf(source)}\n"
+                
+                instr += f"cdqe\n"
+                if dest != "rax":
+                    instr += loadToReg(dest, "rax")
+            if sizeOf(source) == 2:
+            
+                if signed:
+                    instr += f"movsx {valueOf(dest)}, {valueOf(source)}\n"
+                else:
+                    instr += f"movzx {valueOf(dest)}, {valueOf(source)}\n"
+            
+            elif sizeOf(source) == 4:
+
+                if signed:
+
+                    if dest == "rax":
+                        instr += loadToReg(dest, source)
+                        instr += "cdqe\n"
+                    else:
+                        instr += f"movsxd {valueOf(dest)}, {valueOf(source)}\n"
+
+                else:
+                    instr += loadToReg(dest, source)
+
+    return instr
+
+
+
+
+
 # get amount to shift by to multiply or divide by i
-
-
 def shiftmul(i):
     return int(math.log2(i)) if i > 0 else 0
 
