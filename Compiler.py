@@ -416,7 +416,7 @@ class Compiler:
         
         # operator specifier
         if(self.current_token.value == "operator"):
-            #inline = True
+            inline = True
             operator = True
             self.advance()
         # record token that declared the function
@@ -520,6 +520,9 @@ class Compiler:
         # construct final object
         f = Function(name, parameters, rettype, self,
                     self.currentTokens[start:self.ctidx], return_auto=autodecl, inline=inline, declare_token=dtok)
+
+        
+        f.unassigned = False
 
         # pre-compile f to determine it's returntype
         if f.return_auto:

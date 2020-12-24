@@ -152,7 +152,7 @@ class Structure:
             self.prototypeType.operators[f.name] = [f]
         else:
             self.prototypeType.operators[f.name].append(f) 
-
+        
 
 
 

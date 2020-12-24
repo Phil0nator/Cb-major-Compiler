@@ -730,7 +730,8 @@ class ExpressionEvaluator:
                 b.accessor)
         else:
             instr += lea_struct('rsi', b)
-        
+
+
         instr += fncall(overload)
 
 
@@ -1019,8 +1020,10 @@ class LeftSideEvaluator(ExpressionEvaluator):
             if(a.accessor.isStackarr):
                 instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
-
-                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
+                if a.type.isintrinsic():
+                    instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
+                else:
+                    instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.type.csize()}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
@@ -1116,11 +1119,12 @@ def depositFinal(dest, final):
             rfree(final.accessor)
         return instr
 
+
     if(isinstance(final.accessor, str) and final.accessor != "pop"):
         final.accessor = setSize(final.accessor, (dest.type.csize()))
 
-    if(isinstance(dest.accessor, str)):
-        dest.accessor = setSize(dest.accessor, final.type.csize())
+    #if(isinstance(dest.accessor, str)):    
+    #    dest.accessor = setSize(dest.accessor, final.type.csize())
 
     if(final.type.__eq__(dest.type)):
         if(isinstance(final.accessor, Variable)):
@@ -1178,9 +1182,14 @@ def depositFinal(dest, final):
             else:
                 cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
         else:
-            cst = False
 
-        if(cst != False):
+            if dest.type.csize() < final.type.isflt():
+                cst = False
+            else:
+                cst = cast_regUp(castdest, final.accessor, final.type.signed)
+
+
+        if(cst != False) and (cst != ""):
             instr += cst
             if(twoStep):
                 instr += loadToReg(dest.accessor, castdest)

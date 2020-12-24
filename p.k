@@ -1,9 +1,12 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
+
+
+
 int main(){
-    
-    
+
+
     benchmark();
     return 0;
 }
@@ -20,3 +23,4 @@ void benchmark(){
     puts(&nullb);
     
 }
+

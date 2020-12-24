@@ -172,6 +172,10 @@ class Function:
         self.return_auto = return_auto
 
 
+        # determine if a function is a placeholder or a properly assigned function
+        self.unassigned = True
+
+
         # hasReturned keeps track of if a function has made a guarenteed return.
         # A guarenteed return is one not inside any other control structure, and that
         # will always happen.
@@ -2118,9 +2122,13 @@ class Function:
                 self.destructor_text += self.createDestructor(var)
 
             if (self.current_token.tok == T_OPENP):
-                self.ctidx-=2
-                self.memberCall(var.t.constructor, var)
-                self.addline("pop rax")
+
+                if var.t.constructor is not None:
+                    self.ctidx-=2
+                    self.memberCall(var.t.constructor, var)
+                    self.addline("pop rax")
+                else:
+                    throw(UnkownConstructor(self.tokens[self.ctidx-1]))
 
         # check for stack based array declaration
         while self.current_token.tok == "[":

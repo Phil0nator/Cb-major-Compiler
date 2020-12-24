@@ -5,7 +5,7 @@
 void __printf(char* fmt, void* args, fd_t ostream){
 
     char* tmp = qmmap(__PRINTF_MAXNORMUSE);
-    int l = __sprintf(tmp,fmt,args);
+    int l = __sprintf(tmp+1,fmt,args);
     write(ostream, tmp,$size_t l);
     munmap(tmp, __PRINTF_MAXNORMUSE);
     

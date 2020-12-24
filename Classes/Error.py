@@ -365,6 +365,11 @@ class InvalidMainReturn(Error):
         self.tok = tok
         self.message = f"Entry point 'main' must return an integer type:"
 
+class UnkownConstructor(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Unkown constructor: "
+
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 
 

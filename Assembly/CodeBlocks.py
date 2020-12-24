@@ -611,44 +611,64 @@ def castABD(a, b, areg, breg, newbreg):
     return False
 
 
-
+# cast_regUp is used to cast the register held in source of a size lesser than the size of dest.
+# Using various instructions based on the sign of the operands, source is cast into dest.
 def cast_regUp(dest, source, signed):
     instr = ""
     
+    # catch pop condition
     if source == "pop":
         instr += loadToReg("rax", source)
         source = "rax"
     
-    
+    # assuming we are casting up to 8 byte value
     if sizeOf(dest) == 8:
+        # extra check of operands
         if sizeOf(source) < 8:
+            
+            # 8 bit value cast up
             if sizeOf(source) == 1:
                 
+                # sign extention or zero extention of operand into eax
                 if signed:
                     instr += f"movsx eax, {valueOf(source)}\n"
                 else:
                     instr += f"movzx eax, {valueOf(source)}\n"
-                
-                instr += f"cdqe\n"
-                if dest != "rax":
+
+                # if signed, the 'cdqe' instruction can be used to sign extend the value of eax -> rax
+                if signed:    
+                    instr += f"cdqe\n"
+                # else, the upper 32 bits or rax are already zeroed
+
+                # if the cdqe instruction was used, and the destination is not rax, the value needs
+                # to be moved
+                if dest != "rax" and signed:
                     instr += loadToReg(dest, "rax")
-            if sizeOf(source) == 2:
             
+            # 16 bit cast up
+            if sizeOf(source) == 2:
+                
+                # mov with sign extention
                 if signed:
                     instr += f"movsx {valueOf(dest)}, {valueOf(source)}\n"
+                # mov with zero extention
                 else:
                     instr += f"movzx {valueOf(dest)}, {valueOf(source)}\n"
             
+            # 32 bit cast up
             elif sizeOf(source) == 4:
 
                 if signed:
-
+                    # when the destination is rax, the faster cdqe instruction can be used
+                    # by first loading the value into eax.
                     if dest == "rax":
-                        instr += loadToReg(dest, source)
+                        instr += loadToReg('eax', source)
                         instr += "cdqe\n"
+                    # if not, the movsxd instruction is perfectly suited for this operation
+                    # (mov dword with sign extention)
                     else:
                         instr += f"movsxd {valueOf(dest)}, {valueOf(source)}\n"
-
+                # for unsigned cast-ups, the upper 32 bits of rax will be zeroed anyway:
                 else:
                     instr += loadToReg(dest, source)
 
