@@ -217,17 +217,19 @@ class Compiler:
                 throw(ExpectedType(self.current_token))
             else:
                 return None
+        tname = self.checkId(False)
+        
         # check for decorator (template types)
         if (self.currentTokens[self.ctidx + 1].tok == "<"):
             # construct template type:
-            template: str = self.current_token.value
+            template: str = tname
             ttok: Token = self.current_token
             self.advance()
             types: list = self.parseTemplate()
             t: DType = self.buildTemplateType(template, types, ttok).copy()
         else:
             # get existing type
-            t: DType = self.getType(self.current_token.value).copy()
+            t: DType = self.getType(tname).copy()
 
         self.advance()
         ptrdepth = 0    # track pointer depth specified by '*' token
@@ -240,11 +242,12 @@ class Compiler:
         t.signed = signed
         return t
 
-    def checkId(self) -> str:
+    def checkId(self, move=True) -> str:
         if self.current_token.tok != T_ID:
             throw(ExpectedIdentifier(self.current_token))
         out = self.current_token.value
-        self.advance()
+        if move:
+            self.advance()
         return out
 
     # create a constant string value in self.constants
@@ -648,6 +651,8 @@ class Compiler:
                 t.value = name
                 # add allocator to constants
                 self.constants += instruct
+
+
             # counter
             c += 1
 

@@ -468,13 +468,14 @@ class Function:
             if(oldvar.register is not None):
                 rfree(oldvar.register)
 
-    def checkForId(self):               # check next tokens for ID
+    def checkForId(self, move=True):               # check next tokens for ID
 
         if(self.current_token.tok != T_ID):
             throw(ExpectedIdentifier(self.current_token))
 
         id = self.current_token.value
-        self.advance()
+        if move:
+            self.advance()
         return id
 
     def parseTemplate(self):
@@ -508,8 +509,10 @@ class Function:
             else:
                 return None
 
+        tname = self.checkForId(False)
+
         # make sure that the type exists
-        if(not self.compiler.isType(self.current_token.value)):
+        if(not self.compiler.isType(tname)):
             # respond to bad type based on err flag
             if err:
                 throw(ExpectedType(self.current_token))
@@ -519,7 +522,7 @@ class Function:
         # check for a decorator (template types specifier)
         if (self.tokens[self.ctidx + 1].tok == "<"):
             # collect template info:
-            template = self.current_token.value
+            template = tname
             ttok = self.current_token
             self.advance()
             types = self.parseTemplate()
@@ -527,7 +530,7 @@ class Function:
             t = self.compiler.buildTemplateType(template, types, ttok).copy()
         else:
             # otherwise, querry compiler for a type based on a typename
-            t = self.compiler.getType(self.current_token.value).copy()
+            t = self.compiler.getType(tname).copy()
 
         self.advance()
         # get pointer depth:
@@ -1256,7 +1259,9 @@ class Function:
     def buildStaticdecl(self):
         self.advance()
         t = self.checkForType()
-        name = self.checkTok(T_ID)
+
+        name = self.checkForId()
+        
         label = name + getLogicLabel(name)
         var = Variable(t, name, True, signed=t.signed, static=True)
 
@@ -1399,7 +1404,7 @@ class Function:
 
     def buildRegisterDel(self):
         self.advance()
-        vname = self.checkTok(T_ID)
+        vname = self.checkForId()
         v = self.getVariable(vname)
         if(v is None):
             throw(UnkownIdentifier(self.tokens[self.ctidx - 1]))
@@ -1588,7 +1593,7 @@ class Function:
         # Nested functions can sometimes overwrite eachother's parameters;
 
         # function name
-        fid = self.current_token.value
+        fid = self.checkForId(False)
         # token of function name
         fnstartt = self.current_token
         # placeholder
@@ -1770,9 +1775,10 @@ class Function:
                 starttok = self.current_token
                 startidx = self.ctidx
                 start = self.current_token.start
-                if(self.tokens[self.ctidx + 1].tok in "(" or self.qgettfn(self.current_token.value) is not None):
+                idval = self.checkForId(False)
+                if(self.tokens[self.ctidx + 1].tok in "(" or self.qgettfn(idval) is not None):
 
-                    if(self.current_token.value in predefs):
+                    if(idval in predefs):
                         exprtokens.append(self.buildPredef())
                         # ensure correct closing
                         exprtokens.append(
@@ -1910,6 +1916,11 @@ class Function:
                     else:
                         self.ctidx = start
                         self.advance()
+
+                else:
+                    wasfunc = True
+                    self.ctidx-=1
+                    exprtokens.append(Token(T_ID, self.checkForId(), self.current_token.start, self.current_token.end))
 
             elif (self.current_token.tok == T_KEYWORD):
 
@@ -2367,7 +2378,10 @@ class Function:
 
     def buildIDStatement(self):
 
-        id = self.current_token.value
+        ogctidx = self.ctidx-1
+        id = self.checkForId(False)
+        self.ctidx = ogctidx
+        self.advance()
 
         if (self.compiler.isType(id)
                 and self.tokens[self.ctidx + 1].tok != T_OPENP):
