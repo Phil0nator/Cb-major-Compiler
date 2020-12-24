@@ -169,6 +169,8 @@ class Peephole:
                 nxtidx = lines.index(line) + 1
                 nextline = lines[nxtidx] if nxtidx < linecount else None
 
+
+
                 if(line.threePart() and prev.threePart() and nextline is not None):
 
                     # cmp instructions that compare a register with zero, can be replaced with the faster and smaller
@@ -210,7 +212,7 @@ class Peephole:
                     # the two lea instructions.
                     # This new pattern will also often be optimized again by the level 2 optimizer to reduce the three instruction
                     # set into a single lea followed by a mov.
-                    elif (prev.op == "lea" and line.op == "lea" and line.dest == prev.dest):
+                    elif (prev.op == "lea" and line.op == "lea" and line.dest == prev.dest and nextline.source is not None):
                         if(nextline.dest != prev.dest and nextline.source not in (prev.source + line.source)):
                             tmp = splitted[line.idx]
                             splitted[line.idx] = splitted[nextline.idx]
@@ -392,6 +394,11 @@ class Peephole:
                         splitted[prev.idx] = ""
                         splitted[line.idx] = f"lea {line.dest}, {effective_address}\n"
                         optims += 1
+
+                elif not config.__Osize__ and line.op in ["inc", "dec"] and line.hasAddr():
+                    op = "add" if line.op == "inc" else "sub"
+                    splitted[line.idx] = f"{op} {line.dest}, 1\n"
+                    optims+=1
 
                 prev = line
         else:

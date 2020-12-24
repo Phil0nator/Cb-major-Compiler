@@ -3,6 +3,9 @@ import config
 
 
 def link(i, o):
+    
+    
+    
     if(config.__linkables__):
         links = config.__linkables__
         linktext = f"\"{links[0]}\""
@@ -13,6 +16,8 @@ def link(i, o):
 
     else:
         linktext = f"\"{i}.o\""
+
+    linktext = f"{' -L'.join([dir for dir in config.__linkdirs__])} {linktext}"
 
     debug = "-g" if config.__dbg__ else ""
 

@@ -21,7 +21,7 @@ from Assembly.Registers import *
 from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
                                 maskset, psizeof, psizeoft, dwordImmediate)
 
-from globals import canShiftmul
+from globals import canShiftmul, OPERATORS
 
 
 # check if a value is true
@@ -37,10 +37,13 @@ def checkTrue(checkval: EC.ExpressionComponent):
 
 
 def functionlabel(fn):
+    
+    name = fn.name if fn.name not in OPERATORS else f".operator{OPERATORS.index(fn.name)}"
+
     if(fn.extern):  # externs have no mangling
-        return fn.name + ":"
+        return name + ":"
     # _returntype_name_ptypetypetype...  :
-    out = "_%s_%s_%s:\n" % (fn.returntype, fn.name, "p#")
+    out = "_%s_%s_%s:\n" % (fn.returntype, name, "p#")
     types = ""
     for p in fn.parameters:
         types += p.t.__repr__()
@@ -344,14 +347,28 @@ def loadToReg(reg, value):
 
         return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
+
 # only for parameter loading
-
-
 def movRegToVar(od, reg):
     if("xmm" not in reg):
         return "mov [rbp-%s], %s" % ((od), reg)
     else:
         return "movsd [rbp-%s], %s" % ((od), reg)
+
+
+
+def lea_struct(dest: str, source: EC.ExpressionComponent) -> str:
+
+    if isinstance(source.accessor, Variable):
+        return f"lea {dest}, [{source.accessor.baseptr}{source.accessor.offset+source.type.s}]\n"
+    else:
+        return f"mov {dest}, {source.accessor}\n"
+
+
+
+
+
+
 
 
 # logic label handling
@@ -575,8 +592,10 @@ def castABD(a, b, areg, breg, newbreg):
             return out
         elif a.type.csize() > b.type.csize():
 
-            out = zeroize(setSize(newbreg, 8))
-            out += loadToReg(newbreg, breg)
+            if b.type.csize() < 8 and b.type.signed:
+                out = cast_regUp(newbreg, (breg), b.type.signed)
+            else:
+                out=loadToReg(newbreg, breg)
 
             return out
 
@@ -591,9 +610,75 @@ def castABD(a, b, areg, breg, newbreg):
         return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False
 
+
+# cast_regUp is used to cast the register held in source of a size lesser than the size of dest.
+# Using various instructions based on the sign of the operands, source is cast into dest.
+def cast_regUp(dest, source, signed):
+    instr = ""
+    
+    # catch pop condition
+    if source == "pop":
+        instr += loadToReg("rax", source)
+        source = "rax"
+    
+    # assuming we are casting up to 8 byte value
+    if sizeOf(dest) == 8:
+        # extra check of operands
+        if sizeOf(source) < 8:
+            
+            # 8 bit value cast up
+            if sizeOf(source) == 1:
+                
+                # sign extention or zero extention of operand into eax
+                if signed:
+                    instr += f"movsx eax, {valueOf(source)}\n"
+                else:
+                    instr += f"movzx eax, {valueOf(source)}\n"
+
+                # if signed, the 'cdqe' instruction can be used to sign extend the value of eax -> rax
+                if signed:    
+                    instr += f"cdqe\n"
+                # else, the upper 32 bits or rax are already zeroed
+
+                # if the cdqe instruction was used, and the destination is not rax, the value needs
+                # to be moved
+                if dest != "rax" and signed:
+                    instr += loadToReg(dest, "rax")
+            
+            # 16 bit cast up
+            if sizeOf(source) == 2:
+                
+                # mov with sign extention
+                if signed:
+                    instr += f"movsx {valueOf(dest)}, {valueOf(source)}\n"
+                # mov with zero extention
+                else:
+                    instr += f"movzx {valueOf(dest)}, {valueOf(source)}\n"
+            
+            # 32 bit cast up
+            elif sizeOf(source) == 4:
+
+                if signed:
+                    # when the destination is rax, the faster cdqe instruction can be used
+                    # by first loading the value into eax.
+                    if dest == "rax":
+                        instr += loadToReg('eax', source)
+                        instr += "cdqe\n"
+                    # if not, the movsxd instruction is perfectly suited for this operation
+                    # (mov dword with sign extention)
+                    else:
+                        instr += f"movsxd {valueOf(dest)}, {valueOf(source)}\n"
+                # for unsigned cast-ups, the upper 32 bits of rax will be zeroed anyway:
+                else:
+                    instr += loadToReg(dest, source)
+
+    return instr
+
+
+
+
+
 # get amount to shift by to multiply or divide by i
-
-
 def shiftmul(i):
     return int(math.log2(i)) if i > 0 else 0
 

@@ -1,7 +1,7 @@
 from Classes.Location import Location
 from Classes.Token import Token
 import Classes.Token as T
-from Classes.Error import throw
+from Classes.Error import throw, fatalThrow, Error
 from Classes.Error import UnkownCharSequence
 from Classes.Error import UnexepectedEOFError, TokenMismatch
 from globals import *
@@ -109,7 +109,7 @@ class Lexer:
         end = self.raw.find("\"", self.chidx)
 
         if(end == -1 or end >= len(self.raw)):
-            throw(TokenMismatch(Token("\"", "\"", begin, begin)))
+            raise(TokenMismatch(Token("\"", "\"", begin, begin)))
         content = self.raw[self.chidx:end]
         self.chidx = end
         # account for multi-line strings
@@ -130,7 +130,7 @@ class Lexer:
 
         end = self.raw.find(">", self.chidx)
         if(end == -1 or end >= len(self.raw)):
-            throw(TokenMismatch(Token("<", ">", begin, begin)))
+            raise(TokenMismatch(Token("<", ">", begin, begin)))
         content = self.raw[self.chidx:end]
         self.chidx = end
 
@@ -142,7 +142,7 @@ class Lexer:
         begin = self.loc.copy()
         v = ord(self.ch)
         if self.size - self.chidx < 3:
-            throw(
+            raise(
                 UnexepectedEOFError(
                     Token(
                         T.T_CHAR,
@@ -173,10 +173,7 @@ class Lexer:
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
 
-    # main function to get all tokens for a given text file.
-    # getDirectives can be set to True by the PreProcessor to only see directives
-    # \see PreParser
-    def getTokens(self, getDirectives=False) -> list:
+    def lex(self, getDirectives=False) -> list:
         tokens = []
         directives = []
         advance = self.advance
@@ -243,7 +240,7 @@ class Lexer:
                     # find and jump to next newline
                     self.chidx = self.raw.find("\n", self.chidx) - 1
                     if self.chidx <= 0:
-                        throw(
+                        raise(
                             UnexepectedEOFError(
                                 Token(
                                     '',
@@ -258,7 +255,7 @@ class Lexer:
                     olchdx = self.chidx
                     self.chidx = self.raw.find("*/", self.chidx) + 1
                     if self.chidx <= 0:
-                        throw(
+                        raise(
                             UnexepectedEOFError(
                                 Token(
                                     '',
@@ -322,7 +319,7 @@ class Lexer:
                 tokens.append(token)
 
             else:
-                throw(UnkownCharSequence(
+                raise(UnkownCharSequence(
                     Token(self.ch, self.ch, self.loc.copy(), self.loc.copy())))
 
         tokens.append(
@@ -332,3 +329,19 @@ class Lexer:
             return directives
 
         return tokens
+    
+    
+    
+    
+    # main function to get all tokens for a given text file.
+    # getDirectives can be set to True by the PreProcessor to only see directives
+    # \see PreParser
+    def getTokens(self, getDirectives=False) -> list:
+        try:
+        
+            return self.lex(getDirectives)
+        
+        except Error as e:
+            
+            fatalThrow(e)
+

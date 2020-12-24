@@ -1,6 +1,9 @@
 import config
 from Classes.Error import *
 
+__literal = "&LITERAL&"
+
+
 ###########################
 #   The DType class is used to represent datatypes.
 #
@@ -83,6 +86,23 @@ class DType:
         out.ptrdepth += 1
         return out
 
+
+    def getOpOverload(self, op, param=None):
+        if param is not None:
+            if op not in self.operators:
+                return None
+
+            for overload in self.operators[op]:
+                if typematch(overload.parameters[1].t, param, True):
+                    return overload
+
+            
+            return None
+    
+
+    def isintrinsic(self):
+        return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(self.name) is not None
+
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
             return (self.name == other.name or config.GlobalCompiler.Tequals(
@@ -144,3 +164,47 @@ def determinePrecedence(a, b, fn):
     else:
 
         return b, a
+
+
+
+
+# determine if a and b are compatible for casting
+def typematch(a, b, implicit):
+    if(isinstance(a, DType) and isinstance(b, DType)):
+
+        if(a.name == __literal or b.name == __literal):
+            return True
+        # anything can be cast to or from void
+        if(config.GlobalCompiler.Tequals(a.name, "void") or config.GlobalCompiler.Tequals(b.name, "void")):
+            return True
+
+        # two equal types are compatible
+        if(a.__eq__(b)):
+            return True
+
+        # two equal types with different signs are compatible
+        if(DType(a.name, a.size, a.members, a.ptrdepth, False, a.destructor, a.constructor).__eq__(DType(b.name, b.size, b.members, b.ptrdepth, False, b.destructor, b.constructor))):
+            return True
+
+        # two integer values are compatible in implicit situations
+        if(not a.isflt() and not b.isflt() and implicit):
+            return True
+        # two floats are compatible
+        if(a.isflt() and b.isflt()):
+            return True
+        #
+        # elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
+        #    return True
+
+        # two variables with different pointer depths are not compatible (at
+        # this point no void types)
+        if(a.ptrdepth != b.ptrdepth):
+            return False
+
+        # if the type precedence checks out, they are compatible, else not
+        if(a.isintrinsic() and b.isintrinsic() and implicit):
+            if(type_precedence[a.name] > type_precedence[b.name]):
+                return True
+            return False
+
+    return False

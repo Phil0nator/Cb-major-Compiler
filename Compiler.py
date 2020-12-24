@@ -66,6 +66,16 @@ class Compiler:
         self.template_types: list = []        # templated types
         self.template_cache: list = []        # already filled templates for speed
 
+
+        # Store enums:
+        # format: {
+        # 
+        #   "<Enum Item Name>" : (DType, value: int)
+        # 
+        # }
+        self.enums: dict    = {}              # all enums
+
+
         # typedefs listed as (old, new):(DType,DType)
         self.tdefs: list = []
         # a hash table for faster access to typedefs
@@ -129,6 +139,17 @@ class Compiler:
             self.current_token = self.currentTokens[self.ctidx]
         except BaseException:
             throw(UnexepectedEOFError(self.current_token))
+
+
+    def skipBody(self):
+        self.advance()
+        opens = 1
+        while(opens != 0):
+            self.advance()
+            if(self.current_token.tok == T_OPENSCOPE):
+                opens += 1
+            elif(self.current_token.tok == T_CLSSCOPE):
+                opens -= 1
 
     # determine DType equality (including typedefs)
     def Tequals(self, ta: str, tb: str) -> bool:
@@ -368,11 +389,7 @@ class Compiler:
             assert thisp
             rettype = VOID.copy()
 
-        # operator specifier
-        if(self.current_token.value == "operator"):
-            inline = True
-            operator = True
-            self.advance()
+        
 
 
         # parent structure
@@ -396,8 +413,14 @@ class Compiler:
             thispt = struct
             # self.advance()
             self.advance()
-
-
+        
+        # operator specifier
+        if(self.current_token.value == "operator"):
+            inline = True
+            operator = True
+            self.advance()
+        # record token that declared the function
+        dtok = self.current_token
         if not operator:
             # get fnname
             name = self.checkId()
@@ -407,7 +430,6 @@ class Compiler:
             name = self.current_token.value
             if name not in OPERATORS:
                 throw(UnkownOperator(name))
-            
             self.advance()
 
         # ensure syntax
@@ -464,7 +486,7 @@ class Compiler:
         if(self.current_token.tok == T_ENDL):
             self.advance()
             # create empty function for assignment later
-            f = Function(name, parameters, rettype, self, [], return_auto=autodecl)
+            f = Function(name, parameters, rettype, self, [], return_auto=autodecl, declare_token=dtok)
             self.globals.append(
                 Variable(
                     f.returntype.up(),
@@ -497,7 +519,10 @@ class Compiler:
 
         # construct final object
         f = Function(name, parameters, rettype, self,
-                    self.currentTokens[start:self.ctidx], return_auto=autodecl)
+                    self.currentTokens[start:self.ctidx], return_auto=autodecl, inline=inline, declare_token=dtok)
+
+        
+        f.unassigned = False
 
         # pre-compile f to determine it's returntype
         if f.return_auto:
@@ -562,7 +587,19 @@ class Compiler:
         # \see Structure
         # structure wrapper
         parser = Structure(self)
-        parser.construct()
+
+        try:
+            parser.construct()
+        except Error as e:
+            print(e.__repr__())
+            self.skipBody()
+            self.advance()
+            self.checkSemi()
+            self.types.pop()
+
+    def buildEnum(self, thisp=False, thispt=None) -> None:
+        pass
+
 
     def compile(self, ftup: list) -> None:            # main function to perform Compiler tasks
         self.currentTokens = ftup
@@ -745,6 +782,17 @@ class Compiler:
             # apply offset, and overall size
             member.offset = struct.s
             struct.s += member.t.csize()
+        
+
+        for op in struct.operators:
+            for i in range(len(struct.operators[op])):
+                struct.operators[op][i].parameters[0].t = struct.up()
+                struct.operators[op][i] = self.buildTemplateFunction(
+                    struct.operators[op][i], tns, types
+                )
+        
+        
+        
         self.template_cache.append([template, types, struct])
         return struct.copy()
 
@@ -887,7 +935,12 @@ class Compiler:
         # record location to jump back to
         backto = self.ctidx - 1
         self.checkType()
+        # account for operator overloads
+        if self.current_token.tok == T_KEYWORD and self.current_token.value == 'operator':
+            self.advance()
+
         self.advance()
+
 
         # function determinant:
         #   for function delcarations fndp.tok will always be a '(', and for variables
@@ -1017,8 +1070,26 @@ class Compiler:
         else:
             throw(UnexpectedToken(self.current_token))
 
-    # compile all functions and fill in raw assembly info
 
+    def verify_entrypoint(self, f):
+        # check returntype
+        if f.returntype.isflt():
+            print(InvalidMainReturn(f.declare_token).__repr__())
+            self.panicmode=True
+        
+        # check valid parameters
+        if len(f.parameters) > 0:
+            # check parameter 1
+            if not (f.parameters[0].t.__eq__(INT) or f.parameters[0].t.__eq__(LONG)):
+                warn(InvalidMainParameters(f.parameters[0].dtok))
+            # check for parameter 2
+            if len(f.parameters) > 1:
+                # check the parameter 2 type
+                if not (f.parameters[1].t.__eq__(CHAR.up().up())):
+                    warn(InvalidMainParameters(f.parameters[1].dtok))
+
+
+    # compile all functions and fill in raw assembly info
     def finalize(self):
 
         # the Compiler needs to find the best suitable entrypoint.
@@ -1026,8 +1097,14 @@ class Compiler:
         # returntype, or parameters.
         for f in self.functions:
             if f.name == "main":
+                
+                self.verify_entrypoint(f)
+
+
                 self.entry = f
+                
                 f.extern = True
+                
                 self.globals.append(
                     Variable(
                         INT.up(),
@@ -1036,6 +1113,7 @@ class Compiler:
                         initializer=f,
                         isptr=True)
                 )
+
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.
@@ -1049,7 +1127,19 @@ class Compiler:
             if not f.inline and not f.isTemplate:
 
                 self.currentfunction = f
-                f.compile()
+                
+                # catch errors to continue compilation
+                try:
+                
+                    f.compile()
+                
+                except Error as e:
+                    # assuming the error is non fatal:
+                    print(e.__repr__())
+                    rfreeAll()
+                    continue
+
+                
                 if(True in norm_scratch_registers_inuse or True in sse_scratch_registers_inuse):
                     print(
                         f"Warning:\n\tRegister leak of degree {norm_scratch_registers_inuse.count(True)+sse_scratch_registers_inuse.count(True)} found in function:\n\t {f}\n\t called from: {config.LAST_RALLOC}\n")
@@ -1079,5 +1169,6 @@ keyword_responses = {
     "inline": Compiler.buildInlinefn,
     "function": Compiler.buildNormalfn,
     "template": Compiler.beginTemplate,
-    "auto":     Compiler.buildAutofn
+    "auto":     Compiler.buildAutofn,
+    "enum":     Compiler.buildEnum
 }

@@ -22,7 +22,7 @@ from Assembly.Instructions import Instruction, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat
 from Classes.Constexpr import buildConstantSet, determineConstexpr
-from Classes.DType import DType
+from Classes.DType import DType, typematch
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
@@ -66,7 +66,7 @@ predefs = [
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
                  tokens, inline=False, extern=False, compileCount=0, memberfn=False, 
-                 parentstruct=None, return_auto=False):
+                 parentstruct=None, return_auto=False, declare_token=None):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -82,6 +82,8 @@ class Function:
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.stackTotal = 8                     # maintain total count
         self.variables = []                     # all local variables
+
+        self.declare_token = declare_token
 
         # a hash table of indexes in self.variables
         # for faster access during compiletime
@@ -168,6 +170,10 @@ class Function:
         # Functions declared with the auto keyword as their type will have to determine
         # their own returntype. This flag specifies that a function is declared with auto.
         self.return_auto = return_auto
+
+
+        # determine if a function is a placeholder or a properly assigned function
+        self.unassigned = True
 
 
         # hasReturned keeps track of if a function has made a guarenteed return.
@@ -330,7 +336,7 @@ class Function:
             v.dtok = self.tokens[self.ctidx + 1]
         # self.stackCounter += v.t.size(0)
         if(v.register is None):
-            if v.t.size(0) <= 8:
+            if v.t.csize() <= 8:
                 self.stackCounter += 8
             else:
                 self.stackCounter += v.t.csize()
@@ -1101,8 +1107,16 @@ class Function:
         # evaluate the lvalue to compare
         loadinstr, cmpvalue = self.evaluateExpression()
 
+
+        if isinstance(cmpvalue.accessor, Variable):
+            reg = ralloc(False, size=cmpvalue.type.csize())
+            loadinstr+= loadToReg(reg, cmpvalue.accessor)
+            cmpvalue.accessor = reg
         # ensure register hit
         reralloc(cmpvalue.accessor)
+
+
+
 
         # mark position for topcode
         topmarker = f"##SWITCHTOP##{len(self.asm)}"
@@ -1327,6 +1341,7 @@ class Function:
 
     def buildAutoDefine(self, register=False):
         self.advance()
+        nametok = self.current_token
         name = self.checkForId()
 
         # check if variable exists already
@@ -1352,10 +1367,11 @@ class Function:
 
             self.addline(instr)
             var = Variable(value.type, name)
+            var.dtok = nametok
             if register:
                 var.register = ralloc(value.type.isflt())
 
-            self.addVariable(var)
+            self.addVariable(var, False)
             self.addline(
                 depositFinal(
                     EC.ExpressionComponent(
@@ -2029,10 +2045,8 @@ class Function:
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
-
                     newvar = Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed)
-
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s-v.offset, isptr=v.isptr, signed=v.signed)
                     self.append_rawVariable(newvar)
 
                     # initialize to null
@@ -2108,9 +2122,13 @@ class Function:
                 self.destructor_text += self.createDestructor(var)
 
             if (self.current_token.tok == T_OPENP):
-                self.ctidx-=2
-                self.memberCall(var.t.constructor, var)
-                self.addline("pop rax")
+
+                if var.t.constructor is not None:
+                    self.ctidx-=2
+                    self.memberCall(var.t.constructor, var)
+                    self.addline("pop rax")
+                else:
+                    throw(UnkownConstructor(self.tokens[self.ctidx-1]))
 
         # check for stack based array declaration
         while self.current_token.tok == "[":
@@ -2366,7 +2384,6 @@ class Function:
 
     # compile a single line
     def compileLine(self):
-
         if(self.current_token.tok == T_KEYWORD):
             # keyword statement
             self.buildKeywordStatement()

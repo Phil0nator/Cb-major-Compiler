@@ -152,8 +152,7 @@ class Structure:
             self.prototypeType.operators[f.name] = [f]
         else:
             self.prototypeType.operators[f.name].append(f) 
-
-        f.name = f"operator{OPERATORS.index(f.name)}"
+        
 
 
 
@@ -165,9 +164,7 @@ class Structure:
         self.update()
         if(len(self.compiler.functions) - lf > 0):
             f = self.compiler.functions[-1]
-            
             if f.name in OPERATORS:
-                
                 self.buildOperator(f, tok)
 
             else:
@@ -217,8 +214,8 @@ class Structure:
                 else:
                     self.buildMember()
 
-            elif (self.current_token.tok == T_KEYWORD):
 
+            elif (self.current_token.tok == T_KEYWORD):
                 self.buildMemberfn()
                 
             elif (self.current_token.tok == "~"):

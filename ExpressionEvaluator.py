@@ -3,7 +3,8 @@ import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
-                                 maskset, shiftInt, shiftmul, valueOf, zeroize)
+                                 maskset, shiftInt, shiftmul, valueOf, zeroize, 
+                                 lea_struct, fncall, cast_regUp)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
@@ -15,7 +16,7 @@ from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import Variable
 from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
-                     LONG, SHORT, VOID, canShiftmul, operatorISO, typematch)
+                     LONG, SHORT, VOID, canShiftmul, operatorISO)
 
 #############################
 # optloadRegs is used to load
@@ -706,8 +707,56 @@ class ExpressionEvaluator:
                 o = newt.copy()
         return instr
 
-    # evaluate a generated postfix list of EC's
+    # compile the overloaded operator of type a.type, with input b
+    def compile_AoverloadB(self, a, op, b, evaluator, stack):
 
+        overload = a.type.getOpOverload(op, b.type)
+        if overload is None:
+            throw(NoOverloadOp(a.token,a.type,b.type,op))
+
+        instr = ""
+        if a.memory_location and a.isRegister():
+            instr += f"mov rdi, {a.accessor}\n"
+        else:
+            instr += lea_struct('rdi', a)
+
+        fltret = overload.returntype.isflt()
+        fltparam = overload.parameters[1].t.isflt()
+
+        if b.type.isintrinsic():
+            instr += loadToReg(
+                norm_parameter_registers[1] if not fltparam 
+                else sse_parameter_registers[0], 
+                b.accessor)
+        else:
+            instr += lea_struct('rsi', b)
+
+
+        instr += fncall(overload)
+
+
+        output = ralloc(fltret, overload.returntype.csize())
+        instr += loadToReg(output, norm_return_register if not fltret else sse_return_register)
+
+        stack.append(
+            EC.ExpressionComponent(output, overload.returntype.copy(), token=a.token)
+        )
+
+        return instr
+
+        
+
+
+    # compile a implicit cast of struct b to type a.type
+    def compile_implicitCastBtoA(self, a, op, b, evaluator, stack):
+        pass
+
+    # compile the overloaded single operand operator for struct a
+    def compile_AoverloadSingleOperand(self, a, op, evaluator, stack):
+        pass
+
+
+    # evaluate a generated postfix list of EC's
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
         stack = []      # used for evaluation
@@ -732,7 +781,21 @@ class ExpressionEvaluator:
                     else:
                         a = stack.pop()              # first operand
 
-                    instr += self.compile_aopb(a, op, b, evaluator, stack)
+
+
+
+                    # check for non-primitive types for operator overloading:
+                    if not a.type.isintrinsic():
+                        # check for operator accepting b's type
+                        instr += self.compile_AoverloadB(a,op,b,evaluator,stack)
+
+                    elif not b.type.isintrinsic():
+                        pass
+                        # check for implicit cast overload for b.type -> a.type
+
+                    else:
+                        # normal conditions:
+                        instr += self.compile_aopb(a, op, b, evaluator, stack)
 
                 else:  # op takes only one operand
 
@@ -862,12 +925,9 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 instr += ninstr
 
                 if sizeOf(breg) < 8:
-                    #instr += maskset(setSize(breg, 8), sizeOf(breg))
+                    instr += cast_regUp("rax", breg, b.type.signed)
                     rfree(breg)
-                    ax = "rax"
-                    instr += zeroize(ax) + \
-                        loadToReg(setSize(ax, sizeOf(breg)), breg)
-                    breg = ax
+                    breg = "rax"
 
                 areg = setSize(areg, 8)
 
@@ -960,8 +1020,10 @@ class LeftSideEvaluator(ExpressionEvaluator):
             if(a.accessor.isStackarr):
                 instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.accessor.stackarrsize}]\n"
             else:
-
-                instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
+                if a.type.isintrinsic():
+                    instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset}]\n"
+                else:
+                    instr += f"lea {result}, [{a.accessor.baseptr}{a.accessor.offset+a.type.csize()}]\n"
             o = a.type.copy()
             o.ptrdepth += 1
             return instr, o, EC.ExpressionComponent(
@@ -1057,11 +1119,12 @@ def depositFinal(dest, final):
             rfree(final.accessor)
         return instr
 
+
     if(isinstance(final.accessor, str) and final.accessor != "pop"):
         final.accessor = setSize(final.accessor, (dest.type.csize()))
 
-    if(isinstance(dest.accessor, str)):
-        dest.accessor = setSize(dest.accessor, final.type.csize())
+    #if(isinstance(dest.accessor, str)):    
+    #    dest.accessor = setSize(dest.accessor, final.type.csize())
 
     if(final.type.__eq__(dest.type)):
         if(isinstance(final.accessor, Variable)):
@@ -1119,9 +1182,14 @@ def depositFinal(dest, final):
             else:
                 cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
         else:
-            cst = False
 
-        if(cst != False):
+            if dest.type.csize() < final.type.isflt():
+                cst = False
+            else:
+                cst = cast_regUp(castdest, final.accessor, final.type.signed)
+
+
+        if(cst != False) and (cst != ""):
             instr += cst
             if(twoStep):
                 instr += loadToReg(dest.accessor, castdest)
@@ -1161,11 +1229,9 @@ def performCastAndOperation(fn, a, b, op, o):
             instr += ninstr
 
             if sizeOf(breg) < 8:
-                ax = "rax"
-                instr += zeroize(ax) + \
-                    loadToReg(setSize(ax, sizeOf(breg)), breg)
+                instr += cast_regUp("rax", breg, b.type.signed)
                 rfree(breg)
-                breg = ax
+                breg = "rax"
 
             areg = setSize(areg, 8)
             if(a.type.size(1) in [1, 2, 4, 8]):

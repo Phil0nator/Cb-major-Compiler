@@ -395,12 +395,9 @@ class PreProcessor:
                     '\\"', '"').replace("\\n", "\n")
                 try:
                     value = eval(code)
-                except RuntimeError as e:
-                    throw(Error(self.current_token, f"Python error: {e}"))
-                except EnvironmentError as e:
-                    throw(Error(self.current_token, f"Python error: {e}"))
-                except SyntaxError as e:
-                    throw(Error(self.current_token, f"Python error: {e}"))
+                except BaseException as e:
+                    fatalThrow(Error(self.current_token, f"Python error: {e}"))
+
 
                 self.tokens[startidx:self.tkidx + 2] = [
                     Token(
@@ -455,7 +452,7 @@ class PreProcessor:
                 self.delmov()
                 return
 
-        throw(FileNotFound(self.current_token, q))
+        fatalThrow(FileNotFound(self.current_token, q))
 
     def buildIf(self):
         self.delmov()
@@ -489,8 +486,21 @@ class PreProcessor:
         else:
             pass
 
-    # main function
 
+    def buildError(self):
+        errtok = self.current_token
+        self.advance()
+        self.checkToks([T_STRING])
+        throw(Error(errtok, self.current_token.value))
+
+    def buildWarning(self):
+        warntok = self.current_token
+        self.delmov()
+        self.checkToks([T_STRING])
+        warn(Warning(warntok, f" {self.current_token.value} "))
+        self.delmov()
+
+    # main function
     def process(self):
 
         while self.current_token.tok != T_EOF:
@@ -498,40 +508,12 @@ class PreProcessor:
             if(self.current_token.tok == T_DIRECTIVE):
                 # token is directive
                 self.current_token.value = self.current_token.value.lower()
-                if(self.current_token.value == "include"):
-                    # build include statement
-                    self.buildIncludeStatement()
-
-                elif(self.current_token.value == "define"):
-                    # build define statement
-                    self.buildDefine()
-                elif(self.current_token.value == "ifdef"):
-                    self.buildifdef()
-                elif (self.current_token.value == "if"):
-                    self.buildIf()
-                elif(self.current_token.value == "ifndef"):
-                    self.buildifndef()
-
-                elif(self.current_token.value == "endif"):
-                    self.delmov()
-
-                elif(self.current_token.value == "link"):
-                    self.addobject()
-                elif(self.current_token.value == "error"):
-                    errtok = self.current_token
-                    self.advance()
-                    self.checkToks([T_STRING])
-                    throw(Error(errtok, self.current_token.value))
-
-                elif(self.current_token.value == "warning"):
-                    warntok = self.current_token
-                    self.delmov()
-                    self.checkToks([T_STRING])
-                    warn(Warning(warntok, f" {self.current_token.value} "))
-                    self.delmov()
-
+                # check if there is a response to this directive
+                if self.current_token.value in directive_responses:
+                    # execute a response
+                    directive_responses[self.current_token.value](self)
                 else:
-                    throw(UnkownDirective(self.current_token))
+                    fatalThrow(UnkownDirective(self.current_token))
 
             elif(self.current_token.tok == T_ID):
                 self.checkDefn()
@@ -544,3 +526,17 @@ class PreProcessor:
 
 def badfilter(token):
     return token is not None and token.tok != T_BSLASH
+
+
+
+directive_responses = {
+    "include"   :   PreProcessor.buildIncludeStatement,
+    "define"    :   PreProcessor.buildDefine,
+    "ifdef"     :   PreProcessor.buildifdef,
+    "if"        :   PreProcessor.buildIf,
+    "ifndef"    :   PreProcessor.buildifndef,
+    "endif"     :   PreProcessor.delmov,
+    "link"      :   PreProcessor.addobject,
+    "error"     :   PreProcessor.buildError,
+    "warning"   :   PreProcessor.buildWarning
+}

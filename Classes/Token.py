@@ -136,6 +136,8 @@ KEYWORDS = [
     "auto",
     "constexpr",
     "operator",
+    "explicit",
+    "enum",
 
     "for",
     "while",

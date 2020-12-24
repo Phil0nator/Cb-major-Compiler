@@ -53,6 +53,7 @@ parser.add_argument("-p", "--profile", action="store_true", default=False,
 parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
 parser.add_argument("-l", "--link", action="append", help="Link object files")
+parser.add_argument("-L", "--addLink", action="append", help="Add folder to search for object files")
 
 parser.add_argument("-v", "--verbose", action="store_true", default=False,
                     help="Print extra information during compilation")
@@ -97,7 +98,7 @@ __linkables__ = args.link if args.link is not None else []
 __nowarn__ = args.nowarn
 __verbose__ = args.verbose
 __features__ = args.use if args.use is not None else []
-
+__linkdirs__ = args.addLink if args.addLink is not None else []
 
 __preprocessonly__ = args.preprocess
 
@@ -162,7 +163,7 @@ def loadRawFile(path, token):
             pass
 
     if(rawdata is None):
-        E.throw(E.FileNotFound(token, path))
+        E.fatalThrow(E.FileNotFound(token, path))
     return rawdata
 
 

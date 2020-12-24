@@ -137,3 +137,31 @@ void Vec3f::sqrt(){
 double Vec3f::dot(Vec3f* other){
     VEC3F_DOT
 }
+
+void Vec3f::operator+=(Vec3f* other){
+    VEC3F_LOAD
+    VEC3F_ADD
+    VEC3F_DEPOSIT
+}
+
+void Vec3f::operator-=(Vec3f* other){
+    VEC3F_LOAD
+    VEC3F_SUB
+    VEC3F_DEPOSIT
+}
+
+void Vec3f::operator/=(Vec3f* other){
+    VEC3F_LOAD
+    VEC3F_DIV
+    VEC3F_DEPOSIT
+}
+
+void Vec3f::operator*=(Vec3f* other){
+    VEC3F_LOAD
+    VEC3F_MUL
+    VEC3F_DEPOSIT
+}
+
+double Vec3f::operator *(Vec3f* other){
+    VEC3F_DOT
+}
