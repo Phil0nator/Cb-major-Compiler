@@ -416,7 +416,7 @@ class Compiler:
         
         # operator specifier
         if(self.current_token.value == "operator"):
-            inline = True
+            #inline = True
             operator = True
             self.advance()
         # record token that declared the function
@@ -623,7 +623,7 @@ class Compiler:
                     tp.ptrdepth = 1
                     # build Variable
                     v = Variable(tp, name, glob=True,
-                                 isptr=True, initializer=f"\"{t.value}\"")
+                                 isptr=True, initializer=f"`{t.value}`")
                     self.globals.append(v)
                     # update token for later use
                     t.tok = T_ID

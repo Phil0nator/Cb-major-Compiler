@@ -12,7 +12,7 @@ __literal = "&LITERAL&"
 
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0,
-                 signed=True, destructor=None, constructor=None, stackarr=False, operators={}):
+                 signed=True, destructor=None, constructor=None, stackarr=False, operators=None):
         self.name = name
         self.s = size  # base size if not pointer
         self.members = members  # for structures
@@ -22,7 +22,7 @@ class DType:
         self.destructor = destructor  # only for structures
         self.constructor = constructor  # only for structures
         self.stackarr = stackarr        # is stack-based array
-        self.operators = operators
+        self.operators = operators if operators is not None else {}
 
     def size(self, depth):  # determine the size at a given pointer depth
         if(depth < self.ptrdepth):
@@ -92,8 +92,11 @@ class DType:
             if op not in self.operators:
                 return None
 
+            if param.name == "&LITERAL&":
+                param.name = "int"
+
             for overload in self.operators[op]:
-                if typematch(overload.parameters[1].t, param, True):
+                if overload.parameters[1].t.__eq__( param ):
                     return overload
 
             

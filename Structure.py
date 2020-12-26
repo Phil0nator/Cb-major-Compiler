@@ -147,7 +147,6 @@ class Structure:
 
         if len(f.parameters)> 2:
             throw(TooManyOperatorArgs(t1, f.name))
-        
         if f.name not in self.prototypeType.operators:
             self.prototypeType.operators[f.name] = [f]
         else:

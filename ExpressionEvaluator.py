@@ -709,9 +709,10 @@ class ExpressionEvaluator:
 
     # compile the overloaded operator of type a.type, with input b
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
-
+        
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
+            
             throw(NoOverloadOp(a.token,a.type,b.type,op))
 
         instr = ""
@@ -719,6 +720,7 @@ class ExpressionEvaluator:
             instr += f"mov rdi, {a.accessor}\n"
         else:
             instr += lea_struct('rdi', a)
+        rfree(a.accessor)
 
         fltret = overload.returntype.isflt()
         fltparam = overload.parameters[1].t.isflt()
@@ -734,12 +736,14 @@ class ExpressionEvaluator:
 
         instr += fncall(overload)
 
-
-        output = ralloc(fltret, overload.returntype.csize())
+        rett = self.fn.compiler.getType(overload.returntype.name)
+        output = ralloc(fltret, rett.csize())
         instr += loadToReg(output, norm_return_register if not fltret else sse_return_register)
 
+
+
         stack.append(
-            EC.ExpressionComponent(output, overload.returntype.copy(), token=a.token)
+            EC.ExpressionComponent(output, rett.copy(), token=a.token)
         )
 
         return instr

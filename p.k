@@ -6,8 +6,7 @@
 
 int main(){
 
-
-    benchmark();
+    //benchmark();
     return 0;
 }
 
