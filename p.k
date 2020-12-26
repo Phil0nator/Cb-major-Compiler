@@ -2,12 +2,12 @@
 #include "cblib.cb"
 
 
-
-
 int main(){
 
-    //benchmark();
-    return 0;
+    register float i = 0;
+    i++;
+    benchmark();
+    return 5;
 }
 
 

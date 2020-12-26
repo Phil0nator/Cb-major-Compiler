@@ -794,7 +794,7 @@ class Function:
 
         if(self.current_token.tok != T_ENDL):
 
-            instr, val = self.evaluateExpression()
+            instr, val = self.evaluateExpression(destination=False)
             
             if self.return_auto:
                 if self.returntype.name == "auto":
@@ -1566,8 +1566,11 @@ class Function:
 
         instructions += (fncall(fn) if not varcall else self.doVarcall(var))
 
+        # determine if rax needs to be saved for xmm push/pop operations
+        contains_sseregs = next((True for r in self.regdecls if r.type.isflt()), None) is not None
+
         # save return value for register restores
-        if(len(self.regdecls) > 0):
+        if(contains_sseregs):
             tmp = ralloc(False)
             instructions += raw_regmov(
                 tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
@@ -1575,7 +1578,7 @@ class Function:
         instructions += (self.restoreregs())
 
         # restore return value after register restores
-        if(len(self.regdecls) > 0):
+        if(contains_sseregs):
             rfree(tmp)
             instructions += raw_regmov(
                 sse_return_register if fn.returntype.isflt() else norm_return_register, tmp)
@@ -2020,9 +2023,11 @@ class Function:
             # The peephole optimizer will remove any structures like this with optimization levels
             # -O2 or higher.
             else:
+                out = norm_return_register if not output.type.isflt() else sse_return_register
                 instructions += spop(
                     EC.ExpressionComponent(
                         norm_return_register, LONG))
+                output.accessor = out
 
         return instructions, output
 

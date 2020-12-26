@@ -2,4 +2,6 @@ import config
 
 
 class LoopOptimizer:
-    pass
+    
+    def __init__(self, countervar, conditional):
+        pass

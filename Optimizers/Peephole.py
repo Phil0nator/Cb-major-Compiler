@@ -3,13 +3,25 @@ from Assembly.Instructions import (dwordImmediate, reversed_comparisons,
                                    shorthand_incrementation,
                                    unsigned_comparisons)
 from Assembly.TypeSizes import getSizeSpecifier
-
+from Classes.Constexpr import calculateConstant
+from Classes.ExpressionComponent import ExpressionComponent
 
 MOV_INST = ["mov", "movq", "movsd"]
 SIMPLE_ARITH_INST = ["add", "sub", "and", "or", "xor", "cmp"]
 SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
-
 CMP_INST = ["cmp", "ucomisd", "comisd"]
+
+REPLICABLE_INST = {
+    "add":"+",
+    "sub":"-",
+    "imul":"*",
+    "shl":"<<",
+    "shr":">>",
+    "sal":"<<",
+    "sar":">>",
+}
+
+
 
 
 def regeq(a, b):
@@ -219,6 +231,31 @@ class Peephole:
                             splitted[nextline.idx] = tmp
                             optims += 1
 
+                    elif (line.op == "cvtsi2sd") and (line.source == prev.dest) and (prev.constSource()):
+                        if int(prev.source) == 0:
+                            splitted[prev.idx] = ""
+                            splitted[line.idx] = f"xorpd {line.dest}, {line.dest}\n"
+
+                    elif (prev.op == "mov") and (prev.constSource()) and \
+                        (line.op in REPLICABLE_INST) and (line.dest == prev.dest) \
+                            and (line.constSource()) and not (prev.hasAddr()):
+                        
+                        
+                        a = int(prev.source)
+                        b = int(line.source)
+                        op = REPLICABLE_INST[line.op]
+                        value = calculateConstant(
+                            ExpressionComponent(a, None, constint=True),
+                            ExpressionComponent(b, None, constint=True),
+                            op
+                        )
+
+                        splitted[prev.idx] = ""
+                        splitted[line.idx] = f"mov {line.dest}, {value.accessor}\n"
+                        optims+=1
+
+
+
                 # additions or subtractions by one can be substituted for their
                 # faster counterparts in 'inc' or 'dec' respectively
                 if(line.op == "add" or line.op == "sub") and line.constSource() and int(line.source) == 1 and not line.hasAddr():
@@ -315,6 +352,8 @@ class Peephole:
                 elif(line.op == "mov" and (line.constSource() and int(line.source) == 0) and not line.hasAddr()):
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
+
+                
 
                 # ensure that there are no redundant movs like:
                 # e.g: mov rax, rax

@@ -895,15 +895,24 @@ class LeftSideEvaluator(ExpressionEvaluator):
     # instructions
 
     def incdec(self, a, op, o):
-        needload = True
-        instr = ""
-        instr += bringdown_memloc(a)
+        if not a.type.isflt():
+            needload = True
+            instr = ""
+            instr += bringdown_memloc(a)
 
-        cmd = "inc" if op == "++" else "dec"
+            cmd = "inc" if op == "++" else "dec"
 
-        instr += Instruction(cmd, [valueOf(a.accessor, exactSize=True)])
-        o = a.type.copy()
-        return instr, o, a
+            instr += Instruction(cmd, [valueOf(a.accessor, exactSize=True)])
+            o = a.type.copy()
+            
+            return instr, o, a
+        else:
+            return self.performCastAndOperation(
+                a,
+                EC.ExpressionComponent(1, LITERAL, constint=True),
+                "+",
+                o
+            )
 
     # Do an operation with a op b -> o:DType
 

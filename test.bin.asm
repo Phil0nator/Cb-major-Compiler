@@ -875,6 +875,7 @@ _double_sin_pdouble:
 	subsd xmm7, xmm8
 	movsd xmm0, xmm7
 	call _double_taylor_sin_pdouble
+	movq rax, xmm0
 	jmp ___double_sin_pdouble__return
 	jmp .L0x275
 .L0x274:
@@ -899,6 +900,7 @@ _double_cos_pdouble:
 	addsd xmm7, xmm8
 	movsd xmm0, xmm7
 	call _double_sin_pdouble
+	movq rax, xmm0
 	jmp ___double_cos_pdouble__return
 	jmp .L0x273
 .L0x272:
@@ -1118,6 +1120,7 @@ _double_asin_pdouble:
 	movsd xmm7, qword[rbp-8]
 	movsd xmm0, xmm7
 	call _double_taylor_asin_pdouble
+	movq rax, xmm0
 ___double_asin_pdouble__return:
 	leave
 	ret
@@ -2667,6 +2670,7 @@ _bool_scan_merge_pmblock.:
 	mov rbx, qword[rbx]
 	add rbx, 32
 	mov rsi, rbx
+	mov rax, 11
 	syscall
 .L0x16e:
 .L0x169:
@@ -2932,6 +2936,7 @@ _void_free_pvoid.:
 	mov rbx, qword[rbx]
 	add rbx, 32
 	mov rsi, rbx
+	mov rax, 11
 	syscall
 .L0x12d:
 .L0x128:
@@ -4105,8 +4110,6 @@ sscanf:
 	mov rbx, qword[rbp-8]
 	mov rdi, rbx
 	call _int___SSCANF_pchar.char.void..
-	mov rbx, rax
-	mov eax, ebx
 __sscanf__return:
 	leave
 	ret
@@ -4133,8 +4136,6 @@ _int_getInt_pchar.:
 	lea rbx, [rbp-56]
 	mov rdi, rbx
 	call _int_toInteger_pchar.bool
-	mov rbx, rax
-	mov eax, ebx
 ___int_getInt_pchar.__return:
 	leave
 	ret
@@ -4161,8 +4162,6 @@ _int_getUint_pchar.:
 	lea rbx, [rbp-56]
 	mov rdi, rbx
 	call _int_toInteger_pchar.bool
-	mov rbx, rax
-	mov eax, ebx
 ___int_getUint_pchar.__return:
 	leave
 	ret
@@ -4506,7 +4505,6 @@ _void_mlock_pmutex.:
 	mov r10 , rcx 
 	syscall 
 .L0x37:
-	mov rbx, rax
 	pop rsi
 .L0x32:
 	jmp .L0x30
@@ -4570,7 +4568,6 @@ _void_munlock_pmutex.:
 	mov r10 , rcx 
 	syscall 
 .L0x27:
-	mov rbx, rax
 	pop rsi
 .L0x22:
 	jmp .L0x1a
@@ -4688,7 +4685,14 @@ _void_thread_join_pthread_t.:
 	leave
 	ret
 main:
-	xor eax, eax
+	xorpd xmm8, xmm8
+	movsd xmm7, xmm8
+	mov rbx, 1
+	movsd xmm8, xmm7
+	cvtsi2sd xmm9, rbx
+	addsd xmm8, xmm9
+	call _void_benchmark_p
+	mov eax, 5
 __main__return:
 	ret
 _void_benchmark_p:
