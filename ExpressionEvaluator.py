@@ -4,7 +4,7 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize, 
-                                 lea_struct, fncall, cast_regUp)
+                                 lea_struct, fncall, cast_regUp, createFloatConstant)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons)
 from Assembly.Registers import *
@@ -642,6 +642,23 @@ class ExpressionEvaluator:
         if(op in [":"]):
             c = stack.pop()
             stack.append(c)
+
+        # check for integer-based floating point literals
+        if a.type.isflt() and b.isconstint():
+            constant = createFloatConstant(float(b.accessor))
+            self.fn.suffix += constant[0]
+            b = EC.ExpressionComponent(
+                Variable(
+                    DOUBLE.copy(),
+                    constant[1],
+                    glob=True,
+                    initializer=b.accessor,
+                    mutable=False
+                ),
+                DOUBLE.copy(),
+                token=b.token
+            )
+
         # optimize for constant expressions
         if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
 
@@ -907,12 +924,15 @@ class LeftSideEvaluator(ExpressionEvaluator):
             
             return instr, o, a
         else:
-            return self.performCastAndOperation(
+            tmpstack = [None]
+            instr = self.compile_aopb(
                 a,
-                EC.ExpressionComponent(1, LITERAL, constint=True),
                 "+",
-                o
+                EC.ExpressionComponent(1, LITERAL, constint=True),
+                self,
+                tmpstack
             )
+            return instr, DOUBLE, tmpstack[1]
 
     # Do an operation with a op b -> o:DType
 

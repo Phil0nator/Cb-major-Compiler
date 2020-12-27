@@ -29,7 +29,7 @@ class ExpressionComponent:
 
     def isRegister(self):  # bool
         return isinstance(
-            self.accessor, str) and self.accessor in REGISTERS
+            self.accessor, str) and (self.accessor in REGISTERS or "xmm" in self.accessor)
 
     def isStackpop(self):  # bool
         return self.accessor == "pop"

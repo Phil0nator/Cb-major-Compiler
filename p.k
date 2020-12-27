@@ -2,12 +2,20 @@
 #include "cblib.cb"
 
 
+inline int funny(int m, int c){
+    return m*c*m*c;
+}
+
+
+
 int main(){
 
-    register float i = 0;
-    i++;
-    benchmark();
-    return 5;
+
+
+
+
+    //benchmark();
+    return funny(5,10);
 }
 
 

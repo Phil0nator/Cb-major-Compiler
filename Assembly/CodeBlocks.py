@@ -572,17 +572,16 @@ def doOperation(t, areg, breg, op, signed=False):
 
 # cast breg of type b to newbreg of type a
 # areg is depricated
-
-
 def castABD(a, b, areg, breg, newbreg):
 
+    # conversions of void type do not use 'cvt' instructions
     if(a.type.isflt() and config.GlobalCompiler.Tequals(b.type.name, "void")) or (b.type.isflt() and config.GlobalCompiler.Tequals(a.type.name, "void")):
         if b.accessor == "pop":
 
             return loadToReg(newbreg, breg)
         else:
             return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
-
+    # size cast for integer types
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() < b.type.csize()):
             #out = maskset(newbreg, a.type.csize())
@@ -600,13 +599,21 @@ def castABD(a, b, areg, breg, newbreg):
             return out
 
         return False
+    # integer-float conversion
     if(a.type.isflt() and not b.type.isflt()):
+    
         if sizeOf(breg) < 4:
             breg = setSize(breg, 4)
+    
         return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
+    # float-integer conversion
     if(b.type.isflt() and not a.type.isflt()):
+        
+        
         if sizeOf(newbreg) < 4:
             breg = setSize(newbreg, 4)
+        
+        
         return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
     return False
 
