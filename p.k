@@ -1,25 +1,43 @@
 #define __CBLIB_SOURCE
-#include "cblib.cb"
+//#include "cblib.cb"
+
+#define COUNT 75000
+
+void sort(int* array, int count){
+
+    for (int i = 0 ; i < count; i++){
+
+        for (int j = i; j < count; j++){
+
+            if (array[j] < array[i]){
+                int tmp = array[j];
+                array[j] = array[i];
+                array[i] = tmp;
+            }
+
+        }
+
+    }
+
+}
 
 
-inline int funny(int m, int c){
-    return m*c*m*c;
+int main() {
+    
+    int array[COUNT];
+    for (int i = 0 ; i < COUNT;i++){
+        array[COUNT-1-i] = i;
+    }
+
+    sort(&array, COUNT);
+
+
+    return 0;
 }
 
 
 
-int main(){
-
-
-
-
-
-    //benchmark();
-    return funny(5,10);
-}
-
-
-
+/*
 void benchmark(){
 
     char nullb[1000];
@@ -31,3 +49,4 @@ void benchmark(){
     
 }
 
+*/

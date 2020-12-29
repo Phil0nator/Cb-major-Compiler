@@ -238,6 +238,10 @@ class ExpressionEvaluator:
 
                 # check if implicit casting is needed
                 castlock = ralloc(a.type.isflt())
+                if b.accessor == "pop":
+                    newbreg = ralloc(b.type.isflt())
+                    instrs += loadToReg(newbreg, b.accessor)
+                    b.accessor = newbreg
                 cst = castABD(a, b, None, b.accessor, castlock)
 
                 # no casting
@@ -266,6 +270,10 @@ class ExpressionEvaluator:
 
                     # check if implicit casting is needed
                     castlock = ralloc(a.type.isflt())
+                    if b.accessor == "pop":
+                        newbreg = ralloc(b.type.isflt())
+                        instrs += loadToReg(newbreg, b.accessor)
+                        b.accessor = newbreg
                     cst = castABD(a, b, None, b.accessor, castlock)
 
                     # casting
@@ -963,16 +971,17 @@ class LeftSideEvaluator(ExpressionEvaluator):
                     breg = "rax"
 
                 areg = setSize(areg, 8)
-
+                oreg = ralloc(False)
                 if(a.type.size(1) in [1, 2, 4, 8]):
-                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
+                    instr += f"lea {oreg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
                 else:
                     if(canShiftmul(a.type.size(1))):
                         instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
                     else:
                         instr += f"imul {breg}, {a.type.size(1)}\n"
-                    instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
-
+                    instr += f"lea {oreg}, [{areg}+{setSize(breg,8)}]\n"
+                rfree(areg)
+                areg = oreg
             apendee = (EC.ExpressionComponent(
                 areg, a.type.down(), token=a.token))
             apendee.memory_location = True
@@ -1267,16 +1276,18 @@ def performCastAndOperation(fn, a, b, op, o):
                 breg = "rax"
 
             areg = setSize(areg, 8)
+            oreg = ralloc(False)
             if(a.type.size(1) in [1, 2, 4, 8]):
-                instr += f"lea {areg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
+                instr += f"lea {oreg}, [{areg}+{setSize(breg,8)}*{a.type.size(1)}]\n"
             else:
                 if(canShiftmul(a.type.size(1))):
                     instr += f"shl {breg}, {shiftmul(a.type.size(1))}\n"
                 else:
                     instr += f"imul {breg}, {a.type.size(1)}\n"
-                instr += f"lea {areg}, [{areg}+{setSize(breg,8)}]\n"
+                instr += f"lea {oreg}, [{areg}+{setSize(breg,8)}]\n"
+            rfree(areg)
         apendee = (EC.ExpressionComponent(
-            areg, a.type.down(), token=a.token))
+            oreg, a.type.down(), token=a.token))
 
         # TODO
         #
