@@ -185,7 +185,12 @@ class Structure:
         id = self.current_token.value
         self.advance()
         if(self.current_token.tok != T_OPENSCOPE):
-            throw(ExpectedToken(self.current_token, "{"))
+            if self.current_token.tok == T_ENDL:
+                self.compiler.types.append(DType(id, 0, [], 0, True))
+                self.advance()
+                return
+            else:
+                throw(ExpectedToken(self.current_token, "{"))
         # build prototype DType as placeholder
         self.prototypeType = DType(id, 0, [], 0, True)
         

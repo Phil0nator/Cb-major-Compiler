@@ -1,11 +1,11 @@
 //#define __CBLIB_SOURCE
 #include "cblib.cb"
 
-
+#define TEST
 
 function int main(){
 
-
+    
 
 
     return 0;

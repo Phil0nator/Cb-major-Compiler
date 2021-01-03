@@ -500,6 +500,8 @@ class Function:
             if(self.current_token.value == "unsigned"):
                 signed = False
                 self.advance()
+            elif(self.current_token.value == "signed"):
+                self.advance()
         # ensure syntax
         if(self.current_token.tok != T_ID):
             # respond to bad syntax based on err flag

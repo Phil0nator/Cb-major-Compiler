@@ -59,7 +59,7 @@ CBLIBENTRY void getString(char* buffer, int maxlen, char* msg);
  * @param signed if the string is a signed integer
  * @returns the integer conversion
  */
-CBLIBENTRY int toInteger(char* str, bool signed);
+CBLIBENTRY int toInteger(char* str, bool s);
 
 /**
  * (Used internally)

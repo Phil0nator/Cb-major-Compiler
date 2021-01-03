@@ -56,8 +56,11 @@ class Error(BaseException):
 
 
 def throw(error):
-    config.GlobalCompiler.panicmode = True
-    raise(error)
+    if config.GlobalCompiler is not None:
+        config.GlobalCompiler.panicmode = True
+        raise(error)
+    else:
+        fatalThrow(error)
     #exit(1)
 
 def fatalThrow(error):

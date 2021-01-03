@@ -43,7 +43,7 @@ void getString(char* buffer, int maxlen, char* msg){
 
 
 
-int toInteger(char* str, bool signed){
+int toInteger(char* str, bool s){
 
     while(@str == ' '){
         str+=1;
@@ -51,7 +51,7 @@ int toInteger(char* str, bool signed){
     char c = $char (@str);
     int val = 0;
     bool negative = false;
-    if(c == '-' && signed){
+    if(c == '-' && s){
         negative = true;
         str+=1;
         c = $char(@str);

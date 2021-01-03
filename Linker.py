@@ -20,7 +20,7 @@ def link(i, o):
     debug = "-g" if config.__dbg__ else ""
 
     
-    print(linktext)
+    #print(linktext)
     return f"gcc \"{config.includepath}/macro.c\" {linktext} {debug} -m64 -fno-pie -no-pie -lm -o \"{o}\""
 
 

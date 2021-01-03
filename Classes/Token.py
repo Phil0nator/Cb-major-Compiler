@@ -130,6 +130,7 @@ KEYWORDS = [
     "struct",
     "const",
     "unsigned",
+    "signed",
     "template",
     "class",
     "typename",
@@ -164,11 +165,13 @@ KEYWORDS = [
 
     "register",
     "static"
-
-
-
-
 ]
+
+IGNORABLES = [
+    "signed"
+]
+
+
 SETTERS = [
     "=",
     "+=",

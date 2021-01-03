@@ -205,9 +205,7 @@ class PreProcessor:
         if(self.current_token.start.line != sline):
             # add new defn
             self.definitions[name] = [
-                name, [
-                    Token(
-                        T_INT, 0, self.current_token.start, self.current_token.end)]]
+                name, []]
             return
 
         # begin collecting tokens for a longer definition

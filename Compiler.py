@@ -201,6 +201,8 @@ class Compiler:
             if(self.current_token.value == "unsigned"):
                 signed = False
                 self.advance()
+            elif(self.current_token.value == "signed"):
+                self.advance()
         # check for correct token Type
         if(self.current_token.tok != T_ID):
             # if instructed to error out, throw error.
@@ -587,6 +589,7 @@ class Compiler:
         # \see Structure
         # structure wrapper
         parser = Structure(self)
+        
 
         try:
             parser.construct()
@@ -1170,5 +1173,6 @@ keyword_responses = {
     "function": Compiler.buildNormalfn,
     "template": Compiler.beginTemplate,
     "auto":     Compiler.buildAutofn,
-    "enum":     Compiler.buildEnum
+    "enum":     Compiler.buildEnum,
+    "class":    Compiler.buildStruct
 }
