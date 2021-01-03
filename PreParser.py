@@ -448,7 +448,7 @@ class PreProcessor:
 
         for d in config.include_directories:
             if(os.path.exists(d + "/" + q)):
-                config.__linkables__.append(d + "/" + q)
+                config.__linkables__.append(d + q)
                 self.delmov()
                 return
 

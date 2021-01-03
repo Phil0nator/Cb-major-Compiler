@@ -1,40 +1,15 @@
-#define __CBLIB_SOURCE
-//#include "cblib.cb"
-
-#define COUNT 75000
-
-void sort(int* array, int count){
-
-    for (int i = 0 ; i < count; i++){
-
-        for (int j = i; j < count; j++){
-
-            if (array[j] < array[i]){
-                int tmp = array[j];
-                array[j] = array[i];
-                array[i] = tmp;
-            }
-
-        }
-
-    }
-
-}
+//#define __CBLIB_SOURCE
+#include "cblib.cb"
 
 
-int main() {
-    
-    int array[COUNT];
-    for (int i = 0 ; i < COUNT;i++){
-        array[COUNT-1-i] = i;
-    }
 
-    sort(&array, COUNT);
+function int main(){
+
+
 
 
     return 0;
 }
-
 
 
 /*

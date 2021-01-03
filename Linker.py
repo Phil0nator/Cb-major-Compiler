@@ -8,19 +8,19 @@ def link(i, o):
     
     if(config.__linkables__):
         links = config.__linkables__
-        linktext = f"\"{links[0]}\""
 
-        for l in links[1:]:
-            linktext = f"{linktext} \"{l}\" "
-        linktext += f" {i}.o"
-
+        linktext = f"\"{i}.o\"" +\
+                    "".join((f" -l\"{linkable}\"" if '.' not in linkable else f" \"{linkable}\"" for linkable in links))
     else:
         linktext = f"\"{i}.o\""
 
-    linktext = f"{' -L'.join([dir for dir in config.__linkdirs__])} {linktext}"
+    if (config.__linkdirs__):
+        linktext = f"{' '.join(['-L'+dir for dir in config.__linkdirs__])} {linktext}"
 
     debug = "-g" if config.__dbg__ else ""
 
+    
+    print(linktext)
     return f"gcc \"{config.includepath}/macro.c\" {linktext} {debug} -m64 -fno-pie -no-pie -lm -o \"{o}\""
 
 

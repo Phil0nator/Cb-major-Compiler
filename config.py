@@ -99,6 +99,9 @@ __nowarn__ = args.nowarn
 __verbose__ = args.verbose
 __features__ = args.use if args.use is not None else []
 __linkdirs__ = args.addLink if args.addLink is not None else []
+__rawgcclink__ = "".join((f"-L{linkable}" for linkable in __linkdirs__)) + \
+                 "".join((f"-l{linkable}" for linkable in __linkables__))
+
 
 __preprocessonly__ = args.preprocess
 
