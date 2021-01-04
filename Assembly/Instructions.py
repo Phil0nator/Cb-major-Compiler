@@ -76,7 +76,10 @@ ONELINE_ASSIGNMENTS = {
 def onelineAssignment(op, dest):
     assert isinstance(dest, EC.ExpressionComponent)
     if(not dest.type.isflt() or op == "="):
-        return ONELINE_ASSIGNMENTS[op][dest.type.isflt()]
+        out = ONELINE_ASSIGNMENTS[op][dest.type.isflt()]
+        if dest.type.isflt() and dest.type.csize() == 4:
+            return out.replace("sd", "ss")
+        return out
     return ""
 
 

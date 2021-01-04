@@ -653,17 +653,17 @@ class ExpressionEvaluator:
 
         # check for integer-based floating point literals
         if a.type.isflt() and b.isconstint():
-            constant = createFloatConstant(float(b.accessor))
+            constant = createFloatConstant(float(b.accessor), flt32=a.type.csize()==4)
             self.fn.suffix += constant[0]
             b = EC.ExpressionComponent(
                 Variable(
-                    DOUBLE.copy(),
+                    a.type.copy(),
                     constant[1],
                     glob=True,
                     initializer=b.accessor,
                     mutable=False
                 ),
-                DOUBLE.copy(),
+                a.type.copy(),
                 token=b.token
             )
 
@@ -1112,11 +1112,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
         if(t is None):
             throw(UnkownType(e.token))
 
-        if t.isflt() == a.type.isflt():
-            a.type = t
-            if a.isRegister():
-                a.accessor = setSize(a.accessor, t.csize())
-            return "", t, a
+        #if t.isflt() == a.type.isflt():
+        #    a.type = t
+        #    if a.isRegister():
+        #        a.accessor = setSize(a.accessor, t.csize())
+        #    return "", t, a
 
         aval = ralloc(a.type.isflt(), a.type.csize())
         result = ralloc(t.isflt(), t.csize())
@@ -1202,27 +1202,41 @@ def depositFinal(dest, final):
                 final.accessor = setSize("rax", final.type.csize())
             if(config.GlobalCompiler.Tequals(final.type.name, "void")):
 
-                cmd = "movq" if(
-                    "[" not in valueOf(castdest) +
-                    valueOf(
-                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
+                if( "[" not in valueOf(castdest) + valueOf(
+                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor):
+                    cmd = "movq"  
+                else:
+                    cmd = "mov"
+                    castdest = setSize(castdest, final.type.csize())
+
+
                 cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
             else:
-                cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                if dest.type.csize() == 8:
+                    cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                else:
+                    cst = f"cvtsi2ss {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+        
         elif(not dest.type.isflt() and final.type.isflt()):
             if(final.accessor == "pop"):
                 instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
                 final.accessor = "xmm7"
             if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
-                cmd = "movq" if(
-                    "[" not in valueOf(castdest) +
-                    valueOf(
-                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
+                if( "[" not in valueOf(castdest) + valueOf(
+                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor):
+                    cmd = "movq"  
+                else:
+                    cmd = "mov"
+                    castdest = setSize(castdest, final.type.csize())
+
                 cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
             else:
-                cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                if final.type.csize() == 8:
+                    cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                else:
+                    cst = f"cvttss2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
         else:
 
             if dest.type.csize() < final.type.isflt():
@@ -1317,6 +1331,7 @@ def performCastAndOperation(fn, a, b, op, o):
             throw(TypeMismatch(a.token, a.type, b.type))
         newtype, toConvert = determinePrecedence(a.type, b.type, fn)
         o = newtype.copy()
+
 
         reverse = False
         if(newtype.__eq__(a.type)):

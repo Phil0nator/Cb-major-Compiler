@@ -192,8 +192,8 @@ def buildConstantSet(flt, tokens, fn):
 
 # standard postfix evaluation, using 'evaluate(a,b,op)'
 # \see ExpressionEvaluator
-def determineConstexpr(flt, tokens, fn):
-    pf = Postfixer(tokens, fn)
+def determineConstexpr(flt, tokens, fn, globalScope=False):
+    pf = Postfixer(tokens, fn, globalScope)
     expr = pf.createPostfix()
     stack = []
     for e in expr:

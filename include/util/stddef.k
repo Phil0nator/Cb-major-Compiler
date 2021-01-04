@@ -39,7 +39,7 @@ typedef unsigned long uint64_t; /* unsigned 64 bit type */
 /*
   * float == double
 */
-typedef double float;
+//typedef double float;
 
 typedef short int32;
 

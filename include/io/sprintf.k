@@ -7,7 +7,8 @@
 #define FORMAT_CHAR 'c'
 #define FORMAT_BOOL 'B'
 #define FORMAT_BINARY 'b'
-#define FORMAT_DOUBLE 'f'
+#define FORMAT_DOUBLE 'e'
+#define FORMAT_FLOAT 'f'
 #define FORMAT_STRING 's'
 #define FORMAT_START '%'
 #define FORMAT_HEX 'x'
@@ -48,13 +49,13 @@ function long divmod10(long x, long* mod){
 }
 
 template<typename T>
-function long toStr(T val, char* buffer, bool signed, long base){
+function long toStr(T val, char* buffer, bool s, long base){
     if(val == 0){
         @buffer = '0';
         return 1;
     }
     char signspace = 0;
-    if(val < 0 && signed){
+    if(val < 0 && s){
         @buffer = '-';
         buffer+=1;
         val = 0-val;
@@ -268,6 +269,13 @@ int __sprintf(char* str, char* fmt, void* args){
                     double d = args[argc];
                     int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
                     str += dsize-1;
+                    break;
+                }
+                case FORMAT_FLOAT {
+                    float flt = args[argc];
+                    double dflt = flt;
+                    int fsize = toStr(dflt, str, 10000000);
+                    str += fsize-1;
                     break;
                 }
 

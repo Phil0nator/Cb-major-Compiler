@@ -143,12 +143,14 @@ floatconstant_counter = 0
 
 
 # create specifically a float literal in .data
-def createFloatConstant(s):
+def createFloatConstant(s, flt32=False):
     global floatconstant_counter
     out = []
     name = ("LC.F%s" % floatconstant_counter)
     #out.append("%s: dq __float32__(%s)\n"%(name,s))
-    out.append(f"{name}: dq {s.hex()}\n")
+    reserver = "dq" if not flt32 else "dd"
+    out.append(f"{name}: {reserver} {s.hex()}\n")
+    
     out.append(name)
     floatconstant_counter += 1
     return out
@@ -286,7 +288,7 @@ def valueOf(x, dflt=False, exactSize=True):
 # load value value into register reg
 
 
-def loadToReg(reg, value):
+def loadToReg(reg, value, flt32=False):
     if(reg == value):
         return ""
     if(value == "pop"):
@@ -301,9 +303,13 @@ def loadToReg(reg, value):
 
     if(isinstance(reg, str)):
         if("xmm" in reg):
-
             if(isinstance(value, Variable) and value.t.isflt()) and (isfloat(reg)):
-                return f"movsd {reg}, {valueOf(value)}\n"
+            
+                
+                fltq = 'd' if value.t.csize() == 8 else 's' 
+                return f"movs{fltq} {reg}, {valueOf(value)}\n"
+            
+            
             elif(isinstance(value, str) and "xmm" in value):
                 return f"movsd {reg}, {value}\n"
             else:
@@ -311,7 +317,10 @@ def loadToReg(reg, value):
                     if value == 0:
                         return f"xorpd {reg}, {reg}\n"
                     else:
-                        return f"mov rax, {value}\ncvtsi2sd {reg}, rax\n"
+                        if not flt32:
+                            return f"mov rax, {value}\ncvtsi2sd {reg}, rax\n"
+                        else:
+                            return f"mov rax, {value}\ncvtsi2ss {reg}, rax\n"
 
         if(isinstance(value, Variable) and value.isStackarr):
             return f"lea {setSize(reg,8)}, [{value.baseptr}{value.offset+value.stackarrsize}] \n"
@@ -330,13 +339,17 @@ def loadToReg(reg, value):
             if(not dwordImmediate(value) and isinstance(reg, Variable)):
                 return f"mov rax, {valueOf(value)}\nmov {valueOf(reg)}, rax\n"
 
+
         return f"mov {reg}, {valueOf(value)}\n"
 
     elif(isinstance(reg, Variable)):
 
         if(reg.t.isflt()):
             if(isfloat(value)):
-                return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+                if reg.t.csize() == 8:
+                    return f"movsd {valueOf(reg)}, {valueOf(value)}\n"
+                else:
+                    return f"movss {valueOf(reg)}, {valueOf(value)}\n"
             else:
                 return f"mov {valueOf(reg)}, {valueOf(value)}\n"
 
@@ -484,11 +497,11 @@ def cmpI(areg, breg, signed, op):
 # set(op) al
 
 
-def cmpF(areg, breg, op):
+def cmpF(areg, breg, op, float32q):
 
     comparator = getComparater(True, op)
     result = ralloc(False)
-    return f"comisd {areg}, {breg}\nset{comparator} {boolchar_version[result]}\n"
+    return f"comis{float32q} {areg}, {breg}\nset{comparator} {boolchar_version[result]}\n"
 
 # perform boolean operations (bitwize/logical)
 
@@ -513,7 +526,7 @@ def boolmath(areg, breg, op):
 # perform boolean / bitwise operations on floating point registers
 
 
-def bitmathf(areg, breg, op):
+def bitmathf(areg, breg, op, fltq):
     cmd = ""
     if(op == "&&" or op == "&"):
         cmd = "pand"
@@ -522,7 +535,7 @@ def bitmathf(areg, breg, op):
     elif(op == "^"):
         cmd = "pxor"
     elif(op == "!"):
-        return cmpF(areg, 0, "==")
+        return cmpF(areg, 0, "==", fltq)
     elif(op == "~"):
         return f"movq {rax}, {areg}\nnot {rax}\nmovq {areg}, {rax}\n"
 
@@ -532,26 +545,27 @@ def bitmathf(areg, breg, op):
 # (op areg, breg)
 
 
-def doFloatOperation(areg, breg, op):
+def doFloatOperation(areg, breg, op, float32):
     asmop = ""
+    fltq = 's' if float32 else 'd'
     if(op == "["):
         print("FLOAT INDEX!")
         exit()
     if(op == "+"):
-        asmop = "addsd"
+        asmop = f"adds{fltq}"
     elif(op == "-"):
-        asmop = "subsd"
+        asmop = f"subs{fltq}"
     elif(op == "*"):
-        asmop = "mulsd"
+        asmop = f"muls{fltq}"
     elif(op == "/"):
-        asmop = "divsd"
+        asmop = f"divs{fltq}"
     elif(op == "mov"):
-        asmop = "movsd"
+        asmop = f"movs{fltq}"
 
     elif(op in ["==", "!=", ">", "<", "<=", ">="]):
-        return cmpF(areg, breg, op)
+        return cmpF(areg, breg, op, fltq)
     elif(op in ["&&", "||", "^", "!", "~", "&", "|"]):
-        return bitmathf(areg, breg, op)
+        return bitmathf(areg, breg, op, fltq)
 
     return f"{asmop} {areg}, {breg}\n"
 
@@ -560,7 +574,7 @@ def doFloatOperation(areg, breg, op):
 
 def doOperation(t, areg, breg, op, signed=False):
     if("xmm" in areg and "xmm" in breg):
-        return doFloatOperation(areg, breg, op)
+        return doFloatOperation(areg, breg, op, t.csize() == 4)
     elif("xmm" not in areg and "xmm" not in breg):
 
         return doIntOperation(setSize(areg, t.csize()), setSize(
@@ -577,7 +591,7 @@ def castABD(a, b, areg, breg, newbreg):
     # conversions of void type do not use 'cvt' instructions
     if(a.type.isflt() and config.GlobalCompiler.Tequals(b.type.name, "void")) or (b.type.isflt() and config.GlobalCompiler.Tequals(a.type.name, "void")):
         if b.accessor == "pop":
-
+            
             return loadToReg(newbreg, breg)
         else:
             return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
@@ -608,8 +622,11 @@ def castABD(a, b, areg, breg, newbreg):
     
         if sizeOf(breg) < 4:
             breg = setSize(breg, 4)
+        if a.type.csize() == 8:
+            return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
+        else:
+            return f'cvtsi2ss {valueOf(newbreg)}, {valueOf(breg)}\n'
     
-        return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
     # float-integer conversion
     if(b.type.isflt() and not a.type.isflt()):
         
@@ -617,8 +634,18 @@ def castABD(a, b, areg, breg, newbreg):
         if sizeOf(newbreg) < 4:
             breg = setSize(newbreg, 4)
         
-        
-        return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
+        if a.type.csize() == 8:
+            return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
+        else:
+            return f"cvttss2si {valueOf(newbreg)}, {valueOf(breg)}\n"
+
+    if (b.type.isflt() and a.type.isflt() and a.type.csize() != b.type.csize()):
+
+        if a.type.csize() == 8:
+            return f"cvtss2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
+        else:
+            return f"cvtsd2ss {valueOf(newbreg)}, {valueOf(breg)}\n"
+
     return False
 
 
