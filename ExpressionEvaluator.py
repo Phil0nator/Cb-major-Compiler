@@ -935,12 +935,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
             tmpstack = [None]
             instr = self.compile_aopb(
                 a,
-                "+",
+                op[0],
                 EC.ExpressionComponent(1, LITERAL, constint=True),
                 self,
                 tmpstack
             )
-            return instr, DOUBLE, tmpstack[1]
+            instr += loadToReg(a.accessor,tmpstack[1].accessor)
+            return instr, a.type.copy(), tmpstack[1]
 
     # Do an operation with a op b -> o:DType
 
