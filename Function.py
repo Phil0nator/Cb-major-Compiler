@@ -2004,6 +2004,7 @@ class Function:
         ins, output = ev.evaluatePostfix(
             pf.createPostfix(), LeftSideEvaluator(self))
         
+        # check for an outputted float immediate
         if (isinstance(output.accessor, Variable) and output.type.isflt() and output.accessor.glob and not output.accessor.mutable):
             output, ninstr = ev.makeFloatImmediate(output)
             ins += ninstr

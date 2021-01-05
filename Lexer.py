@@ -93,10 +93,27 @@ class Lexer:
         t = T.T_INT
         if(T.T_DOT in num):
             val = float(num)
-            t = T.T_DOUBLE
+            if self.ch == 'd':
+                t = T.T_DOUBLE
+                self.advance()
+            elif self.ch == 'f':
+                t = T.T_FLOAT
+                self.advance()
+            else:
+                t = T.T_DOUBLE
         else:
-            val = int(num, base)
+            if self.ch == 'd':
+                t = T.T_DOUBLE
+                self.advance()
+                val = float(int(num, base))
+            elif self.ch == 'f':
+                t = T.T_FLOAT
+                self.advance()
+                val = float(int(num, base))
+            else:
+                val = int(num, base)
 
+        
         return Token(t, val, begin, self.loc.copy())
 
     def buildString(self) -> Token:  # build a string value with escape characters

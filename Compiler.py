@@ -635,25 +635,7 @@ class Compiler:
                     t.value = name
                     # add allocator to constants
                     self.constants += instruct
-            # convert float constants to global variables
-            # elif t.tok == T_DOUBLE:
-            #     # generate float constant
-            #     data: tuple = createFloatConstant(t.value)
-            #     name: str = data[1]
-            #     instruct: str = data[0]
-            #     # build Variable
-            #     v = Variable(
-            #         DOUBLE.copy(),
-            #         name,
-            #         glob=True,
-            #         initializer=t.value)
-            #     self.globals.append(v)
-            #     # update token for later use
-            #     t.tok = T_ID
-            #     t.value = name
-            #     # add allocator to constants
-            #     self.constants += instruct
-            # counter
+            
             c += 1
 
         # reset
