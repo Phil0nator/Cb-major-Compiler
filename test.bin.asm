@@ -314,7 +314,6 @@ LC.S167: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 LC.S168: db `sudo`, 0
 LC.S169: db `-c`, 0
 LC.S170: db `LOCKED`, 0
-LC.S171: db `%i\n`, 0
 __linux_errstrlist: DQ LC.S0, LC.S1, LC.S2, LC.S3, LC.S4, LC.S5, LC.S6, LC.S7, LC.S8, LC.S9, LC.S10, LC.S11, LC.S12, LC.S13, LC.S14, LC.S15, LC.S16, LC.S17, LC.S18, LC.S19, LC.S20, LC.S21, LC.S22, LC.S23, LC.S24, LC.S25, LC.S26, LC.S27, LC.S28, LC.S29, LC.S30, LC.S31, LC.S32, LC.S33, LC.S34, LC.S35, LC.S36, LC.S37, LC.S38, LC.S39, LC.S40, LC.S41, LC.S42, LC.S43, LC.S44, LC.S45, LC.S46, LC.S47, LC.S48, LC.S49, LC.S50, LC.S51, LC.S52, LC.S53, LC.S54, LC.S55, LC.S56, LC.S57, LC.S58, LC.S59, LC.S60, LC.S61, LC.S62, LC.S63, LC.S64, LC.S65, LC.S66, LC.S67, LC.S68, LC.S69, LC.S70, LC.S71, LC.S72, LC.S73, LC.S74, LC.S75, LC.S76, LC.S77, LC.S78, LC.S79, LC.S80, LC.S81, LC.S82, LC.S83, LC.S84, LC.S85, LC.S86, LC.S87, LC.S88, LC.S89, LC.S90, LC.S91, LC.S92, LC.S93, LC.S94, LC.S95, LC.S96, LC.S97, LC.S98, LC.S99, LC.S100, LC.S101, LC.S102, LC.S103, LC.S104, LC.S105, LC.S106, LC.S107, LC.S108, LC.S109, LC.S110, LC.S111, LC.S112, LC.S113, LC.S114, LC.S115, LC.S116, LC.S117, LC.S118, LC.S119, LC.S120, LC.S121, LC.S122, LC.S123, LC.S124, LC.S125, LC.S126, LC.S127, LC.S128
 LC.F0: dq 0x0.0p+0
 M_MINZERO_MEM: dq 0
@@ -4770,21 +4769,10 @@ _void_thread_join_pthread_t.:
 	xor rax, rax
 	leave
 	ret
-_int_t_pint:
-	mov eax, edi
-___int_t_pint__return:
-	ret
 main:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 16
-	mov dword[rbp-8], 5
-	mov ebx, dword[rbp-8]
-	mov edi, ebx
-	call _int_t_pint
-	movsxd rsi, dword[rbp-8]
-	mov rdi, LC.S171
-	call printf
 	xor eax, eax
 __main__return:
 	leave

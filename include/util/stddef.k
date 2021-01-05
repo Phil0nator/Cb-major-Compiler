@@ -61,6 +61,7 @@ typedef short int32;
 # define __AVX
 # define __SSE
 # define __SSE2
+# define safetype
 
 #endif
 
