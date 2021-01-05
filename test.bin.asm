@@ -4772,16 +4772,8 @@ _void_thread_join_pthread_t.:
 	leave
 	ret
 main:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 18
-	mov byte[rbp-18], 97
-	mov byte[rbp-17], 98
-	mov rax, 4886405595696988160
-	mov qword[rbp-16], rax
-	mov eax, 0
+	xor eax, eax
 __main__return:
-	leave
 	ret
 _float_benchmark_p:
 	push rbp

@@ -2,16 +2,12 @@
 #include "cblib.cb"
 
 
-struct Test{
-    char a = 'a';
-    char b = 'b';
-    double c = 2;
-};
+
+
 
 function int main(){
     //benchmark();
 
-    Test test;
 
     return 0;
 }

@@ -20,7 +20,8 @@ from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    floatTo64h)
 from Assembly.Registers import *
 from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
-                                maskset, psizeof, psizeoft, dwordImmediate)
+                                maskset, psizeof, psizeoft, dwordImmediate,
+                                valueTypeClass)
 
 from globals import canShiftmul, OPERATORS
 
@@ -843,3 +844,107 @@ def magic_modulo(a, areg, b):
         instr += f"sub {areg}, {setSize(rax, a.type.csize())}\n"
 
     return instr
+
+
+def registerizeValueType(t, obj, countn, counts):
+
+    addrtext = ""
+    instr = ""
+    outreg = ""
+    if isinstance(obj, Variable):
+        addrtext = f'[{obj.baseptr}{obj.offset}]'
+    elif isinstance(obj, str) and obj in normal_size:
+        addrtext = f'[{obj}]'
+    else:
+        print("Impossible registerization of vt CodeBlocks.py:856")
+        exit(1)
+
+    regclass = valueTypeClass(t.s)
+    # too big to registerize
+    if regclass == 3:
+        outreg = addrtext
+    elif regclass == 2:
+        reg = sse_parameter_registers[counts].replace("x", "y")
+        instr = f"vmovdqu {reg}, {addrtext}\n"
+        counts+=1
+    elif regclass == 1:
+        reg = sse_parameter_registers[counts]
+        instr = f"movdqu {reg}, {addrtext}\n"
+        counts +=1
+    elif regclass == 0:
+        reg = norm_parameter_registers[countn]
+        instr = f"mov {reg}, {addrtext}\n"
+        countn += 1
+
+
+    return instr, addrtext, countn, counts
+
+
+def savePartOfReg(var, extraoff, reg, b):
+    instr = ""
+    if b % 2 == 0 or b == 1:
+        instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, b)}"
+    else:
+        if b == 3:
+            instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 2)}\n"
+            extraoff+=2
+            instr += f"shl {reg}, 8\n"
+            instr += savePartOfReg(var, extraoff, reg, 1)
+        else:
+            instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 4)}\n"
+            extraoff+=4
+            instr += f"shl {reg}, 8\n"
+            instr += savePartOfReg(var, extraoff, reg, b-4)
+        
+            
+
+
+    return instr
+
+
+def deregisterizeValueType(t, var, countn, counts):
+    
+    instr = ""
+    outreg = ""
+    var = var.copy()
+
+    regclass = valueTypeClass(t.s)
+    # too big to registerize
+    if regclass == 3:
+        reg = norm_parameter_registers[countn]
+        for member in t.members:
+            instr += loadToRax(f"[{reg}+{member.offset}]")
+            instr += getFromRax(valueOf(var))
+            var.offset+=member.t.csize()
+
+
+        countn+=1
+
+    elif regclass == 2:
+        
+        reg = sse_parameter_registers[counts].replace('x','y')
+        instr += f"vmovdqu [{var.baseptr}{var.offset}], {reg}\n"
+        counts+=1
+
+    elif regclass == 1:
+        reg = sse_parameter_registers[counts]
+        if t.s == 16:
+            instr += f"movdqu [{var.baseptr}{var.offset}], {reg}\n"
+        else:
+            instr += f"movhlps xmm14, {reg}\n"
+            instr += f"movq rax, {reg}\n"
+            instr += f"movq rbx, xmm14\n"
+            instr += f"movsd [{var.baseptr}{var.offset}], rax\n"
+            remaining = t.s - 8
+            instr += savePartOfReg(var,'rbx', remaining)
+            
+        counts+=1
+
+
+    elif regclass == 0:
+        
+        reg = sse_parameter_registers[countn]
+        countn+=1
+        instr += savePartOfReg(var, reg, t.s)
+
+    return instr, countn, counts

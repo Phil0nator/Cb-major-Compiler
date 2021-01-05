@@ -116,3 +116,20 @@ def getSingleTypeSpecifierChar(size):
         return "w"
     elif size == 1:
         return "b"
+
+
+
+def valueTypeClass(size):
+    if size <= 8:
+        # normal general register
+        return 0
+    elif size <= 16:
+        # xmm register
+        return 1
+    elif size == 32:
+        # ymm register
+        return 2
+    else:
+        # memory address in general register
+        return 3
+    
