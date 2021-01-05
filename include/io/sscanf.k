@@ -19,13 +19,13 @@
 
 
 
-function int scanint(char* str, long* dest, bool signed){
+function int scanint(char* str, long* dest, bool s){
 
     long val = 0;
     char c = $char (@str);
     bool negative = false;
     char* ogstr =str;
-    if(c == '-' && signed){
+    if(c == '-' && s){
         negative = true;
         str+=1;
         c = $char(@str);

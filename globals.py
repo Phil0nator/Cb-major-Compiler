@@ -32,11 +32,12 @@ INT = DType("int", 4, signed=True)
 SHORT = DType("short", 2, signed=True)
 CHAR = DType("char", 1, signed=True)
 DOUBLE = DType("double", 8, signed=True)
+FLOAT = DType("float", 4, signed=True)
 VOID = DType("void", 8, signed=True)
 BOOL = DType("bool", 1, signed=True)
 LITERAL = DType(__literal, 8, signed=True)
 
-INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT, LITERAL]
+INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT, LITERAL, FLOAT]
 
 
 # Operator priority (complicated pemdas)

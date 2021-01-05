@@ -15,3 +15,12 @@
 #define __MATHBASE_CVTSI2SD __asm{"cvtsi2sd xmm0, rdi"} (0)
 #define __MATHBASE_MAXSD    __asm{"maxsd xmm0, xmm1"} (0)
 #define __MATHBASE_MINSD    __asm{"minsd xmm0, xmm1"} (0)
+
+#define __MATHBASE_SQRT32 __asm{"sqrtss xmm0, xmm0"} (0)
+#define __MATHBASE_TRUNC32 __asm{"cvttss2si rax, xmm0"} (0)
+#define __MATHBASE_ROUND32 __asm{"roundss xmm0, xmm0, 0     \
+                                cvttss2si rax, xmm0"}   (0)
+
+#define __MATHBASE_CVTSI2SS __asm{"cvtsi2ss xmm0, rdi"} (0)
+#define __MATHBASE_MAXSS    __asm{"maxss xmm0, xmm1"} (0)
+#define __MATHBASE_MINSS    __asm{"minss xmm0, xmm1"} (0)

@@ -1,9 +1,11 @@
-from Classes.Variable import *
-from Classes.Token import *
-from Classes.Error import *
-from globals import INTRINSICS, INT, CHAR, BOOL, VOID, SHORT, LONG, DOUBLE, operatorISO, OPERATORS, PRIORITY, LITERAL, isIntrinsic
 import Classes.ExpressionComponent as EC
-from Assembly.CodeBlocks import valueOf
+from Assembly.CodeBlocks import createFloatConstant, valueOf
+from Classes.Error import *
+from Classes.Token import *
+from Classes.Variable import *
+from globals import (BOOL, CHAR, DOUBLE, FLOAT, INT, INTRINSICS, LITERAL, LONG,
+                     OPERATORS, PRIORITY, SHORT, VOID, isIntrinsic,
+                     operatorISO)
 
 ########################################
 #
@@ -20,11 +22,12 @@ from Assembly.CodeBlocks import valueOf
 
 
 class Postfixer:
-    def __init__(self, tokens, fn):
+    def __init__(self, tokens, fn, globalScope=False):
         self.tokens = tokens            # a list of Token objects
         self.pfix = []                  # the output
         self.stack = []                 # utility stack
         self.fn = fn                    # caller
+        self.globalScope = globalScope  # scope specifier (compiler vs function)
 
     def isOperator(self, t):            # determine if a given Token object represents an operator
         return t.tok in OPERATORS
@@ -94,6 +97,33 @@ class Postfixer:
             # unkown tokens are simply added for later
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
+            
+            # check for floating point literals
+            elif (t.tok == T_DOUBLE) or (t.tok == T_FLOAT):
+                flt32 = t.tok == T_FLOAT             
+                newt = DOUBLE if not flt32 else FLOAT
+                data: tuple = createFloatConstant(t.value, flt32)
+                name: str = data[1]
+                instruct: str = data[0]
+                # build Variable
+                v = Variable(
+                    newt.copy(),
+                    name,
+                    glob=True,
+                    initializer=t.value,
+                    mutable=False)
+                
+                self.fn.compiler.globals.append(v)
+
+                if self.globalScope:
+                    # add allocator to constants
+                    self.fn.compiler.constants += instruct
+
+                
+                ec = EC.ExpressionComponent(v,newt.copy())
+
+
+        
         if(ec is None):
             throw(InvalidExpressionComponent(t))
         ec.token = t

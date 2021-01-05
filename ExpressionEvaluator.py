@@ -6,7 +6,7 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize, 
                                  lea_struct, fncall, cast_regUp, createFloatConstant)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
-                                   signed_comparisons)
+                                   signed_comparisons, floatTo64h, floatTo32h)
 from Assembly.Registers import *
 from Assembly.Registers import ralloc, ralloc_last, rfree, rfreeAll
 from Assembly.TypeSizes import dwordImmediate, psizeof, psizeoft
@@ -257,6 +257,7 @@ class ExpressionEvaluator:
                     breg = castlock
                     instrs += cst
 
+                
                 # perform operation
                 instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
                 rfree(breg)
@@ -560,6 +561,22 @@ class ExpressionEvaluator:
         return newinstr, a.type.copy(), EC.ExpressionComponent(
             areg, a.type.copy(), token=a.token)
 
+
+    def makeFloatImmediate(self, e):
+        instr = ""
+        flthex = floatTo32h(float(e.accessor.initializer)) if e.type.csize() == 4 else floatTo64h(float(e.accessor.initializer))
+        instr += loadToReg("rax", flthex)
+        reg = ralloc(True)
+        instr += Instruction("movq", [reg, "rax"])
+        return EC.ExpressionComponent(
+            reg,
+            e.type.copy(),
+            token=e.token
+
+        ) , instr
+    
+
+
     # Check if an operation is a semiconstexpr, and if so what optimizations
     # are possible.
     def check_semiconstexpr_optimization(self, a, b, op, evaluator):
@@ -652,20 +669,28 @@ class ExpressionEvaluator:
             stack.append(c)
 
         # check for integer-based floating point literals
-        if a.type.isflt() and b.isconstint():
-            constant = createFloatConstant(float(b.accessor))
-            self.fn.suffix += constant[0]
+        if (a.type.isflt() and b.isconstint()):
+            
+            flthex = floatTo32h(float(b.accessor)) if a.type.csize() == 4 else floatTo64h(float(b.accessor))
+            instr += loadToReg("rax", flthex)
+            reg = ralloc(True)
+            instr += Instruction("movq", [reg, "rax"])
             b = EC.ExpressionComponent(
-                Variable(
-                    DOUBLE.copy(),
-                    constant[1],
-                    glob=True,
-                    initializer=b.accessor,
-                    mutable=False
-                ),
-                DOUBLE.copy(),
+                reg,
+                a.type.copy(),
                 token=b.token
+
             )
+
+        # check for double/float literals that can be converted to immediates
+        if (isinstance(b.accessor, Variable) and b.type.isflt() and b.accessor.glob and not b.accessor.mutable):
+            b, ninstr = self.makeFloatImmediate(b)
+            instr += ninstr
+        if (isinstance(a.accessor, Variable) and a.type.isflt() and a.accessor.glob and not a.accessor.mutable):
+            a, ninstr = self.makeFloatImmediate(a)
+            instr += ninstr
+
+        
 
         # optimize for constant expressions
         if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
@@ -935,12 +960,13 @@ class LeftSideEvaluator(ExpressionEvaluator):
             tmpstack = [None]
             instr = self.compile_aopb(
                 a,
-                "+",
+                op[0],
                 EC.ExpressionComponent(1, LITERAL, constint=True),
                 self,
                 tmpstack
             )
-            return instr, DOUBLE, tmpstack[1]
+            instr += loadToReg(a.accessor,tmpstack[1].accessor)
+            return instr, a.type.copy(), tmpstack[1]
 
     # Do an operation with a op b -> o:DType
 
@@ -1112,11 +1138,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
         if(t is None):
             throw(UnkownType(e.token))
 
-        if t.isflt() == a.type.isflt():
-            a.type = t
-            if a.isRegister():
-                a.accessor = setSize(a.accessor, t.csize())
-            return "", t, a
+        #if t.isflt() == a.type.isflt():
+        #    a.type = t
+        #    if a.isRegister():
+        #        a.accessor = setSize(a.accessor, t.csize())
+        #    return "", t, a
 
         aval = ralloc(a.type.isflt(), a.type.csize())
         result = ralloc(t.isflt(), t.csize())
@@ -1202,31 +1228,52 @@ def depositFinal(dest, final):
                 final.accessor = setSize("rax", final.type.csize())
             if(config.GlobalCompiler.Tequals(final.type.name, "void")):
 
-                cmd = "movq" if(
-                    "[" not in valueOf(castdest) +
-                    valueOf(
-                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
+                if( "[" not in valueOf(castdest) + valueOf(
+                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor):
+                    cmd = "movq"  
+                else:
+                    cmd = "mov"
+                    castdest = setSize(castdest, final.type.csize())
+
+
                 cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
             else:
-                cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                if dest.type.csize() == 8:
+                    cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                else:
+                    cst = f"cvtsi2ss {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+        
         elif(not dest.type.isflt() and final.type.isflt()):
             if(final.accessor == "pop"):
                 instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
                 final.accessor = "xmm7"
             if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
-                cmd = "movq" if(
-                    "[" not in valueOf(castdest) +
-                    valueOf(
-                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor) else "mov"
+                if( "[" not in valueOf(castdest) + valueOf(
+                        final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor):
+                    cmd = "movq"  
+                else:
+                    cmd = "mov"
+                    castdest = setSize(castdest, final.type.csize())
+
                 cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
             else:
-                cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                if final.type.csize() == 8:
+                    cst = f"cvttsd2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                else:
+                    cst = f"cvttss2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
         else:
+            if dest.type.isflt():
+                
+                if dest.type.csize() == final.type.csize():
+                    cst = False
+                else:
+                    if final.type.csize() == 8:
+                        cst = f"cvtsd2ss {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                    else:
+                        cst = f"cvtss2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
-            if dest.type.csize() < final.type.isflt():
-                cst = False
             else:
                 cst = cast_regUp(castdest, final.accessor, final.type.signed)
 
@@ -1317,6 +1364,7 @@ def performCastAndOperation(fn, a, b, op, o):
             throw(TypeMismatch(a.token, a.type, b.type))
         newtype, toConvert = determinePrecedence(a.type, b.type, fn)
         o = newtype.copy()
+
 
         reverse = False
         if(newtype.__eq__(a.type)):
