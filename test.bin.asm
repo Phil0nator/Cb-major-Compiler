@@ -314,7 +314,6 @@ LC.S167: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
 LC.S168: db `sudo`, 0
 LC.S169: db `-c`, 0
 LC.S170: db `LOCKED`, 0
-LC.S171: db `%f\n`, 0
 __linux_errstrlist: DQ LC.S0, LC.S1, LC.S2, LC.S3, LC.S4, LC.S5, LC.S6, LC.S7, LC.S8, LC.S9, LC.S10, LC.S11, LC.S12, LC.S13, LC.S14, LC.S15, LC.S16, LC.S17, LC.S18, LC.S19, LC.S20, LC.S21, LC.S22, LC.S23, LC.S24, LC.S25, LC.S26, LC.S27, LC.S28, LC.S29, LC.S30, LC.S31, LC.S32, LC.S33, LC.S34, LC.S35, LC.S36, LC.S37, LC.S38, LC.S39, LC.S40, LC.S41, LC.S42, LC.S43, LC.S44, LC.S45, LC.S46, LC.S47, LC.S48, LC.S49, LC.S50, LC.S51, LC.S52, LC.S53, LC.S54, LC.S55, LC.S56, LC.S57, LC.S58, LC.S59, LC.S60, LC.S61, LC.S62, LC.S63, LC.S64, LC.S65, LC.S66, LC.S67, LC.S68, LC.S69, LC.S70, LC.S71, LC.S72, LC.S73, LC.S74, LC.S75, LC.S76, LC.S77, LC.S78, LC.S79, LC.S80, LC.S81, LC.S82, LC.S83, LC.S84, LC.S85, LC.S86, LC.S87, LC.S88, LC.S89, LC.S90, LC.S91, LC.S92, LC.S93, LC.S94, LC.S95, LC.S96, LC.S97, LC.S98, LC.S99, LC.S100, LC.S101, LC.S102, LC.S103, LC.S104, LC.S105, LC.S106, LC.S107, LC.S108, LC.S109, LC.S110, LC.S111, LC.S112, LC.S113, LC.S114, LC.S115, LC.S116, LC.S117, LC.S118, LC.S119, LC.S120, LC.S121, LC.S122, LC.S123, LC.S124, LC.S125, LC.S126, LC.S127, LC.S128
 LC.F0: dq 0x0.0p+0
 M_MINZERO_MEM: DQ 0x0.0p+0
@@ -618,18 +617,17 @@ _long_floor_pdouble:
 	mov rbp, rsp
 	sub rsp, 16
 	movsd [rbp-8], xmm0
-	movsd xmm8, qword[LC.F66]
-	movsd xmm7, qword[rbp-8]
-	subsd xmm7, xmm8
-	movsd xmm0, xmm7
+	mov rax, 4602678819172646912
+	movq xmm7, rax
+	movsd xmm8, qword[rbp-8]
+	subsd xmm8, xmm7
+	movsd xmm0, xmm8
 	roundsd xmm0, xmm0, 0  
 	cvttsd2si rax, xmm0
 .L0x281:
 ___long_floor_pdouble__return:
 	leave
 	ret
-LC.F65: dq 0x1.0000000000000p-1
-LC.F66: dq 0x1.0000000000000p-1
 _long_abs_plong:
 	mov rax, rdi
 	sar rdi, 63
@@ -833,16 +831,21 @@ _double_sin_pdouble:
 	movsd xmm8, qword[rbp-8]
 	comisd xmm8, xmm7
 	je .L0x271
+	mov rax, 4614256656552045848
+	movq xmm7, rax
 	mov rbx, 2
-	movsd xmm7, qword[LC.F63]
 	cvtsi2sd xmm8, rbx
 	mulsd xmm8, xmm7
 	movsd xmm1, xmm8
 	movsd xmm7, qword[rbp-8]
 	movsd xmm0, xmm7
 	call _double_fmod_pdoubledouble
-	movsd xmm8, xmm0
-	movsd xmm7, qword[LC.F64]
+	movq rax, xmm0
+	push rax
+	mov rax, 4614256656552045848
+	movq xmm7, rax
+	pop rax
+	movq xmm8, rax
 	subsd xmm7, xmm8
 	movsd xmm0, xmm7
 	call _double_taylor_sin_pdouble
@@ -856,12 +859,6 @@ _double_sin_pdouble:
 ___double_sin_pdouble__return:
 	leave
 	ret
-LC.F59: dq 0x1.921fb54442d18p+1
-LC.F60: dq 0x1.921fb54442d18p+1
-LC.F61: dq 0x1.921fb54442d18p+1
-LC.F62: dq 0x1.921fb54442d18p+1
-LC.F63: dq 0x1.921fb54442d18p+1
-LC.F64: dq 0x1.921fb54442d18p+1
 _double_cos_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -872,10 +869,11 @@ _double_cos_pdouble:
 	movsd xmm8, qword[rbp-8]
 	comisd xmm8, xmm7
 	je .L0x26f
-	movsd xmm8, qword[LC.F58]
-	movsd xmm7, qword[rbp-8]
-	addsd xmm7, xmm8
-	movsd xmm0, xmm7
+	mov rax, 4609753056924675352
+	movq xmm7, rax
+	movsd xmm8, qword[rbp-8]
+	addsd xmm8, xmm7
+	movsd xmm0, xmm8
 	call _double_sin_pdouble
 	movq rax, xmm0
 	jmp ___double_cos_pdouble__return
@@ -887,8 +885,6 @@ _double_cos_pdouble:
 ___double_cos_pdouble__return:
 	leave
 	ret
-LC.F57: dq 0x1.921fb54442d18p+0
-LC.F58: dq 0x1.921fb54442d18p+0
 _double_tan_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -934,8 +930,12 @@ _double_cot_pdouble:
 	movsd xmm7, qword[rbp-8]
 	movsd xmm0, xmm7
 	call _double_tan_pdouble
-	movsd xmm8, xmm0
-	movsd xmm7, qword[LC.F56]
+	movq rax, xmm0
+	push rax
+	mov rax, 4607182418800017408
+	movq xmm7, rax
+	pop rax
+	movq xmm8, rax
 	divsd xmm7, xmm8
 	movsd xmm0, xmm7
 	jmp ___double_cot_pdouble__return
@@ -947,7 +947,6 @@ _double_cot_pdouble:
 ___double_cot_pdouble__return:
 	leave
 	ret
-LC.F56: dq 0x1.0000000000000p+0
 _double_sec_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -961,8 +960,12 @@ _double_sec_pdouble:
 	movsd xmm7, qword[rbp-8]
 	movsd xmm0, xmm7
 	call _double_cos_pdouble
-	movsd xmm8, xmm0
-	movsd xmm7, qword[LC.F55]
+	movq rax, xmm0
+	push rax
+	mov rax, 4607182418800017408
+	movq xmm7, rax
+	pop rax
+	movq xmm8, rax
 	divsd xmm7, xmm8
 	movsd xmm0, xmm7
 	jmp ___double_sec_pdouble__return
@@ -974,7 +977,6 @@ _double_sec_pdouble:
 ___double_sec_pdouble__return:
 	leave
 	ret
-LC.F55: dq 0x1.0000000000000p+0
 _double_csc_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -988,8 +990,12 @@ _double_csc_pdouble:
 	movsd xmm7, qword[rbp-8]
 	movsd xmm0, xmm7
 	call _double_sin_pdouble
-	movsd xmm8, xmm0
-	movsd xmm7, qword[LC.F54]
+	movq rax, xmm0
+	push rax
+	mov rax, 4607182418800017408
+	movq xmm7, rax
+	pop rax
+	movq xmm8, rax
 	divsd xmm7, xmm8
 	movsd xmm0, xmm7
 	jmp ___double_csc_pdouble__return
@@ -1001,7 +1007,6 @@ _double_csc_pdouble:
 ___double_csc_pdouble__return:
 	leave
 	ret
-LC.F54: dq 0x1.0000000000000p+0
 _double_taylor_asin_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -1012,9 +1017,11 @@ _double_taylor_asin_pdouble:
 	mulsd xmm7, xmm8
 	movsd xmm8, qword[rbp-8]
 	mulsd xmm7, xmm8
-	movsd xmm8, qword[LC.F47]
+	mov rax, 4613937818241073152
+	movq xmm8, rax
 	divsd xmm7, xmm8
-	movsd xmm8, qword[LC.F46]
+	mov rax, 4602678819172646912
+	movq xmm8, rax
 	mulsd xmm8, xmm7
 	movsd xmm7, qword[rbp-8]
 	addsd xmm7, xmm8
@@ -1027,9 +1034,11 @@ _double_taylor_asin_pdouble:
 	mulsd xmm8, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm8, xmm9
-	movsd xmm9, qword[LC.F49]
+	mov rax, 4617315517961601024
+	movq xmm9, rax
 	divsd xmm8, xmm9
-	movsd xmm9, qword[LC.F48]
+	mov rax, 4600427019358961664
+	movq xmm9, rax
 	mulsd xmm9, xmm8
 	addsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
@@ -1045,9 +1054,11 @@ _double_taylor_asin_pdouble:
 	mulsd xmm8, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm8, xmm9
-	movsd xmm9, qword[LC.F51]
+	mov rax, 4619567317775286272
+	movq xmm9, rax
 	divsd xmm8, xmm9
-	movsd xmm9, qword[LC.F50]
+	mov rax, 4599301119452119040
+	movq xmm9, rax
 	mulsd xmm9, xmm8
 	addsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
@@ -1067,23 +1078,17 @@ _double_taylor_asin_pdouble:
 	mulsd xmm8, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm8, xmm9
-	movsd xmm9, qword[LC.F53]
+	mov rax, 4621256167635550208
+	movq xmm9, rax
 	divsd xmm8, xmm9
-	movsd xmm9, qword[LC.F52]
+	mov rax, 4598597432010342400
+	movq xmm9, rax
 	mulsd xmm9, xmm8
 	addsd xmm7, xmm9
 	movsd xmm0, xmm7
 ___double_taylor_asin_pdouble__return:
 	leave
 	ret
-LC.F46: dq 0x1.0000000000000p-1
-LC.F47: dq 0x1.8000000000000p+1
-LC.F48: dq 0x1.8000000000000p-2
-LC.F49: dq 0x1.4000000000000p+2
-LC.F50: dq 0x1.4000000000000p-2
-LC.F51: dq 0x1.c000000000000p+2
-LC.F52: dq 0x1.1800000000000p-2
-LC.F53: dq 0x1.2000000000000p+3
 _double_asin_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -1140,14 +1145,17 @@ _double_acos_pdouble:
 	movsd xmm7, qword[rbp-8]
 	movsd xmm0, xmm7
 	call _double_taylor_asin_pdouble
-	movsd xmm8, xmm0
-	movsd xmm7, qword[LC.F37]
+	movq rax, xmm0
+	push rax
+	mov rax, 4609753056924675352
+	movq xmm7, rax
+	pop rax
+	movq xmm8, rax
 	subsd xmm7, xmm8
 	movsd xmm0, xmm7
 ___double_acos_pdouble__return:
 	leave
 	ret
-LC.F37: dq 0x1.921fb54442d18p+0
 _double_atan_pdouble:
 	push rbp
 	mov rbp, rsp
@@ -1158,8 +1166,9 @@ _double_atan_pdouble:
 	movsd xmm8, qword[rbp-8]
 	comisd xmm8, xmm7
 	jne .L0x257
+	mov rax, 4605249457297304856
+	movq xmm7, rax
 	xor rbx, rbx
-	movsd xmm7, qword[LC.F21]
 	cvtsi2sd xmm8, rbx
 	subsd xmm8, xmm7
 	movsd xmm0, xmm8
@@ -1171,7 +1180,8 @@ _double_atan_pdouble:
 	movsd xmm8, qword[rbp-8]
 	comisd xmm8, xmm7
 	jne .L0x259
-	movsd xmm7, qword[LC.F22]
+	mov rax, 4605249457297304856
+	movq xmm7, rax
 	movsd xmm0, xmm7
 	jmp ___double_atan_pdouble__return
 	jmp .L0x25a
@@ -1203,7 +1213,8 @@ _double_atan_pdouble:
 	mulsd xmm7, xmm8
 	movsd xmm8, qword[rbp-8]
 	mulsd xmm7, xmm8
-	movsd xmm8, qword[LC.F23]
+	mov rax, 4613937818241073152
+	movq xmm8, rax
 	divsd xmm7, xmm8
 	movsd xmm8, qword[rbp-8]
 	subsd xmm8, xmm7
@@ -1216,7 +1227,8 @@ _double_atan_pdouble:
 	mulsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm7, xmm9
-	movsd xmm9, qword[LC.F24]
+	mov rax, 4617315517961601024
+	movq xmm9, rax
 	divsd xmm7, xmm9
 	addsd xmm8, xmm7
 	movsd xmm9, qword[rbp-8]
@@ -1232,7 +1244,8 @@ _double_atan_pdouble:
 	mulsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm7, xmm9
-	movsd xmm9, qword[LC.F25]
+	mov rax, 4619567317775286272
+	movq xmm9, rax
 	divsd xmm7, xmm9
 	subsd xmm8, xmm7
 	movsd xmm9, qword[rbp-8]
@@ -1252,7 +1265,8 @@ _double_atan_pdouble:
 	mulsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm7, xmm9
-	movsd xmm9, qword[LC.F26]
+	mov rax, 4621256167635550208
+	movq xmm9, rax
 	divsd xmm7, xmm9
 	addsd xmm8, xmm7
 	movsd xmm0, xmm8
@@ -1264,8 +1278,9 @@ _double_atan_pdouble:
 	movsd xmm8, qword[rbp-8]
 	comisd xmm8, xmm7
 	jge .L0x25f
+	mov rax, 4609753056924675352
+	movq xmm7, rax
 	xor rbx, rbx
-	movsd xmm7, qword[LC.F27]
 	cvtsi2sd xmm8, rbx
 	subsd xmm8, xmm7
 	mov rbx, 1
@@ -1278,9 +1293,11 @@ _double_atan_pdouble:
 	mulsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm7, xmm9
-	movsd xmm9, qword[LC.F29]
+	mov rax, 4613937818241073152
+	movq xmm9, rax
 	mulsd xmm9, xmm7
-	movsd xmm7, qword[LC.F28]
+	mov rax, 4607182418800017408
+	movq xmm7, rax
 	divsd xmm7, xmm9
 	addsd xmm8, xmm7
 	movsd xmm9, qword[rbp-8]
@@ -1292,9 +1309,11 @@ _double_atan_pdouble:
 	mulsd xmm7, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm7, xmm9
-	movsd xmm9, qword[LC.F31]
+	mov rax, 4617315517961601024
+	movq xmm9, rax
 	mulsd xmm9, xmm7
-	movsd xmm7, qword[LC.F30]
+	mov rax, 4607182418800017408
+	movq xmm7, rax
 	divsd xmm7, xmm9
 	subsd xmm8, xmm7
 	movsd xmm0, xmm8
@@ -1310,16 +1329,19 @@ _double_atan_pdouble:
 	movsd xmm7, qword[rbp-8]
 	cvtsi2sd xmm8, rbx
 	divsd xmm8, xmm7
-	movsd xmm7, qword[LC.F32]
+	mov rax, 4609753056924675352
+	movq xmm7, rax
 	subsd xmm7, xmm8
 	movsd xmm9, qword[rbp-8]
 	movsd xmm8, qword[rbp-8]
 	mulsd xmm8, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm8, xmm9
-	movsd xmm9, qword[LC.F34]
+	mov rax, 4613937818241073152
+	movq xmm9, rax
 	mulsd xmm9, xmm8
-	movsd xmm8, qword[LC.F33]
+	mov rax, 4607182418800017408
+	movq xmm8, rax
 	divsd xmm8, xmm9
 	addsd xmm7, xmm8
 	movsd xmm9, qword[rbp-8]
@@ -1331,9 +1353,11 @@ _double_atan_pdouble:
 	mulsd xmm8, xmm9
 	movsd xmm9, qword[rbp-8]
 	mulsd xmm8, xmm9
-	movsd xmm9, qword[LC.F36]
+	mov rax, 4617315517961601024
+	movq xmm9, rax
 	mulsd xmm9, xmm8
-	movsd xmm8, qword[LC.F35]
+	mov rax, 4607182418800017408
+	movq xmm8, rax
 	divsd xmm8, xmm9
 	subsd xmm7, xmm8
 	movsd xmm0, xmm7
@@ -1351,22 +1375,6 @@ _double_atan_pdouble:
 ___double_atan_pdouble__return:
 	leave
 	ret
-LC.F21: dq 0x1.921fb54442d18p-1
-LC.F22: dq 0x1.921fb54442d18p-1
-LC.F23: dq 0x1.8000000000000p+1
-LC.F24: dq 0x1.4000000000000p+2
-LC.F25: dq 0x1.c000000000000p+2
-LC.F26: dq 0x1.2000000000000p+3
-LC.F27: dq 0x1.921fb54442d18p+0
-LC.F28: dq 0x1.0000000000000p+0
-LC.F29: dq 0x1.8000000000000p+1
-LC.F30: dq 0x1.0000000000000p+0
-LC.F31: dq 0x1.4000000000000p+2
-LC.F32: dq 0x1.921fb54442d18p+0
-LC.F33: dq 0x1.0000000000000p+0
-LC.F34: dq 0x1.8000000000000p+1
-LC.F35: dq 0x1.0000000000000p+0
-LC.F36: dq 0x1.4000000000000p+2
 _long_strcpy_pchar.char.:
 	mov rax, -1
 _void_strcpy_pchar.char._flp:
@@ -3503,15 +3511,18 @@ _tm._gmtime_ptime_t:
 	shr rax, 1
 	mov r10, rax
 	mov dword[rbp-56], r10d
+	mov rax, 4645133162144333824
+	movq xmm7, rax
 	mov ebx, dword[rbp-56]
-	movsd xmm7, qword[LC.F2]
 	cvtsi2sd xmm8, ebx
 	divsd xmm8, xmm7
 	movsd xmm0, xmm8
 	call _long_floor_pdouble
 	mov rbx, rax
 	mov dword[rbp-64], ebx
-	movsd xmm7, qword[LC.F4]
+	mov rax, 4645133162144333824
+	movq xmm7, rax
+	mov ebx, dword[rbp-64]
 	cvtsi2sd xmm8, ebx
 	mulsd xmm8, xmm7
 	movsd xmm0, xmm8
@@ -3603,10 +3614,6 @@ _tm._gmtime_ptime_t:
 ___tm._gmtime_ptime_t__return:
 	leave
 	ret
-LC.F1: dq 0x1.6d40000000000p+8
-LC.F2: dq 0x1.6d40000000000p+8
-LC.F3: dq 0x1.6d40000000000p+8
-LC.F4: dq 0x1.6d40000000000p+8
 _char._asctime_ptm.:
 	push rbp
 	mov rbp, rsp
@@ -4763,17 +4770,7 @@ _void_thread_join_pthread_t.:
 	leave
 	ret
 main:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov rax, 1103626240
-	movq xmm7, rax
-	movss dword[rbp-8], xmm7
-	mov esi, dword[rbp-8]
-	mov rdi, LC.S171
-	call printf
-	cvttss2si eax, dword[rbp-8]
+	xor eax, eax
 __main__return:
-	leave
 	ret
 	

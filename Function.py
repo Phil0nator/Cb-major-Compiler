@@ -2003,6 +2003,11 @@ class Function:
         ev = ExpressionEvaluator(self)
         ins, output = ev.evaluatePostfix(
             pf.createPostfix(), LeftSideEvaluator(self))
+        
+        if (isinstance(output.accessor, Variable) and output.type.isflt() and output.accessor.glob and not output.accessor.mutable):
+            output, ninstr = ev.makeFloatImmediate(output)
+            ins += ninstr
+
         instructions += ins
 
         # for general expressions, the 'pop' exception needs to be cought:

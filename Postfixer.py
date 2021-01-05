@@ -105,15 +105,16 @@ class Postfixer:
                     DOUBLE.copy(),
                     name,
                     glob=True,
-                    initializer=t.value)
+                    initializer=t.value,
+                    mutable=False)
                 
                 self.fn.compiler.globals.append(v)
 
                 if self.globalScope:
                     # add allocator to constants
                     self.fn.compiler.constants += instruct
-                else:
-                    self.fn.suffix += instruct
+                #else:
+                #    self.fn.suffix += instruct
                 
                 ec = EC.ExpressionComponent(v,DOUBLE.copy())
 

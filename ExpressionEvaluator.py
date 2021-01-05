@@ -561,6 +561,22 @@ class ExpressionEvaluator:
         return newinstr, a.type.copy(), EC.ExpressionComponent(
             areg, a.type.copy(), token=a.token)
 
+
+    def makeFloatImmediate(self, e):
+        instr = ""
+        flthex = floatTo32h(float(e.accessor.initializer)) if e.type.csize() == 4 else floatTo64h(float(e.accessor.initializer))
+        instr += loadToReg("rax", flthex)
+        reg = ralloc(True)
+        instr += Instruction("movq", [reg, "rax"])
+        return EC.ExpressionComponent(
+            reg,
+            e.type.copy(),
+            token=e.token
+
+        ) , instr
+    
+
+
     # Check if an operation is a semiconstexpr, and if so what optimizations
     # are possible.
     def check_semiconstexpr_optimization(self, a, b, op, evaluator):
@@ -653,23 +669,9 @@ class ExpressionEvaluator:
             stack.append(c)
 
         # check for integer-based floating point literals
-        if a.type.isflt() and b.isconstint():
+        if (a.type.isflt() and b.isconstint()):
             
             flthex = floatTo32h(float(b.accessor)) if a.type.csize() == 4 else floatTo64h(float(b.accessor))
-            
-            #constant = createFloatConstant(float(b.accessor), flt32=a.type.csize()==4)
-            #self.fn.suffix += constant[0]
-            #b = EC.ExpressionComponent(
-            #    Variable(
-            #        a.type.copy(),
-            #        constant[1],
-            #        glob=True,
-            #        initializer=b.accessor,
-            #        mutable=False
-            #    ),
-            #    a.type.copy(),
-            #    token=b.token
-            #)
             instr += loadToReg("rax", flthex)
             reg = ralloc(True)
             instr += Instruction("movq", [reg, "rax"])
@@ -677,8 +679,18 @@ class ExpressionEvaluator:
                 reg,
                 a.type.copy(),
                 token=b.token
-                
+
             )
+
+        # check for double/float literals that can be converted to immediates
+        if (isinstance(b.accessor, Variable) and b.type.isflt() and b.accessor.glob and not b.accessor.mutable):
+            b, ninstr = self.makeFloatImmediate(b)
+            instr += ninstr
+        if (isinstance(a.accessor, Variable) and a.type.isflt() and a.accessor.glob and not a.accessor.mutable):
+            a, ninstr = self.makeFloatImmediate(a)
+            instr += ninstr
+
+        
 
         # optimize for constant expressions
         if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
