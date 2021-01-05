@@ -877,6 +877,15 @@ class Compiler:
         ta = self.checkType()
         if(self.current_token.tok != T_ID):
             throw(ExpectedIdentifier(self.current_token))
+        
+        # check for layered typedefs
+        if ta.name in self.tdef_hash:
+            ogt = self.tdef_hash[ta.name][0]
+            if ogt in ['char', 'short',
+                        'int', "long", "float",
+                        "double", "void"]:
+                        ta.name = ogt
+
 
         # new type name
         ntn = self.current_token.value

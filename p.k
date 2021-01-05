@@ -3,8 +3,6 @@
 
 
 
-
-
 function int main(){
     //benchmark();
 
@@ -13,7 +11,7 @@ function int main(){
 }
 
 
-
+/*
 float benchmark(){
 
     char nullb[1000];
@@ -25,4 +23,4 @@ float benchmark(){
     return 35f;
     
 }
-
+*/

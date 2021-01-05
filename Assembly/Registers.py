@@ -334,6 +334,9 @@ def rfreeAll():
 
 def setSize(reg, size):
 
+    if isinstance(reg, int):
+        return reg
+
     if("xmm" in reg):
         return reg
 

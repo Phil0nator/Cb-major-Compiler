@@ -58,7 +58,7 @@ typedef void* iterable;
 /**
  * Dynamically allocate one object/primitive of type type
  */
-#define new(type) malloc(type)
+#define new(type) malloc(sizeof(type))
 /**
  * Deallocate
  */
