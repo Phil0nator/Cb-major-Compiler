@@ -25,8 +25,8 @@ class Structure:
         self.prototypeType = DType("", 0, [], 0, True)
         self.emptyfn = Function("empty", [], VOID.copy(), self.compiler, [])
 
-
     # wrapper function
+
     def advance(self):
         self.compiler.advance()
         self.current_token = self.compiler.current_token
@@ -34,7 +34,6 @@ class Structure:
 
     def update(self):
         self.current_token = self.compiler.current_token
-    
 
     def buildMember(self):
         # member type
@@ -63,7 +62,7 @@ class Structure:
             None) is not None
 
         var = Variable(t, name, glob=False, offset=self.size,
-                        isptr=t.ptrdepth > 0, signed=t.signed)
+                       isptr=t.ptrdepth > 0, signed=t.signed)
 
         if(exists):
             throw(VariableRedeclaration(self.current_token, var))
@@ -80,7 +79,6 @@ class Structure:
         # uninitialized
         if(self.current_token.tok == T_ENDL):
             return
-
 
         if(self.current_token.tok == T_OPENIDX):
             self.advance()
@@ -114,7 +112,11 @@ class Structure:
 
     def buildConstructor(self):
         lf = len(self.compiler.functions)
-        self.compiler.buildFunction(thisp=True, thispt=self.prototypeType, destructor=False, constructor=True)
+        self.compiler.buildFunction(
+            thisp=True,
+            thispt=self.prototypeType,
+            destructor=False,
+            constructor=True)
         self.compiler.ctidx -= 1
         self.update()
         if(len(self.compiler.functions) - lf > 0):
@@ -127,11 +129,14 @@ class Structure:
             pass
             # undefined behavior
 
-
     def buildDestructor(self):
         self.advance()
         lf = len(self.compiler.functions)
-        self.compiler.buildFunction(thisp=True, thispt=self.prototypeType, destructor=True, constructor=False)
+        self.compiler.buildFunction(
+            thisp=True,
+            thispt=self.prototypeType,
+            destructor=True,
+            constructor=False)
         self.compiler.ctidx -= 1
         self.update()
         if(len(self.compiler.functions) - lf > 0):
@@ -143,17 +148,15 @@ class Structure:
         else:
             pass
             # undefined behavior
+
     def buildOperator(self, f, t1):
 
-        if len(f.parameters)> 2:
+        if len(f.parameters) > 2:
             throw(TooManyOperatorArgs(t1, f.name))
         if f.name not in self.prototypeType.operators:
             self.prototypeType.operators[f.name] = [f]
         else:
-            self.prototypeType.operators[f.name].append(f) 
-        
-
-
+            self.prototypeType.operators[f.name].append(f)
 
     def buildMemberfn(self):
         tok = self.current_token
@@ -174,8 +177,8 @@ class Structure:
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()
 
-
     # main function
+
     def construct(self):
         self.advance()
         if(self.current_token.tok != T_ID):
@@ -193,7 +196,7 @@ class Structure:
                 throw(ExpectedToken(self.current_token, "{"))
         # build prototype DType as placeholder
         self.prototypeType = DType(id, 0, [], 0, True)
-        
+
         self.compiler.types.append(self.prototypeType)
 
         # empty function used in the constexpr postfixer
@@ -212,23 +215,22 @@ class Structure:
             if(self.current_token.tok == T_ID):
 
                 if self.current_token.value == id and \
-                    self.compiler.currentTokens[self.compiler.ctidx+1].tok == T_OPENP:
-                    
+                        self.compiler.currentTokens[self.compiler.ctidx + 1].tok == T_OPENP:
+
                     self.buildConstructor()
                 else:
                     self.buildMember()
 
-
             elif (self.current_token.tok == T_KEYWORD):
                 self.buildMemberfn()
-                
+
             elif (self.current_token.tok == "~"):
 
                 self.buildDestructor()
 
         # finalize
-        #self.compiler.types.pop()
-        #self.compiler.types.append(self.prototypeType)
+        # self.compiler.types.pop()
+        # self.compiler.types.append(self.prototypeType)
 
         self.advance()
         if(self.current_token.tok != T_ENDL):

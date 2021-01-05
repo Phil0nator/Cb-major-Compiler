@@ -12,16 +12,14 @@ SIMD_ARITH_INST = ["addsd", "subsd", "divsd", "mulsd", "comisd"]
 CMP_INST = ["cmp", "ucomisd", "comisd"]
 
 REPLICABLE_INST = {
-    "add":"+",
-    "sub":"-",
-    "imul":"*",
-    "shl":"<<",
-    "shr":">>",
-    "sal":"<<",
-    "sar":">>",
+    "add": "+",
+    "sub": "-",
+    "imul": "*",
+    "shl": "<<",
+    "shr": ">>",
+    "sal": "<<",
+    "sar": ">>",
 }
-
-
 
 
 def regeq(a, b):
@@ -181,8 +179,6 @@ class Peephole:
                 nxtidx = lines.index(line) + 1
                 nextline = lines[nxtidx] if nxtidx < linecount else None
 
-
-
                 if(line.threePart() and prev.threePart() and nextline is not None):
 
                     # cmp instructions that compare a register with zero, can be replaced with the faster and smaller
@@ -239,8 +235,7 @@ class Peephole:
                     elif (prev.op == "mov") and (prev.constSource()) and \
                         (line.op in REPLICABLE_INST) and (line.dest == prev.dest) \
                             and (line.constSource()) and not (prev.hasAddr()):
-                        
-                        
+
                         a = int(prev.source)
                         b = int(line.source)
                         op = REPLICABLE_INST[line.op]
@@ -252,9 +247,7 @@ class Peephole:
 
                         splitted[prev.idx] = ""
                         splitted[line.idx] = f"mov {line.dest}, {value.accessor}\n"
-                        optims+=1
-
-
+                        optims += 1
 
                 # additions or subtractions by one can be substituted for their
                 # faster counterparts in 'inc' or 'dec' respectively
@@ -353,8 +346,6 @@ class Peephole:
                     splitted[line.idx] = f"xor {line.dest}, {line.dest}"
                     optims += 1
 
-                
-
                 # ensure that there are no redundant movs like:
                 # e.g: mov rax, rax
                 if (line.op in MOV_INST and line.dest == line.source):
@@ -437,7 +428,7 @@ class Peephole:
                 elif not config.__Osize__ and line.op in ["inc", "dec"] and line.hasAddr():
                     op = "add" if line.op == "inc" else "sub"
                     splitted[line.idx] = f"{op} {line.dest}, 1\n"
-                    optims+=1
+                    optims += 1
 
                 prev = line
         else:

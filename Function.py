@@ -18,9 +18,9 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  loadToReg, maskset, movMemVar, movRegToVar,
                                  movVarToReg, raw_regmov, spop, spush, valueOf,
                                  zeroize)
-from Assembly.Instructions import Instruction, floatTo64h
+from Assembly.Instructions import Instruction, floatTo64h, floatTo32h
 from Assembly.Registers import *
-from Assembly.TypeSizes import INTMAX, isfloat
+from Assembly.TypeSizes import INTMAX, isfloat, dwordImmediate
 from Classes.Constexpr import buildConstantSet, determineConstexpr
 from Classes.DType import DType, typematch
 from Classes.Error import *
@@ -65,7 +65,7 @@ predefs = [
 #####################################################
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
-                 tokens, inline=False, extern=False, compileCount=0, memberfn=False, 
+                 tokens, inline=False, extern=False, compileCount=0, memberfn=False,
                  parentstruct=None, return_auto=False, declare_token=None):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
@@ -168,13 +168,13 @@ class Function:
         # monitoring:
 
         # Functions declared with the auto keyword as their type will have to determine
-        # their own returntype. This flag specifies that a function is declared with auto.
+        # their own returntype. This flag specifies that a function is declared
+        # with auto.
         self.return_auto = return_auto
 
-
-        # determine if a function is a placeholder or a properly assigned function
+        # determine if a function is a placeholder or a properly assigned
+        # function
         self.unassigned = True
-
 
         # hasReturned keeps track of if a function has made a guarenteed return.
         # A guarenteed return is one not inside any other control structure, and that
@@ -352,9 +352,9 @@ class Function:
     # body is skipped.
     #
     def skipBody(self):
-        #self.advance()
+        # self.advance()
         #restore = len(self.asm)
-        #self.compileBodyScope()
+        # self.compileBodyScope()
         #self.asm = self.asm[:restore]
         self.advance()
         opens = 1
@@ -364,7 +364,6 @@ class Function:
                 opens += 1
             elif(self.current_token.tok == T_CLSSCOPE):
                 opens -= 1
-
 
     def addline(self, l):                           # add a line of assembly to raw
 
@@ -623,18 +622,17 @@ class Function:
             self.advance()
             typeq = self.checkForType()
             self.advance()
-            return Token(T_INT, int(typeq.isflt()), starttok.start, self.current_token.end)
-
+            return Token(T_INT, int(typeq.isflt()),
+                         starttok.start, self.current_token.end)
 
     def loadVariardicParameters(self, countn, counts):
-        
-        
+
         self.stackCounter = 8
         nosse = getLogicLabel('NOSSE')
         sseloadinst = f"test al, al\njz {nosse}\n"
-        
-        #for i in reversed(range(len(norm_parameter_registers[countn:]) + len(sse_parameter_registers[counts:]))):
-        #    
+
+        # for i in reversed(range(len(norm_parameter_registers[countn:]) + len(sse_parameter_registers[counts:]))):
+        #
         #    if i < len(norm_parameter_registers[countn:]):
         for regn in reversed(norm_parameter_registers[countn:]):
             var = Variable(VOID.copy(), f'~variardic~{regn}')
@@ -645,11 +643,9 @@ class Function:
             var = Variable(VOID.copy(), f"~variardic~{regs}")
             self.stackCounter += 8
             var.offset = self.stackCounter
-            sseloadinst+=(movRegToVar(var.offset,regs)+"\n")
+            sseloadinst += (movRegToVar(var.offset, regs) + "\n")
         self.addline(sseloadinst)
         self.addline(f"{nosse}:")
-
-
 
     # load parameters into memory (first instructions)
 
@@ -658,7 +654,8 @@ class Function:
         counts = 0
 
         if self.variardic:
-            self.stackCounter += (len(norm_parameter_registers)+len(sse_parameter_registers))*8
+            self.stackCounter += (len(norm_parameter_registers) +
+                                  len(sse_parameter_registers)) * 8
 
         # for member functions, the this parameter needs to be assigned a regdecl (rdi),
         # and the members of the parent structure need to be added as variables to this function
@@ -684,12 +681,6 @@ class Function:
                 EC.ExpressionComponent('rdi', self.parentstruct)
             )
             self.regdecls[-1].supposed_value = "this"
-
-        
-        
-
-
-
 
         # This function's parameters now need to be loaded as variables.
         # The parameters may be given regdecls depending on the contents of this
@@ -761,7 +752,6 @@ class Function:
                 (self.variables[-1]), f"[{extra_parameterlabel(self, epcounter)[:-1]}]"))
             epcounter -= 1
 
-
         if self.variardic:
             return self.loadVariardicParameters(countn, counts)
 
@@ -797,14 +787,17 @@ class Function:
         if(self.current_token.tok != T_ENDL):
 
             instr, val = self.evaluateExpression(destination=False)
-            
+
             if self.return_auto:
                 if self.returntype.name == "auto":
                     self.returntype = val.type.copy()
                 elif not typematch(self.returntype, val.type):
-                    throw(MultipleReturnTypes(first_tok, self.returntype, val.type))
+                    throw(
+                        MultipleReturnTypes(
+                            first_tok,
+                            self.returntype,
+                            val.type))
 
-            
             oreg = sse_return_register if self.returntype.isflt() else setSize(
                 norm_return_register,
                 self.returntype.csize()
@@ -858,7 +851,6 @@ class Function:
             self.compileBodyScope()
             guarentee_else = False
 
-        
         # check if the resultant will always evaluate to false
         elif(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
 
@@ -877,7 +869,7 @@ class Function:
             # if(false) { ... }
             self.skipBody()
             self.advance()
-        
+
         # check for else
         if(self.current_token.tok == T_KEYWORD):
 
@@ -886,17 +878,17 @@ class Function:
                 self.addline(postlabel + ":\n")
                 self.advance()
                 if(self.current_token.tok == T_KEYWORD and self.current_token.value == "if"):
-                
+
                     self.buildIfStatement()
                     guarentee_else = False
                 elif(self.current_token.tok == T_OPENSCOPE):
-                
+
                     self.advance()
                     self.compileBodyScope()
-                
+
                     if(self.current_token.tok == T_CLSSCOPE):
                         self.advance()
-                
+
                 else:
                     throw(ExpectedToken(self.current_token, "{"))
 
@@ -1109,16 +1101,12 @@ class Function:
         # evaluate the lvalue to compare
         loadinstr, cmpvalue = self.evaluateExpression()
 
-
         if isinstance(cmpvalue.accessor, Variable):
             reg = ralloc(False, size=cmpvalue.type.csize())
-            loadinstr+= loadToReg(reg, cmpvalue.accessor)
+            loadinstr += loadToReg(reg, cmpvalue.accessor)
             cmpvalue.accessor = reg
         # ensure register hit
         reralloc(cmpvalue.accessor)
-
-
-
 
         # mark position for topcode
         topmarker = f"##SWITCHTOP##{len(self.asm)}"
@@ -1438,7 +1426,7 @@ class Function:
         word = self.current_token.value
         # check available response
         if word in function_keyword_responses:
-            # execute response            
+            # execute response
             function_keyword_responses[word](self)
         else:
             # no response available, throw error
@@ -1476,14 +1464,16 @@ class Function:
         pass
 
     # load the parameters to call a function
-    def rawFNParameterLoad(self, fn, sseused, normused, pcount, offset=False, types=None):
+    def rawFNParameterLoad(self, fn, sseused, normused,
+                           pcount, offset=False, types=None):
         paraminst = ""
         # when parameters are being loaded it signifies that a function has been called,
         # so the counter needs to be incremented
         self.fncalls += 1
 
         if fn.variardic:
-            parameters = fn.parameters + [Variable(t, "~empty~") for t in types[len(fn.parameters):]]
+            parameters = fn.parameters + \
+                [Variable(t, "~empty~") for t in types[len(fn.parameters):]]
         else:
             parameters = fn.parameters
         pcount = len(parameters)
@@ -1551,7 +1541,6 @@ class Function:
                 self.advance()
             epcounter -= 1
 
-
         return paraminst
 
     def doVarcall(self, var):
@@ -1569,7 +1558,9 @@ class Function:
         instructions += (fncall(fn) if not varcall else self.doVarcall(var))
 
         # determine if rax needs to be saved for xmm push/pop operations
-        contains_sseregs = next((True for r in self.regdecls if r.type.isflt()), None) is not None
+        contains_sseregs = next(
+            (True for r in self.regdecls if r.type.isflt()),
+            None) is not None
 
         # save return value for register restores
         if(contains_sseregs):
@@ -1663,7 +1654,8 @@ class Function:
         normused = 0
 
         # load parameters
-        paraminst = self.rawFNParameterLoad(fn, sseused, normused, pcount, types=types)
+        paraminst = self.rawFNParameterLoad(
+            fn, sseused, normused, pcount, types=types)
         # save regdecls
         reginst = (self.pushregs())
         # reverse order of instructions:
@@ -2003,9 +1995,10 @@ class Function:
         ev = ExpressionEvaluator(self)
         ins, output = ev.evaluatePostfix(
             pf.createPostfix(), LeftSideEvaluator(self))
-        
+
         # check for an outputted float immediate
-        if (isinstance(output.accessor, Variable) and output.type.isflt() and output.accessor.glob and not output.accessor.mutable):
+        if (isinstance(output.accessor, Variable) and output.type.isflt()
+                and output.accessor.glob and not output.accessor.mutable):
             output, ninstr = ev.makeFloatImmediate(output)
             ins += ninstr
 
@@ -2045,27 +2038,47 @@ class Function:
             return ""
         call_label = functionlabel(var.t.destructor)
         if(var.t.ptrdepth > 0):
-           params = Instruction("mov", [rdi, valueOf(var)])
+            params = Instruction("mov", [rdi, valueOf(var)])
         else:
-           params = Instruction(
-               "lea", [
-                   rdi, f"[rbp-{var.offset+var.t.csize()}]"])
+            params = Instruction(
+                "lea", [
+                    rdi, f"[rbp-{var.offset+var.t.csize()}]"])
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
-
 
     def buildStackStructure(self, var, starter="", startoffset=0):
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
                     newvar = Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s-v.offset, isptr=v.isptr, signed=v.signed)
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s - v.offset, isptr=v.isptr, signed=v.signed)
                     self.append_rawVariable(newvar)
 
-                    # initialize to null
+                    # initialize to null, or default
                     if v.initializer is not None:
-                        self.addline(Instruction(
-                            "mov", [valueOf(self.variables[-1], exactSize=True), valueOf(v.initializer, exactSize=True)]))
+
+                        # check for float literals
+                        if v.t.isflt():
+                            if isinstance(
+                                    v.initializer, Variable) and not v.initializer.mutable:
+                                v.initializer = floatTo64h(v.initializer.initializer) if v.t.csize() == 8 \
+                                    else floatTo32h(v.initializer.initializer)
+                            elif (isinstance(v.initializer, int)):
+                                v.initializer = floatTo64h(v.initializer) if v.t.csize() == 8 \
+                                    else floatTo32h(v.initializer)
+
+                        value = v.initializer
+                        if not dwordImmediate(v.initializer):
+                            value = "rax"
+                            self.addline(
+                                loadToReg(value, v.initializer)
+                            )
+
+                        self.addline(loadToReg(
+                            valueOf(
+                                self.variables[-1], exactSize=True), valueOf(value, exactSize=True)
+                        ))
+
                     else:
                         self.variables[-1].referenced = True
 
@@ -2092,7 +2105,7 @@ class Function:
         return var
 
     def buildDeclaration(self, register=False):                     # declare new var
-        
+
         if(self.current_token.tok == T_KEYWORD and self.current_token.value == "register"):
             self.buildRegdecl()
             return
@@ -2137,11 +2150,11 @@ class Function:
             if (self.current_token.tok == T_OPENP):
 
                 if var.t.constructor is not None:
-                    self.ctidx-=2
+                    self.ctidx -= 2
                     self.memberCall(var.t.constructor, var)
                     self.addline("pop rax")
                 else:
-                    throw(UnkownConstructor(self.tokens[self.ctidx-1]))
+                    throw(UnkownConstructor(self.tokens[self.ctidx - 1]))
 
         # check for stack based array declaration
         while self.current_token.tok == "[":

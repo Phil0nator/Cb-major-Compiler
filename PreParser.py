@@ -396,7 +396,6 @@ class PreProcessor:
                 except BaseException as e:
                     fatalThrow(Error(self.current_token, f"Python error: {e}"))
 
-
                 self.tokens[startidx:self.tkidx + 2] = [
                     Token(
                         T_STRING if not isinstance(
@@ -484,7 +483,6 @@ class PreProcessor:
         else:
             pass
 
-
     def buildError(self):
         errtok = self.current_token
         self.advance()
@@ -526,15 +524,14 @@ def badfilter(token):
     return token is not None and token.tok != T_BSLASH
 
 
-
 directive_responses = {
-    "include"   :   PreProcessor.buildIncludeStatement,
-    "define"    :   PreProcessor.buildDefine,
-    "ifdef"     :   PreProcessor.buildifdef,
-    "if"        :   PreProcessor.buildIf,
-    "ifndef"    :   PreProcessor.buildifndef,
-    "endif"     :   PreProcessor.delmov,
-    "link"      :   PreProcessor.addobject,
-    "error"     :   PreProcessor.buildError,
-    "warning"   :   PreProcessor.buildWarning
+    "include": PreProcessor.buildIncludeStatement,
+    "define": PreProcessor.buildDefine,
+    "ifdef": PreProcessor.buildifdef,
+    "if": PreProcessor.buildIf,
+    "ifndef": PreProcessor.buildifndef,
+    "endif": PreProcessor.delmov,
+    "link": PreProcessor.addobject,
+    "error": PreProcessor.buildError,
+    "warning": PreProcessor.buildWarning
 }

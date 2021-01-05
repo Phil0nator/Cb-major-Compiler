@@ -113,7 +113,6 @@ class Lexer:
             else:
                 val = int(num, base)
 
-        
         return Token(t, val, begin, self.loc.copy())
 
     def buildString(self) -> Token:  # build a string value with escape characters
@@ -346,19 +345,16 @@ class Lexer:
             return directives
 
         return tokens
-    
-    
-    
-    
+
     # main function to get all tokens for a given text file.
     # getDirectives can be set to True by the PreProcessor to only see directives
     # \see PreParser
+
     def getTokens(self, getDirectives=False) -> list:
         try:
-        
-            return self.lex(getDirectives)
-        
-        except Error as e:
-            
-            fatalThrow(e)
 
+            return self.lex(getDirectives)
+
+        except Error as e:
+
+            fatalThrow(e)

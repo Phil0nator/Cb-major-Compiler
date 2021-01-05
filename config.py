@@ -53,7 +53,8 @@ parser.add_argument("-p", "--profile", action="store_true", default=False,
 parser.add_argument("-c", "--object", action="store_true", default=False,
                     help="Compile to an object file instead of an executable")
 parser.add_argument("-l", "--link", action="append", help="Link object files")
-parser.add_argument("-L", "--addLink", action="append", help="Add folder to search for object files")
+parser.add_argument("-L", "--addLink", action="append",
+                    help="Add folder to search for object files")
 
 parser.add_argument("-v", "--verbose", action="store_true", default=False,
                     help="Print extra information during compilation")

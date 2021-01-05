@@ -12,16 +12,15 @@ def represent_code(token, indicator):
 
     file = config.loadRawFile(file, None)
 
-
     lines = file.split("\n")
     # determine number of characters before error token on given line
     line -= lines[0] != ""
-    
-    linechars = char-len(''.join(lines[:line]))
-    
+
+    linechars = char - len(''.join(lines[:line]))
+
     beginchars = lines[line - 1].find(str(token.value), linechars)
 
-    lines[line - 1] = lines[line-1][:linechars]+lines[line - 1][linechars:].replace(
+    lines[line - 1] = lines[line - 1][:linechars] + lines[line - 1][linechars:].replace(
         str(token.value), f"{indicator}{token.value}{Style.RESET_ALL}", 1)
     lp = ""
     try:
@@ -61,7 +60,8 @@ def throw(error):
         raise(error)
     else:
         fatalThrow(error)
-    #exit(1)
+    # exit(1)
+
 
 def fatalThrow(error):
     print(error.__repr__(True))
@@ -348,30 +348,36 @@ class MultipleReturnTypes(Error):
         self.tok = tok
         self.message = f"Multiple return types ('{a}', '{b}') found in auto-return function:"
 
+
 class UnkownOperator(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unkown operator (' {tok.value} '):"
+
 
 class TooManyOperatorArgs(Error):
     def __init__(self, tok, op):
         self.tok = tok
         self.message = f"Too many parameters provided for overload of operator (' {op} '):"
 
+
 class NoOverloadOp(Error):
     def __init__(self, tok, struct, ptype, op):
         self.tok = tok
         self.message = f"No overload of operator ('{op}') in type ('{struct}') with parameter type ('{ptype}'):"
+
 
 class InvalidMainReturn(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Entry point 'main' must return an integer type:"
 
+
 class UnkownConstructor(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Unkown constructor: "
+
 
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 
@@ -395,10 +401,12 @@ class RegisterDeclWarning(Warning):
         self.tok = tok
         self.msg = "Too many register declarations at: "
 
+
 class InvalidMainParameters(Warning):
     def __init__(self, tok):
         self.tok = tok
         self.msg = "Entry point main takes arguments of types (int, char**):"
+
 
 class NoReturnStatement(Warning):
     def __init__(self, tok, fn):

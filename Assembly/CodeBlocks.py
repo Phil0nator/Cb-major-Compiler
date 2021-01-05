@@ -16,7 +16,8 @@ from Classes.Error import *
 from Classes.Variable import Variable
 
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
-                                   getComparater, onelineAssignment)
+                                   getComparater, onelineAssignment, floatTo32h,
+                                   floatTo64h)
 from Assembly.Registers import *
 from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
                                 maskset, psizeof, psizeoft, dwordImmediate)
@@ -37,7 +38,7 @@ def checkTrue(checkval: EC.ExpressionComponent):
 
 
 def functionlabel(fn):
-    
+
     name = fn.name if fn.name not in OPERATORS else f".operator{OPERATORS.index(fn.name)}"
 
     if(fn.extern):  # externs have no mangling
@@ -116,7 +117,11 @@ def createIntrinsicConstant(variable):
         return out
     # for floats
     if((variable.t.isflt())):
-        return f"{variable.name}: DQ {variable.initializer.hex()}\n"
+        reserver = "dq" if variable.t.csize() == 8 else "dd"
+        value = floatTo64h(variable.initializer) if variable.t.csize() == 8 \
+            else floatTo32h(variable.initializer)
+
+        return f"{variable.name}: {reserver} {value}\n"
 
     # for int types
     return "%s: %s %s\n" % (variable.name, getConstantReserver(
@@ -150,7 +155,7 @@ def createFloatConstant(s, flt32=False):
     #out.append("%s: dq __float32__(%s)\n"%(name,s))
     reserver = "dq" if not flt32 else "dd"
     out.append(f"{name}: {reserver} {s.hex()}\n")
-    
+
     out.append(name)
     floatconstant_counter += 1
     return out
@@ -304,12 +309,10 @@ def loadToReg(reg, value, flt32=False):
     if(isinstance(reg, str)):
         if("xmm" in reg):
             if(isinstance(value, Variable) and value.t.isflt()) and (isfloat(reg)):
-            
-                
-                fltq = 'd' if value.t.csize() == 8 else 's' 
+
+                fltq = 'd' if value.t.csize() == 8 else 's'
                 return f"movs{fltq} {reg}, {valueOf(value)}\n"
-            
-            
+
             elif(isinstance(value, str) and "xmm" in value):
                 return f"movsd {reg}, {value}\n"
             else:
@@ -338,7 +341,6 @@ def loadToReg(reg, value, flt32=False):
         if(isinstance(value, int)):
             if(not dwordImmediate(value) and isinstance(reg, Variable)):
                 return f"mov rax, {valueOf(value)}\nmov {valueOf(reg)}, rax\n"
-
 
         return f"mov {reg}, {valueOf(value)}\n"
 
@@ -369,19 +371,12 @@ def movRegToVar(od, reg):
         return "movsd [rbp-%s], %s" % ((od), reg)
 
 
-
 def lea_struct(dest: str, source: EC.ExpressionComponent) -> str:
 
     if isinstance(source.accessor, Variable):
         return f"lea {dest}, [{source.accessor.baseptr}{source.accessor.offset+source.type.s}]\n"
     else:
         return f"mov {dest}, {source.accessor}\n"
-
-
-
-
-
-
 
 
 # logic label handling
@@ -586,19 +581,18 @@ def doOperation(t, areg, breg, op, signed=False):
 
 # cast breg of type b to newbreg of type a
 # areg is depricated
+
+
 def castABD(a, b, areg, breg, newbreg):
 
     # conversions of void type do not use 'cvt' instructions
     if(a.type.isflt() and config.GlobalCompiler.Tequals(b.type.name, "void")) or (b.type.isflt() and config.GlobalCompiler.Tequals(a.type.name, "void")):
         if b.accessor == "pop":
-            
+
             return loadToReg(newbreg, breg)
         else:
             return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
-    
-    
 
-    
     # size cast for integer types
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() < b.type.csize()):
@@ -612,28 +606,27 @@ def castABD(a, b, areg, breg, newbreg):
             if b.type.csize() < 8 and b.type.signed:
                 out = cast_regUp(newbreg, (breg), b.type.signed)
             else:
-                out=loadToReg(newbreg, breg)
+                out = loadToReg(newbreg, breg)
 
             return out
 
         return False
     # integer-float conversion
     if(a.type.isflt() and not b.type.isflt()):
-    
+
         if sizeOf(breg) < 4:
             breg = setSize(breg, 4)
         if a.type.csize() == 8:
             return f"cvtsi2sd {valueOf(newbreg)}, {valueOf(breg)}\n"
         else:
             return f'cvtsi2ss {valueOf(newbreg)}, {valueOf(breg)}\n'
-    
+
     # float-integer conversion
     if(b.type.isflt() and not a.type.isflt()):
-        
-        
+
         if sizeOf(newbreg) < 4:
             breg = setSize(newbreg, 4)
-        
+
         if a.type.csize() == 8:
             return f"cvttsd2si {valueOf(newbreg)}, {valueOf(breg)}\n"
         else:
@@ -650,7 +643,8 @@ def castABD(a, b, areg, breg, newbreg):
 
 
 # cast_regUp is used to cast the register held in source of a size lesser than the size of dest.
-# Using various instructions based on the sign of the operands, source is cast into dest.
+# Using various instructions based on the sign of the operands, source is
+# cast into dest.
 def cast_regUp(dest, source, signed):
     instr = ""
 
@@ -658,23 +652,24 @@ def cast_regUp(dest, source, signed):
     if source == "pop":
         instr += loadToReg("rax", source)
         source = "rax"
-    
+
     # assuming we are casting up to 8 byte value
     if sizeOf(dest) == 8:
         # extra check of operands
         if sizeOf(source) < 8:
-            
+
             # 8 bit value cast up
             if sizeOf(source) == 1:
-                
+
                 # sign extention or zero extention of operand into eax
                 if signed:
                     instr += f"movsx eax, {valueOf(source)}\n"
                 else:
                     instr += f"movzx eax, {valueOf(source)}\n"
 
-                # if signed, the 'cdqe' instruction can be used to sign extend the value of eax -> rax
-                if signed:    
+                # if signed, the 'cdqe' instruction can be used to sign extend
+                # the value of eax -> rax
+                if signed:
                     instr += f"cdqe\n"
                 # else, the upper 32 bits or rax are already zeroed
 
@@ -682,17 +677,17 @@ def cast_regUp(dest, source, signed):
                 # to be moved
                 if dest != "rax" and signed:
                     instr += loadToReg(dest, "rax")
-            
+
             # 16 bit cast up
             if sizeOf(source) == 2:
-                
+
                 # mov with sign extention
                 if signed:
                     instr += f"movsx {valueOf(dest)}, {valueOf(source)}\n"
                 # mov with zero extention
                 else:
                     instr += f"movzx {valueOf(dest)}, {valueOf(source)}\n"
-            
+
             # 32 bit cast up
             elif sizeOf(source) == 4:
 
@@ -706,14 +701,12 @@ def cast_regUp(dest, source, signed):
                     # (mov dword with sign extention)
                     else:
                         instr += f"movsxd {valueOf(dest)}, {valueOf(source)}\n"
-                # for unsigned cast-ups, the upper 32 bits of rax will be zeroed anyway:
+                # for unsigned cast-ups, the upper 32 bits of rax will be
+                # zeroed anyway:
                 else:
                     instr += loadToReg(dest, source)
 
     return instr
-
-
-
 
 
 # get amount to shift by to multiply or divide by i
@@ -737,8 +730,6 @@ def getOnelineAssignmentOp(a, b, op):
     if isinstance(a.accessor, Variable) and a.accessor.register is not None and \
             isinstance(b.accessor, Variable) and b.accessor.register is not None:
         return cmd, False
-
-    
 
     if(op in ONELINE_ASSIGNMENTS):
         cmd = onelineAssignment(op, a)

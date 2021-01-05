@@ -3,14 +3,13 @@ import config
 
 
 def link(i, o):
-    
-    
-    
+
     if(config.__linkables__):
         links = config.__linkables__
 
         linktext = f"\"{i}.o\"" +\
-                    "".join((f" -l\"{linkable}\"" if '.' not in linkable else f" \"{linkable}\"" for linkable in links))
+            "".join(
+                (f" -l\"{linkable}\"" if '.' not in linkable else f" \"{linkable}\"" for linkable in links))
     else:
         linktext = f"\"{i}.o\""
 
@@ -19,8 +18,7 @@ def link(i, o):
 
     debug = "-g" if config.__dbg__ else ""
 
-    
-    #print(linktext)
+    # print(linktext)
     return f"gcc \"{config.includepath}/macro.c\" {linktext} {debug} -m64 -fno-pie -no-pie -lm -o \"{o}\""
 
 

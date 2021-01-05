@@ -27,7 +27,8 @@ class Postfixer:
         self.pfix = []                  # the output
         self.stack = []                 # utility stack
         self.fn = fn                    # caller
-        self.globalScope = globalScope  # scope specifier (compiler vs function)
+        # scope specifier (compiler vs function)
+        self.globalScope = globalScope
 
     def isOperator(self, t):            # determine if a given Token object represents an operator
         return t.tok in OPERATORS
@@ -97,10 +98,10 @@ class Postfixer:
             # unkown tokens are simply added for later
             elif(t.tok == T_AMBIGUOUS):
                 ec = EC.ExpressionComponent(t.value, T_AMBIGUOUS)
-            
+
             # check for floating point literals
             elif (t.tok == T_DOUBLE) or (t.tok == T_FLOAT):
-                flt32 = t.tok == T_FLOAT             
+                flt32 = t.tok == T_FLOAT
                 newt = DOUBLE if not flt32 else FLOAT
                 data: tuple = createFloatConstant(t.value, flt32)
                 name: str = data[1]
@@ -112,18 +113,15 @@ class Postfixer:
                     glob=True,
                     initializer=t.value,
                     mutable=False)
-                
+
                 self.fn.compiler.globals.append(v)
 
                 if self.globalScope:
                     # add allocator to constants
                     self.fn.compiler.constants += instruct
 
-                
-                ec = EC.ExpressionComponent(v,newt.copy())
+                ec = EC.ExpressionComponent(v, newt.copy())
 
-
-        
         if(ec is None):
             throw(InvalidExpressionComponent(t))
         ec.token = t

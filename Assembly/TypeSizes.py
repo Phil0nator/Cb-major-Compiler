@@ -106,6 +106,7 @@ def maskset(reg, size):
 def dwordImmediate(number):
     return abs(number) < INTMAX if isinstance(number, int) else 0
 
+
 def getSingleTypeSpecifierChar(size):
     if size == 8:
         return "q"

@@ -336,7 +336,6 @@ def setSize(reg, size):
 
     if("xmm" in reg):
         return reg
-    
 
     reg = normal_size[reg]
 
@@ -357,8 +356,6 @@ def sizeOf(reg):
         return reg.t.csize()
     elif(isinstance(reg, int)):
         return 8
-
-    
 
     if("xmm" in reg):
         return 8

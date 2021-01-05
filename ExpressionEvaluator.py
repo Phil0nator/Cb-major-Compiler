@@ -3,7 +3,7 @@ import Classes.ExpressionComponent as EC
 from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
-                                 maskset, shiftInt, shiftmul, valueOf, zeroize, 
+                                 maskset, shiftInt, shiftmul, valueOf, zeroize,
                                  lea_struct, fncall, cast_regUp, createFloatConstant)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons, floatTo64h, floatTo32h)
@@ -217,10 +217,9 @@ class ExpressionEvaluator:
 
         # is the right side of the equation constant
         constright = b.isconstint() and not a.type.isflt()
-        
-        
+
         # invalid leftside
-        #if(a.isRegister() and not (a.memory_location or a.member_loc)):
+        # if(a.isRegister() and not (a.memory_location or a.member_loc)):
         #    throw(InvalidDestination(a.token))
 
         instrs += bringdown_memloc(b)
@@ -257,7 +256,6 @@ class ExpressionEvaluator:
                     breg = castlock
                     instrs += cst
 
-                
                 # perform operation
                 instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
                 rfree(breg)
@@ -318,7 +316,7 @@ class ExpressionEvaluator:
                 #instrs += loadinst
                 # do calculation with implicit cast, and store result in b
                 tmpstack = [None]
-                
+
                 opinstr = self.compile_aopb(EC.ExpressionComponent(
                     a.accessor, a.type, token=a.token), op, b, evaluator, tmpstack)
                 b = tmpstack[1]
@@ -561,10 +559,13 @@ class ExpressionEvaluator:
         return newinstr, a.type.copy(), EC.ExpressionComponent(
             areg, a.type.copy(), token=a.token)
 
-
     def makeFloatImmediate(self, e):
         instr = ""
-        flthex = floatTo32h(float(e.accessor.initializer)) if e.type.csize() == 4 else floatTo64h(float(e.accessor.initializer))
+        flthex = floatTo32h(
+            float(
+                e.accessor.initializer)) if e.type.csize() == 4 else floatTo64h(
+            float(
+                e.accessor.initializer))
         instr += loadToReg("rax", flthex)
         reg = ralloc(True)
         instr += Instruction("movq", [reg, "rax"])
@@ -573,12 +574,11 @@ class ExpressionEvaluator:
             e.type.copy(),
             token=e.token
 
-        ) , instr
-    
-
+        ), instr
 
     # Check if an operation is a semiconstexpr, and if so what optimizations
     # are possible.
+
     def check_semiconstexpr_optimization(self, a, b, op, evaluator):
         newinstr = None
         newt = None
@@ -670,8 +670,12 @@ class ExpressionEvaluator:
 
         # check for integer-based floating point literals
         if (a.type.isflt() and b.isconstint()):
-            
-            flthex = floatTo32h(float(b.accessor)) if a.type.csize() == 4 else floatTo64h(float(b.accessor))
+
+            flthex = floatTo32h(
+                float(
+                    b.accessor)) if a.type.csize() == 4 else floatTo64h(
+                float(
+                    b.accessor))
             instr += loadToReg("rax", flthex)
             reg = ralloc(True)
             instr += Instruction("movq", [reg, "rax"])
@@ -683,14 +687,14 @@ class ExpressionEvaluator:
             )
 
         # check for double/float literals that can be converted to immediates
-        if (isinstance(b.accessor, Variable) and b.type.isflt() and b.accessor.glob and not b.accessor.mutable):
+        if (isinstance(b.accessor, Variable) and b.type.isflt()
+                and b.accessor.glob and not b.accessor.mutable):
             b, ninstr = self.makeFloatImmediate(b)
             instr += ninstr
-        if (isinstance(a.accessor, Variable) and a.type.isflt() and a.accessor.glob and not a.accessor.mutable):
+        if (isinstance(a.accessor, Variable) and a.type.isflt()
+                and a.accessor.glob and not a.accessor.mutable):
             a, ninstr = self.makeFloatImmediate(a)
             instr += ninstr
-
-        
 
         # optimize for constant expressions
         if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
@@ -759,11 +763,11 @@ class ExpressionEvaluator:
 
     # compile the overloaded operator of type a.type, with input b
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
-        
+
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
-            
-            throw(NoOverloadOp(a.token,a.type,b.type,op))
+
+            throw(NoOverloadOp(a.token, a.type, b.type, op))
 
         instr = ""
         if a.memory_location and a.isRegister():
@@ -777,20 +781,18 @@ class ExpressionEvaluator:
 
         if b.type.isintrinsic():
             instr += loadToReg(
-                norm_parameter_registers[1] if not fltparam 
-                else sse_parameter_registers[0], 
+                norm_parameter_registers[1] if not fltparam
+                else sse_parameter_registers[0],
                 b.accessor)
         else:
             instr += lea_struct('rsi', b)
-
 
         instr += fncall(overload)
 
         rett = self.fn.compiler.getType(overload.returntype.name)
         output = ralloc(fltret, rett.csize())
-        instr += loadToReg(output, norm_return_register if not fltret else sse_return_register)
-
-
+        instr += loadToReg(output,
+                           norm_return_register if not fltret else sse_return_register)
 
         stack.append(
             EC.ExpressionComponent(output, rett.copy(), token=a.token)
@@ -798,10 +800,8 @@ class ExpressionEvaluator:
 
         return instr
 
-        
-
-
     # compile a implicit cast of struct b to type a.type
+
     def compile_implicitCastBtoA(self, a, op, b, evaluator, stack):
         pass
 
@@ -809,8 +809,8 @@ class ExpressionEvaluator:
     def compile_AoverloadSingleOperand(self, a, op, evaluator, stack):
         pass
 
-
     # evaluate a generated postfix list of EC's
+
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
         stack = []      # used for evaluation
@@ -835,13 +835,11 @@ class ExpressionEvaluator:
                     else:
                         a = stack.pop()              # first operand
 
-
-
-
                     # check for non-primitive types for operator overloading:
                     if not a.type.isintrinsic():
                         # check for operator accepting b's type
-                        instr += self.compile_AoverloadB(a,op,b,evaluator,stack)
+                        instr += self.compile_AoverloadB(a,
+                                                         op, b, evaluator, stack)
 
                     elif not b.type.isintrinsic():
                         pass
@@ -954,7 +952,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
             instr += Instruction(cmd, [valueOf(a.accessor, exactSize=True)])
             o = a.type.copy()
-            
+
             return instr, o, a
         else:
             tmpstack = [None]
@@ -965,7 +963,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 self,
                 tmpstack
             )
-            instr += loadToReg(a.accessor,tmpstack[1].accessor)
+            instr += loadToReg(a.accessor, tmpstack[1].accessor)
             return instr, a.type.copy(), tmpstack[1]
 
     # Do an operation with a op b -> o:DType
@@ -1030,7 +1028,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         memv = a.type.getMember(member)
         if(memv is None):
             print(a, b, member, a.type.members)
-            
+
             throw(UnkownIdentifier(b.token))
 
         o = memv.t.copy()
@@ -1138,7 +1136,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         if(t is None):
             throw(UnkownType(e.token))
 
-        #if t.isflt() == a.type.isflt():
+        # if t.isflt() == a.type.isflt():
         #    a.type = t
         #    if a.isRegister():
         #        a.accessor = setSize(a.accessor, t.csize())
@@ -1187,11 +1185,10 @@ def depositFinal(dest, final):
             rfree(final.accessor)
         return instr
 
-
     if(isinstance(final.accessor, str) and final.accessor != "pop"):
         final.accessor = setSize(final.accessor, (dest.type.csize()))
 
-    #if(isinstance(dest.accessor, str)):    
+    # if(isinstance(dest.accessor, str)):
     #    dest.accessor = setSize(dest.accessor, final.type.csize())
 
     if(final.type.__eq__(dest.type)):
@@ -1228,13 +1225,12 @@ def depositFinal(dest, final):
                 final.accessor = setSize("rax", final.type.csize())
             if(config.GlobalCompiler.Tequals(final.type.name, "void")):
 
-                if( "[" not in valueOf(castdest) + valueOf(
+                if("[" not in valueOf(castdest) + valueOf(
                         final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor):
-                    cmd = "movq"  
+                    cmd = "movq"
                 else:
                     cmd = "mov"
                     castdest = setSize(castdest, final.type.csize())
-
 
                 cst = f"{cmd} {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
@@ -1243,15 +1239,15 @@ def depositFinal(dest, final):
                     cst = f"cvtsi2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
                 else:
                     cst = f"cvtsi2ss {valueOf(castdest)}, {valueOf(final.accessor)}\n"
-        
+
         elif(not dest.type.isflt() and final.type.isflt()):
             if(final.accessor == "pop"):
                 instr += f"pop {rax}\nmovq {xmm7}, {rax}\n"
                 final.accessor = "xmm7"
             if(config.GlobalCompiler.Tequals(dest.type.name, "void")):
-                if( "[" not in valueOf(castdest) + valueOf(
+                if("[" not in valueOf(castdest) + valueOf(
                         final.accessor)) and "xmm" in valueOf(castdest) + valueOf(final.accessor):
-                    cmd = "movq"  
+                    cmd = "movq"
                 else:
                     cmd = "mov"
                     castdest = setSize(castdest, final.type.csize())
@@ -1265,7 +1261,7 @@ def depositFinal(dest, final):
                     cst = f"cvttss2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
         else:
             if dest.type.isflt():
-                
+
                 if dest.type.csize() == final.type.csize():
                     cst = False
                 else:
@@ -1276,7 +1272,6 @@ def depositFinal(dest, final):
 
             else:
                 cst = cast_regUp(castdest, final.accessor, final.type.signed)
-
 
         if(cst != False) and (cst != ""):
             instr += cst
@@ -1364,7 +1359,6 @@ def performCastAndOperation(fn, a, b, op, o):
             throw(TypeMismatch(a.token, a.type, b.type))
         newtype, toConvert = determinePrecedence(a.type, b.type, fn)
         o = newtype.copy()
-
 
         reverse = False
         if(newtype.__eq__(a.type)):

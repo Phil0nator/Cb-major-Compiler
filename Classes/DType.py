@@ -60,9 +60,9 @@ class DType:
                      signed=self.signed, constructor=self.constructor, destructor=self.destructor, operators=self.operators.copy())
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
-        return ( config.GlobalCompiler.Tequals(
+        return (config.GlobalCompiler.Tequals(
             self.name, "double") or config.GlobalCompiler.Tequals(
-            self.name, "float") ) and self.ptrdepth == 0 and not self.stackarr
+            self.name, "float")) and self.ptrdepth == 0 and not self.stackarr
 
     def isfltarr(self):
         return config.GlobalCompiler.Tequals(
@@ -87,7 +87,6 @@ class DType:
         out.ptrdepth += 1
         return out
 
-
     def getOpOverload(self, op, param=None):
         if param is not None:
             if op not in self.operators:
@@ -97,15 +96,14 @@ class DType:
                 param.name = "int"
 
             for overload in self.operators[op]:
-                if overload.parameters[1].t.__eq__( param ):
+                if overload.parameters[1].t.__eq__(param):
                     return overload
 
-            
             return None
-    
 
     def isintrinsic(self):
-        return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(self.name) is not None
+        return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
+            self.name) is not None
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
@@ -137,7 +135,7 @@ type_precedence = {
     "unsigned int": 10,
     "long": 11,
     "unsigned long": 12,
-    "float":13,
+    "float": 13,
     "double": 14,
     "void": 15,
     "&LITERAL&": -1
@@ -171,8 +169,6 @@ def determinePrecedence(a, b, fn):
         return b, a
 
 
-
-
 # determine if a and b are compatible for casting
 def typematch(a, b, implicit):
     if(isinstance(a, DType) and isinstance(b, DType)):
@@ -195,11 +191,8 @@ def typematch(a, b, implicit):
         if(not a.isflt() and not b.isflt() and implicit):
             return True
         # two floats are compatible
-        if(a.isflt() and b.isflt() and (( a.csize() == b.csize() ) or (a.csize() > b.csize())) ):
+        if(a.isflt() and b.isflt() and ((a.csize() == b.csize()) or (a.csize() > b.csize()))):
             return True
-        
-        
-
 
         #
         # elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
