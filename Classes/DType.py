@@ -195,8 +195,12 @@ def typematch(a, b, implicit):
         if(not a.isflt() and not b.isflt() and implicit):
             return True
         # two floats are compatible
-        if(a.isflt() and b.isflt()):
+        if(a.isflt() and b.isflt() and (( a.csize() == b.csize() ) or (a.csize() > b.csize())) ):
             return True
+        
+        
+
+
         #
         # elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
         #    return True

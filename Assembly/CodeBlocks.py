@@ -653,7 +653,7 @@ def castABD(a, b, areg, breg, newbreg):
 # Using various instructions based on the sign of the operands, source is cast into dest.
 def cast_regUp(dest, source, signed):
     instr = ""
-    
+
     # catch pop condition
     if source == "pop":
         instr += loadToReg("rax", source)

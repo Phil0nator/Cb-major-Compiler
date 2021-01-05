@@ -27,6 +27,17 @@
 inline double sqrt(double a){
   __MATHBASE_SQRT;
 }
+
+/**
+ * Square root
+ * @param a input
+ * @returns square root of a 
+ */
+inline float sqrt(float a){
+  __MATHBASE_SQRT32;
+}
+
+
 /**
  * Square root.
  * @param a input
@@ -62,6 +73,17 @@ inline double min(double a, double b){
 }
 
 /**
+ * Take the smaller value of two floats
+ * @param a float 1
+ * @param b float 2
+ * @returns the smaller of a and b
+ */
+inline float min(float a, float b){
+  __MATHBASE_MINSS;
+}
+
+
+/**
  * Take the larger value of two floats
  * @param a float 1
  * @param b float 2
@@ -71,6 +93,15 @@ inline double max(double a, double b){
   __MATHBASE_MAXSD;
 }
 
+/**
+ * Take the larger value of two floats
+ * @param a float 1
+ * @param b float 2
+ * @returns the larger of a and b
+ */
+inline float max(float a, float b){
+  __MATHBASE_MAXSS;
+}
 
 /**
  * Exponentiation.
@@ -107,6 +138,15 @@ inline long round(double x){
 }
 
 /**
+ * Round a float to a long
+ * @param x value to round
+ * @returns closest integer to x
+ */
+inline long round(float x){
+  __MATHBASE_ROUND32;
+}
+
+/**
  * Round a floating point double upwards.
  * @param x value to ceil
  * @returns integer higher than x
@@ -121,6 +161,17 @@ CBLIBENTRY long ceil(double x);
 inline long trunc(double x){
   __MATHBASE_TRUNC;
 }
+
+/**
+ * Truncate a float.
+ * @param x value to truncate
+ * @returns x without a decimal point
+ */
+inline long trunc(float x){
+  __MATHBASE_TRUNC32;
+}
+
+
 
 /**
  * Round a floating point double downwards.

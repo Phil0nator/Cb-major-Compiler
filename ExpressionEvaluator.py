@@ -6,7 +6,7 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize, 
                                  lea_struct, fncall, cast_regUp, createFloatConstant)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
-                                   signed_comparisons)
+                                   signed_comparisons, floatTo64h, floatTo32h)
 from Assembly.Registers import *
 from Assembly.Registers import ralloc, ralloc_last, rfree, rfreeAll
 from Assembly.TypeSizes import dwordImmediate, psizeof, psizeoft
@@ -257,6 +257,7 @@ class ExpressionEvaluator:
                     breg = castlock
                     instrs += cst
 
+                
                 # perform operation
                 instrs += f"{cmd} {valueOf(a.accessor)}, {setSize(breg, a.type.csize())}\n"
                 rfree(breg)
@@ -653,18 +654,30 @@ class ExpressionEvaluator:
 
         # check for integer-based floating point literals
         if a.type.isflt() and b.isconstint():
-            constant = createFloatConstant(float(b.accessor), flt32=a.type.csize()==4)
-            self.fn.suffix += constant[0]
+            
+            flthex = floatTo32h(float(b.accessor)) if a.type.csize() == 4 else floatTo64h(float(b.accessor))
+            
+            #constant = createFloatConstant(float(b.accessor), flt32=a.type.csize()==4)
+            #self.fn.suffix += constant[0]
+            #b = EC.ExpressionComponent(
+            #    Variable(
+            #        a.type.copy(),
+            #        constant[1],
+            #        glob=True,
+            #        initializer=b.accessor,
+            #        mutable=False
+            #    ),
+            #    a.type.copy(),
+            #    token=b.token
+            #)
+            instr += loadToReg("rax", flthex)
+            reg = ralloc(True)
+            instr += Instruction("movq", [reg, "rax"])
             b = EC.ExpressionComponent(
-                Variable(
-                    a.type.copy(),
-                    constant[1],
-                    glob=True,
-                    initializer=b.accessor,
-                    mutable=False
-                ),
+                reg,
                 a.type.copy(),
                 token=b.token
+                
             )
 
         # optimize for constant expressions
@@ -1239,9 +1252,16 @@ def depositFinal(dest, final):
                 else:
                     cst = f"cvttss2si {valueOf(castdest)}, {valueOf(final.accessor)}\n"
         else:
+            if dest.type.isflt():
+                
+                if dest.type.csize() == final.type.csize():
+                    cst = False
+                else:
+                    if final.type.csize() == 8:
+                        cst = f"cvtsd2ss {valueOf(castdest)}, {valueOf(final.accessor)}\n"
+                    else:
+                        cst = f"cvtss2sd {valueOf(castdest)}, {valueOf(final.accessor)}\n"
 
-            if dest.type.csize() < final.type.isflt():
-                cst = False
             else:
                 cst = cast_regUp(castdest, final.accessor, final.type.signed)
 

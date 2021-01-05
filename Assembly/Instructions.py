@@ -98,6 +98,14 @@ def floatTo64h(flt):
         return int("0x" + o.hex(), 16)
     return floatTo64h(float(flt))
 
+
+def floatTo32h(flt):
+    if isinstance(flt, float):
+        o = bytearray(struct.pack("!f", flt))
+        return int("0x" + o.hex(), 16)
+    return floatTo32h(float(flt))
+
+
 # format an instruction
 
 
