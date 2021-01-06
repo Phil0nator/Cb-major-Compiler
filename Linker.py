@@ -1,4 +1,5 @@
 import config
+import platform
 # raw linking commands
 
 
@@ -18,9 +19,10 @@ def link(i, o):
 
     debug = "-g" if config.__dbg__ else ""
 
-    # print(linktext)
-    return f"gcc \"{config.includepath}/macro.c\" {linktext} {debug} -m64 -fno-pie -no-pie -lm -o \"{o}\""
-
+    #
+    #path = "gcc" if platform.system() != "Windows" else f"{config.compilepath}/windows/gcc/bin/gcc.exe"
+    
+    return f"{'gcc'} {linktext} {debug} -m64 -fno-pie -o \"{o}\""
 
 def linkonly(i, o):
     # return f"ld {i} -E --dynamic-linker -felf64 -r -o {o}"
@@ -29,4 +31,8 @@ def linkonly(i, o):
 
 def assemble(o):
     debug = "-g" if config.__dbg__ else ""
-    return f"nasm -felf64 {debug} -Fdwarf {o}.asm "
+
+    if not config.__win__:
+        return f"nasm -felf64 {debug} -Fdwarf {o}.asm "
+    else:
+        return f"{config.compilepath}/windows/NASM/nasm.exe -f win64 {debug} {o}.asm -o {o}.o"

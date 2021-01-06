@@ -1,5 +1,10 @@
 
 benchmark/intelcoffeelakeinstructionspecs.pdf
 .vscode
-__pycache__/
+__pycache__/*.pyc
+Classes/__pycache__/*.pyc
+Assembly/__pycache__/*.pyc
+Optimizers/__pycache__/*.pyc
 format.sh
+windows/*
+*.pyc

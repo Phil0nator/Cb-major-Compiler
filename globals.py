@@ -6,6 +6,7 @@ import time
 import Classes.ExpressionComponent as EC
 import config
 import math
+import platform
 
 
 ###################################
@@ -20,6 +21,10 @@ import math
 # Load template stub
 with open(f"{config.includepath}stub.asm", "rb") as f:
     stub = f.read().decode()
+
+# setup for windows entrypoint
+if config.__win__:
+    stub = f"%define main WinMain\n{stub}"
 
 
 fileTemplate = stub

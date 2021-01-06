@@ -16,7 +16,7 @@ import Classes.Error as E
 import os
 import subprocess
 import pkg_resources
-
+import platform
 #required = {'argparse', 'colorama', "termcolor", "cpuid"}
 #installed = {pkg.key for pkg in pkg_resources.working_set}
 #missing = required - installed
@@ -103,6 +103,10 @@ __linkdirs__ = args.addLink if args.addLink is not None else []
 __rawgcclink__ = "".join((f"-L{linkable}" for linkable in __linkdirs__)) + \
                  "".join((f"-l{linkable}" for linkable in __linkables__))
 
+
+
+# if platform is windows
+__win__ = platform.system() == "Windows"
 
 __preprocessonly__ = args.preprocess
 

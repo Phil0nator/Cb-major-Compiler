@@ -22,6 +22,10 @@ from globals import BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID, OPER
 from Lexer import Lexer
 from Structure import Structure
 
+
+_asm_extern_indicator = "extern"
+
+
 #####################################
 #
 #   The Compiler class is used to compile global variables,
@@ -951,7 +955,7 @@ class Compiler:
 
             self.buildFunction(thisp=thisp, thispt=thispt)
             fn = self.functions[-1]
-            config.__CEXTERNS__ += "extern " + \
+            config.__CEXTERNS__ += f"{_asm_extern_indicator} " + \
                 functionlabel(fn)[:-1] + "\n"
             glob = self.globals[-1]
             glob.name = fn.getCallingLabel()
@@ -960,7 +964,7 @@ class Compiler:
 
             self.createConstant(True)
 
-            config.__CEXTERNS__ += "extern " + \
+            config.__CEXTERNS__ += f"{_asm_extern_indicator} " + \
                 self.globals[-1].name + "\n"
 
     # same code as extern, with slight modification for cextern
@@ -972,7 +976,7 @@ class Compiler:
             self.buildFunction(thisp=thisp, thispt=thispt)
             fn = self.functions[-1]
             fn.extern = True
-            config.__CEXTERNS__ += "extern " + \
+            config.__CEXTERNS__ += f"{_asm_extern_indicator} " + \
                 functionlabel(fn)[:-1] + "\n"
             glob = self.globals[-1]
             glob.name = fn.getCallingLabel()
@@ -980,7 +984,7 @@ class Compiler:
         else:
 
             self.createConstant(True)
-            config.__CEXTERNS__ += "extern " + \
+            config.__CEXTERNS__ += f"{_asm_extern_indicator} " + \
                 self.globals[-1].name + "\n"
     # __cdecl is always followed by a function declaration
 

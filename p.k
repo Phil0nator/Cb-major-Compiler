@@ -1,10 +1,11 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
+
+
 
 
 function int main(){
     //benchmark();
-
 
     return 0;
 }

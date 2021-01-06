@@ -40,7 +40,7 @@ class Lexer:
         self.chidx += 1
         self.loc.ch += 1
         self.ch = self.raw[self.chidx]
-        self.loc.line += self.ch == "\n"
+        self.loc.line += (self.ch == "\n")
         return self.ch
 
     # build math operators that use more than one character (max = 3)
@@ -196,7 +196,7 @@ class Lexer:
         # a [1] character marks the end of the raw text
         while self.ch != chr(1):
             # newlines, spaces, and indents have no response
-            if(self.ch == "\n" or self.ch == " " or self.ch == "\t"):
+            if(self.ch == "\n" or self.ch in " \t\r"):
                 advance()
 
             # backslash characters
@@ -335,6 +335,7 @@ class Lexer:
                 tokens.append(token)
 
             else:
+                print(ord(self.ch))
                 raise(UnkownCharSequence(
                     Token(self.ch, self.ch, self.loc.copy(), self.loc.copy())))
 

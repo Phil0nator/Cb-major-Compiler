@@ -1,6 +1,8 @@
 #ifndef __STD
 #define __STD 1
 
+#ifndef __WINDOWS
+
 #include "intrinsic/instruct.cb"    /* easy intrinsic instruction access */
 #include "sys/syscall.k"            /* easy syscall macro */
 #include "sys/errlist.k"            /* Error handling */
@@ -34,5 +36,15 @@
 
 
 #include "api.cb"
+
+#endif
+
+
+
+#ifdef __WINDOWS
+
+
+#endif
+
 
 #endif
