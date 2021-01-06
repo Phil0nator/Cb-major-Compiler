@@ -5,13 +5,13 @@
 
 
 function int main(){
-    //benchmark();
+    benchmark();
 
     return 0;
 }
 
 
-/*
+
 float benchmark(){
 
     char nullb[1000];
@@ -23,4 +23,4 @@ float benchmark(){
     return 35f;
     
 }
-*/
+

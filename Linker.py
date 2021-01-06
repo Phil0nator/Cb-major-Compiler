@@ -22,7 +22,7 @@ def link(i, o):
     #
     #path = "gcc" if platform.system() != "Windows" else f"{config.compilepath}/windows/gcc/bin/gcc.exe"
     
-    return f"{'gcc'} {linktext} {debug} -m64 -fno-pie -o \"{o}\""
+    return f"{'gcc'} {linktext} {debug} -m64 -fno-pie {'-no-pie' if not config.__win__ else ''} -o \"{o}\""
 
 def linkonly(i, o):
     # return f"ld {i} -E --dynamic-linker -felf64 -r -o {o}"
