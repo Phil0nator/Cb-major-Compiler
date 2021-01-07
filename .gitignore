@@ -8,3 +8,9 @@ Optimizers/__pycache__/*.pyc
 format.sh
 windows/*
 *.pyc
+*.pyc
+*.pyc
+__pycache__/config.cpython-38.pyc
+__pycache__/config.cpython-38.pyc
+__pycache__/globals.cpython-38.pyc
+*.pyc

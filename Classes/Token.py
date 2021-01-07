@@ -162,6 +162,7 @@ KEYWORDS = [
     "goto",
 
     "extern",
+    "winextern",
     "cextern",
     "__cdecl",
     "global",

@@ -26,6 +26,18 @@ from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
 from globals import canShiftmul, OPERATORS
 
 
+win_align_stack = """
+enter 0,0
+sub rsp, 32
+and rsp, 0xfffffffffffffff0
+"""
+
+win_unalign_stack = """
+leave
+"""
+
+
+
 # check if a value is true
 def checkTrue(checkval: EC.ExpressionComponent):
     if(checkval.isRegister() and not checkval.type.isflt()):
@@ -55,6 +67,8 @@ def functionlabel(fn):
 
 def extra_parameterlabel(fn, num):
     return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
+
+
 
 
 # get the code block to allocate a stack frame at the begining of a function

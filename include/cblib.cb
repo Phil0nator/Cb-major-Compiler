@@ -35,15 +35,14 @@
 #include "threads/thread.cb"         /* high level threading */
 
 
-#include "api.cb"
 
 #endif
 
+#include "api.cb"
 
 
 #ifdef __WINDOWS
-
-
+#include "windows/include/cblib.cb"
 #endif
 
 

@@ -16,5 +16,12 @@
 #link   "cblib.o"
 #endif
 
+/**
+ * Api entries on windows need to use their own special keyword
+ */
+#ifdef __WINDOWS
+#define CBLIBENTRY winextern
+#endif
+
 
 #endif

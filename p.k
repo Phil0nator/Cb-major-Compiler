@@ -3,14 +3,19 @@
 
 
 
-
 function int main(){
 
-    return benchmark();
+
+    puts("Hello World!");
+    fflush();
+    printf("Hello World!");
+
+    return 0;
+    //return benchmark();
 }
 
 
-
+/*
 float benchmark(){
 
     char nullb[1000];
@@ -23,3 +28,4 @@ float benchmark(){
     
 }
 
+*/

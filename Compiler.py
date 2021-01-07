@@ -1081,6 +1081,7 @@ class Compiler:
                 # check the parameter 2 type
                 if not (f.parameters[1].t.__eq__(CHAR.up().up())):
                     warn(InvalidMainParameters(f.parameters[1].dtok))
+        
 
     # compile all functions and fill in raw assembly info
 
@@ -1097,6 +1098,8 @@ class Compiler:
                 self.entry = f
 
                 f.extern = True
+                f.winextern = True
+
 
                 self.globals.append(
                     Variable(

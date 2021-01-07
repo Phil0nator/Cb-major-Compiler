@@ -17,7 +17,7 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
                                  movVarToReg, raw_regmov, spop, spush, valueOf,
-                                 zeroize)
+                                 zeroize, win_align_stack, win_unalign_stack)
 from Assembly.Instructions import Instruction, floatTo64h, floatTo32h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat, dwordImmediate
@@ -768,6 +768,7 @@ class Function:
             self.addline(function_closer(
                 self.getCallingLabel(), self.destructor_text, self))
         else:
+            
             # for functions that do not contain a return, and have no
             # stack-based variables:
             if self.stackCounter <= 8:
@@ -1492,20 +1493,46 @@ class Function:
             # if the parameter is a float, load to SSE register
             if(parameters[i].isflt()):
 
+                # determine calling convention situations
+                # (Things need to be pushed on windows calls)
+                needpush = (fn.winextern and sseused > 4)
+
+                if needpush:
+                    reg = norm_return_register
+                else:
+                    reg = sse_parameter_registers[sseused]
+
                 result = EC.ExpressionComponent(
-                    sse_parameter_registers[sseused], parameters[i].t.copy(), token=self.current_token)
+                   reg, parameters[i].t.copy(), token=self.current_token)
 
                 inst, final = self.evaluateExpression()
                 inst += depositFinal(result, final)
                 rfree(final.accessor)
+
+                # push registers when necessary
+                if needpush:
+                    inst+=spush(reg)
 
                 sseused += 1
             # else, load to normal register of the correct size
             else:
                 # determine size:
 
+                needpush = (fn.winextern and normused > 4)
+
+                # handle calling conventions:
+                if fn.winextern:
+
+                    if not needpush:
+                        reg = win_norm_parameter_registers[normused]
+                    else:
+                        reg = norm_return_register
+                
+                else:
+                    reg = norm_parameter_registers[normused]
+
                 result = setSize(
-                    norm_parameter_registers[normused],
+                    reg,
                     parameters[i].t.csize())
 
                 ec = EC.ExpressionComponent(
@@ -1514,7 +1541,18 @@ class Function:
                 inst, final = self.evaluateExpression()
                 inst += depositFinal(ec, final)
                 rfree(final.accessor)
+                
+                if needpush:
+                    inst += spush(reg)
+
+
+                
+                
                 normused += 1
+
+
+
+
 
             paraminst = f"{inst}{paraminst}"
 
@@ -1543,6 +1581,10 @@ class Function:
                 self.advance()
             epcounter -= 1
 
+        if fn.winextern:
+            paraminst+=win_align_stack
+
+
         return paraminst
 
     def doVarcall(self, var):
@@ -1558,6 +1600,12 @@ class Function:
         # actual 'call' instruction
 
         instructions += (fncall(fn) if not varcall else self.doVarcall(var))
+
+
+        # handle windows functions
+        if fn.winextern:
+            instructions += win_unalign_stack
+
 
         # determine if rax needs to be saved for xmm push/pop operations
         contains_sseregs = next(
