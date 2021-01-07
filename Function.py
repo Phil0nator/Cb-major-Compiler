@@ -66,7 +66,7 @@ predefs = [
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
                  tokens, inline=False, extern=False, compileCount=0, memberfn=False,
-                 parentstruct=None, return_auto=False, declare_token=None):
+                 parentstruct=None, return_auto=False, declare_token=None, winextern=False):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -104,7 +104,9 @@ class Function:
         self.maxtokens = len(self.tokens)   # one len call
 
         # extern is in reference to c-standard names vs .k names
-        self.extern = extern
+        self.extern = extern or winextern
+
+        self.winextern = winextern
 
         # Variardic functions will behave slightly differently.
         # They are defined using the '...' token in their parameters,
@@ -791,7 +793,7 @@ class Function:
             if self.return_auto:
                 if self.returntype.name == "auto":
                     self.returntype = val.type.copy()
-                elif not typematch(self.returntype, val.type):
+                elif not typematch(self.returntype, val.type, False):
                     throw(
                         MultipleReturnTypes(
                             first_tok,

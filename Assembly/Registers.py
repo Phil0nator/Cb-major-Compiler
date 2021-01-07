@@ -208,6 +208,22 @@ norm_parameter_registers = [
 
 ]
 
+win_norm_parameter_registers = [
+
+    rcx,
+    rdx,
+    r8,
+    r9
+
+]
+
+win_sse_parameter_registers = [
+    xmm0,
+    xmm1,
+    xmm2,
+    xmm3
+]
+
 sse_parameter_registers = [
 
     xmm0,

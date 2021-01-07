@@ -5,9 +5,8 @@
 
 
 function int main(){
-    benchmark();
 
-    return 0;
+    return benchmark();
 }
 
 

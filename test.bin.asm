@@ -146,7 +146,7 @@ M_MINZERO_MEM: dq 0
 main:
 	call _float_benchmark_p
 	movq rax, xmm0
-	xor eax, eax
+	cvttss2si eax, xmm0
 __main__return:
 	ret
 _float_benchmark_p:

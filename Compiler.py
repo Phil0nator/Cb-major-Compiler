@@ -1027,6 +1027,11 @@ class Compiler:
         self.advance()
         self.buildFunction(thisp=thisp, thispt=thispt)
 
+    def buildWinextern(self, thisp=False, thispt=None) -> None:
+        self.buildCextern(thisp, thispt)
+        self.functions[-1].winextern = True
+
+
     def buildAutofn(self, thisp=False, thispt=None) -> None:
         self.buildFunction(thisp=thisp, thispt=thispt)
 
@@ -1154,6 +1159,7 @@ keyword_responses = {
     "struct": Compiler.buildStruct,
     "inline": Compiler.buildInlinefn,
     "function": Compiler.buildNormalfn,
+    "winextern": Compiler.buildWinextern,
     "template": Compiler.beginTemplate,
     "auto": Compiler.buildAutofn,
     "enum": Compiler.buildEnum,
