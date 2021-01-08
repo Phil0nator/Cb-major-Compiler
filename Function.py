@@ -1289,7 +1289,9 @@ class Function:
 
     def buildStaticdecl(self):
         self.advance()
+        
         t = self.checkForType()
+        dtok = self.current_token
         name = self.checkTok(T_ID)
         label = name + getLogicLabel(name)
         var = Variable(t, name, True, signed=t.signed, static=True)
@@ -1300,7 +1302,7 @@ class Function:
 
         var.name = label
         self.staticnameref[label] = name
-
+        var.dtok = dtok
         self.compiler.heap += createIntrinsicHeap(var)
         self.append_rawVariable(var)
 
@@ -2133,6 +2135,7 @@ class Function:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
                     newvar = Variable(v.t.copy(
                     ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s - v.offset, isptr=v.isptr, signed=v.signed)
+                    newvar.dtok = var.dtok
                     self.append_rawVariable(newvar)
 
                     # initialize to null, or default
@@ -2176,7 +2179,7 @@ class Function:
             t.isflt()) if register != False else None
 
         # add variable correctly to get extra properties added to it
-        self.addVariable(vprot)
+        self.addVariable(vprot, False)
 
         # pull variable back out from the array in order to determine its offset
         # which is set by self.addVariable
@@ -2201,6 +2204,7 @@ class Function:
         if(not (isIntrinsic(t.name)) and t.ptrdepth == 0 and register):
             throw(RegsiterStructure(self.current_token))
 
+        dtok = self.current_token
         # get either the name, or the first name
         name = self.checkForId()
 
@@ -2214,6 +2218,7 @@ class Function:
 
         # build a variable
         var = self.constructVar(t, name, register)
+        var.dtok = dtok
         # if the variable is a stack-based structure,
         #   add its member variables too.
         if(not var.isptr and var.t.members is not None):

@@ -139,25 +139,19 @@ extern _void_munlock_pmutex.:
 extern _void_thread_create_pthread_t.__threadcallablevoid.:
 extern _void_thread_join_pthread_t.:
 	section .data align=8
-LC.S0: db `127.0.0.1`, 0
-LC.S1: db `123hd0.5: \t %i%s%f`, 0
-LC.S2: db `hd`, 0
+LC.S0: db `123hd0.5: \t %i%s%f`, 0
+LC.S1: db `hd`, 0
+LC.S2: db ` %i`, 0
 LC.S3: db ` %i`, 0
-LC.S4: db ` %i`, 0
-LC.S5: db `test123`, 0
-LC.S6: db ` %i`, 0
-LC.S7: db ` [ %i Bytes sent successfuly. ] \n`, 0
+LC.S4: db `test123`, 0
+LC.S5: db ` %i`, 0
+LC.S6: db ` [ %i Bytes sent successfuly. ] \n`, 0
 LC.F0: dq 0x0.0p+0
 M_MINZERO_MEM: dq 0
 	section .bss align=8
 	section .text align=16
 	global main
 main:
-	mov si, 5501
-	mov rdi, LC.S0
-	call _void_sockConfirm_pchar.short
-	call _float_benchmark_p
-	movq rax, xmm0
 	xor eax, eax
 __main__return:
 	ret
@@ -173,9 +167,9 @@ _float_benchmark_p:
 	jmp .L0x29
 .L0x28:
 	mov r8, 1056964608
-	mov rcx, LC.S2
+	mov rcx, LC.S1
 	mov rdx, 123
-	mov rsi, LC.S1
+	mov rsi, LC.S0
 	lea rbx, [rbp-1008]
 	mov rdi, rbx
 	call sprintf
@@ -216,7 +210,7 @@ _void_sockConfirm_pchar.short:
 	mov rdi, rax
 	call _size_t_puts_pchar.
 	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S3
+	mov rdi, LC.S2
 	call printf
 	mov rdi, 1
 	mov rax, 60
@@ -260,7 +254,7 @@ _void_sockConfirm_pchar.short:
 	mov rdi, rax
 	call _size_t_puts_pchar.
 	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S4
+	mov rdi, LC.S3
 	call printf
 	mov rdi, 1
 	mov rax, 60
@@ -271,7 +265,7 @@ _void_sockConfirm_pchar.short:
 .L0x14:
 .L0x15:
 	mov rdx, 7
-	mov rsi, LC.S5
+	mov rsi, LC.S4
 	mov rbx, qword[rbp-32]
 	mov rdi, rbx
 	mov rax, 1
@@ -287,7 +281,7 @@ _void_sockConfirm_pchar.short:
 	mov rdi, rax
 	call _size_t_puts_pchar.
 	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S6
+	mov rdi, LC.S5
 	call printf
 	mov rdi, 1
 	mov rax, 60
@@ -298,7 +292,7 @@ _void_sockConfirm_pchar.short:
 .L0x1e:
 .L0x1f:
 	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S7
+	mov rdi, LC.S6
 	call printf
 	xor esi, esi
 	mov rbx, qword[rbp-32]

@@ -272,6 +272,11 @@ class Compiler:
         # check for an identifier
         name = self.checkId()
 
+        if self.getGlob(name) is not None:
+            fatalThrow(VariableRedeclaration(self.currentTokens[self.ctidx-1], name))
+
+        dtok = self.currentTokens[self.ctidx-1]
+
         # check for simple C style function declarations
         if(self.current_token.tok == T_OPENP or self.current_token.tok == T_NAMESPACE):
             # update indexes, and pass control onto the buildFunction function
@@ -288,6 +293,7 @@ class Compiler:
                 throw(AssigningExternedValue(self.current_token))
             # add new variable
             self.globals.append(Variable(intr.copy(), name, glob=True))
+            self.globals[-1].dtok = dtok
             # close
             self.checkSemi()
             return
@@ -305,6 +311,7 @@ class Compiler:
                         name,
                         glob=True,
                         initializer=0))
+                self.globals[-1].dtok = dtok
                 # since the var has no initializer, it is stored in the .bss
                 # section
                 self.heap += f"{name}: resb {intr.csize()}\n"
@@ -349,6 +356,7 @@ class Compiler:
         # add new Variable
         self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor, isptr=isptr))
+        self.globals[-1].dtok = dtok
 
         # add .data instructions to self.constants
         self.constants += createIntrinsicConstant(self.globals[-1])

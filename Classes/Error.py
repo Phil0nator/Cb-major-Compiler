@@ -3,6 +3,13 @@ from colorama import Fore, Style
 from termcolor import colored
 error_indicator = f"{Fore.RED}{Style.BRIGHT}"
 
+notestack = []
+
+def check_notes():
+    global notestack
+    out = ''.join(('\n'+note.__repr__() for note in notestack))
+    notestack = []
+    return out
 
 def represent_code(token, indicator):
     # build pretty print error message
@@ -51,7 +58,9 @@ class Error(BaseException):
         # \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL}
         # \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at:
         # \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
-        return f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}:{Fore.RED}{' fatal' if fatal else ''} error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
+        msg = f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}:{Fore.RED}{' fatal' if fatal else ''} error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
+        notes = check_notes()
+        return msg + notes
 
 
 def throw(error):
@@ -168,6 +177,16 @@ class UnkownFunction(Error):
         self.tok = tok
         self.message = f"Unkown function {name} with parameter types {types} :"
 
+        for function in config.GlobalCompiler.functions:
+            if function.name == name:
+                notestack.append(
+                    Note(
+                        function.declare_token,
+                        "Similar function: "
+                    )
+                )
+
+
 
 class InvalidSignSpecifier(Error):
     def __init__(self, tok):
@@ -221,6 +240,29 @@ class VariableRedeclaration(Error):
     def __init__(self, tok, v):
         self.tok = tok
         self.message = f"Existing declaration for variable [{v}] :"
+        
+        # check for notes to make about existing declarations:
+
+        # local scope
+        if config.GlobalCompiler.currentfunction is not None:
+            
+            for variable in config.GlobalCompiler.currentfunction.variables:
+                if variable.name == v:
+                    notestack.append(Note(
+                        variable.dtok,
+                        "Existing declaration: "
+                    ))
+        # global scope
+        else:
+        
+            for variable in config.GlobalCompiler.globals:
+                if variable.name == v:
+                    notestack.append(Note(
+                        variable.dtok,
+                        "Existing declaration: "
+                    ))
+        
+        
 
 
 class InvalidOperationOperands(Error):
@@ -430,3 +472,18 @@ class UnreachableCode(Warning):
     def __init__(self, tok, fn):
         self.tok = tok
         self.msg = f"Ureachable code starting with ( '{tok}' ) in function '{fn.pretty_print_err()}'\t: "
+
+
+note_indicator = f"{Style.BRIGHT}{Fore.BLUE}"
+class Note:
+    def __init__(self, tok, msg):
+        self.tok = tok
+        self.msg = msg
+
+    def __repr__(self):
+        problem, _ = represent_code(self.tok, note_indicator)
+        locline = f"{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+        start = f"{Style.BRIGHT}cbm: {locline} {note_indicator}Note: {Style.RESET_ALL}"
+
+        return f"{start}{self.msg}\n{problem}"
+

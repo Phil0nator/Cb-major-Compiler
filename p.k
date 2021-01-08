@@ -2,19 +2,22 @@
 #include "cblib.cb"
 
 
+function int main(int argc){
+    //sockConfirm("127.0.0.1", 5501);
+    //benchmark();
 
-function int main(){
-    sockConfirm("127.0.0.1", 5501);
-    benchmark();
-    
-    
+    int argc;
+
+
+
     return 0;
 }
 
 
 
 float benchmark(){
-
+    int b;
+    int b;
     char nullb[1000];
     memzer(&nullb, 1000);
     for range(i, 25000000){
