@@ -81,7 +81,7 @@ char* strchr(char* str, char c){
 }
 
 
-char* strerror(long errnum){
+char* strerror(void errnum){
     if(errnum >= 0){
         return get_errstr(errnum);
     }else{

@@ -68,6 +68,12 @@ def functionlabel(fn):
 def extra_parameterlabel(fn, num):
     return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
 
+def syscall(code):
+    return f"""
+mov rax, {code}
+mov r10, rcx
+syscall
+"""
 
 
 

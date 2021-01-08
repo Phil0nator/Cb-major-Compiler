@@ -77,36 +77,36 @@ struct timezone_t{
  * https://man7.org/linux/man-pages/man2/getitimer.2.html
  */
 inline int getitimer(int which, itimerval_t* value){
-    syscall(36)
+    syscall(SYS_getitimer);
 }
 /**
  * https://man7.org/linux/man-pages/man2/gettimeofday.2.html
  */
 inline int gettimeofday(timeval_t *tv, timezone_t *tz){
-    syscall(96)
+    syscall(SYS_gettimeofday);
 }
 /**
  * https://man7.org/linux/man-pages/man2/setitimer.2.html
  */
 inline int setitimer(int which, itimerval_t* value, itimerval_t* ovalue){
-    syscall(38)
+    syscall(SYS_setitimer);
 }
 /**
  * https://man7.org/linux/man-pages/man2/settimeofday.2.html
  */
 inline int settimeofday(timeval_t* tv, timezone_t* tz){
-    syscall(164)
+    syscall(SYS_settimeofday);
 
 }
 /**
  * https://man7.org/linux/man-pages/man2/utimes.2.html
  */
 inline int utimes(char* filename, timeval_t*utimes){
-    syscall(235)
+    syscall(SYS_utimes);
 }
 
 inline long clock_gettime(long which, timespec* tp){
-    syscall(228)
+    syscall(SYS_clock_gettime);
 }
 
 
@@ -115,7 +115,7 @@ inline long clock_gettime(long which, timespec* tp){
  * https://man7.org/linux/man-pages/man2/time.2.html
  */
 inline time_t time(time_t *tloc){
-    syscall(201)
+    syscall(SYS_time);
 }
 /**
  * Halt execution of the calling thread for at least the amount of time specified by req.
@@ -125,7 +125,7 @@ inline time_t time(time_t *tloc){
  * @returns None (cannot fail)
  */
 inline void nanosleep(timeval_t*req, timeval_t*rem){
-    syscall(35)
+    syscall(SYS_nanosleep);
 }
 
 

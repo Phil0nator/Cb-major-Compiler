@@ -21,6 +21,8 @@ def join(arr, d):
     return out
 
 
+
+
 # add the compiler-produced define macros
 # EX: __WIN32, __LINUX, __DARWIN, etc...
 oslist = ["Linux", "Darwin", "Windows", "SunOS", "Java", "BSD"]
@@ -516,6 +518,7 @@ class PreProcessor:
 
             else:
                 self.advance()
+
         # filter out deleted tokens that were replaced with None
         return list(filter(badfilter, self.tokens))
 

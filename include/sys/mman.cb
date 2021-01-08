@@ -20,20 +20,14 @@ typedef int off_t;
 
 #define MAP_ANONYMOUS 0x20
 
+#include "syscall.k"
 
 inline void* mmap(void* addr, size_t length, long prot, long flags, long fd, off_t offset){
-    __asm{"
-    mov rax, 9
-    mov r10, rcx
-    syscall
-    "}
+    syscall(SYS_mmap);
 }
 
 inline void* munmap(void* addr, size_t length){
-    __asm{"
-    mov rax, 11
-    syscall
-    "}
+    syscall(SYS_munmap);
 }
 
 inline void* qmmap(size_t amt){

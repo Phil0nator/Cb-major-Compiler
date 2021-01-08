@@ -24,6 +24,8 @@
 #include "sys/sock.k"               /* low level socket interaction */
 #include "sys/pth.k"                /* low level thread interaction */
 
+#include "inet/inetutil.cb"         /* higher-ish level networking tools */
+
 #include "structure/structure.cb"   /* standard data structures */
 
 #include "util/string.cb"                 /* high level string functions */

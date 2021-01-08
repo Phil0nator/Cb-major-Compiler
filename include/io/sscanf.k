@@ -13,7 +13,9 @@
 #define SSCANF_FORMAT_SPECIFIER '%'
 
 
-
+function bool fixNegative(char c, bool s){
+    return c=='-'&&s;
+}
 
 
 
@@ -22,15 +24,18 @@
 function int scanint(char* str, long* dest, bool s){
 
     long val = 0;
-    char c = $char (@str);
-    bool negative = false;
     char* ogstr =str;
+    bool negative = fixNegative(@str,s);
+    str+=negative;
+    char c = $char (@str);
+    
+    /*
     if(c == '-' && s){
         negative = true;
         str+=1;
         c = $char(@str);
     }
-
+    */
     while( c <= '9' && c >= '0'){
         c-='0';
         
@@ -106,6 +111,7 @@ int __SSCANF(char* format, char* input, void** args){
 
             format++;
             char c = @format;
+
             size_t diff;
             if(c == SSCANF_FORMAT_INT){
                 diff = scanint(input, args[argc], true);

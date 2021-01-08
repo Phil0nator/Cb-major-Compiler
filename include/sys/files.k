@@ -53,7 +53,7 @@ typedef long mode_t;         /* file openmode datatype   */
  * @returns number of bytes read
  */
 inline ssize_t read(fd_t fd, char* buf, size_t count){
-    syscall(0)
+    syscall(SYS_read);
 }
 /**
  * write count bytes from buf into file fd.
@@ -63,7 +63,7 @@ inline ssize_t read(fd_t fd, char* buf, size_t count){
  * @returns number of bytes written
  */
 inline ssize_t write(fd_t fd, char* buf, size_t count){
-    syscall(1)
+    syscall(SYS_write);
 
 }
 /**
@@ -74,8 +74,7 @@ inline ssize_t write(fd_t fd, char* buf, size_t count){
  * @returns the new file descriptor, or an error code if unsuccessful.
  */
 inline fd_t open(char *fname, int flags, mode_t mode){
-    syscall(2)
-
+    syscall(SYS_open);
 }
 /**
  * Close a file.
@@ -83,7 +82,7 @@ inline fd_t open(char *fname, int flags, mode_t mode){
  * @returns success / or error code
  */
 inline int close(fd_t fd){
-    syscall(3)
+    syscall(SYS_close);
 
 }
 /**
@@ -93,7 +92,7 @@ inline int close(fd_t fd){
  * @returns success / error code
  */
 inline int mkdir(char* pathname, mode_t mode){
-    syscall(83)
+    syscall(SYS_mkdir);
 }
 /**
  * Remove a directory at pathname
@@ -101,7 +100,7 @@ inline int mkdir(char* pathname, mode_t mode){
  * @returns success / error code
  */
 inline int rmdir(char* pathname){
-    syscall(84)
+    syscall(SYS_rmdir);
 }
 /**
  * Create a file pathname with mode
@@ -110,7 +109,7 @@ inline int rmdir(char* pathname){
  * @returns success / error code
  */
 inline int creat(char* pathname, mode_t mode){
-    syscall(85)
+    syscall(SYS_creat);
 
 }
 /**
@@ -119,7 +118,7 @@ inline int creat(char* pathname, mode_t mode){
  * @returns success / error code
  */
 inline int chdir(char* pathname){
-    syscall(80)
+    syscall(SYS_chdir);
 
 }
 /**
@@ -137,7 +136,7 @@ inline int chdir(char* pathname){
  * @param whence Starting point
  */
 inline int lseek(fd_t fd, int offset, int whence){
-    syscall(8)
+    syscall(SYS_lseek);
 }
 
 

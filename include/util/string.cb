@@ -75,7 +75,7 @@ CBLIBENTRY size_t strcspn(char* str1, char* str2);
  * @param errnum error code
  * @returns a string with the linux error description for errnum
  */
-CBLIBENTRY char* strerror(long errnum);
+CBLIBENTRY char* strerror(void errnum);
 
 function char* strpbrk(char* str1, char* str2);
 function char* strrchr(char* str, char c);

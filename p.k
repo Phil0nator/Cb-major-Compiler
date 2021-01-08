@@ -1,17 +1,14 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
 
 function int main(){
-
-
-    puts("Hello World!");
-    fflush();
-    printf("Hello World!");
-
+    //sockConfirm("127.0.0.1", 5501);
+    //benchmark();
+    
+    
     return 0;
-    //return benchmark();
 }
 
 
@@ -26,6 +23,45 @@ float benchmark(){
     puts(&nullb);
     return 35f;
     
+}
+
+*/
+
+/*
+function void sockConfirm(char* ip, short port){
+
+    int err;
+    fd_t sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0){
+        puts(strerror(err));
+        printf(" %i", err);
+        exit(1);
+    }
+    
+    sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = hton16(port);
+    inet_aton(ip, &addr.sin_addr);
+    
+
+    err = connect(sock, &addr, sizeof(sockaddr_in));
+    
+    
+    if (err < 0){
+        puts(strerror(err));
+        printf(" %i", err);
+        exit(1);
+    }
+
+    err = write(sock, "test123",7);
+    if (err < 0){
+        puts(strerror(err));
+        printf(" %i", err);
+        exit(1);
+    }
+
+    printf(" [ %i Bytes sent successfuly. ] \n", err);
+
 }
 
 */

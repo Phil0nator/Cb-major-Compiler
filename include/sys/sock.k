@@ -5,7 +5,7 @@
 #define __SYSSOCK 1
 
 #include "files.k" // fd_t, read, write, etc...
-
+#include "syscall.k" // syscall info
 
 /** 32bit ip address type */
 typedef int in_addr;
@@ -90,7 +90,7 @@ struct linger_t {
  * @returns a new socket file descriptor, or a negative error
  */
 inline fd_t socket(int family, int type, int protocol){
-    syscall(41)
+    syscall(SYS_socket);
 }
 /**
  * connect a socket held by fd to an address.
@@ -100,7 +100,7 @@ inline fd_t socket(int family, int type, int protocol){
  * @returns 0 on success, negative error on failure
  */
 inline int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
-    syscall(42)
+    syscall(SYS_connect);
 }
 /**
  * Accept an incoming connection to socket fd.
@@ -110,7 +110,7 @@ inline int connect(fd_t fd, sockaddr_in *uservaddr, int addrlen){
  * @returns a new file descriptor for a socket connected with the incoming connection
  */
 inline int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
-    syscall(43)
+    syscall(SYS_accept);
 }
 /**
  * bind a socket to an address and port
@@ -120,33 +120,33 @@ inline int accept(fd_t fd, sockaddr_in*uservaddr, int addrlen){
  * @returns 0 on success, negative error
  */
 inline int bind(fd_t fd, sockaddr_in*umyaddr, int addrlen){
-    syscall(49)
+    syscall(SYS_bind);
 }
 /**
  * Set a socket to listen for incoming connections:
  * https://man7.org/linux/man-pages/man2/listen.2.html
  */
 inline int listen(fd_t fd, int backlog){
-    syscall(50)
+    syscall(SYS_listen);
 }
 /**
  * Shutdown socket sockfd with code how.
  * https://man7.org/linux/man-pages/man2/shutdown.2.html
  */
 inline int shutdown(fd_t sockfd, int how){
-    syscall(48)
+    syscall(SYS_shutdown);
 }
 /**
  * https://man7.org/linux/man-pages/man2/recvfrom.2.html
  */
 inline int recvfrom(fd_t sockfd, char* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
-    syscall(45)
+    syscall(SYS_recvfrom);
 }
 /**
  * https://www.man7.org/linux/man-pages/man2/sendto.2.html
  */
 inline int sendto(fd_t fd, void* buff, size_t len, int flags, sockaddr_in* addr, size_t addrsize){
-    syscall(44)
+    syscall(SYS_sendto);
 }
 
 

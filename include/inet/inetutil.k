@@ -9,7 +9,7 @@ int inet_aton(char* cp, in_addr* addr){
 
     char p[4];
 
-    int parts = sscanf("%i.%i.%i.%i",cp, &p, &p+1, &p+2, &p+3);
+    /*int parts = */sscanf("%i.%i.%i.%i",cp, &p, &p+1, &p+2, &p+3);
     
     int a = p[0]&&0xff;
     int b = p[1]&&0xff;

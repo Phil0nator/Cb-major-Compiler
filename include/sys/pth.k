@@ -42,13 +42,13 @@ typedef long pid_t;
  * https://man7.org/linux/man-pages/man2/fork.2.html
  */
 inline long fork(){
-    syscall(57)
+    syscall(SYS_fork);
 }
 /**
  * https://man7.org/linux/man-pages/man2/vfork.2.html
  */ 
 inline long vfork(){
-    syscall(58)
+    syscall(SYS_vfork);
 }
 /**
  * Overwrite the current process with data found from pathname.
@@ -61,27 +61,27 @@ inline long vfork(){
  * 
  */
 inline long execve(char* pathname, char** args, char** env){
-    syscall(59)
+    syscall(SYS_execve);
 
 }
 /**
  * https://www.man7.org/linux/man-pages/man2/pause.2.html
  */
 inline long pause(){
-    syscall(34)
+    syscall(SYS_pause);
 
 }
+
+
+inline int waitid(int idtype, long id, void *infop, int options){
+    syscall(SYS_waitid);
+}
+
 /**
  * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
  */
 inline long waitpid(pid_t pid, int *wstatus, int options){
-
-    __asm{"
-    mov rax, 61
-    xor r8, r8
-    syscall
-    "}
-
+    return waitid(0, pid, wstatus, options);
 }
 
 typedef void siginfo;
@@ -98,7 +98,7 @@ typedef void rusage;
  * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
  */
 inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru){
-    syscall(247)
+    syscall(SYS_waitid);
 
 }
 
@@ -112,7 +112,7 @@ inline long waitid(int idtype,pid_t upid, siginfo *infop, int options,rusage *ru
  * @returns 0 is returned to the child, and the child tid is returned to the parent process, or errors will be returned to parent.
  */
 inline long clone(unsigned long clone_flags, void* newsp, void* parent_tid, void* child_tid, unsigned int tid){
-    syscall(56)
+    syscall(SYS_clone);
 
 }
 /**
@@ -121,7 +121,7 @@ inline long clone(unsigned long clone_flags, void* newsp, void* parent_tid, void
  * @returns on success, exit does not return.
  */
 inline void exit(long c){
-    syscall(60)
+    syscall(SYS_exit);
 
 }
 
@@ -129,29 +129,28 @@ inline void exit(long c){
  * https://www.man7.org/linux/man-pages/man2/tgkill.2.html
  */
 inline long tgkill(pid_t tgid, pid_t pid, long sig){
-    syscall(234)
+    syscall(SYS_tgkill);
 
 }
 /**
  * Get local thread id
  */
 inline long gettid(){
-    syscall(186)
+    syscall(SYS_gettid);
 
 }
 /**
  * Get local process id
  */
 inline long getpid(){
-    syscall(39)
+    syscall(SYS_getpid);
 
 }
 /**
  * https://man7.org/linux/man-pages/man2/wait4.2.html
  */
 inline long wait4(pid_t upid, int*stat_addr, long options, void*ru){
-    syscall(61)
-
+    syscall(SYS_wait4);
 }
 
 

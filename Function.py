@@ -17,7 +17,7 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
                                  movVarToReg, raw_regmov, spop, spush, valueOf,
-                                 zeroize, win_align_stack, win_unalign_stack)
+                                 zeroize, win_align_stack, win_unalign_stack, syscall)
 from Assembly.Instructions import Instruction, floatTo64h, floatTo32h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat, dwordImmediate
@@ -51,7 +51,8 @@ predefs = [
     "typeof",
     "sizeof",
     "typeid",
-    "__isflt"
+    "__isflt",
+    "__syscall"
 ]
 
 
@@ -626,6 +627,38 @@ class Function:
             self.advance()
             return Token(T_INT, int(typeq.isflt()),
                          starttok.start, self.current_token.end)
+
+        # builtin syscall builder
+        elif predef == "__syscall":
+
+            self.advance()
+            expr_start = self.ctidx
+            opens = 1
+            while opens:
+                if self.current_token.tok == T_OPENP:
+                    opens+=1
+                elif self.current_token.tok == T_CLSP:
+                    opens-=1
+                self.advance()
+            expr_end = self.ctidx
+
+            expr = self.tokens[expr_start:expr_end]
+            value = determineConstexpr(False, expr, self)
+            if not isinstance(value.accessor, int):
+                throw(RequiredIntegralType(value.token))
+            self.contains_rawasm = True
+            out= Token(T_FUNCTIONCALL, value,self.tokens[expr_start].start, self.current_token.end)
+            out.fn = Function(f'syscall#{value.accessor}', [],VOID.copy(), self.compiler, [])
+
+            self.addline(
+                syscall(value.accessor)
+            )
+            self.addline(
+                'push rax'
+            )
+
+            return out
+
 
     def loadVariardicParameters(self, countn, counts):
 
