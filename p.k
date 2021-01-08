@@ -1,18 +1,18 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
 
 function int main(){
-    //sockConfirm("127.0.0.1", 5501);
-    //benchmark();
+    sockConfirm("127.0.0.1", 5501);
+    benchmark();
     
     
     return 0;
 }
 
 
-/*
+
 float benchmark(){
 
     char nullb[1000];
@@ -25,9 +25,9 @@ float benchmark(){
     
 }
 
-*/
 
-/*
+
+
 function void sockConfirm(char* ip, short port){
 
     int err;
@@ -62,6 +62,8 @@ function void sockConfirm(char* ip, short port){
 
     printf(" [ %i Bytes sent successfuly. ] \n", err);
 
+
+    shutdown(sock, 0);
+
 }
 
-*/

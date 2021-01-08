@@ -126,7 +126,7 @@ def main():
         while("\n\n" in asm):
             asm = asm.replace("\n\n", "\n")
         asm = asm.replace("\n", "\n\t")
-        
+
         asm = re.sub("\n\t.*:", asm_labelRepl, asm)
 
     # linking, and running
@@ -139,12 +139,17 @@ def main():
 
         # setup path
         if config.__win__:
-            os.environ["PATH"] += os.pathsep + os.pathsep.join([f"{config.compilepath}\\windows\\gcc\\bin"])
-            os.environ["PATH"] += os.pathsep + os.pathsep.join([f"{config.compilepath}\\windows\\gcc"])
-            os.environ["PATH"] += os.pathsep + os.pathsep.join([f"{config.compilepath}\\windows\\gcc\\x86_64-w64-mingw32"])
-            os.environ["PATH"] += os.pathsep + os.pathsep.join([f"{config.compilepath}\\windows\\gcc\\opt\\bin"])
-            os.environ["PATH"] += os.pathsep + os.pathsep.join([f"{config.compilepath}\\windows\\gcc\\x86_64-w64-mingw32\\bin"])
-
+            os.environ["PATH"] += os.pathsep + \
+                os.pathsep.join([f"{config.compilepath}\\windows\\gcc\\bin"])
+            os.environ["PATH"] += os.pathsep + \
+                os.pathsep.join([f"{config.compilepath}\\windows\\gcc"])
+            os.environ["PATH"] += os.pathsep + os.pathsep.join(
+                [f"{config.compilepath}\\windows\\gcc\\x86_64-w64-mingw32"])
+            os.environ["PATH"] += os.pathsep + \
+                os.pathsep.join(
+                [f"{config.compilepath}\\windows\\gcc\\opt\\bin"])
+            os.environ["PATH"] += os.pathsep + os.pathsep.join(
+                [f"{config.compilepath}\\windows\\gcc\\x86_64-w64-mingw32\\bin"])
 
         os.system(link(config.__fileoutput__, config.__fileoutput__))
         os.remove(config.__fileoutput__ + ".o")
@@ -187,5 +192,5 @@ if(__name__ == "__main__"):
             os.system(f"./{config.__fileoutput__}")
         else:
             os.system(f"{config.__fileoutput__}")
-        
+
         print("\nRuntime: %s s" % (time.time() - runtime))

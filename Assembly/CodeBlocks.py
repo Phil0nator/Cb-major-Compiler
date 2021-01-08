@@ -37,7 +37,6 @@ leave
 """
 
 
-
 # check if a value is true
 def checkTrue(checkval: EC.ExpressionComponent):
     if(checkval.isRegister() and not checkval.type.isflt()):
@@ -68,13 +67,13 @@ def functionlabel(fn):
 def extra_parameterlabel(fn, num):
     return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
 
+
 def syscall(code):
     return f"""
 mov rax, {code}
 mov r10, rcx
 syscall
 """
-
 
 
 # get the code block to allocate a stack frame at the begining of a function
@@ -886,16 +885,15 @@ def registerizeValueType(t, obj, countn, counts):
     elif regclass == 2:
         reg = sse_parameter_registers[counts].replace("x", "y")
         instr = f"vmovdqu {reg}, {addrtext}\n"
-        counts+=1
+        counts += 1
     elif regclass == 1:
         reg = sse_parameter_registers[counts]
         instr = f"movdqu {reg}, {addrtext}\n"
-        counts +=1
+        counts += 1
     elif regclass == 0:
         reg = norm_parameter_registers[countn]
         instr = f"mov {reg}, {addrtext}\n"
         countn += 1
-
 
     return instr, addrtext, countn, counts
 
@@ -907,23 +905,20 @@ def savePartOfReg(var, extraoff, reg, b):
     else:
         if b == 3:
             instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 2)}\n"
-            extraoff+=2
+            extraoff += 2
             instr += f"shl {reg}, 8\n"
             instr += savePartOfReg(var, extraoff, reg, 1)
         else:
             instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 4)}\n"
-            extraoff+=4
+            extraoff += 4
             instr += f"shl {reg}, 8\n"
-            instr += savePartOfReg(var, extraoff, reg, b-4)
-        
-            
-
+            instr += savePartOfReg(var, extraoff, reg, b - 4)
 
     return instr
 
 
 def deregisterizeValueType(t, var, countn, counts):
-    
+
     instr = ""
     outreg = ""
     var = var.copy()
@@ -935,16 +930,15 @@ def deregisterizeValueType(t, var, countn, counts):
         for member in t.members:
             instr += loadToRax(f"[{reg}+{member.offset}]")
             instr += getFromRax(valueOf(var))
-            var.offset+=member.t.csize()
+            var.offset += member.t.csize()
 
-
-        countn+=1
+        countn += 1
 
     elif regclass == 2:
-        
-        reg = sse_parameter_registers[counts].replace('x','y')
+
+        reg = sse_parameter_registers[counts].replace('x', 'y')
         instr += f"vmovdqu [{var.baseptr}{var.offset}], {reg}\n"
-        counts+=1
+        counts += 1
 
     elif regclass == 1:
         reg = sse_parameter_registers[counts]
@@ -956,15 +950,14 @@ def deregisterizeValueType(t, var, countn, counts):
             instr += f"movq rbx, xmm14\n"
             instr += f"movsd [{var.baseptr}{var.offset}], rax\n"
             remaining = t.s - 8
-            instr += savePartOfReg(var,'rbx', remaining)
-            
-        counts+=1
+            instr += savePartOfReg(var, 'rbx', remaining)
 
+        counts += 1
 
     elif regclass == 0:
-        
+
         reg = sse_parameter_registers[countn]
-        countn+=1
+        countn += 1
         instr += savePartOfReg(var, reg, t.s)
 
     return instr, countn, counts

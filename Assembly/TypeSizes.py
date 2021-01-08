@@ -118,7 +118,6 @@ def getSingleTypeSpecifierChar(size):
         return "b"
 
 
-
 def valueTypeClass(size):
     if size <= 8:
         # normal general register
@@ -132,4 +131,3 @@ def valueTypeClass(size):
     else:
         # memory address in general register
         return 3
-    

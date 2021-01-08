@@ -34,8 +34,10 @@
 #include "util/system.cb"           /* Call bash commands */
 
 #include "sys/pth.k"                /* low level threading */
-#include "threads/thread.cb"         /* high level threading */
 
+#ifdef __LINUX
+#include "threads/thread.cb"         /* high level threading */
+#endif
 
 
 #endif

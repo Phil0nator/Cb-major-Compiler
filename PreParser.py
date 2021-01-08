@@ -21,8 +21,6 @@ def join(arr, d):
     return out
 
 
-
-
 # add the compiler-produced define macros
 # EX: __WIN32, __LINUX, __DARWIN, etc...
 oslist = ["Linux", "Darwin", "Windows", "SunOS", "Java", "BSD"]
@@ -41,7 +39,7 @@ getCompilerDefines() is what generates all pre-defined macros.
 
 
 def getCompilerDefines():
-    operating_system = platform.system()
+    operating_system = config.__platform__
     arch = platform.processor()
     defines = []
     T_0 = [Token(T_INT, 0, None, None)]

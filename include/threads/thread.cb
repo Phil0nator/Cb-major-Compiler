@@ -9,8 +9,17 @@
 #include "util/stddef.k"
 #include "sys/time.k"
 #include "sys/signal.k"
-#include "threads/futex.k"
-#include "threads/mutex.cb"
+
+#ifdef __LINUX
+
+#   include "threads/futex.k"
+#   include "threads/mutex.cb"
+
+#endif
+#ifndef __LINUX
+typedef int mutex;
+#endif
+
 
 #include "api.cb"
 

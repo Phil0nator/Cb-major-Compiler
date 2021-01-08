@@ -378,6 +378,7 @@ class UnkownConstructor(Error):
         self.tok = tok
         self.message = f"Unkown constructor: "
 
+
 class RequiredIntegralType(Error):
     def __init__(self, tok):
         self.tok = tok

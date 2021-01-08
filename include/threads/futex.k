@@ -37,6 +37,10 @@
 #define FUTEX_WAIT_REQUEUE_PI_PRIVATE   (FUTEX_WAIT_REQUEUE_PI | FUTEX_PRIVATE_FLAG)
 #define FUTEX_CMP_REQUEUE_PI_PRIVATE    (FUTEX_CMP_REQUEUE_PI | FUTEX_PRIVATE_FLAG)
 
+
+/** Linux-only feature */
+#ifdef __LINUX
+
 /**
  * https://man7.org/linux/man-pages/man2/futex.2.html
  */
@@ -51,5 +55,7 @@ inline long nfutex(int* uaddr, long op, int val){
     return futex(uaddr, op, val,NULL,NULL,NULL);
 }
 
+
+#endif
 
 #endif

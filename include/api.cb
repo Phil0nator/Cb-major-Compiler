@@ -13,7 +13,15 @@
  */
 #ifndef __CBLIB_SOURCE
 #define CBLIBENTRY extern
-#link   "cblib.o"
+
+#ifdef __LINUX
+#link   "cblib-linux.o"
+#endif
+#ifdef __DARWIN
+#link   "cblib-bsd.o"
+#endif
+
+
 #endif
 
 /**

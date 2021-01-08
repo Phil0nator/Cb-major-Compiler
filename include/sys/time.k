@@ -105,11 +105,14 @@ inline int utimes(char* filename, timeval_t*utimes){
     syscall(SYS_utimes);
 }
 
+
+#ifdef __LINUX
+
 inline long clock_gettime(long which, timespec* tp){
     syscall(SYS_clock_gettime);
 }
 
-
+#endif
 
 /**
  * https://man7.org/linux/man-pages/man2/time.2.html
@@ -117,6 +120,10 @@ inline long clock_gettime(long which, timespec* tp){
 inline time_t time(time_t *tloc){
     syscall(SYS_time);
 }
+
+
+#ifdef __LINUX
+
 /**
  * Halt execution of the calling thread for at least the amount of time specified by req.
  * The resolution of the time will be in nanoseconds.
@@ -128,6 +135,14 @@ inline void nanosleep(timeval_t*req, timeval_t*rem){
     syscall(SYS_nanosleep);
 }
 
+
+#endif
+#ifdef __DARWIN
+
+cextern void nanosleep(timeval_t* req, timeval_t*rem);
+cextern void clock_gettime(long which, timespec* tp);
+
+#endif
 
 
 #endif

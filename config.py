@@ -76,6 +76,14 @@ parser.add_argument(
     action="append",
     help="Specify the use of additional features like address sanitizing, or stack protection.")
 
+parser.add_argument(
+    "-PL",
+    "--platform",
+    action="append",
+    help="Specify an alternate platform (OS) to compile for. e.g: Compile a windows program on linux."
+)
+
+
 args = parser.parse_args()
 
 # extra compiler features that the user can specify
@@ -104,9 +112,13 @@ __rawgcclink__ = "".join((f"-L{linkable}" for linkable in __linkdirs__)) + \
                  "".join((f"-l{linkable}" for linkable in __linkables__))
 
 
+if args.platform is None:
+    __platform__ = platform.system()
+else:
+    __platform__ = args.platform[-1]
 
 # if platform is windows
-__win__ = platform.system() == "Windows"
+__win__ = __platform__ == "Windows"
 
 __preprocessonly__ = args.preprocess
 

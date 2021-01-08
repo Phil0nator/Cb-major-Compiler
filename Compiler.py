@@ -881,15 +881,14 @@ class Compiler:
         ta = self.checkType()
         if(self.current_token.tok != T_ID):
             throw(ExpectedIdentifier(self.current_token))
-        
+
         # check for layered typedefs
         if ta.name in self.tdef_hash:
             ogt = self.tdef_hash[ta.name][0]
             if ogt in ['char', 'short',
-                        'int', "long", "float",
-                        "double", "void"]:
-                        ta.name = ogt
-
+                       'int', "long", "float",
+                       "double", "void"]:
+                ta.name = ogt
 
         # new type name
         ntn = self.current_token.value
@@ -1031,7 +1030,6 @@ class Compiler:
         self.buildCextern(thisp, thispt)
         self.functions[-1].winextern = True
 
-
     def buildAutofn(self, thisp=False, thispt=None) -> None:
         self.buildFunction(thisp=thisp, thispt=thispt)
 
@@ -1081,7 +1079,6 @@ class Compiler:
                 # check the parameter 2 type
                 if not (f.parameters[1].t.__eq__(CHAR.up().up())):
                     warn(InvalidMainParameters(f.parameters[1].dtok))
-        
 
     # compile all functions and fill in raw assembly info
 
@@ -1099,7 +1096,6 @@ class Compiler:
 
                 f.extern = True
                 f.winextern = True
-
 
                 self.globals.append(
                     Variable(
