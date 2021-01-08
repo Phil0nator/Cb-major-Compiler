@@ -725,6 +725,10 @@ class Function:
             )
             self.regdecls[-1].supposed_value = "this"
 
+
+        extra_params = []
+
+
         # This function's parameters now need to be loaded as variables.
         # The parameters may be given regdecls depending on the contents of this
         # function, and how much of an improvement that would give. (@see
@@ -732,8 +736,8 @@ class Function:
         for p in self.parameters:
 
             # if the next parameter is an extra parameter (more than 6)
-            if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
-                break
+            #if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
+            #    break
 
             # if the compiler has already identified this parameter as dead,
             # add to the register counters and continue to next parameter.
@@ -742,6 +746,15 @@ class Function:
                     counts += 1
                 else:
                     countn += 1
+                continue
+
+            
+            # check for extra params
+            if p.isflt() and counts >= len(sse_parameter_registers):
+                extra_params.append(p)
+                continue
+            elif not p.isflt() and countn >= len(norm_parameter_registers):
+                extra_params.append(p)
                 continue
 
             makeParameterRegdecl = (
@@ -786,14 +799,14 @@ class Function:
                     self.addline(movRegToVar(
                         p.offset, norm_parameter_registers[countn]))
                     countn += 1
+        
+        ptr = 16
         # load extra parameters (those that could not be assigned registers)
-        epcounter = self.extra_params
-        while epcounter > 0:
-            # extra parameters are loaded from their BSS memory locations
-            self.addVariable(self.parameters[-epcounter])
-            self.addline(movMemVar(
-                (self.variables[-1]), f"[{extra_parameterlabel(self, epcounter)[:-1]}]"))
-            epcounter -= 1
+        for p in extra_params:
+            self.addVariable(p)
+            self.variables[-1].baseptr = "rbp+"
+            self.variables[-1].offset = ptr
+            ptr += 8
 
         if self.variardic:
             return self.loadVariardicParameters(countn, counts)
@@ -812,7 +825,7 @@ class Function:
 
             # for functions that do not contain a return, and have no
             # stack-based variables:
-            if self.stackCounter <= 8:
+            if self.stackCounter <= 8 and self.extra_params <= 0:
                 # the leave instruction can be ommitted
                 self.addline("ret\n")
             else:
@@ -1525,13 +1538,20 @@ class Function:
         pcount = len(parameters)
         rng = range(1, pcount) if offset else range(pcount)
 
+        extra_params = []
+
+
         # for each parameter
         for i in rng:
 
             # check for extra parameters
-            if(i >= pcount - fn.extra_params) and not fn.variardic:
-
-                break
+            if parameters[i].isflt():
+                if sseused >= len(sse_parameter_registers):
+                    extra_params.append(parameters[i])
+                    continue
+            elif normused >= len(norm_parameter_registers):
+                extra_params.append(parameters[i])
+                continue
 
             # if the parameter is a float, load to SSE register
             if(parameters[i].isflt()):
@@ -1596,29 +1616,27 @@ class Function:
                 self.advance()
 
         # load the function's extra params
-        epcounter = fn.extra_params
-        if fn.variardic:
-            paraminst += f"mov al, {sseused}\n"
-        while epcounter > 0:
+        
+        
+        for p in extra_params:
             # extra parameters are loaded into rax, and then into their BSS
             # memory location
 
-            result = EC.ExpressionComponent(
-                "rax", parameters[-epcounter].t.copy(), token=self.current_token)
 
             newinst, final = self.evaluateExpression()
-            paraminst += newinst + depositFinal(result, final)
+            paraminst += newinst + spush(final)
 
             rfree(final.accessor)
 
-            paraminst += loadToReg(
-                f"[{extra_parameterlabel(fn,epcounter)[:-1]}]", "rax")
             if(self.current_token.tok == ","):
                 self.advance()
-            epcounter -= 1
+
 
         if fn.winextern:
             paraminst += win_align_stack
+
+        if fn.variardic:
+            paraminst += f"mov al, {sseused}\n"
 
         return paraminst
 
@@ -1639,6 +1657,10 @@ class Function:
         # handle windows functions
         if fn.winextern:
             instructions += win_unalign_stack
+
+        # handle big functions
+        if fn.extra_params > 0:
+            instructions += f"add rsp, {fn.extra_params*8}\n"
 
         # determine if rax needs to be saved for xmm push/pop operations
         contains_sseregs = next(

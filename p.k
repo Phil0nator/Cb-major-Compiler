@@ -1,19 +1,23 @@
 //#define __CBLIB_SOURCE
 #include "cblib.cb"
 
+int test(int a, int b, int c, int d, int e, int f, int g, int h, int i){
+    a;b;c;d;e;f;g;h;
+    return i;
+}
+
 
 function int main(int argc){
     //sockConfirm("127.0.0.1", 5501);
     //benchmark();
-
-    int argc;
+    test(1,2,3,4,5,6,27, argc, 23);
 
 
 
     return 0;
 }
 
-
+/*
 
 float benchmark(){
     int b;
@@ -69,4 +73,4 @@ function void sockConfirm(char* ip, short port){
     shutdown(sock, 0);
 
 }
-
+*/

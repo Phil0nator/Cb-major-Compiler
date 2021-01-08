@@ -210,7 +210,7 @@ def spush(v: EC.ExpressionComponent):
     if(v.type.isflt()):
         return f"movq {rax}, {v.accessor}\npush {rax}\n"
     if(isinstance(v.accessor, Variable)):
-        return f"mov {rax}, {valueOf(v.accessor)}\npush {rax}\n"
+        return f"{cast_regUp(rax, v.accessor, v.type.signed)}\npush {rax}\n"
     return f"push {v.accessor}\n"
 
 
@@ -725,6 +725,9 @@ def cast_regUp(dest, source, signed):
                 # zeroed anyway:
                 else:
                     instr += loadToReg(dest, source)
+        # equal size
+        else:
+            return loadToReg(dest, source)
 
     return instr
 

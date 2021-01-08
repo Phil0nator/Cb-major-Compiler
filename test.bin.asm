@@ -139,169 +139,46 @@ extern _void_munlock_pmutex.:
 extern _void_thread_create_pthread_t.__threadcallablevoid.:
 extern _void_thread_join_pthread_t.:
 	section .data align=8
-LC.S0: db `123hd0.5: \t %i%s%f`, 0
-LC.S1: db `hd`, 0
-LC.S2: db ` %i`, 0
-LC.S3: db ` %i`, 0
-LC.S4: db `test123`, 0
-LC.S5: db ` %i`, 0
-LC.S6: db ` [ %i Bytes sent successfuly. ] \n`, 0
 LC.F0: dq 0x0.0p+0
 M_MINZERO_MEM: dq 0
 	section .bss align=8
 	section .text align=16
 	global main
-main:
-	xor eax, eax
-__main__return:
-	ret
-_float_benchmark_p:
+_int_test_pintintintintintintintintint:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 1024
-	mov rsi, 1000
-	lea rbx, [rbp-1008]
-	mov rdi, rbx
-	call _void_memzer_pvoid.size_t
-	mov qword[rbp-1016], 0
-	jmp .L0x29
-.L0x28:
-	mov r8, 1056964608
-	mov rcx, LC.S1
-	mov rdx, 123
-	mov rsi, LC.S0
-	lea rbx, [rbp-1008]
-	mov rdi, rbx
-	call sprintf
-.L0x2a:
-	add qword[rbp-1016], 1
-.L0x29:
-	cmp qword[rbp-1016], 25000000
-	jl .L0x28
-.L0x2b:
-	lea rbx, [rbp-1008]
-	mov rdi, rbx
-	call _size_t_puts_pchar.
-	mov rax, 1108082688
-	movq xmm7, rax
-	movsd xmm0, xmm7
-___float_benchmark_p__return:
-	leave
-	ret
-_void_sockConfirm_pchar.short:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 56
+	sub rsp, 80
 	mov [rbp-8], rdi
 	mov [rbp-16], rsi
-	mov edx, 0
-	mov esi, 1
-	mov edi, 2
-	mov rax, 41
-	mov r10, rcx
-	syscall
-.L0x3:
-	mov r10, rax
-	mov qword[rbp-32], r10
-	cmp qword[rbp-32], 0
-	jge .L0x4
-	movsxd rdi, dword[rbp-24]
-	call _char._strerror_pvoid
-	mov rdi, rax
-	call _size_t_puts_pchar.
-	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S2
-	call printf
-	mov rdi, 1
-	mov rax, 60
-	mov r10, rcx
-	syscall
-.L0x9:
-	jmp .L0x5
-.L0x4:
-.L0x5:
-	mov qword[rbp-48], 0
-	mov word[rbp-56], 2
-	mov bx, word[rbp-16]
-	mov di, bx
-	xor rax, rax
-	bswap edi
-	shr edi, 16
-	mov eax, edi
-.L0xe:
-	mov r10, rax
-	mov word[rbp-54], r10w
-	lea rbx, [rbp-52]
-	mov rsi, rbx
-	mov rbx, qword[rbp-8]
-	mov rdi, rbx
-	call _int_inet_aton_pchar.in_addr.
-	mov edx, 16
-	lea rbx, [rbp-56]
-	mov rsi, rbx
-	mov rbx, qword[rbp-32]
-	mov rdi, rbx
-	mov rax, 42
-	mov r10, rcx
-	syscall
-.L0x13:
-	mov r10, rax
-	mov dword[rbp-24], r10d
-	cmp dword[rbp-24], 0
-	jge .L0x14
-	movsxd rdi, dword[rbp-24]
-	call _char._strerror_pvoid
-	mov rdi, rax
-	call _size_t_puts_pchar.
-	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S3
-	call printf
-	mov rdi, 1
-	mov rax, 60
-	mov r10, rcx
-	syscall
-.L0x19:
-	jmp .L0x15
-.L0x14:
-.L0x15:
-	mov rdx, 7
-	mov rsi, LC.S4
-	mov rbx, qword[rbp-32]
-	mov rdi, rbx
-	mov rax, 1
-	mov r10, rcx
-	syscall
-.L0x1d:
-	mov rbx, rax
-	mov dword[rbp-24], ebx
-	cmp dword[rbp-24], 0
-	jge .L0x1e
-	movsxd rdi, dword[rbp-24]
-	call _char._strerror_pvoid
-	mov rdi, rax
-	call _size_t_puts_pchar.
-	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S5
-	call printf
-	mov rdi, 1
-	mov rax, 60
-	mov r10, rcx
-	syscall
-.L0x23:
-	jmp .L0x1f
-.L0x1e:
-.L0x1f:
-	movsxd rsi, dword[rbp-24]
-	mov rdi, LC.S6
-	call printf
-	xor esi, esi
-	mov rbx, qword[rbp-32]
-	mov rdi, rbx
-	mov rax, 48
-	mov r10, rcx
-	syscall
-.L0x27:
-	xor rax, rax
+	mov [rbp-24], rdx
+	mov [rbp-32], rcx
+	mov [rbp-40], r8
+	mov [rbp-48], r9
+	mov ebx, dword[rbp+32]
+	mov eax, ebx
+___int_test_pintintintintintintintintint__return:
+	leave
+	ret
+main:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov [rbp-8], rdi
+	mov r9d, 6
+	mov r8d, 5
+	mov ecx, 4
+	mov edx, 3
+	mov esi, 2
+	mov edi, 1
+	push 27
+	mov eax, dword[rbp-8]
+	cdqe
+	push rax
+	push 23
+	call _int_test_pintintintintintintintintint
+	add rsp, 24
+	xor eax, eax
+__main__return:
 	leave
 	ret
 	

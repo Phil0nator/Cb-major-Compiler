@@ -577,11 +577,7 @@ class Compiler:
         f.extra_params = extra_params
         f.ssepcount = ssecount
         f.normpcount = normcount
-        # generate destinations for the extra parameters in the .bss section
-        # TODO: modify to be thread safe
-        while extra_params > 0:
-            self.heap += f"{extra_parameterlabel(f, extra_params)} resb 8\n"
-            extra_params -= 1
+        
 
         self.functions.append(f)
         # add as a variable for fn pointers
