@@ -47,7 +47,7 @@ CBLIBENTRY char getchar();
  * @param msg message to print
  * @returns None
  */
-CBLIBENTRY void getString(char* buffer, int maxlen, char* msg);
+CBLIBENTRY size_t getString(char* buffer, size_t maxlen, char* msg);
 
 
 

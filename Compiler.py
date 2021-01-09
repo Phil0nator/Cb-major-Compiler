@@ -272,10 +272,7 @@ class Compiler:
         # check for an identifier
         name = self.checkId()
 
-        if self.getGlob(name) is not None:
-            fatalThrow(VariableRedeclaration(self.currentTokens[self.ctidx-1], name))
 
-        dtok = self.currentTokens[self.ctidx-1]
 
         # check for simple C style function declarations
         if(self.current_token.tok == T_OPENP or self.current_token.tok == T_NAMESPACE):
@@ -284,6 +281,13 @@ class Compiler:
             self.advance()
             self.buildFunction()
             return
+
+        # check for multiple declarations
+        if self.getGlob(name) is not None:
+            fatalThrow(VariableRedeclaration(self.currentTokens[self.ctidx-1], name))
+
+        dtok = self.currentTokens[self.ctidx-1]
+
 
         # variables declared with extern are not placed in the data section, and are simply
         # recorded for use by the compiler.

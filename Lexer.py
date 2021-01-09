@@ -131,7 +131,7 @@ class Lexer:
         # account for multi-line strings
         newlines = content.count("\n")
         self.loc.line += newlines - 1 if newlines else 0
-
+        self.loc.ch += len(content)
         self.advance()
         return Token(T.T_STRING, content, begin, self.loc.copy())
 
@@ -250,6 +250,7 @@ class Lexer:
                 advance()
 
                 # managing comments:
+                olchdx = self.chidx
 
                 # single line comments:
                 if(self.ch == "/"):
@@ -263,12 +264,12 @@ class Lexer:
                                     '',
                                     self.loc,
                                     self.loc)))
+                    self.loc.ch += self.chidx-olchdx
                     advance()
 
                 # multiline comments:
                 elif(self.ch == "*"):
                     # find and jump to next instance of '*/' in raw text
-                    olchdx = self.chidx
                     self.chidx = self.raw.find("*/", self.chidx) + 1
                     if self.chidx <= 0:
                         raise(

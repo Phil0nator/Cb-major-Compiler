@@ -1,27 +1,50 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
-int test(int a, int b, int c, int d, int e, int f, int g, int h, int i){
-    a;b;c;d;e;f;g;h;
-    return i;
-}
 
 
 function int main(int argc){
-    //sockConfirm("127.0.0.1", 5501);
+    //nc("127.0.0.1", 5501);
+    
+    char test[25] = "Hello World!";
+
+
     //benchmark();
-    test(1,2,3,4,5,6,27, argc, 23);
+    return 0;
+}
+/*
+void nc(char* ip, short port){
+    Socket sock;
+    sock.init();
+    sock.connect(ip, port);
+    char* buffer = mapalloc(1024);
+    size_t bytes = 0;
+    
+    while (true){
+
+        while( bytes == 0 ){
+            bytes = sock.recv(buffer, 1024);
+        }
+
+        if (bytes < 0){
+            puts("Lost connection to host.");
+            return -1;
+        }
+
+        puts(buffer);
+        memzer(buffer, bytes);
+        bytes = 0;
+
+    }
 
 
-
+    mapfree(buffer);
     return 0;
 }
 
-/*
 
 float benchmark(){
-    int b;
-    int b;
+
     char nullb[1000];
     memzer(&nullb, 1000);
     for range(i, 25000000){
@@ -32,45 +55,4 @@ float benchmark(){
     
 }
 
-
-
-
-function void sockConfirm(char* ip, short port){
-
-    int err;
-    fd_t sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0){
-        puts(strerror(err));
-        printf(" %i", err);
-        exit(1);
-    }
-    
-    sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = hton16(port);
-    inet_aton(ip, &addr.sin_addr);
-    
-
-    err = connect(sock, &addr, sizeof(sockaddr_in));
-    
-    
-    if (err < 0){
-        puts(strerror(err));
-        printf(" %i", err);
-        exit(1);
-    }
-
-    err = write(sock, "test123",7);
-    if (err < 0){
-        puts(strerror(err));
-        printf(" %i", err);
-        exit(1);
-    }
-
-    printf(" [ %i Bytes sent successfuly. ] \n", err);
-
-
-    shutdown(sock, 0);
-
-}
 */

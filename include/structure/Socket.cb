@@ -1,0 +1,39 @@
+#ifndef __SOCKET_CLASS
+#define __SOCKET_CLASS
+
+#include "api.cb"
+#include "sys/sock.k"
+#include "inet/inetutil.cb"
+#include "io/filesystem.cb"
+#include "sys/errlist.k"
+
+class Socket{
+
+    fd_t sock;
+
+    CBLIBENTRY err_t init();
+
+    CBLIBENTRY err_t init(int family, int type, int protocal);
+
+    CBLIBENTRY err_t connect(char* ip, int port);
+
+    CBLIBENTRY ssize_t send(char* data);
+
+    CBLIBENTRY ssize_t send(char* data, size_t bytes);
+
+    CBLIBENTRY err_t close();
+
+    CBLIBENTRY ssize_t recv(char* buffer, size_t bytes);
+
+    ~Socket(){
+        shutdown(sock, 1);
+    }
+
+
+};
+
+#ifdef __CBLIB_SOURCE
+#   include "Socket.k"
+#endif
+
+#endif

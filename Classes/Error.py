@@ -17,18 +17,21 @@ def represent_code(token, indicator):
     file = token.start.file
     char = token.start.ch
 
+
     file = config.loadRawFile(file, None)
 
     lines = file.split("\n")
     # determine number of characters before error token on given line
     line -= lines[0] != ""
 
-    linechars = char - len(''.join(lines[:line]))
+    linechars = char - len('\n'.join(lines[:line-1]))
 
-    beginchars = lines[line - 1].find(str(token.value), linechars)
+    beginchars = linechars-1
 
-    lines[line - 1] = lines[line - 1][:linechars] + lines[line - 1][linechars:].replace(
-        str(token.value), f"{indicator}{token.value}{Style.RESET_ALL}", 1)
+    
+    lines [line-1] = lines[line-1][:linechars-1] + f"{indicator}{token.value}{Style.RESET_ALL}" + \
+        lines[line-1][linechars+len(token.value)-1:]
+    
     lp = ""
     try:
         if(len(lines) > 1 and line >= 1):
@@ -54,10 +57,7 @@ class Error(BaseException):
     def __repr__(self, fatal=False):
 
         problem, line = represent_code(self.tok, error_indicator)
-        # return f"{Fore.RED}{Style.BRIGHT}Compiletime Error:{Style.RESET_ALL}
-        # \n\t{Style.BRIGHT} {self.message} {Style.RESET_ALL}
-        # \n\t\t{error_indicator}{self.tok}{Style.RESET_ALL} at:
-        # \n\n{problem}\n\t{Style.BRIGHT}{self.tok.start}{Style.RESET_ALL}"
+
         msg = f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}:{Fore.RED}{' fatal' if fatal else ''} error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
         notes = check_notes()
         return msg + notes
@@ -487,3 +487,16 @@ class Note:
 
         return f"{start}{self.msg}\n{problem}"
 
+
+suggestion_indicator = f"{Style.BRIGHT}{Fore.GREEN}"
+class Suggestion:
+    def __init__(self, tok, msg):
+        self.tok = tok
+        self.msg = msg
+    
+    def __repr__(self):
+        problem, _ = represent_code(self.tok, suggestion_indicator)
+        locline = f"{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+        start = f"{Style.BRIGHT}cbm: {locline} {note_indicator}Note: {Style.RESET_ALL}"
+
+        return f"{start}{self.msg}\n{problem}"

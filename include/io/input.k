@@ -34,10 +34,10 @@ char getchar(){
 }
 
 
-void getString(char* buffer, int maxlen, char* msg){
+size_t getString(char* buffer, size_t maxlen, char* msg){
     
     printf(msg);
-    fgets(STDIN, buffer, $size_t maxlen);
+    return fgets(STDIN, buffer, maxlen);
 
 }
 

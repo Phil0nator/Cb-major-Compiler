@@ -679,13 +679,13 @@ class Function:
         #    if i < len(norm_parameter_registers[countn:]):
         for regn in reversed(norm_parameter_registers[countn:]):
             var = Variable(VOID.copy(), f'~variardic~{regn}')
-            self.stackCounter += 8
             var.offset = self.stackCounter
+            self.stackCounter += 8
             self.addline(movRegToVar(var.offset, regn))
         for regs in reversed(sse_parameter_registers[counts:]):
             var = Variable(VOID.copy(), f"~variardic~{regs}")
-            self.stackCounter += 8
             var.offset = self.stackCounter
+            self.stackCounter += 8
             sseloadinst += (movRegToVar(var.offset, regs) + "\n")
         self.addline(sseloadinst)
         self.addline(f"{nosse}:")
@@ -1498,9 +1498,10 @@ class Function:
         out = ""
         for r in self.regdecls:
 
+
             # if a regdecl is not referenced again in the current function,
             # it does not need to be pushed, and can be discarded
-            usedagain = next(
+            usedagain = r.supposed_value == "this" or next(
                 (t for t in self.tokens[self.ctidx:] if t.tok == T_ID and t.value == r.supposed_value), None) is not None
             if usedagain:
                 out += spush(r)
@@ -2245,6 +2246,7 @@ class Function:
         #   add its member variables too.
         if(not var.isptr and var.t.members is not None):
             self.buildStackStructure(var)
+            self.stackCounter+=8
 
         sizes = [1]
         isarr = False
