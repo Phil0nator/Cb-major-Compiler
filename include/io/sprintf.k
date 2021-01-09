@@ -172,7 +172,6 @@ int __sprintf(char* str, char* fmt, void* args){
 
     void og = str;
 
-
     if(str == 0 || fmt == 0){
         
         return 0;
@@ -250,8 +249,8 @@ int __sprintf(char* str, char* fmt, void* args){
                     
                 }
                 case FORMAT_STRING {
-                    int ssize = strcpy(str-1,args[argc]);
-                    str+=ssize-2;
+                    int ssize = strcpy(str,args[argc]);
+                    str+=ssize-1;
                     break;
                 }
                 case FORMAT_BOOL {
@@ -314,6 +313,7 @@ int __sprintf(char* str, char* fmt, void* args){
         str++;
 
     }
+
 
     return ($long str)-og;
 

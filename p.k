@@ -1,17 +1,19 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
 
-function int main(int argc){
+function int main(){
     //nc("127.0.0.1", 5501);
     
-    char test[25] = "Hello World!";
 
 
     //benchmark();
     return 0;
 }
+
+
+
 /*
 void nc(char* ip, short port){
     Socket sock;

@@ -17,7 +17,8 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
                                  movVarToReg, raw_regmov, spop, spush, valueOf,
-                                 zeroize, win_align_stack, win_unalign_stack, syscall)
+                                 zeroize, win_align_stack, win_unalign_stack, syscall,
+                                 pack_string)
 from Assembly.Instructions import Instruction, floatTo64h, floatTo32h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, isfloat, dwordImmediate
@@ -2428,6 +2429,42 @@ class Function:
                                 itervar, floatTo64h(
                                     value.accessor.initializer)))
                     itervar.offset -= var.t.csize()
+
+            elif self.current_token.tok == T_ID and \
+                "__LC.S" in self.current_token.value:
+                
+
+                # setup for string packing 
+                #   (Taking a char* and turning it into multiple big numbers)
+                v = self.getVariable(self.current_token.value)
+                if v is None:
+                    throw(UnkownIdentifier(self.current_token))
+                
+                self.advance()
+                offset = var.offset+var.stackarrsize
+                content = v.initializer[1:-1]
+                longs, ints, shorts, chars = pack_string(var, content)
+                for l in longs:
+                    self.addline(
+                        f"mov rax, {l}\nmov qword[rbp-{offset}], rax\n"
+                    )
+                    offset -= 8
+                for i in ints:
+                    self.addline(
+                        f"mov dword[rbp-{offset}], {i}\n"
+                    )
+                    offset -= 4
+                for s in shorts:
+                    self.addline(
+                        f"mov word[rbp-{offset}], {s}\n"
+                    )
+                    offset -= 2
+                for c in chars:
+                    self.addline(
+                        f"mov byte[rbp-{offset}], {c}\n"
+                    )
+                    offset-=1
+
 
             # single value to fill accross
             else:

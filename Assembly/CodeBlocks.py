@@ -156,7 +156,7 @@ stringconstant_counter = 0
 def createStringConstant(s) -> tuple:
     global stringconstant_counter
     out = []
-    name = ("LC.S%s" % stringconstant_counter)
+    name = ("__LC.S%s" % stringconstant_counter)
     out.append("%s: db `%s`, 0\n" % (name, s.replace("\n", "")))
     out.append(name)
     stringconstant_counter += 1
@@ -171,7 +171,7 @@ floatconstant_counter = 0
 def createFloatConstant(s, flt32=False):
     global floatconstant_counter
     out = []
-    name = ("LC.F%s" % floatconstant_counter)
+    name = ("__LC.F%s" % floatconstant_counter)
     #out.append("%s: dq __float32__(%s)\n"%(name,s))
     reserver = "dq" if not flt32 else "dd"
     out.append(f"{name}: {reserver} {s.hex()}\n")
@@ -508,9 +508,53 @@ def cmpI(areg, breg, signed, op):
     comparator = getComparater(signed, op)
     return f"\ncmp {areg}, {breg}\nset{comparator} {setSize(areg, 1)}\n"
 
+
+def pack_aligned_chararr(chars, size):
+    if size == 1:
+        return ord(chars)
+    out = 0
+    for i in range(len(chars)):
+        out >>= 8
+        out += ord(chars[i])<<(size*(8)-8)    
+    return out
+
+
+def pack_string(var, s):
+    s = f"{s}\0"
+    ogl = len(s)
+    longs = int(ogl/8)
+    ogl-=longs*8
+    ints  = int(ogl/4)
+    ogl -= ints*4
+    shorts = int(ogl/2)
+    ogl -= shorts*2
+    chars = ogl
+
+
+    longout = []
+    intout = []
+    shortout = []
+    charout = []
+
+    iterator = [
+        (longout, longs, 8),
+        (intout, ints, 4),
+        (shortout, shorts, 2),
+        (charout, chars, 1)
+    ]
+    for tn, count, size in iterator:
+
+        for i in range(count):
+            temp = s[:size]
+            s = s[size:]
+            value = pack_aligned_chararr(temp, size)
+            tn.append(value)
+
+
+    return longout, intout, shortout, charout
+
 # compare areg, breg
 # set(op) al
-
 
 def cmpF(areg, breg, op, float32q):
 

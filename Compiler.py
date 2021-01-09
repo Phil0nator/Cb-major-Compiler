@@ -640,7 +640,7 @@ class Compiler:
                     t.tok = T_ID
                     t.value = name
                     # add allocator to constants
-                    self.constants += instruct
+                    #self.constants += instruct
 
             c += 1
 
@@ -1151,7 +1151,10 @@ class Compiler:
 
                 # garbage collection
                 f.GC()
-
+        
+        for v in self.globals:
+            if v.name.startswith("__LC.S"):
+                self.constants+=f"{v.name}: db {v.initializer}, 0\n"
 
 # Keyword responses outlines the functions that the compiler will use for a given
 # keyword.
