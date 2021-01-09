@@ -34,6 +34,21 @@ def assemble(o):
     debug = "-g" if config.__dbg__ else ""
 
     if not config.__win__:
-        return f"nasm -felf64 {debug} -Fdwarf {o}.asm "
+        
+        # normal linux command using
+        #   - elf 64 format
+        #   - dwarf debug format
+        if config.__platform__ == "Linux":
+            return f"nasm -felf64 {debug} -Fdwarf {o}.asm "
+        
+        # Normal Mac Os command using
+        #   - macho64 format
+        #   - dwarf debug format
+        else:
+            return f"nasm {debug} -fmacho64 {o}.asm -o {o}.o"
+    
+    # Normal Windows command using
+    #   - win64 format
+    #   - dwarf debug format
     else:
         return f"{config.compilepath}/windows/NASM/nasm.exe -f win64 {debug} {o}.asm -o {o}.o"

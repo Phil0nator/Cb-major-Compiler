@@ -1,12 +1,13 @@
-//#define __CBLIB_SOURCE
-#include "cblib.cb"
+#define __CBLIB_SOURCE
+//#include "cblib.cb"
 
+#include "io/printf.cb"
 
 
 function int main(){
     //nc("127.0.0.1", 5501);
     
-
+    write(1,"test\n",5);
 
     //benchmark();
     return 0;

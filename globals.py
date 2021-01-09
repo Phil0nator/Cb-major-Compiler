@@ -25,6 +25,12 @@ with open(f"{config.includepath}stub.asm", "rb") as f:
 # setup for windows entrypoint
 if config.__win__:
     stub = f"%define main WinMain\n{stub}"
+# setup for macos entrypoint, and Machos64 format 
+elif config.__platform__ == "Darwin":
+    # default rel will force effective addresses using labels to be relative
+    # in order to conform to the Machos64 format for mac os
+    stub = f"default rel\n%define main _main\n{stub}"
+
 
 
 fileTemplate = stub

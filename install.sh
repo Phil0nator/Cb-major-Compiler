@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 
 # check for permission
 if [ "$EUID" -ne 0 ]
@@ -33,13 +34,27 @@ python3 -m pip install termcolor
 # it has available.
 python3 -m pip install cpuid
 
-# satisfy assembler dependency 
-sudo apt-get install nasm
 
 
-# create program directory
-mkdir /lib/cbm
-# copy files
-cp -a -r -v * /lib/cbm
-# create symbolic link for terminal command
-ln -s /lib/cbm/cbm.sh /bin/cbm
+# now system dependant operations will be done depending
+# on weather the system is MacOs or Linux GNU
+
+if ["$(uname)" == "Darwin"]; then
+  # MacOs X
+  brew install nasm
+
+
+
+
+else
+  # Linux GNU
+  # satisfy assembler dependency 
+  sudo apt-get install nasm
+
+fi
+
+  mkdir /usr/lib/cbm
+  # copy files
+  cp -a -r -v * /usr/lib/cbm
+  # create symbolic link for terminal command
+  ln -s /usr/lib/cbm/cbm.sh /usr/bin/cbm

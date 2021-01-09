@@ -4,13 +4,13 @@
 
 #define	SYS_MAXSYSCALL	370
 
-#define SYS_exit 1
-#define SYS_fork 2
-#define SYS_read 3
-#define SYS_write 4
-#define SYS_open 5
-#define SYS_close 6
-#define SYS_wait4 7
+#define SYS_exit 0x1000004
+#define SYS_fork 0x2000004
+#define SYS_read 0x3000004
+#define SYS_write 0x4000004
+#define SYS_open 0x5000004
+#define SYS_close 0x6000004
+#define SYS_wait4 0x7000004
 #define SYS_link 9
 #define SYS_unlink 10
 #define SYS_chdir 12
