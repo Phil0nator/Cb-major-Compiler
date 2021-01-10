@@ -1,13 +1,12 @@
 #define __CBLIB_SOURCE
 //#include "cblib.cb"
 
-#include "io/printf.cb"
+#include "structure/Socket.cb"
 
 
 function int main(){
-    //nc("127.0.0.1", 5501);
+    nc("127.0.0.1", 5501);
     
-    write(1,"test\n",5);
 
     //benchmark();
     return 0;
@@ -15,11 +14,18 @@ function int main(){
 
 
 
-/*
+
 void nc(char* ip, short port){
     Socket sock;
     sock.init();
-    sock.connect(ip, port);
+    int err = sock.connect(ip, port);
+    
+    if (err != 0){
+        puts(strerror(err));
+        exit(1);
+    }
+
+    
     char* buffer = mapalloc(1024);
     size_t bytes = 0;
     
@@ -58,4 +64,4 @@ float benchmark(){
     
 }
 
-*/
+

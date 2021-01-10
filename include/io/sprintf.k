@@ -188,6 +188,8 @@ int __sprintf(char* str, char* fmt, void* args){
             
 
             @str = @fmt;
+            str++;
+
         
         
         }else{
@@ -213,6 +215,7 @@ int __sprintf(char* str, char* fmt, void* args){
                 case FORMAT_CHAR {
                     char cf = $char args[argc];
                     @str = cf;
+                    str++;
                     break;
 
                 }
@@ -250,7 +253,7 @@ int __sprintf(char* str, char* fmt, void* args){
                 }
                 case FORMAT_STRING {
                     int ssize = strcpy(str,args[argc]);
-                    str+=ssize-1;
+                    str+=ssize;
                     break;
                 }
                 case FORMAT_BOOL {
@@ -310,7 +313,6 @@ int __sprintf(char* str, char* fmt, void* args){
 
 
         fmt++;
-        str++;
 
     }
 

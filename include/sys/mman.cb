@@ -18,7 +18,16 @@ typedef int off_t;
 #define MAP_FIXED       0x10
 #define MAP_FILE        0
 
-#define MAP_ANONYMOUS 0x20
+
+
+#ifdef __LINUX
+#   define MAP_ANONYMOUS 0x20
+#endif
+#ifdef __DARWIN
+#   define MAP_ANONYMOUS 0x1000
+#endif
+
+
 
 #include "syscall.k"
 
