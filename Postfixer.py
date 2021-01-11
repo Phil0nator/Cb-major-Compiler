@@ -1,5 +1,5 @@
 import Classes.ExpressionComponent as EC
-from Assembly.CodeBlocks import createFloatConstant, valueOf
+from Assembly.CodeBlocks import createFloatConstant, valueOf, setSize
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
@@ -82,7 +82,8 @@ class Postfixer:
                         if self.fn.isReturning == False or v.register is None:
                             ec = EC.ExpressionComponent(v, v.t)
                         else:
-                            ec = EC.ExpressionComponent(v.register, v.t)
+                            ec = EC.ExpressionComponent(
+                                setSize(v.register, v.t.csize()), v.t)
             # function calls are replaced by a pop because their return values are already pushed.
             # the Peephole optimizer will remove redundant push-pops and replace them with mov's
             # when possible, and with a high enough Optimization flag (set by

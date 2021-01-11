@@ -144,6 +144,10 @@ KEYWORDS = [
     "noexcept",
     "safetype",
 
+    "private",
+    "public",
+    "protected",
+
     "for",
     "while",
     "if",

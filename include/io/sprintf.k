@@ -52,7 +52,7 @@ template<typename T>
 function long toStr(T val, char* buffer, bool s, long base){
     if(val == 0){
         @buffer = '0';
-        return 1;
+        return 2;
     }
     char signspace = 0;
     if(val < 0 && s){

@@ -515,21 +515,20 @@ def pack_aligned_chararr(chars, size):
     out = 0
     for i in range(len(chars)):
         out >>= 8
-        out += ord(chars[i])<<(size*(8)-8)    
+        out += ord(chars[i]) << (size * (8) - 8)
     return out
 
 
 def pack_string(var, s):
     s = f"{s}\0"
     ogl = len(s)
-    longs = int(ogl/8)
-    ogl-=longs*8
-    ints  = int(ogl/4)
-    ogl -= ints*4
-    shorts = int(ogl/2)
-    ogl -= shorts*2
+    longs = int(ogl / 8)
+    ogl -= longs * 8
+    ints = int(ogl / 4)
+    ogl -= ints * 4
+    shorts = int(ogl / 2)
+    ogl -= shorts * 2
     chars = ogl
-
 
     longout = []
     intout = []
@@ -550,11 +549,11 @@ def pack_string(var, s):
             value = pack_aligned_chararr(temp, size)
             tn.append(value)
 
-
     return longout, intout, shortout, charout
 
 # compare areg, breg
 # set(op) al
+
 
 def cmpF(areg, breg, op, float32q):
 

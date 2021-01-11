@@ -1,12 +1,18 @@
 #define __CBLIB_SOURCE
-//#include "cblib.cb"
-
-#include "structure/Socket.cb"
+#include "cblib.cb"
 
 
+void bruh(){
+    return;
+}
+
+
+
+//#include "structure/Socket.cb"
 function int main(){
-    nc("127.0.0.1", 5501);
+    //nc("127.0.0.1", 5501);
     
+
 
     //benchmark();
     return 0;
@@ -14,7 +20,7 @@ function int main(){
 
 
 
-
+/*
 void nc(char* ip, short port){
     Socket sock;
     sock.init();
@@ -65,3 +71,4 @@ float benchmark(){
 }
 
 
+*/

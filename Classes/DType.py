@@ -12,7 +12,8 @@ __literal = "&LITERAL&"
 
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0,
-                 signed=True, destructor=None, constructor=None, stackarr=False, operators=None):
+                 signed=True, destructor=None, constructor=None, stackarr=False, operators=None,
+                 function_template=None):
         self.name = name
         self.s = size  # base size if not pointer
         self.members = members  # for structures
@@ -23,6 +24,7 @@ class DType:
         self.constructor = constructor  # only for structures
         self.stackarr = stackarr        # is stack-based array
         self.operators = operators if operators is not None else {}
+        self.function_template = function_template  # function types
 
     def size(self, depth):  # determine the size at a given pointer depth
         if(depth < self.ptrdepth):
@@ -53,11 +55,13 @@ class DType:
 
     def load(self, other):  # accept properties of another DType object
         self.__init__(other.name, other.s, other.members.copy() if other.members is not None else None, other.ptrdepth,
-                      other.signed, other.destructor, other.constructor, other.operators.copy())
+                      other.signed, other.destructor, other.constructor, other.operators.copy(),
+                      other.function_template.reset() if other.function_template is not None else None)
 
     def copy(self):  # duplicate
         return DType(self.name, self.s, members=(self.members.copy()) if self.members is not None else None, ptrdepth=self.ptrdepth,
-                     signed=self.signed, constructor=self.constructor, destructor=self.destructor, operators=self.operators.copy())
+                     signed=self.signed, constructor=self.constructor, destructor=self.destructor, operators=self.operators.copy(),
+                     function_template=self.function_template.reset() if self.function_template is not None else None)
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
         return (config.GlobalCompiler.Tequals(
@@ -169,15 +173,37 @@ def determinePrecedence(a, b, fn):
         return b, a
 
 
+def fntypematch(a, b):
+    fna = a.function_template
+    fnb = b.function_template
+
+    if not typematch(fna.returntype, fnb.returntype, False):
+        return False
+
+    if len(fna.parameters) != len(fnb.parameters):
+        return False
+
+    return all(
+        [
+            typematch(fna.parameters[i], fnb.parameters[i], False) for i in range(len(fna.parameters))
+        ]
+    )
+
 # determine if a and b are compatible for casting
+
+
 def typematch(a, b, implicit):
     if(isinstance(a, DType) and isinstance(b, DType)):
 
         if(a.name == __literal or b.name == __literal):
             return True
+
         # anything can be cast to or from void
         if(config.GlobalCompiler.Tequals(a.name, "void") or config.GlobalCompiler.Tequals(b.name, "void")):
             return True
+
+        if (a.function_template is not None or b.function_template is not None):
+            return fntypematch(a, b)
 
         # two equal types are compatible
         if(a.__eq__(b)):

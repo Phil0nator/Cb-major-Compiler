@@ -835,8 +835,17 @@ class ExpressionEvaluator:
                     else:
                         a = stack.pop()              # first operand
 
+                    # check for function types
+                    if a.type.function_template is not None or b.type.function_template is not None:
+
+                        if fntypematch(a.type, b.type):
+                            instr += self.compile_aopb(a,
+                                                       op, b, evaluator, stack)
+                        else:
+                            throw(TypeMismatch(a.token, a.type, b.type))
+
                     # check for non-primitive types for operator overloading:
-                    if not a.type.isintrinsic():
+                    elif not a.type.isintrinsic():
                         # check for operator accepting b's type
                         instr += self.compile_AoverloadB(a,
                                                          op, b, evaluator, stack)

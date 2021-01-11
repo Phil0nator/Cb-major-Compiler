@@ -90,6 +90,9 @@ class Compiler:
 
         self.heap_unnamed: int = 0           # int counter for unnamed heap variables
 
+        # an array of all function types (handled differently)
+        self.fntypes = []
+
         # panicmode means continue compiling, but there has already been an
         # error
         self.panicmode: bool = False
@@ -142,6 +145,13 @@ class Compiler:
         except BaseException:
             throw(UnexepectedEOFError(self.current_token))
 
+    def addTdef(self, old, new):
+        self.tdefs.append((old, new))
+        if old.name in self.tdef_hash:
+            self.tdef_hash[old.name].append(new.name)
+        else:
+            self.tdef_hash[old.name] = [new.name]
+
     def skipBody(self):
         self.advance()
         opens = 1
@@ -193,52 +203,110 @@ class Compiler:
             types.append(t)
         return types
 
-    # check the next tokens for a type, and return it
+    def parseFnDeclParameters(self, checkvarnames=True):
+        if self.current_token.tok != "(":
+            throw(ExpectedToken(self.current_token, "("))
+        self.advance()
+        parameters = []
+        while self.current_token.tok != T_CLSP:
+
+            t = self.checkType()
+
+            if checkvarnames:
+                if(self.current_token.tok != T_ID):
+                    throw(ExpectedIdentifier(self.current_token))
+
+                varname = self.current_token.value
+
+                self.advance()
+            else:
+                varname = "~"
+
+            parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
+            if (self.current_token.tok == T_CLSP):
+
+                break
+
+            if(self.current_token.tok != T_COMMA):
+                throw(ExpectedComma(self.current_token))
+
+            self.advance()
+
+        self.advance()
+        return parameters
+
+    def parseFunctionType(self):
+
+        self.advance()
+        rett = self.checkType()
+        parameters = self.parseFnDeclParameters(False)
+        fnout = Function("", parameters, rett, self, [])
+
+        typeout = DType(
+            f"function {fnout.createTypename()}",
+            8,
+            function_template=fnout
+        )
+
+        return typeout
+
+    # check next tokens for Type, and return it as a DType
     def checkType(self, err=True):
 
+        # within checkForType, if err is set to True,
+        # an error can be thrown on bad syntax or undefined
+        # types. When err is not set, None is returned in
+        # cases where it would normally throw an error.
+
         signed = True
-        # check for sign specification
+        # check for a sign specifier
         if(self.current_token.tok == T_KEYWORD):
             if(self.current_token.value == "unsigned"):
                 signed = False
                 self.advance()
             elif(self.current_token.value == "signed"):
                 self.advance()
-        # check for correct token Type
+            elif (self.current_token.value == "function"):
+
+                return self.parseFunctionType()
+
+        # ensure syntax
         if(self.current_token.tok != T_ID):
-            # if instructed to error out, throw error.
-            # else, return None
+            # respond to bad syntax based on err flag
             if err:
                 throw(ExpectedIdentifier(self.current_token))
             else:
                 return None
-        # check if the current token represents a type
+
+        # make sure that the type exists
         if(not self.isType(self.current_token.value)):
-            # if instructed to error out, throw error.
-            # else, return None
+            # respond to bad type based on err flag
             if err:
                 throw(ExpectedType(self.current_token))
             else:
                 return None
-        # check for decorator (template types)
+
+        # check for a decorator (template types specifier)
         if (self.currentTokens[self.ctidx + 1].tok == "<"):
-            # construct template type:
-            template: str = self.current_token.value
-            ttok: Token = self.current_token
+            # collect template info:
+            template = self.current_token.value
+            ttok = self.current_token
             self.advance()
-            types: list = self.parseTemplate()
-            t: DType = self.buildTemplateType(template, types, ttok).copy()
+            types = self.parseTemplate()
+            # querry compiler for a new type based on template types
+            t = self.buildTemplateType(template, types, ttok).copy()
         else:
-            # get existing type
-            t: DType = self.getType(self.current_token.value).copy()
+            # otherwise, querry compiler for a type based on a typename
+            t = self.getType(self.current_token.value).copy()
 
         self.advance()
-        ptrdepth = 0    # track pointer depth specified by '*' token
+        # get pointer depth:
+        ptrdepth = 0
         while self.current_token.tok == "*":
-            # loop through the '*' tokens
             ptrdepth += 1
             self.advance()
-        # return final datatype
+
+        # update type properties
         t.ptrdepth = ptrdepth
         t.signed = signed
         return t
@@ -272,8 +340,6 @@ class Compiler:
         # check for an identifier
         name = self.checkId()
 
-
-
         # check for simple C style function declarations
         if(self.current_token.tok == T_OPENP or self.current_token.tok == T_NAMESPACE):
             # update indexes, and pass control onto the buildFunction function
@@ -284,10 +350,10 @@ class Compiler:
 
         # check for multiple declarations
         if self.getGlob(name) is not None:
-            fatalThrow(VariableRedeclaration(self.currentTokens[self.ctidx-1], name))
+            fatalThrow(VariableRedeclaration(
+                self.currentTokens[self.ctidx - 1], name))
 
-        dtok = self.currentTokens[self.ctidx-1]
-
+        dtok = self.currentTokens[self.ctidx - 1]
 
         # variables declared with extern are not placed in the data section, and are simply
         # recorded for use by the compiler.
@@ -506,9 +572,16 @@ class Compiler:
                 [],
                 return_auto=autodecl,
                 declare_token=dtok)
+
+            fndtype = DType(
+                f"function {f.createTypename()}",
+                8,
+                function_template=f
+            )
+
             self.globals.append(
                 Variable(
-                    f.returntype.up(),
+                    fndtype,
                     f.getCallingLabel(),
                     glob=True,
                     isptr=True,
@@ -581,13 +654,19 @@ class Compiler:
         f.extra_params = extra_params
         f.ssepcount = ssecount
         f.normpcount = normcount
-        
 
         self.functions.append(f)
+
+        fndtype = DType(
+            f"function {f.createTypename()}",
+            8,
+            function_template=f
+        )
+
         # add as a variable for fn pointers
         self.globals.append(
             Variable(
-                f.returntype.up(),
+                fndtype,
                 f.getCallingLabel(),
                 glob=True,
                 isptr=True,
@@ -1151,13 +1230,14 @@ class Compiler:
 
                 # garbage collection
                 f.GC()
-        
+
         for v in self.globals:
             if v.name.startswith("__LC.S"):
-                self.constants+=f"{v.name}: db {v.initializer}, 0\n"
+                self.constants += f"{v.name}: db {v.initializer}, 0\n"
 
 # Keyword responses outlines the functions that the compiler will use for a given
 # keyword.
+
 
 keyword_responses = {
     "unsigned": Compiler.buildUnsigned,

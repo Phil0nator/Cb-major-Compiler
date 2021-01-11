@@ -264,7 +264,7 @@ class Lexer:
                                     '',
                                     self.loc,
                                     self.loc)))
-                    self.loc.ch += self.chidx-olchdx
+                    self.loc.ch += self.chidx - olchdx
                     advance()
 
                 # multiline comments:

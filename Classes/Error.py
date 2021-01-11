@@ -5,11 +5,13 @@ error_indicator = f"{Fore.RED}{Style.BRIGHT}"
 
 notestack = []
 
+
 def check_notes():
     global notestack
-    out = ''.join(('\n'+note.__repr__() for note in notestack))
+    out = ''.join(('\n' + note.__repr__() for note in notestack))
     notestack = []
     return out
+
 
 def represent_code(token, indicator):
     # build pretty print error message
@@ -17,21 +19,19 @@ def represent_code(token, indicator):
     file = token.start.file
     char = token.start.ch
 
-
     file = config.loadRawFile(file, None)
 
     lines = file.split("\n")
     # determine number of characters before error token on given line
     line -= lines[0] != ""
 
-    linechars = char - len('\n'.join(lines[:line-1]))
+    linechars = char - len('\n'.join(lines[:line - 1]))
 
-    beginchars = linechars-1
+    beginchars = linechars - 1
 
-    
-    lines [line-1] = lines[line-1][:linechars-1] + f"{indicator}{token.value}{Style.RESET_ALL}" + \
-        lines[line-1][linechars+len(token.value)-1:]
-    
+    lines[line - 1] = lines[line - 1][:linechars - 1] + f"{indicator}{token.value}{Style.RESET_ALL}" + \
+        lines[line - 1][linechars + len(token.value) - 1:]
+
     lp = ""
     try:
         if(len(lines) > 1 and line >= 1):
@@ -187,7 +187,6 @@ class UnkownFunction(Error):
                 )
 
 
-
 class InvalidSignSpecifier(Error):
     def __init__(self, tok):
         self.tok = tok
@@ -240,12 +239,12 @@ class VariableRedeclaration(Error):
     def __init__(self, tok, v):
         self.tok = tok
         self.message = f"Existing declaration for variable [{v}] :"
-        
+
         # check for notes to make about existing declarations:
 
         # local scope
         if config.GlobalCompiler.currentfunction is not None:
-            
+
             for variable in config.GlobalCompiler.currentfunction.variables:
                 if variable.name == v:
                     notestack.append(Note(
@@ -254,15 +253,13 @@ class VariableRedeclaration(Error):
                     ))
         # global scope
         else:
-        
+
             for variable in config.GlobalCompiler.globals:
                 if variable.name == v:
                     notestack.append(Note(
                         variable.dtok,
                         "Existing declaration: "
                     ))
-        
-        
 
 
 class InvalidOperationOperands(Error):
@@ -427,6 +424,12 @@ class RequiredIntegralType(Error):
         self.message = f"Required Integral Type: "
 
 
+class WrongParameterCount(Error):
+    def __init__(self, tok, fn):
+        self.tok = tok
+        self.message = f"Wrong number of parameters used in call to function '{fn.pretty_print_err()}'\t: "
+
+
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 
 
@@ -475,6 +478,8 @@ class UnreachableCode(Warning):
 
 
 note_indicator = f"{Style.BRIGHT}{Fore.BLUE}"
+
+
 class Note:
     def __init__(self, tok, msg):
         self.tok = tok
@@ -489,11 +494,13 @@ class Note:
 
 
 suggestion_indicator = f"{Style.BRIGHT}{Fore.GREEN}"
+
+
 class Suggestion:
     def __init__(self, tok, msg):
         self.tok = tok
         self.msg = msg
-    
+
     def __repr__(self):
         problem, _ = represent_code(self.tok, suggestion_indicator)
         locline = f"{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"

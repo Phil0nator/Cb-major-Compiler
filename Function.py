@@ -488,8 +488,52 @@ class Function:
             types.append(t)
         return types
 
-    # check next tokens for Type, and return it as a DType
+    def parseFnDeclParameters(self, checkvarnames=True):
+        self.checkTok('(')
+        parameters = []
+        while self.current_token.tok != T_CLSP:
 
+            t = self.checkForType()
+
+            if checkvarnames:
+                if(self.current_token.tok != T_ID):
+                    throw(ExpectedIdentifier(self.current_token))
+
+                varname = self.current_token.value
+
+                self.advance()
+            else:
+                varname = "~"
+
+            parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
+            if (self.current_token.tok == T_CLSP):
+
+                break
+
+            if(self.current_token.tok != T_COMMA):
+                throw(ExpectedComma(self.current_token))
+
+            self.advance()
+
+        self.advance()
+        return parameters
+
+    def parseFunctionType(self):
+
+        self.advance()
+        rett = self.checkForType()
+        parameters = self.parseFnDeclParameters(False)
+        fnout = Function("", parameters, rett, self.compiler, [])
+
+        typeout = DType(
+            f"function {fnout.createTypename()}",
+            8,
+            function_template=fnout
+        )
+
+        return typeout
+
+    # check next tokens for Type, and return it as a DType
     def checkForType(self, err=True):
 
         # within checkForType, if err is set to True,
@@ -505,6 +549,10 @@ class Function:
                 self.advance()
             elif(self.current_token.value == "signed"):
                 self.advance()
+            elif (self.current_token.value == "function"):
+
+                return self.parseFunctionType()
+
         # ensure syntax
         if(self.current_token.tok != T_ID):
             # respond to bad syntax based on err flag
@@ -726,9 +774,7 @@ class Function:
             )
             self.regdecls[-1].supposed_value = "this"
 
-
         extra_params = []
-
 
         # This function's parameters now need to be loaded as variables.
         # The parameters may be given regdecls depending on the contents of this
@@ -737,7 +783,7 @@ class Function:
         for p in self.parameters:
 
             # if the next parameter is an extra parameter (more than 6)
-            #if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
+            # if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
             #    break
 
             # if the compiler has already identified this parameter as dead,
@@ -749,7 +795,6 @@ class Function:
                     countn += 1
                 continue
 
-            
             # check for extra params
             if p.isflt() and counts >= len(sse_parameter_registers):
                 extra_params.append(p)
@@ -800,7 +845,7 @@ class Function:
                     self.addline(movRegToVar(
                         p.offset, norm_parameter_registers[countn]))
                     countn += 1
-        
+
         ptr = 16
         # load extra parameters (those that could not be assigned registers)
         for p in extra_params:
@@ -1303,7 +1348,7 @@ class Function:
 
     def buildStaticdecl(self):
         self.advance()
-        
+
         t = self.checkForType()
         dtok = self.current_token
         name = self.checkTok(T_ID)
@@ -1499,7 +1544,6 @@ class Function:
         out = ""
         for r in self.regdecls:
 
-
             # if a regdecl is not referenced again in the current function,
             # it does not need to be pushed, and can be discarded
             usedagain = r.supposed_value == "this" or next(
@@ -1541,7 +1585,6 @@ class Function:
         rng = range(1, pcount) if offset else range(pcount)
 
         extra_params = []
-
 
         # for each parameter
         for i in rng:
@@ -1618,12 +1661,10 @@ class Function:
                 self.advance()
 
         # load the function's extra params
-        
-        
+
         for p in extra_params:
             # extra parameters are loaded into rax, and then into their BSS
             # memory location
-
 
             newinst, final = self.evaluateExpression()
             paraminst += newinst + spush(final)
@@ -1632,7 +1673,6 @@ class Function:
 
             if(self.current_token.tok == ","):
                 self.advance()
-
 
         if fn.winextern:
             paraminst += win_align_stack
@@ -1643,6 +1683,7 @@ class Function:
         return paraminst
 
     def doVarcall(self, var):
+
         out = self.pushregs()
 
         return out + (Instruction("call", [valueOf(var)]))
@@ -1722,24 +1763,50 @@ class Function:
         # using the fn name, and the parameter types find the actual function
         # object best suited for this call
 
+        # check for a template
         if template:
             fn = self.getTemplateFunction(fid, types, ttypes)
+        # check for a normal function
         else:
             fn = self.getFunction(fid, types)
 
+        # make sure there is no recursive inline
         if(fn is self and self.inline):
             throw(RecursiveInlineCall(self.current_token))
 
         self.ctidx = start - 1
         self.advance()
+        # check for var function
         if(fn is None and self.compiler.getFunction(fid) is None):
-            pcount = len(types)
             var = self.getVariable(fid)
+            # unkown
             if(var is None):
                 throw(UnkownIdentifier(fnstartt))
-            params = [Variable(t, "parameter") for t in types]
-            fn = Function(fid, params, var.t, self.compiler, [])
-            varcall = True
+
+            # check for function type
+            if var.t.function_template is not None:
+                fn = var.t.function_template.reset()
+                fn.name = var.name
+                varcall = True
+                params = fn.parameters
+                pcount = len(params)
+                var.referenced = True
+                # verify match
+                if len(types) != pcount:
+                    throw(WrongParameterCount(fnstartt, fn))
+                # verify type match
+                for i in range(pcount):
+                    if not typematch(params[i].t, types[i], True):
+                        throw(TypeMismatch(fnstartt, params[i].t, types[i]))
+
+            # unkown pointer being called as function
+            else:
+
+                params = [Variable(t, "parameter") for t in types]
+                fn = Function(fid, params, var.t, self.compiler, [])
+                varcall = True
+                pcount = len(types)
+
         elif(fn is None):
             throw(UnkownFunction(fnstartt, fid, types))
 
@@ -2020,20 +2087,20 @@ class Function:
                 # forward function declarations are detected and parsed here. The label used
                 # to declare the function is returned by self.buildInineFunction() and used
                 # as a global variable in the context of this expression.
-                if(self.current_token.value == "function"):
-                    start = self.current_token.start
-                    label = self.buildInlineFunction()
-                    wasfunc = True
-                    exprtokens.append(
-                        Token(
-                            T_ID,
-                            label,
-                            start,
-                            self.current_token.end))
-                    self.advance()
-                    break
-                else:
-                    throw(UnexpectedToken(self.current_token))
+                # if(self.current_token.value == "function"):
+                #    start = self.current_token.start
+                #    label = self.buildInlineFunction()
+                #    wasfunc = True
+                #    exprtokens.append(
+                #        Token(
+                #            T_ID,
+                #            label,
+                #            start,
+                #            self.current_token.end))
+                #    self.advance()
+                #    break
+                # else:
+                throw(UnexpectedToken(self.current_token))
 
             elif(self.current_token.tok == T_PTRACCESS):
                 exprtokens.append(self.current_token)
@@ -2247,7 +2314,7 @@ class Function:
         #   add its member variables too.
         if(not var.isptr and var.t.members is not None):
             self.buildStackStructure(var)
-            self.stackCounter+=8
+            self.stackCounter += 8
 
         sizes = [1]
         isarr = False
@@ -2431,17 +2498,16 @@ class Function:
                     itervar.offset -= var.t.csize()
 
             elif self.current_token.tok == T_ID and \
-                "__LC.S" in self.current_token.value:
-                
+                    "__LC.S" in self.current_token.value:
 
-                # setup for string packing 
+                # setup for string packing
                 #   (Taking a char* and turning it into multiple big numbers)
                 v = self.getVariable(self.current_token.value)
                 if v is None:
                     throw(UnkownIdentifier(self.current_token))
-                
+
                 self.advance()
-                offset = var.offset+var.stackarrsize
+                offset = var.offset + var.stackarrsize
                 content = v.initializer[1:-1]
                 longs, ints, shorts, chars = pack_string(var, content)
                 for l in longs:
@@ -2463,8 +2529,7 @@ class Function:
                     self.addline(
                         f"mov byte[rbp-{offset}], {c}\n"
                     )
-                    offset-=1
-
+                    offset -= 1
 
             # single value to fill accross
             else:
@@ -2755,6 +2820,9 @@ class Function:
     def pretty_print_err(self):
         return f"{self.returntype} {self.name}({', '.join((p.t.__repr__() for p in self.parameters))}{', ...' if self.variardic else ''})"
 
+    def createTypename(self):
+        return f"{self.returntype} ({', '.join((p.t.__repr__() for p in self.parameters))}{', ...' if self.variardic else ''})"
+
     def reset(self):
 
         return Function(self.name, self.parameters, self.returntype,
@@ -2770,7 +2838,7 @@ class Function:
 function_keyword_responses = {
     "__asm": Function.buildASMBlock,
     "return": Function.buildReturnStatement,
-    "function": Function.buildInlineFunction,
+    "function": Function.buildDeclaration,
     "auto": Function.buildAutoDefine,
     "unsigned": Function.buildDeclaration,
     "register": Function.buildRegdecl,
