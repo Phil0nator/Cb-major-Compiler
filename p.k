@@ -2,16 +2,10 @@
 #include "cblib.cb"
 
 
-void bruh(){
-    return;
-}
-
-
 
 //#include "structure/Socket.cb"
 function int main(){
     //nc("127.0.0.1", 5501);
-    
 
 
     //benchmark();

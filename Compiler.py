@@ -1186,7 +1186,11 @@ class Compiler:
 
                 self.globals.append(
                     Variable(
-                        INT.up(),
+                        DType(
+                            f"function {f.createTypename()}",
+                            8,
+                            function_template=f
+                        ),
                         "main",
                         glob=True,
                         initializer=f,

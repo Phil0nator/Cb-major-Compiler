@@ -56,10 +56,10 @@ def functionlabel(fn):
     if(fn.extern):  # externs have no mangling
         return name + ":"
     # _returntype_name_ptypetypetype...  :
-    out = "_%s_%s_%s:\n" % (fn.returntype, name, "p#")
+    out = "_%s_%s_%s:\n" % (fn.returntype.__repr__(safe=True), name, "p#")
     types = ""
     for p in fn.parameters:
-        types += p.t.__repr__()
+        types += p.t.__repr__(safe=True)
     out = out.replace("#", types)
     return out
 
@@ -432,12 +432,12 @@ def shiftInt(a, b, op, signed):
     else:
         if(a == rcx):
             tmp = rax
-            return f"mov {tmp}, {a}\nmov cl, {boolchar_version[b]}\n{cmd} {tmp}, cl\nmov {a}, {tmp}\n"
+            return f"mov {tmp}, {a}\nmov cl, {setSize(b, 1)}\n{cmd} {tmp}, cl\nmov {a}, {tmp}\n"
         elif(b == rcx):
             return f"{cmd} {a}, cl\n"
         else:
             tmp = rax
-            return f"mov {tmp}, rcx\nmov cl, {boolchar_version[b]}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
+            return f"mov {tmp}, rcx\nmov cl, {setSize(b, 1)}\n{cmd} {a}, cl\nmov rcx, {tmp}\n"
 
 # load register to rax
 
@@ -559,7 +559,7 @@ def cmpF(areg, breg, op, float32q):
 
     comparator = getComparater(True, op)
     result = ralloc(False)
-    return f"comis{float32q} {areg}, {breg}\nset{comparator} {boolchar_version[result]}\n"
+    return f"comis{float32q} {areg}, {breg}\nset{comparator} {setSize(result, 1)}\n"
 
 # perform boolean operations (bitwize/logical)
 

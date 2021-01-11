@@ -116,11 +116,17 @@ class DType:
         else:
             return False
 
-    def __repr__(self):  # pretty print
-        if(self.signed):
-            return f"{self.name}" + "." * self.ptrdepth
+    def __repr__(self, safe=False):  # pretty print
+        if not safe or self.function_template is None:
+            if(self.signed):
+                return f"{self.name}" + "." * self.ptrdepth
+            else:
+                return f"u{self.name}" + "." * self.ptrdepth
+        elif safe:
+            return f"function@{self.function_template.returntype.__repr__(safe)}~{'_'.join((p.t.__repr__(safe) for p in self.function_template.parameters))}~" + \
+                "." * self.ptrdepth
         else:
-            return f"u{self.name}" + "." * self.ptrdepth
+            return f"{self.name}" + "." * self.ptrdepth
 
 
 # layout for type precedence
@@ -174,6 +180,10 @@ def determinePrecedence(a, b, fn):
 
 
 def fntypematch(a, b):
+
+    if a.function_template is None or b.function_template is None:
+        return False
+
     fna = a.function_template
     fnb = b.function_template
 
@@ -185,7 +195,7 @@ def fntypematch(a, b):
 
     return all(
         [
-            typematch(fna.parameters[i], fnb.parameters[i], False) for i in range(len(fna.parameters))
+            typematch(fna.parameters[i].t, fnb.parameters[i].t, False) for i in range(len(fna.parameters))
         ]
     )
 
@@ -208,6 +218,9 @@ def typematch(a, b, implicit):
         # two equal types are compatible
         if(a.__eq__(b)):
             return True
+
+        if a.ptrdepth != b.ptrdepth and not implicit:
+            return False
 
         # two equal types with different signs are compatible
         if(DType(a.name, a.size, a.members, a.ptrdepth, False, a.destructor, a.constructor).__eq__(DType(b.name, b.size, b.members, b.ptrdepth, False, b.destructor, b.constructor))):

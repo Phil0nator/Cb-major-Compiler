@@ -18,7 +18,7 @@ def represent_code(token, indicator):
     line = token.start.line + 1
     file = token.start.file
     char = token.start.ch
-
+    token.value = str(token.value)
     file = config.loadRawFile(file, None)
 
     lines = file.split("\n")
@@ -428,6 +428,12 @@ class WrongParameterCount(Error):
     def __init__(self, tok, fn):
         self.tok = tok
         self.message = f"Wrong number of parameters used in call to function '{fn.pretty_print_err()}'\t: "
+
+
+class AutoArrsizeForSingle(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Could not assign single value to an array with automatic size generation: "
 
 
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"

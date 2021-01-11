@@ -344,7 +344,8 @@ class Function:
                 self.stackCounter += 8
             else:
                 self.stackCounter += v.t.csize()
-                v.stackarrsize = v.t.csize()
+                if not v.isStackarr:
+                    v.stackarrsize = v.t.csize()
         self.append_rawVariable(v)
 
     # skip a open and close scope body. Example:
@@ -1796,7 +1797,7 @@ class Function:
                     throw(WrongParameterCount(fnstartt, fn))
                 # verify type match
                 for i in range(pcount):
-                    if not typematch(params[i].t, types[i], True):
+                    if not typematch(params[i].t, types[i], False):
                         throw(TypeMismatch(fnstartt, params[i].t, types[i]))
 
             # unkown pointer being called as function
@@ -2334,10 +2335,17 @@ class Function:
                 else:
                     throw(UnkownConstructor(self.tokens[self.ctidx - 1]))
 
+        autoArrsize = False
+
         # check for stack based array declaration
         while self.current_token.tok == "[":
             isarr = True
             self.advance()
+
+            if self.current_token.tok == "]":
+                autoArrsize = True
+                self.advance()
+                break
 
             # collect tokens for a constexpr that will be the size of the array
             exprtokens = [self.current_token]
@@ -2357,7 +2365,7 @@ class Function:
         # stack arrays:
         if(isarr):
             # build properties:
-            totalsize = product(sizes) * t.csize()
+            totalsize = (product(sizes) - 1) * t.csize()
             # stack size
             var.stackarrsize = totalsize
             var.isStackarr = True
@@ -2455,12 +2463,13 @@ class Function:
 
         # array assignment
         else:
-
             # itervar is used to iterate over the contents of the array
             # in order to place values in indexes.
             itervar = Variable(var.t, var.name, isStackarr=True)
             itervar.offset = var.offset
             itervar.stackarrsize = var.stackarrsize
+            # track automatic length assignment
+            autolen = 0
 
             # set literal is used
             if(self.current_token.tok == T_OPENSCOPE):
@@ -2475,12 +2484,21 @@ class Function:
                     var.t.isflt(), self.tokens[startok:endtok], self)
 
                 # check for size mismatch
-                if(len(setval.accessor) != sizes[1]):
+                if not autoArrsize and (len(setval.accessor) != sizes[1]):
                     throw(SetLiteralSizeMismatch(self.tokens[startok]))
+
+                if autoArrsize:
+                    itervar.offset += (len(setval.accessor) -
+                                       1) * var.t.csize()
+                    var.offset = itervar.offset
 
                 # load values
                 self.advance()
                 for value in setval.accessor:
+
+                    if not typematch(value.type, var.t, False):
+                        throw(TypeMismatch(value.token, value.type, var.t))
+
                     if isinstance(value.accessor, int):
                         if(var.t.isfltarr()):
                             self.addline(
@@ -2490,12 +2508,22 @@ class Function:
                         else:
                             self.addline(loadToReg(itervar, value.accessor))
 
+                    elif isinstance(value.accessor, Variable):
+
+                        self.addline(
+                            loadToReg(
+                                itervar, value.accessor
+                            )
+                        )
+
                     else:
                         self.addline(
                             loadToReg(
                                 itervar, floatTo64h(
                                     value.accessor.initializer)))
                     itervar.offset -= var.t.csize()
+
+                autolen = (len(setval.accessor) - 1) * var.t.csize()
 
             elif self.current_token.tok == T_ID and \
                     "__LC.S" in self.current_token.value:
@@ -2507,8 +2535,13 @@ class Function:
                     throw(UnkownIdentifier(self.current_token))
 
                 self.advance()
-                offset = var.offset + var.stackarrsize
                 content = v.initializer[1:-1]
+                if not autoArrsize:
+                    offset = var.offset + var.stackarrsize
+                else:
+                    offset = var.offset + len(content)
+                    var.offset = offset
+
                 longs, ints, shorts, chars = pack_string(var, content)
                 for l in longs:
                     self.addline(
@@ -2530,9 +2563,14 @@ class Function:
                         f"mov byte[rbp-{offset}], {c}\n"
                     )
                     offset -= 1
-
+                autolen = len(content)
             # single value to fill accross
             else:
+
+                # check for redundant auto array declaration
+                if autoArrsize:
+                    throw(AutoArrsizeForSingle(self.current_token))
+
                 # evaluate the new value
                 evaluation, value = self.evaluateExpression()
                 self.addline(evaluation)
@@ -2552,6 +2590,12 @@ class Function:
 
                     self.addline(loadToReg(itervar, loadval))
                     itervar.offset -= var.t.csize()
+
+                autolen = 0
+
+            if autoArrsize:
+                var.t.stackarrsize = autolen
+                self.stackCounter += autolen + 8
 
         self.checkSemi()
 
