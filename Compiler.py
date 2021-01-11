@@ -587,6 +587,7 @@ class Compiler:
                     isptr=True,
                     mutable=False,
                     signed=f.returntype.signed))
+            self.globals[-1].dtok = f.declare_token
 
             self.functions.append(f)
 
@@ -672,6 +673,8 @@ class Compiler:
                 isptr=True,
                 mutable=False,
                 signed=f.returntype.signed))
+        self.globals[-1].dtok = f.declare_token
+
 
     # isolate and build a structure
     def buildStruct(self, thisp=False, thispt=None) -> None:
@@ -1194,8 +1197,10 @@ class Compiler:
                         "main",
                         glob=True,
                         initializer=f,
-                        isptr=True)
+                        isptr=True,
+                        )
                 )
+                self.globals[-1].dtok = f.declare_token
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.

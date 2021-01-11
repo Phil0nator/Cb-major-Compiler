@@ -33,7 +33,7 @@ python3 -m pip install termcolor
 # cpuid is used to get basic information about the cpu and what feature sets
 # it has available.
 python3 -m pip install cpuid
-
+python3 -m pip install python-Levenshtein
 
 
 # linux_installer contains all of the linux-specific operations

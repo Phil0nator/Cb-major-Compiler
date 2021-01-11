@@ -3,11 +3,10 @@
 
 
 
-//#include "structure/Socket.cb"
-function int main(){
+function int main(int argc){
     //nc("127.0.0.1", 5501);
 
-
+    
     //benchmark();
     return 0;
 }

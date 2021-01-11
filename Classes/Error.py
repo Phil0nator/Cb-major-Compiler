@@ -1,6 +1,7 @@
 import config
 from colorama import Fore, Style
 from termcolor import colored
+import Levenshtein
 error_indicator = f"{Fore.RED}{Style.BRIGHT}"
 
 notestack = []
@@ -170,6 +171,23 @@ class UnkownIdentifier(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = "Unkown Identifier: "
+
+        # check for similar identifiers
+        if config.GlobalCompiler.currentfunction is None:
+            arr = config.GlobalCompiler.globals
+        else:
+            arr = config.GlobalCompiler.globals+config.GlobalCompiler.currentfunction.variables
+        
+        bestfit = min((Levenshtein.distance(v.name, tok.value) for v in arr))
+        v = next((v for v in arr if Levenshtein.distance(v.name, tok.value) == bestfit))
+
+        if bestfit < len(tok.value) / 2:
+            notestack.append(
+                Note(
+                    v.dtok,
+                    f"Did you mean '{v.name}'? :"
+                )
+            )
 
 
 class UnkownFunction(Error):
