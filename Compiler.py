@@ -675,8 +675,8 @@ class Compiler:
                 signed=f.returntype.signed))
         self.globals[-1].dtok = f.declare_token
 
-
     # isolate and build a structure
+
     def buildStruct(self, thisp=False, thispt=None) -> None:
         # \see Structure
         # structure wrapper
@@ -1198,13 +1198,13 @@ class Compiler:
                         glob=True,
                         initializer=f,
                         isptr=True,
-                        )
+                    )
                 )
                 self.globals[-1].dtok = f.declare_token
 
         # at this point all functions exist as Function objects, but have not
         # been compiled into asm.
-        for f in reversed(self.functions):
+        for f in (self.functions):
 
             #   TODO: Set up some size optimizations
             # if(config.__Osize__):
@@ -1235,7 +1235,7 @@ class Compiler:
                 if(config.DO_DEBUG):
                     f.asm = f"\n\n\n;{f.__repr__()}\n\n\n\n\n{f.asm}"
 
-                self.text = f"{f.asm}{self.text}"
+                self.text = f"{self.text}{f.asm}"
 
                 # garbage collection
                 f.GC()

@@ -140,6 +140,7 @@ KEYWORDS = [
     "operator",
     "explicit",
     "enum",
+    "lambda",
 
     "noexcept",
     "safetype",

@@ -176,10 +176,13 @@ class UnkownIdentifier(Error):
         if config.GlobalCompiler.currentfunction is None:
             arr = config.GlobalCompiler.globals
         else:
-            arr = config.GlobalCompiler.globals+config.GlobalCompiler.currentfunction.variables
-        
+            arr = config.GlobalCompiler.globals + \
+                config.GlobalCompiler.currentfunction.variables
+
         bestfit = min((Levenshtein.distance(v.name, tok.value) for v in arr))
-        v = next((v for v in arr if Levenshtein.distance(v.name, tok.value) == bestfit))
+        v = next(
+            (v for v in arr if Levenshtein.distance(
+                v.name, tok.value) == bestfit))
 
         if bestfit < len(tok.value) / 2:
             notestack.append(
@@ -326,6 +329,12 @@ class InvalidExpressionComponent(Error):
     def __init__(self, tok):
         self.tok = tok
         self.message = f"Invalid expression component: "
+
+
+class ExpectedConstexpr(Error):
+    def __init__(self, tok):
+        self.tok = tok
+        self.message = f"Expected constexpr: "
 
 
 class InvalidDestination(Error):

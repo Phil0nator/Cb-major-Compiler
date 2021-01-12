@@ -16,7 +16,7 @@ class ExpressionComponent:
         self.type = t  # DType
         self.accessor = accessor  # value: any
         # \depricated
-        self.inmem = False
+        #self.inmem = False
 
         self.isoperation = isoperation  # if the object represents an operator: bool
         self.constint = constint  # if the object represents a constant integer value: bool

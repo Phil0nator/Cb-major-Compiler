@@ -1,11 +1,21 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
+#define CONSTANT 5
+
+function void verify(int a){
+    long b = CONSTANT;
+    assert((a/CONSTANT == a/b));
+    
+}
 
 
 function int main(int argc){
     //nc("127.0.0.1", 5501);
-
+    for (int i = 1; i < INT_MAX; i++){
+        //printf("%i, %i\n", i, i/CONSTANT);
+        verify(i);
+    }
     
     //benchmark();
     return 0;

@@ -64,6 +64,9 @@ def functionlabel(fn):
     return out
 
 
+
+
+
 def extra_parameterlabel(fn, num):
     return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
 
@@ -841,12 +844,67 @@ def lea_mul_opt(shiftval, areg, a, b):
 
     return newinstr
 
+'''
+def magic_byThree(a, areg, size):
+    return f"""
+{cast_regUp('rax', areg, True)}
+sar {areg}, {size-1}\n
+imul rax, rax, 1431655766
+shr rax, 32
+sub eax, {setSize(areg, 4)}
+{getFromRax(areg)}
+"""
+'''
 
+
+def magic_division(a, areg, d, internal=False):
+    instr = ""
+    
+    # temporary solution
+    return f"""
+mov rdx, {floatTo64h(float(d))}
+{cast_regUp('rax', areg, a.type.signed)}
+movq xmm0, rdx
+cvtsi2sd xmm1, rax
+divsd xmm1, xmm0
+cvttsd2si {setSize(areg, 8)}, xmm1
+"""
+    #TODO:
+    # fix magic division
+    
+    # precomutation:
+    bits = a.type.csize()*8
+    # p=⌈log2d⌉
+    p: int  = math.ceil(math.log2(d))
+    # m=⌈ (2^32+p ) / d⌉
+    m: int  = math.ceil(    (2**(bits + p)) / d ) & (2**bits-1)
+    
+    # computation:
+    ax = setSize('rax', sizeOf(areg))
+    dx = setSize('rdx', sizeOf(areg))
+    instr += cast_regUp('rax', areg, a.type.signed)
+    instr += loadToReg(dx, m)
+    #q = (dx)
+    instr += f"imul {dx}\n" 
+    # t = ((n-q) >> 2) + q
+    instr += f"""
+sub {areg}, {dx}
+sar {areg}, 1
+add {areg}, {dx}
+sar {areg}, {p-1}
+    """
+
+    return instr
+
+
+'''
 def magic_division(a, areg, b, internal=False):
 
+
+
+   
     # new eq : f(n, d) = (n * m(d)) >> 33
     # m(x) = 2^33 / x + 1
-
     postshift = math.ceil(math.log2(b))
     twopower = 8 * a.type.csize() + 1
 
@@ -884,6 +942,7 @@ def magic_division(a, areg, b, internal=False):
         instr += getFromRax(areg) if not internal else f""
 
     return instr
+'''
 
 
 def magic_modulo(a, areg, b):

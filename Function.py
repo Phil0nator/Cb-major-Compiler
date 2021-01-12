@@ -53,7 +53,8 @@ predefs = [
     "sizeof",
     "typeid",
     "__isflt",
-    "__syscall"
+    "__syscall",
+    "static_assert"
 ]
 
 
@@ -68,7 +69,8 @@ predefs = [
 class Function:
     def __init__(self, name, parameters, returntype, compiler,
                  tokens, inline=False, extern=False, compileCount=0, memberfn=False,
-                 parentstruct=None, return_auto=False, declare_token=None, winextern=False):
+                 parentstruct=None, return_auto=False, declare_token=None, winextern=False,
+                 lambdas=[]):
         self.name = name                        # fn name
         self.parameters = parameters            # list:Variable parameters
         self.returntype = returntype              # DType: return type
@@ -99,6 +101,9 @@ class Function:
         self.continues = []
         # stack containing labels to jump to if the "break" keyword is used
         self.breaks = []
+
+        self.lambdas = []
+        self.lambdaCount = 0
 
         self.current_token = self.tokens[0] if len(
             self.tokens) > 0 else None     # current token
@@ -595,7 +600,142 @@ class Function:
         t.signed = signed
         return t
 
+    def evaluateTypeof(self, starttok):
+        # get type of expression
+        dtype = self.determineExpressionType(False)
+        # return as a token
+        return Token(T_ID, dtype.name, starttok.start, starttok.end)
+
+    def evaluateSizeof(self, starttok):
+        startidx = self.ctidx
+        self.advance()
+        # check if argument is a type
+        typeq = self.checkForType(False)
+        # if not,
+        if (typeq is None):
+            self.ctidx = startidx - 1
+            self.advance()
+            # determine type of the argument
+            dtype = self.determineExpressionType(False)
+            # return as a token
+            return Token(T_INT, dtype.csize(
+            ), starttok.start, starttok.end)
+
+        # if so,
+        else:
+            self.advance()
+            # return as a token
+            return Token(T_INT, typeq.csize(
+            ), self.tokens[startidx].start, self.tokens[startidx].end)
+
+    def evaluateTypeid(self, starttok):
+        self.advance()
+        startidx = self.ctidx - 2
+        # check if argument is a type
+        typeq = self.checkForType(False)
+        # if so,
+        if typeq is not None:
+            # move on
+            self.advance()
+        # if not,
+        else:
+            self.ctidx = startidx
+            self.advance()
+
+            # determine argument type
+            typeq = self.determineExpressionType(False)
+
+        # fix literal
+        if typeq.name == "&LITERAL&":
+            typeq = INT.copy()
+
+        # build a string constant based on the id
+        constant = createStringConstant(typeq.__repr__())
+        self.compiler.constants += constant[0]
+        self.compiler.globals.append(
+            Variable(
+                CHAR.up(),
+                constant[1],
+                glob=True,
+                isptr=True,
+                initializer=typeq.__repr__()))
+        # return the string as a token
+        return Token(T_ID, constant[1], starttok.start, starttok.end)
+
+    def evaluate__isflt(self, starttok):
+        self.advance()
+        typeq = self.checkForType()
+        self.advance()
+        return Token(T_INT, int(typeq.isflt()),
+                     starttok.start, self.current_token.end)
+
+    def evaluate__syscall(self, starttok):
+        self.advance()
+        expr_start = self.ctidx
+        opens = 1
+        while opens:
+            if self.current_token.tok == T_OPENP:
+                opens += 1
+            elif self.current_token.tok == T_CLSP:
+                opens -= 1
+            self.advance()
+        expr_end = self.ctidx
+
+        expr = self.tokens[expr_start:expr_end]
+        value = determineConstexpr(False, expr, self)
+        if not isinstance(value.accessor, int):
+            throw(RequiredIntegralType(value.token))
+        self.contains_rawasm = True
+        out = Token(
+            T_FUNCTIONCALL,
+            value,
+            self.tokens[expr_start].start,
+            self.current_token.end)
+        out.fn = Function(
+            f'syscall#{value.accessor}',
+            [],
+            VOID.copy(),
+            self.compiler,
+            [])
+
+        self.addline(
+            syscall(value.accessor)
+        )
+        self.addline(
+            'push rax'
+        )
+
+        return out
+
+    def evaluateStatic_assert(self, starttok):
+        self.advance()
+
+        exprtokens, _ = self.buildExpressionComponents()
+        value = determineConstexpr(False, exprtokens, self)
+        if not (isinstance(value.accessor, int)):
+            throw(ExpectedConstexpr(starttok))
+
+        message = "Static assertion failed: "
+        if (self.current_token.tok == T_COMMA):
+            self.advance()
+            stringname = self.checkTok(T_ID)
+            strvar = self.getVariable(stringname)
+            if not (isinstance(strvar.initializer, str)):
+                throw(ExpectedToken(
+                    self.tokens[self.ctidx - 1], "String Literal"))
+            message += strvar.initializer[1:-1]
+
+        self.advance()
+
+        if value.accessor != 0:
+            return Token(T_INT, 0, starttok.start, self.current_token.end)
+
+        throw(
+            Error(starttok, message)
+        )
+
     # construct a result for a builtin function
+
     def buildPredef(self) -> Token:
 
         # requested builtin
@@ -606,117 +746,10 @@ class Function:
 
         self.advance()
 
-        # check predef
-        if(predef == "typeof"):
-
-            # get type of expression
-            dtype = self.determineExpressionType(False)
-            # return as a token
-            return Token(T_ID, dtype.name, starttok.start, starttok.end)
-
-        elif (predef == "sizeof"):
-            startidx = self.ctidx
-            self.advance()
-            # check if argument is a type
-            typeq = self.checkForType(False)
-            # if not,
-            if (typeq is None):
-                self.ctidx = startidx - 1
-                self.advance()
-                # determine type of the argument
-                dtype = self.determineExpressionType(False)
-                # return as a token
-                return Token(T_INT, dtype.csize(
-                ), starttok.start, starttok.end)
-
-            # if so,
-            else:
-                self.advance()
-                # return as a token
-                return Token(T_INT, typeq.csize(
-                ), self.tokens[startidx].start, self.tokens[startidx].end)
-
-        elif (predef == "typeid"):
-
-            self.advance()
-            startidx = self.ctidx - 2
-            # check if argument is a type
-            typeq = self.checkForType(False)
-            # if so,
-            if typeq is not None:
-                # move on
-                self.advance()
-            # if not,
-            else:
-                self.ctidx = startidx
-                self.advance()
-
-                # determine argument type
-                typeq = self.determineExpressionType(False)
-
-            # fix literal
-            if typeq.name == "&LITERAL&":
-                typeq = INT.copy()
-
-            # build a string constant based on the id
-            constant = createStringConstant(typeq.__repr__())
-            self.compiler.constants += constant[0]
-            self.compiler.globals.append(
-                Variable(
-                    CHAR.up(),
-                    constant[1],
-                    glob=True,
-                    isptr=True,
-                    initializer=typeq.__repr__()))
-            # return the string as a token
-            return Token(T_ID, constant[1], starttok.start, starttok.end)
-        elif predef == "__isflt":
-
-            self.advance()
-            typeq = self.checkForType()
-            self.advance()
-            return Token(T_INT, int(typeq.isflt()),
-                         starttok.start, self.current_token.end)
-
-        # builtin syscall builder
-        elif predef == "__syscall":
-
-            self.advance()
-            expr_start = self.ctidx
-            opens = 1
-            while opens:
-                if self.current_token.tok == T_OPENP:
-                    opens += 1
-                elif self.current_token.tok == T_CLSP:
-                    opens -= 1
-                self.advance()
-            expr_end = self.ctidx
-
-            expr = self.tokens[expr_start:expr_end]
-            value = determineConstexpr(False, expr, self)
-            if not isinstance(value.accessor, int):
-                throw(RequiredIntegralType(value.token))
-            self.contains_rawasm = True
-            out = Token(
-                T_FUNCTIONCALL,
-                value,
-                self.tokens[expr_start].start,
-                self.current_token.end)
-            out.fn = Function(
-                f'syscall#{value.accessor}',
-                [],
-                VOID.copy(),
-                self.compiler,
-                [])
-
-            self.addline(
-                syscall(value.accessor)
-            )
-            self.addline(
-                'push rax'
-            )
-
-            return out
+        if predef in function_builtin_responses:
+            return function_builtin_responses[predef](self, starttok)
+        else:
+            throw(UnkownIdentifier(starttok))
 
     def loadVariardicParameters(self, countn, counts):
 
@@ -1374,7 +1407,7 @@ class Function:
     #
     # int main(int argc, char** argv){
     #
-    #   bool* fn = function bool (int a) { return a == 5; };
+    #   function bool(int) fn = lambda bool (int a) { return a == 5; };
     #   fn(5);
     #
     # }
@@ -1382,56 +1415,46 @@ class Function:
     def buildInlineFunction(self):
         self.advance()
         rettype = self.checkForType()
-        parameters = []
-        self.checkTok(T_OPENP)
 
-        while self.current_token.tok != T_CLSP:
+        parameters = self.parseFnDeclParameters(True)
 
-            t = self.checkForType()
-
-            if(self.current_token.tok != T_ID):
-                throw(ExpectedIdentifier(self.current_token))
-
-            varname = self.current_token.value
-
-            self.advance()
-
-            parameters.append(Variable(t, varname, isptr=t.ptrdepth > 0))
-            if (self.current_token.tok == T_CLSP):
-
-                break
-
-            if(self.current_token.tok != T_COMMA):
-                throw(ExpectedComma(self.current_token))
-
-            self.advance()
-
-        self.advance()
         firsttok = self.ctidx + 1
 
         self.skipBody()
         end = self.ctidx + 1
         tokens = (self.tokens[firsttok:end])
-        label = getLogicLabel("FORWARD")[1:]
-        fun = Function(
-            label,
-            parameters,
-            rettype,
-            self.compiler,
-            tokens,
-            extern=True)
-        self.compiler.functions.append(fun)
 
-        self.compiler.globals.append(
-            Variable(
-                rettype.up(),
+        # check if this lambda is already compiled
+        if self.lambdaCount < len(self.lambdas):
+            label = self.lambdas[self.lambdaCount].name
+        else:
+            self.lambdaCount += 1
+            label = getLogicLabel("LAMBDA")[1:]
+            fun = Function(
                 label,
-                glob=True,
-                isptr=True,
-                mutable=False,
-                signed=rettype.signed
+                parameters,
+                rettype,
+                self.compiler,
+                tokens,
+                extern=True)
+            self.compiler.functions.append(fun)
+
+            self.lambdas.append(fun)
+
+            self.compiler.globals.append(
+                Variable(
+                    DType(
+                        f"function {fun.createTypename()}",
+                        8,
+                        function_template=fun
+                    ),
+                    label,
+                    glob=True,
+                    isptr=True,
+                    mutable=False,
+                    signed=rettype.signed
+                )
             )
-        )
 
         return label
 
@@ -2085,23 +2108,23 @@ class Function:
 
             elif (self.current_token.tok == T_KEYWORD):
 
-                # forward function declarations are detected and parsed here. The label used
+                # lambda function declarations are detected and parsed here. The label used
                 # to declare the function is returned by self.buildInineFunction() and used
                 # as a global variable in the context of this expression.
-                # if(self.current_token.value == "function"):
-                #    start = self.current_token.start
-                #    label = self.buildInlineFunction()
-                #    wasfunc = True
-                #    exprtokens.append(
-                #        Token(
-                #            T_ID,
-                #            label,
-                #            start,
-                #            self.current_token.end))
-                #    self.advance()
-                #    break
-                # else:
-                throw(UnexpectedToken(self.current_token))
+                if(self.current_token.value == "lambda"):
+                    start = self.current_token.start
+                    label = self.buildInlineFunction()
+                    wasfunc = True
+                    exprtokens.append(
+                        Token(
+                            T_ID,
+                            label,
+                            start,
+                            self.current_token.end))
+                    self.advance()
+                    break
+                else:
+                    throw(UnexpectedToken(self.current_token))
 
             elif(self.current_token.tok == T_PTRACCESS):
                 exprtokens.append(self.current_token)
@@ -2870,7 +2893,8 @@ class Function:
     def reset(self):
 
         return Function(self.name, self.parameters, self.returntype,
-                        self.compiler, self.tokens, extern=self.extern, inline=self.inline, compileCount=self.compileCount, memberfn=self.memberfn, parentstruct=self.parentstruct)
+                        self.compiler, self.tokens, extern=self.extern, inline=self.inline, compileCount=self.compileCount, memberfn=self.memberfn, parentstruct=self.parentstruct,
+                        lambdas=self.lambdas)
 
     def GC(self):
         self.asm = ""
@@ -2898,4 +2922,13 @@ function_keyword_responses = {
     "goto": Function.buildGoto,
     "do": Function.buildDoWhile
 
+}
+
+function_builtin_responses = {
+    "sizeof": Function.evaluateSizeof,
+    "typeof": Function.evaluateTypeof,
+    "typeid": Function.evaluateTypeid,
+    "__isflt": Function.evaluate__isflt,
+    "__syscall": Function.evaluate__syscall,
+    "static_assert": Function.evaluateStatic_assert
 }
