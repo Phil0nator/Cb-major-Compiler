@@ -149,7 +149,6 @@ extern _void_thread_join_pthread_t.:
 	section .data align=8
 __LC.F0: dq 0x0.0p+0
 M_MINZERO_MEM: dq 0
-__LC.S0: db `%i, %i\n`, 0
 	section .bss align=8
 	section .text align=16
 	global main
@@ -165,36 +164,8 @@ _void__DSocket_pSocket:
 	pop rdi
 	xor rax, rax
 	ret
-_Test_test_pTest:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 24
-	movdqu [rbp-8], xmm0
-	movsxd rdx, dword[rbp-8]
-	movsxd rsi, dword[rbp-4]
-	mov rdi, __LC.S0
-	call printf
-	add dword[rbp-4], 1
-	add dword[rbp-8], 1
-	mov rax, 4613937818241073152
-	movq xmm7, rax
-	movsd xmm8, qword[rbp-0]
-	subsd xmm8, xmm7
-	movsd qword[rbp-0], xmm8
-	movdqu xmm0, [rbp-24]
-___Test_test_pTest__return:
-	leave
-	ret
 main:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 32
-	mov dword[rbp-24], 5
-	mov dword[rbp-20], 6
-	movdqu xmm0, [rbp-24]
-	call _Test_test_pTest
 	xor eax, eax
 __main__return:
-	leave
 	ret
 	

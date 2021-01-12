@@ -291,8 +291,9 @@ class Lexer:
 
             elif (self.ch in "()}{[],@~?"):
                 tokens.append(
-                    Token(self.ch, self.ch, self.loc.copy(), self.loc.copy()))
+                    Token(self.ch, self.ch, self.loc.copy(), None))
                 advance()
+                tokens[-1].end = self.loc.copy()
 
             elif (self.ch == "-"):
                 advance()
@@ -303,6 +304,7 @@ class Lexer:
                     t.value = -t.value
                 else:
                     self.chidx -= 2
+                    self.loc.ch-=2
                     advance()
                     t = self.buildMultichar()
 

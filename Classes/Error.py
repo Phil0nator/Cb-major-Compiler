@@ -462,6 +462,22 @@ class AutoArrsizeForSingle(Error):
         self.tok = tok
         self.message = f"Could not assign single value to an array with automatic size generation: "
 
+class WrongMemberAccess(Error):
+    def __init__(self, tokl, tokm, tokr, t, used):
+        self.tok = tokm
+        self.message = f"Attempted to access member '{tokr.value}' from '{tokl.value}' using '{used}': "
+        
+        if used == ".":
+            notestack.append(Note(
+                tokm,
+                "Maybe you meant to use '->'?"
+            ))
+        else:
+            notestack.append(Note(
+                tokm,
+                "Maybe you meant to use '.'?"
+            ))
+
 
 warning_indicator = f"{Style.BRIGHT}{Fore.MAGENTA}"
 

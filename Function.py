@@ -890,7 +890,7 @@ class Function:
                 else:
                     instr, countn, counts = deregisterizeValueType(p.t, self.variables[-1], countn, counts)
                     self.addline(instr)
-                    self.buildStackStructure(self.variables[-1], startoffset=-p.t.csize() , useDefaults=False)
+                    self.buildStackStructure(self.variables[-1],  useDefaults=False)
 
         ptr = 16
         # load extra parameters (those that could not be assigned registers)
@@ -1679,6 +1679,7 @@ class Function:
                     throw(TypeMismatch(final.token, final.type, parameters[i].t))
                 ninst, _,normused, sseused = registerizeValueType(parameters[i].t, final.accessor, normused, sseused)
                 inst += ninst
+                rfree(final.accessor)
 
 
 
@@ -2244,6 +2245,7 @@ class Function:
             # in a new ralloc'd register for some other use.
             if(destination):
                 newout = ralloc(output.type.isflt())
+                rfree(output.accessor)
                 output.accessor = newout
                 instructions += spop(output)
 
@@ -2260,7 +2262,7 @@ class Function:
                 out = norm_return_register if not output.type.isflt() else sse_return_register
                 instructions += spop(
                     EC.ExpressionComponent(
-                        norm_return_register, LONG))
+                        norm_return_register, LONG))                
                 output.accessor = out
 
         return instructions, output
@@ -2295,18 +2297,19 @@ class Function:
                         if v.t.isflt():
                             if isinstance(
                                     v.initializer, Variable) and not v.initializer.mutable:
-                                v.initializer = floatTo64h(v.initializer.initializer) if v.t.csize() == 8 \
-                                    else floatTo32h(v.initializer.initializer)
+                                value = floatTo64h(float(v.initializer.initializer)) if v.t.csize() == 8 \
+                                    else floatTo32h(float(v.initializer.initializer))
                             elif (isinstance(v.initializer, int)):
-                                v.initializer = floatTo64h(v.initializer) if v.t.csize() == 8 \
-                                    else floatTo32h(v.initializer)
-
-                        value = v.initializer
-                        if not dwordImmediate(v.initializer):
-                            value = "rax"
+                                value = floatTo64h(float(v.initializer)) if v.t.csize() == 8 \
+                                    else floatTo32h(float(v.initializer))
+                        else:
+                            value = v.initializer
+                        
+                        if not dwordImmediate(value):
                             self.addline(
-                                loadToReg(value, v.initializer)
+                                loadToReg('rax', value)
                             )
+                            value = "rax"
 
                         self.addline(loadToReg(
                             valueOf(

@@ -141,6 +141,9 @@ KEYWORDS = [
     "explicit",
     "enum",
     "lambda",
+    
+    
+    "__noalign",
 
     "noexcept",
     "safetype",

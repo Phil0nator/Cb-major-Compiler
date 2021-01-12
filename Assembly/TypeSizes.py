@@ -125,7 +125,7 @@ def valueTypeClass(size):
     elif size <= 16:
         # xmm register
         return 1
-    elif size == 32:
+    elif size <= 32:
         # ymm register
         return 2
     else:

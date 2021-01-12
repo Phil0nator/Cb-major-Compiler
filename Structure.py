@@ -4,6 +4,7 @@ from Classes.Constexpr import determineConstexpr
 from Classes.Error import *
 from Classes.Token import *
 from Function import Function
+from Assembly.TypeSizes import valueTypeClass
 from globals import VOID, OPERATORS
 
 ####################################
@@ -24,6 +25,7 @@ class Structure:
         self.size = 0
         self.prototypeType = DType("", 0, [], 0, True)
         self.emptyfn = Function("empty", [], VOID.copy(), self.compiler, [])
+        self.doAlign = True
 
     # wrapper function
 
@@ -187,6 +189,13 @@ class Structure:
         # get name
         id = self.current_token.value
         self.advance()
+
+        if self.current_token.tok == T_KEYWORD:
+            if self.current_token.value == '__noalign':
+                self.doAlign=False
+                self.advance()
+
+
         if(self.current_token.tok != T_OPENSCOPE):
             if self.current_token.tok == T_ENDL:
                 self.compiler.types.append(DType(id, 0, [], 0, True))
@@ -227,6 +236,13 @@ class Structure:
             elif (self.current_token.tok == "~"):
 
                 self.buildDestructor()
+
+        # do alignment
+        sizes = [8,16,32]
+        if self.size != 0 and self.doAlign:
+            if self.size <= 32:
+                self.size = sizes[valueTypeClass(self.size)]
+                self.prototypeType.s = self.size
 
         # finalize
         # self.compiler.types.pop()

@@ -54,7 +54,7 @@ typedef void* iterable;
 /**
  * Construct a heap-based array of type with amt elements
  */
-#define newarray(type, amt) malloc(type*amt)
+#define newarray(type, amt) malloc(amt*sizeof(type))
 /**
  * Dynamically allocate one object/primitive of type type
  */

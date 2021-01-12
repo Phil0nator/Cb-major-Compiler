@@ -977,20 +977,26 @@ def registerizeValueType(t, obj, countn, counts):
     # too big to registerize
     if regclass == 3:
         outreg = addrtext
+        if countn != -1:
+            reg = norm_parameter_registers[countn]
+        else:
+            reg = "rax"
+        instr = f"lea {reg}, {addrtext}\n"
     elif regclass == 2:
         reg = sse_parameter_registers[counts].replace("x", "y")
         instr = f"vmovdqu {reg}, {addrtext}\n"
         counts += 1
     elif regclass == 1:
         reg = sse_parameter_registers[counts]
-        instr = f"movdqu {reg}, {addrtext}\n"
+        instr = packVarToXmm(obj, reg, t.csize())
+        #instr = f"movdqu {reg}, {addrtext}\n"
         counts += 1
     elif regclass == 0:
         if countn != -1:
             reg = norm_parameter_registers[countn]
         else:
             reg = "rax"
-        instr = f"mov {reg}, {addrtext}\n"
+        instr = f"mov {setSize(reg, t.csize())}, {addrtext}\n"
         countn += 1
 
     return instr, addrtext, countn, counts
@@ -998,19 +1004,72 @@ def registerizeValueType(t, obj, countn, counts):
 
 def savePartOfReg(var, extraoff, reg, b):
     instr = ""
-    if b % 2 == 0 or b == 1:
-        instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, b)}"
+    if b<=0: return ""
+    if b > 8:
+        instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 8)}\n"
+
+    elif b % 2 == 0 or b == 1:
+        instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, b)}\n"
     else:
         if b == 3:
             instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 2)}\n"
             extraoff += 2
-            instr += f"shl {reg}, 8\n"
+            instr += f"shl {reg}, 16\n"
             instr += savePartOfReg(var, extraoff, reg, 1)
-        else:
+        elif b == 5:
             instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 4)}\n"
             extraoff += 4
-            instr += f"shl {reg}, 8\n"
-            instr += savePartOfReg(var, extraoff, reg, b - 4)
+            instr += f"shl {reg}, 32\n"
+            instr += savePartOfReg(var, extraoff, reg, 1)
+
+    return instr
+
+def packVarToXmm(var, reg, size):
+    instr = ""
+    #if size == 16:
+    return f"movdqu {reg}, [{var.baseptr}{var.offset + size}]\n"
+    '''
+    else:
+        instr = f"movq {reg}, [{var.baseptr}{var.offset + size}]\n"
+        if size - 8 == 4:
+            instr += f"movhpd {reg}, [{var.baseptr}{var.offset + size-8}]\n"
+            pass
+        else:
+            instr += f'xor rax, rax\nmov {setSize("rax", size-8)}, [{var.baseptr}{var.offset + size}]\n'
+            cmd = "movd" if size < 4 else "movq"
+            ax = 'eax' if size < 4 else "rax"
+            instr += f"{cmd} xmm7, {ax}\n"
+            instr += f"movlhps {reg}, xmm7\n"
+
+        return instr
+    '''
+
+
+
+def unpackXmmToVar(var, extraoff, reg, t, safe=False):
+    
+    # Safe refers to the need to get the memory bounds exactly correct.
+    # For loading and unload parameters, there is no need to be safe.
+    # However, when dereferencing pointers with an unkown origin,
+    # it is important to get the memory bounds exactly correct
+    # to avoid a segmentation fault.
+
+    if safe == False:
+        return f"movdqu [{var.baseptr}{var.offset+t.csize()+extraoff}], {reg}\n"
+    
+    instr = ""
+    instr += f"movq rax, {reg}\n"
+    instr += f"movhlps {reg}, {reg}\n"
+    instr += f"movq rbx, {reg}\n"
+
+    size = t.csize()
+    if size >= 8:
+        instr += f"mov [{var.baseptr}{var.offset+extraoff+t.csize()}], rax\n"
+        remaining = t.csize() - 8 - extraoff
+        instr += savePartOfReg(var, t.csize()+extraoff-8, 'rbx', remaining)
+    
+    else:
+        instr += savePartOfReg(var, extraoff+t.csize(), 'rax', size)
 
     return instr
 
@@ -1022,33 +1081,39 @@ def deregisterizeValueType(t, var, countn, counts):
     var = var.copy()
 
     regclass = valueTypeClass(t.s)
+    
     # too big to registerize
     if regclass == 3:
         reg = norm_parameter_registers[countn]
         for member in t.members:
-            instr += loadToRax(f"[{reg}+{member.offset}]")
-            instr += getFromRax(valueOf(var))
-            var.offset += member.t.csize()
+            ax = setSize('rax', member.t.csize())
+            instr += (f"mov {ax}, [{reg}+{member.offset}]\n")
+            instr += (f"mov [{var.baseptr}{var.offset + var.t.csize()}], {ax}\n")
+            var.offset -= member.t.csize()
 
         countn += 1
 
     elif regclass == 2:
 
         reg = sse_parameter_registers[counts].replace('x', 'y')
-        instr += f"vmovdqu [{var.baseptr}{var.offset}], {reg}\n"
         counts += 1
+        
+        if t.csize() == 32:
+            instr += f"vmovdqu [{var.baseptr}{var.offset+t.csize()}], {reg}\n"
+        else:
+            instr += f"movdqu [{var.baseptr}{var.offset+t.csize()}], {reg.replace('y','x')}\n"
+            instr += f"vextracti128 xmm7, {reg}, 1\n"
+            if t.csize() == 24:
+                instr += f"movsd [{var.baseptr}{var.offset+t.csize()-16}], xmm7\n"
+            else:
+                instr += unpackXmmToVar(var, -16, "xmm7", t)
 
     elif regclass == 1:
         reg = sse_parameter_registers[counts]
         if t.s == 16:
-            instr += f"movdqu [{var.baseptr}{var.offset}], {reg}\n"
+            instr += f"movdqu [{var.baseptr}{var.offset+t.csize()}], {reg}\n"
         else:
-            instr += f"movhlps xmm14, {reg}\n"
-            instr += f"movq rax, {reg}\n"
-            instr += f"movq rbx, xmm14\n"
-            instr += f"movsd [{var.baseptr}{var.offset}], rax\n"
-            remaining = t.s - 8
-            instr += savePartOfReg(var, 0, 'rbx', remaining)
+            instr += unpackXmmToVar(var, 0, reg, t)
 
         counts += 1
 

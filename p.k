@@ -1,31 +1,13 @@
 //#define __CBLIB_SOURCE
 #include "cblib.cb"
 
-struct Test{
-
-    int bruh;
-    int b2;
-    double beans;
-};
 
 
-function Test test(Test t){
-    printf("%i, %i\n", t.b2, t.bruh);
-    t.b2++;
-    t.bruh++;
-    t.beans -= 3;
-    return t;
-
-}
 
 
 function int main(int argc){
     //nc("127.0.0.1", 5501);
-    Test t;
-    t.bruh =5;
-    t.b2 = 6;
 
-    test(t);
 
 
     //benchmark();

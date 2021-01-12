@@ -654,7 +654,7 @@ class ExpressionEvaluator:
 
         return newinstr, newt, apendee
 
-    def compile_aopb(self, a, op, b, evaluator, stack):
+    def compile_aopb(self, a, op, b, evaluator, stack, optoken):
         # special case
         o = VOID.copy()
         instr = ""
@@ -736,7 +736,7 @@ class ExpressionEvaluator:
                 stack.append(apendee)
             # op is -> or .
             elif(op == T_PTRACCESS or op == T_DOT):
-                ninster, o, apendee = evaluator.memberAccess(a, b)
+                ninster, o, apendee = evaluator.memberAccess(a, b, optoken)
                 instr += ninster
                 stack.append(apendee)
             # ternary operators:
@@ -845,7 +845,7 @@ class ExpressionEvaluator:
                             throw(TypeMismatch(a.token, a.type, b.type))
 
                     # check for non-primitive types for operator overloading:
-                    elif not a.type.isintrinsic():
+                    elif not a.type.isintrinsic() and op not in ["=", "->", "."]:
                         # check for operator accepting b's type
                         instr += self.compile_AoverloadB(a,
                                                         op, b, evaluator, stack)
@@ -856,7 +856,7 @@ class ExpressionEvaluator:
 
                     else:
                         # normal conditions:
-                        instr += self.compile_aopb(a, op, b, evaluator, stack)
+                        instr += self.compile_aopb(a, op, b, evaluator, stack, e.token)
 
                 else:  # op takes only one operand
 
@@ -1028,12 +1028,21 @@ class LeftSideEvaluator(ExpressionEvaluator):
         return performCastAndOperation(self.fn, a, b, op, o)
 
     # access member b of struct a
-    def memberAccess(self, a, b):
+    def memberAccess(self, a, b, optok):
         instr = ""
         member = b.accessor
         if(isinstance(member, Variable)):
             member = member.name
+        pdepth = a.type.ptrdepth
         a.type = self.fn.compiler.getType(a.type.name)
+        a.type.ptrdepth = pdepth
+
+        if a.type.ptrdepth != 0 and optok.value == ".":
+            throw(WrongMemberAccess(a.token,optok,b.token,a.type,'.'))
+        elif a.type.ptrdepth == 0 and optok.value == "->":
+            throw(WrongMemberAccess(a.token,optok,b.token,a.type,'->'))
+
+
         memv = a.type.getMember(member)
         if(memv is None):
             print(a, b, member, a.type.members)
@@ -1049,7 +1058,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
         tmpaddr = ralloc(False)
         instr += loadToReg(tmpaddr, a.accessor)
-
         if(memv.offset != 0):
             instr += f"lea {tmpaddr}, [{tmpaddr}+{memv.offset}]\n"
 

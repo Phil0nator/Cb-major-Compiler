@@ -62,6 +62,8 @@ typedef short int32;
 # define __SSE
 # define __SSE2
 # define safetype
+# define __noalign
+# define lambda
 
 #endif
 
