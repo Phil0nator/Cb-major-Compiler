@@ -844,17 +844,6 @@ def lea_mul_opt(shiftval, areg, a, b):
 
     return newinstr
 
-'''
-def magic_byThree(a, areg, size):
-    return f"""
-{cast_regUp('rax', areg, True)}
-sar {areg}, {size-1}\n
-imul rax, rax, 1431655766
-shr rax, 32
-sub eax, {setSize(areg, 4)}
-{getFromRax(areg)}
-"""
-'''
 
 
 def magic_division(a, areg, d, internal=False):
@@ -976,7 +965,8 @@ def registerizeValueType(t, obj, countn, counts):
     instr = ""
     outreg = ""
     if isinstance(obj, Variable):
-        addrtext = f'[{obj.baseptr}{obj.offset}]'
+        addrtext = f'[{obj.baseptr}{obj.offset+t.csize()}]'
+
     elif isinstance(obj, str) and obj in normal_size:
         addrtext = f'[{obj}]'
     else:
@@ -996,7 +986,10 @@ def registerizeValueType(t, obj, countn, counts):
         instr = f"movdqu {reg}, {addrtext}\n"
         counts += 1
     elif regclass == 0:
-        reg = norm_parameter_registers[countn]
+        if countn != -1:
+            reg = norm_parameter_registers[countn]
+        else:
+            reg = "rax"
         instr = f"mov {reg}, {addrtext}\n"
         countn += 1
 
@@ -1055,14 +1048,14 @@ def deregisterizeValueType(t, var, countn, counts):
             instr += f"movq rbx, xmm14\n"
             instr += f"movsd [{var.baseptr}{var.offset}], rax\n"
             remaining = t.s - 8
-            instr += savePartOfReg(var, 'rbx', remaining)
+            instr += savePartOfReg(var, 0, 'rbx', remaining)
 
         counts += 1
 
     elif regclass == 0:
 
-        reg = sse_parameter_registers[countn]
+        reg = norm_parameter_registers[countn]
         countn += 1
-        instr += savePartOfReg(var, reg, t.s)
+        instr += savePartOfReg(var, 0, reg, t.s)
 
     return instr, countn, counts

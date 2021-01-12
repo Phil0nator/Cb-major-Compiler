@@ -11,31 +11,31 @@ from Assembly.AVX import (avx_correctSize, avx_doToReg, avx_dropToAddress,
                           avx_loadToReg, avx_ralloc, avx_rfree)
 from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  createIntrinsicHeap, createStringConstant,
-                                 doFloatOperation, doIntOperation,
-                                 extra_parameterlabel, fncall,
+                                 deregisterizeValueType, doFloatOperation,
+                                 doIntOperation, extra_parameterlabel, fncall,
                                  function_allocator, function_closer,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
-                                 movVarToReg, raw_regmov, spop, spush, valueOf,
-                                 zeroize, win_align_stack, win_unalign_stack, syscall,
-                                 pack_string)
-from Assembly.Instructions import Instruction, floatTo64h, floatTo32h
+                                 movVarToReg, pack_string, raw_regmov,
+                                 registerizeValueType, spop, spush, syscall,
+                                 valueOf, win_align_stack, win_unalign_stack,
+                                 zeroize)
+from Assembly.Instructions import Instruction, floatTo32h, floatTo64h
 from Assembly.Registers import *
-from Assembly.TypeSizes import INTMAX, isfloat, dwordImmediate
+from Assembly.TypeSizes import INTMAX, dwordImmediate, isfloat
 from Classes.Constexpr import buildConstantSet, determineConstexpr
 from Classes.DType import DType, typematch
 from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
 from ExpressionEvaluator import (ExpressionEvaluator, LeftSideEvaluator,
-                                 optloadRegs, depositFinal)
+                                 depositFinal, optloadRegs)
 from globals import (BOOL, CHAR, DOUBLE, INT, LONG, OPERATORS, SHORT, VOID,
                      TsCompatible, isIntrinsic)
-from Postfixer import Postfixer
-from Optimizers.Peephole import Peephole
 from Optimizers.Intraprocedural import IntraproceduralOptimizer
 from Optimizers.LoopOptimizer import LoopOptimizer
-
+from Optimizers.Peephole import Peephole
+from Postfixer import Postfixer
 
 # multiply all items in an array
 
@@ -823,7 +823,7 @@ class Function:
             # if the compiler has already identified this parameter as dead,
             # add to the register counters and continue to next parameter.
             if self.compileCount and p.referenced == False:
-                if p.t.isflt():
+                if p.t.isflt() or p.t.csize() > 8:
                     counts += 1
                 else:
                     countn += 1
@@ -844,11 +844,14 @@ class Function:
                 # the self.implicit_paramregdecl flag will imply that parameters for this function
                 # should be made regdecls.
                 #
-                # Certain registers are reserved for use in expressions, and cannot be used as
+                # (3) Certain registers are reserved for use in expressions, and cannot be used as
                 # regdecls for parameters. (Specifically, 'rdx' and 'xmm0')
+                #
+                # (4) implicit parameter regdecls must be primitive types
                 self.inline or self.implicit_paramregdecl and not (
                     (not p.isflt()) and countn == 2) and not(
-                    p.isflt() and counts == 0))
+                    p.isflt() and counts == 0) and (p.t.isintrinsic()))
+
 
             if makeParameterRegdecl:
                 # construct a variable that uses a register value
@@ -870,15 +873,24 @@ class Function:
                 # construct a normal variable
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
-                if(p.isflt()):
-                    self.addline(movRegToVar(
-                        p.offset, sse_parameter_registers[counts]))
+                
+                # primitive types
+                if p.t.isintrinsic():
+                
+                    if(p.isflt()):
+                        self.addline(movRegToVar(
+                            p.offset, sse_parameter_registers[counts]))
 
-                    counts += 1
+                        counts += 1
+                    else:
+                        self.addline(movRegToVar(
+                            p.offset, norm_parameter_registers[countn]))
+                        countn += 1
+                # const data structures
                 else:
-                    self.addline(movRegToVar(
-                        p.offset, norm_parameter_registers[countn]))
-                    countn += 1
+                    instr, countn, counts = deregisterizeValueType(p.t, self.variables[-1], countn, counts)
+                    self.addline(instr)
+                    self.buildStackStructure(self.variables[-1], startoffset=-p.t.csize() , useDefaults=False)
 
         ptr = 16
         # load extra parameters (those that could not be assigned registers)
@@ -922,12 +934,16 @@ class Function:
         og_fncalls = self.fncalls
 
         if(self.current_token.tok != T_ENDL):
-
+            
+            # expression
             instr, val = self.evaluateExpression(destination=False)
 
+            # if auto type
             if self.return_auto:
                 if self.returntype.name == "auto":
+                    # setup type to match new type
                     self.returntype = val.type.copy()
+                # check for typematch
                 elif not typematch(self.returntype, val.type, False):
                     throw(
                         MultipleReturnTypes(
@@ -935,13 +951,21 @@ class Function:
                             self.returntype,
                             val.type))
 
-            oreg = sse_return_register if self.returntype.isflt() else setSize(
+            # determine return register
+            oreg = sse_return_register if self.returntype.isflt() or self.returntype.csize() > 8 else setSize(
                 norm_return_register,
                 self.returntype.csize()
             )
 
-            ninstr = depositFinal(EC.ExpressionComponent(
-                oreg, self.returntype.copy()), val)
+            # primitive returntypes
+            if self.returntype.isintrinsic():
+                ninstr = depositFinal(EC.ExpressionComponent(
+                    oreg, self.returntype.copy()), val)
+            # data structure returntypes
+            else:
+                ninstr, ___, _, __ = registerizeValueType(self.returntype, val.accessor, -1, 0)
+            
+            # final
             instr += ninstr
             rfree(val.accessor)
             self.returnsConstexpr = val.isconstint()
@@ -1614,7 +1638,7 @@ class Function:
         for i in rng:
 
             # check for extra parameters
-            if parameters[i].isflt():
+            if parameters[i].isflt() or parameters[i].t.csize() > 8:
                 if sseused >= len(sse_parameter_registers):
                     extra_params.append(parameters[i])
                     continue
@@ -1646,10 +1670,21 @@ class Function:
                     inst += spush(reg)
 
                 sseused += 1
+            # load data structure
+            elif not parameters[i].t.isintrinsic():
+                
+                # determine value
+                inst, final = self.evaluateExpression()
+                if not typematch(final.type, parameters[i].t, False):
+                    throw(TypeMismatch(final.token, final.type, parameters[i].t))
+                ninst, _,normused, sseused = registerizeValueType(parameters[i].t, final.accessor, normused, sseused)
+                inst += ninst
+
+
+
             # else, load to normal register of the correct size
             else:
                 # determine size:
-
                 needpush = (fn.winextern and normused > 4)
 
                 # handle calling conventions:
@@ -2244,7 +2279,7 @@ class Function:
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
-    def buildStackStructure(self, var, starter="", startoffset=0):
+    def buildStackStructure(self, var, starter="", startoffset=0, useDefaults=True):
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
@@ -2254,7 +2289,7 @@ class Function:
                     self.append_rawVariable(newvar)
 
                     # initialize to null, or default
-                    if v.initializer is not None:
+                    if v.initializer is not None and useDefaults:
 
                         # check for float literals
                         if v.t.isflt():
@@ -2283,7 +2318,7 @@ class Function:
 
                     # recursivly fill in nested structures
                     self.buildStackStructure(
-                        v, starter=f"{starter}{var.name}.", startoffset=var.offset)
+                        v, starter=f"{starter}{var.name}.", startoffset=var.offset, useDefaults=useDefaults)
 
     def constructVar(self, t, name, register):
         # create prototype variable

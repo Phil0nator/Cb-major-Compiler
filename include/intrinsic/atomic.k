@@ -90,8 +90,6 @@ _atomic_cmpxchg(int* atom, int* expected, int desired){
  */
 inline int _atomic_sub(int* atom, int subtractor){
     __asm{"
-    xor rax, rax
-    xchg eax, [rdi]
     lock sub dword[rdi], esi
     "}
 }
@@ -100,8 +98,6 @@ inline int _atomic_sub(int* atom, int subtractor){
  */
 inline long _atomic_sub(long* atom, long subtractor){
     __asm{"
-    xor rax, rax
-    xchg rax, [rdi]
     lock sub qword[rdi], rsi
     "}
 }
@@ -134,7 +130,6 @@ inline void _atomic_store(long* atom, long newval){
  */
 inline int _atomic_add(int* atom, int adder){
     __asm{"
-    xchg eax, [rdi]
     lock add dword[rdi], esi
     "}
 }
@@ -143,7 +138,6 @@ inline int _atomic_add(int* atom, int adder){
  */
 inline long _atomic_add(long* atom, long adder){
     __asm{"
-    xchg rax, [rdi]
     lock add qword[rdi], rsi
     "}
 }
@@ -167,6 +161,31 @@ inline long _atomic_read(int* atom){
     "}
 }
 
+inline void _atomic_increment(int* atom){
+    __asm{"
+    lock inc dword[rdi]
+    "}
+}
+
+inline void _atomic_increment(long* atom){
+    __asm{"
+    lock inc qword[rdi]
+    "}
+}
+
+inline void _atomic_decrement(int* atom){
+    __asm{
+        "
+        lock dec dword[rdi]
+        "
+    }
+}
+
+inline void _atomic_decrement(long* atom){
+    __asm{"
+    lock dec qword[rdi]
+    "}
+}
 
 
 #endif

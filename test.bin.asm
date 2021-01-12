@@ -149,8 +149,7 @@ extern _void_thread_join_pthread_t.:
 	section .data align=8
 __LC.F0: dq 0x0.0p+0
 M_MINZERO_MEM: dq 0
-__LC.S0: db `p.k`, 0
-__LC.S1: db `a / CONSTANT == a / b`, 0
+__LC.S0: db `%i, %i\n`, 0
 	section .bss align=8
 	section .text align=16
 	global main
@@ -166,54 +165,34 @@ _void__DSocket_pSocket:
 	pop rdi
 	xor rax, rax
 	ret
-_void_verify_pint:
+_Test_test_pTest:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 24
-	mov [rbp-8], rdi
-	mov qword[rbp-16], 5
-	mov rcx, __LC.S1
-	mov edx, 8
-	mov rsi, __LC.S0
-	mov ebx, dword[rbp-8]
-	mov rdx, 4617315517961601024
-	mov eax, ebx
-	cdqe
-	movq xmm0, rdx
-	cvtsi2sd xmm1, rax
-	divsd xmm1, xmm0
-	cvttsd2si rbx, xmm1
-	mov r11d, dword[rbp-8]
-	mov r10, qword[rbp-16]
-	movsxd r12, r11d
-	xor rdx, rdx
-	mov rax, r12
-	idiv r10
-	mov r12, rax
-	movsxd r10, ebx
-	cmp r10, r12
-	sete r10b
-	mov dil, r10b
-	call _void___assert_pboolchar.intchar.
-	xor rax, rax
+	movdqu [rbp-8], xmm0
+	movsxd rdx, dword[rbp-8]
+	movsxd rsi, dword[rbp-4]
+	mov rdi, __LC.S0
+	call printf
+	add dword[rbp-4], 1
+	add dword[rbp-8], 1
+	mov rax, 4613937818241073152
+	movq xmm7, rax
+	movsd xmm8, qword[rbp-0]
+	subsd xmm8, xmm7
+	movsd qword[rbp-0], xmm8
+	movdqu xmm0, [rbp-24]
+___Test_test_pTest__return:
 	leave
 	ret
 main:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 16
-	mov dword[rbp-8], 1
-	jmp .L0xd
-.L0xc:
-	mov ebx, dword[rbp-8]
-	mov edi, ebx
-	call _void_verify_pint
-.L0xe:
-	add dword[rbp-8], 1
-.L0xd:
-	cmp dword[rbp-8], 2147483647
-	jl .L0xc
-.L0xf:
+	sub rsp, 32
+	mov dword[rbp-24], 5
+	mov dword[rbp-20], 6
+	movdqu xmm0, [rbp-24]
+	call _Test_test_pTest
 	xor eax, eax
 __main__return:
 	leave

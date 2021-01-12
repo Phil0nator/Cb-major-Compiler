@@ -848,7 +848,7 @@ class ExpressionEvaluator:
                     elif not a.type.isintrinsic():
                         # check for operator accepting b's type
                         instr += self.compile_AoverloadB(a,
-                                                         op, b, evaluator, stack)
+                                                        op, b, evaluator, stack)
 
                     elif not b.type.isintrinsic():
                         pass
