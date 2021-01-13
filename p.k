@@ -1,22 +1,19 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
-
-
-
+struct Test{};
 
 function int main(int argc){
     //nc("127.0.0.1", 5501);
 
 
-
-    //benchmark();
+    benchmark();
     return 0;
 }
 
 
 
-/*
+
 void nc(char* ip, short port){
     Socket sock;
     sock.init();
@@ -67,4 +64,3 @@ float benchmark(){
 }
 
 
-*/

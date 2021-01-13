@@ -71,9 +71,9 @@ function long toStr(T val, char* buffer, bool s, long base){
     while(val != 0){
 
         long mod;
-        //val = divmod($long val,base,&mod);
-        mod = val % 10;
-        val /= 10;
+        val = divmod($long val,base,&mod);
+        //mod = val % 10;
+        //val /= 10;
 
         tmpbuf[len] = __numbercharactersbase1016[mod];
         
@@ -142,7 +142,7 @@ function long toStr(double val, char* buffer, long multiplier){
         
     }
     l += toStr<long>(mantissa, buffer, 1, 10);
-    buffer+=l;
+    buffer+=l-1;
     val = (abs(val)-abs(mantissa))*multiplier;
     long decimal = abs(round(val));
     long leading = toStr<long>(decimal, buffer, 1, 10)-1;

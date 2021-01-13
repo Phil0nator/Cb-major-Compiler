@@ -296,6 +296,8 @@ def valueOf(x, dflt=False, exactSize=True):
         return x
     elif (isinstance(x, Variable)):
         x.referenced = True
+        if x.parent is not None:
+            x.parent.referenced = True
         if(x.glob):
             if(x.t.ptrdepth > 1 or x.isptr):
 

@@ -14,7 +14,7 @@ def check_notes():
     return out
 
 
-def represent_code(token, indicator):
+def represent_code(token, indicator, suggest_str=None):
     # build pretty print error message
     line = token.start.line + 1
     file = token.start.file
@@ -30,24 +30,33 @@ def represent_code(token, indicator):
 
     beginchars = linechars - 1
 
-    lines[line - 1] = lines[line - 1][:linechars - 1] + f"{indicator}{token.value}{Style.RESET_ALL}" + \
-        lines[line - 1][linechars + len(token.value) - 1:]
+    prechars = lines[line - 1][:linechars - 1]
+    postchars = lines[line - 1][linechars + len(token.value) - 1:]
+    valuechars = f"{indicator}{token.value}{Style.RESET_ALL}"
+
+    suggested_str =  f"{suggestion_indicator}{suggest_str}{Style.RESET_ALL}" if suggest_str is not None \
+        else ""
+
+    lines[line - 1] = prechars + valuechars + postchars
+        
 
     lp = ""
-    try:
-        if(len(lines) > 1 and line >= 1):
-            lp += f"\t|{line-1}\t" + lines[line - 2] + "\n"
-        if(line != len(lines) - 1 and len(lines) > 1):
-            lp += f"\t|{line}\t" + lines[line - 1] + "\n"
-    except IndexError:
-        pass
+    #if(len(lines) > 1 and line >= 1):
+    #    lp += f"\t|{line-1}\t" + lines[line - 2] + "\n"
+    if(line != len(lines) - 1 and len(lines) > 1):
+        lp += f"\t|{line}\t" + lines[line - 1] + "\n"
 
     # highlight problem token
     problem = lp
     # add underline
-    problem += f"  \t{indicator}\t{' '*beginchars}^{'~'*(token.end.ch-token.start.ch-1)}{Style.RESET_ALL}"
+    problem += f" \t|{indicator}\t{' '*beginchars}^{'~'*(token.end.ch-token.start.ch-1)}{Style.RESET_ALL}{f'{suggestion_indicator}^{Style.RESET_ALL}' if suggest_str is not None else ''}"
+    
+    if suggest_str is not None:
+        problem += f"\n \t|{suggestion_indicator}\t{' '*(beginchars+1)}{suggest_str}{Style.RESET_ALL}"
+
+
     #token.start.ch = beginchars + 1
-    return problem, line
+    return problem, line, linechars
 
 
 class Error(BaseException):
@@ -57,9 +66,17 @@ class Error(BaseException):
 
     def __repr__(self, fatal=False):
 
-        problem, line = represent_code(self.tok, error_indicator)
+        suggestion = None
+        if self.__class__ is ExpectedSemicolon:
+            suggestion = ';'
+        #elif self.__class__ is ExpectedToken:
+        #    suggestion = self.expected
 
-        msg = f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{self.tok.start.ch}:{Fore.RED}{' fatal' if fatal else ''} error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
+
+
+        problem, line, ch = represent_code(self.tok, error_indicator, suggest_str=suggestion)
+
+        msg = f"{Style.BRIGHT}cbm: {self.tok.start.file}:{line}:{ch}:{Fore.RED}{' fatal' if fatal else ''} error: {self.message}{Style.RESET_ALL} {self.tok}:\n{problem}"
         notes = check_notes()
         return msg + notes
 
@@ -165,7 +182,7 @@ class ExpectedToken(Error):
     def __init__(self, tok, exp):
         self.tok = tok
         self.message = "Expected token ( '%s' ) :" % exp
-
+        self.expected = exp
 
 class UnkownIdentifier(Error):
     def __init__(self, tok):
@@ -184,7 +201,7 @@ class UnkownIdentifier(Error):
             (v for v in arr if Levenshtein.distance(
                 v.name, tok.value) == bestfit))
 
-        if bestfit < len(tok.value) / 2:
+        if bestfit < len(tok.value) /2:
             notestack.append(
                 Note(
                     v.dtok,
@@ -489,8 +506,8 @@ class Warning:
 
     def __repr__(self):
 
-        problem, _ = represent_code(self.tok, warning_indicator)
-        locline = f"{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+        problem, _, ch = represent_code(self.tok, warning_indicator)
+        locline = f"{self.tok.start.file}:{self.tok.start.line}:{ch}{Style.RESET_ALL}"
         start = f"{Style.BRIGHT}cbm: {locline} {Fore.MAGENTA+Style.BRIGHT}warning: {Style.RESET_ALL}"
 
         return f"{start}{self.msg}\n{problem}"
@@ -535,8 +552,8 @@ class Note:
         self.msg = msg
 
     def __repr__(self):
-        problem, _ = represent_code(self.tok, note_indicator)
-        locline = f"{self.tok.start.file}:{self.tok.start.line}:{self.tok.start.ch}{Style.RESET_ALL}"
+        problem, _ , ch = represent_code(self.tok, note_indicator)
+        locline = f"{self.tok.start.file}:{self.tok.start.line}:{ch}{Style.RESET_ALL}"
         start = f"{Style.BRIGHT}cbm: {locline} {note_indicator}Note: {Style.RESET_ALL}"
 
         return f"{start}{self.msg}\n{problem}"

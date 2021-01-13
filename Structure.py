@@ -179,6 +179,44 @@ class Structure:
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()
 
+
+    def buildCastOverload(self):
+        starttok = self.current_token
+        self.advance()
+        t = self.compiler.checkType()
+        self.update()
+        if self.current_token.tok != T_OPENP:
+            throw(ExpectedToken(self.current_token, T_OPENP))
+        self.advance()
+        if self.current_token.tok != T_CLSP:
+            throw(ExpectedToken(self.current_token, T_CLSP))
+        self.advance()
+        if self.current_token.tok != T_OPENSCOPE:
+            throw(ExpectedToken(self.current_token, T_CLSP))
+        self.advance()
+        start = self.compiler.ctidx
+        self.compiler.skipBody()
+        end = self.compiler.ctidx
+
+        body =self.compiler.currentTokens[start:end+1]
+
+        fun = Function(
+            f"operator@{t}",
+            [],
+            t,
+            self.compiler,
+            body,
+            memberfn=True,
+            parentstruct=self.prototypeType,
+            declare_token=starttok,
+        )
+        self.compiler.functions.append(fun)
+        self.prototypeType.operators[t.name] = fun
+        self.current_token = self.compiler.currentTokens[end+1]
+        #self.update()
+        #if(self.current_token.tok == T_CLSSCOPE):
+        #   self.advance()
+
     # main function
 
     def construct(self):
@@ -231,7 +269,10 @@ class Structure:
                     self.buildMember()
 
             elif (self.current_token.tok == T_KEYWORD):
-                self.buildMemberfn()
+                if self.current_token.value == 'operator':
+                    self.buildCastOverload()
+                else:
+                    self.buildMemberfn()
 
             elif (self.current_token.tok == "~"):
 
@@ -249,6 +290,4 @@ class Structure:
         # self.compiler.types.append(self.prototypeType)
 
         self.advance()
-        if(self.current_token.tok != T_ENDL):
-            throw(ExpectedToken(self.current_token, T_ENDL))
-        self.advance()
+        self.compiler.checkSemi()

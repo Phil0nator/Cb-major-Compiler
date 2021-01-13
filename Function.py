@@ -888,7 +888,7 @@ class Function:
                         countn += 1
                 # const data structures
                 else:
-                    instr, countn, counts = deregisterizeValueType(p.t, self.variables[-1], countn, counts)
+                    instr, countn, counts = deregisterizeValueType(p.t.copy(), self.variables[-1], countn, counts)
                     self.addline(instr)
                     self.buildStackStructure(self.variables[-1],  useDefaults=False)
 
@@ -902,6 +902,8 @@ class Function:
 
         if self.variardic:
             return self.loadVariardicParameters(countn, counts)
+
+
 
     def createClosing(self):                    # create end of the function
 
@@ -975,7 +977,8 @@ class Function:
             self.addline(instr)
 
         self.checkSemi()
-        if self.recursive_depth == 1:
+        
+        if self.recursive_depth <= 1:
             self.hasReturned = True
             #self.fncalls = og_fncalls
 
@@ -1011,6 +1014,9 @@ class Function:
             self.checkTok(T_OPENSCOPE)
             self.compileBodyScope()
             guarentee_else = False
+            self.continues.pop()
+            self.advance()
+            return
 
         # check if the resultant will always evaluate to false
         elif(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
@@ -2288,6 +2294,7 @@ class Function:
                     newvar = Variable(v.t.copy(
                     ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s - v.offset, isptr=v.isptr, signed=v.signed)
                     newvar.dtok = var.dtok
+                    newvar.parent = var
                     self.append_rawVariable(newvar)
 
                     # initialize to null, or default
@@ -2851,7 +2858,7 @@ class Function:
     def finalWarningCheck(self):
         # warning checking:
         if(not self.returntype.__eq__(VOID.copy()) and not self.hasReturned and not self.contains_rawasm):
-            warn(NoReturnStatement(self.tokens[0], self))
+            warn(NoReturnStatement(self.tokens[-1], self))
         if not self.contains_rawasm:
             for v in self.variables:
                 if(not v.referenced and not v.name == "this"):

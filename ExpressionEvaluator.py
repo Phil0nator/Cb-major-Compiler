@@ -190,7 +190,7 @@ class ExpressionEvaluator:
     # This includes operators like '+=', '-=', etc...
 
     def doAssignment(self, a, b, op, evaluator,
-                     depth=0) -> (str, DType, EC.ExpressionComponent):
+                     optoken, depth=0) -> (str, DType, EC.ExpressionComponent):
         ogb = EC.ExpressionComponent(
             b.accessor,
             b.type,
@@ -299,7 +299,7 @@ class ExpressionEvaluator:
                 # do calculation with implicit cast, and store result in b
                 tmpstack = [None]
                 instrs = self.compile_aopb(EC.ExpressionComponent(
-                    a.accessor, a.type, token=a.token), op[:-1], b, evaluator, tmpstack)
+                    a.accessor, a.type, token=a.token), op[:-1], b, evaluator, tmpstack, optoken)
                 b = tmpstack[1]
                 # instrs, _, b = evaluator.performCastAndOperation(
                 #    a, b, op[:-1], VOID.copy())
@@ -318,7 +318,8 @@ class ExpressionEvaluator:
                 tmpstack = [None]
 
                 opinstr = self.compile_aopb(EC.ExpressionComponent(
-                    a.accessor, a.type, token=a.token), op, b, evaluator, tmpstack)
+                    a.accessor, a.type, token=a.token), op, b, evaluator, tmpstack,
+                    optoken)
                 b = tmpstack[1]
 
                 # opinstr, _, b = evaluator.performCastAndOperation(
@@ -331,7 +332,7 @@ class ExpressionEvaluator:
             # a argument, and the new calculated b argument, and the plain "=" argument
             # should correctly move the new value into place.
             movinstr, a.type, b = self.doAssignment(
-                a, b, "=", evaluator, depth + 1)
+                a, b, "=", evaluator, optoken, depth + 1)
             instrs += movinstr
 
         return instrs, a.type.copy(), a
@@ -579,7 +580,7 @@ class ExpressionEvaluator:
     # Check if an operation is a semiconstexpr, and if so what optimizations
     # are possible.
 
-    def check_semiconstexpr_optimization(self, a, b, op, evaluator):
+    def check_semiconstexpr_optimization(self, a, b, op, evaluator, optoken):
         newinstr = None
         newt = None
         apendee = None
@@ -650,7 +651,7 @@ class ExpressionEvaluator:
             return self.ternarypartA(a, b)
 
         elif(op in SETTERS):
-            return self.doAssignment(a, b, op, evaluator)
+            return self.doAssignment(a, b, op, evaluator, optoken)
 
         return newinstr, newt, apendee
 
@@ -714,7 +715,7 @@ class ExpressionEvaluator:
 
             # check for and do any possible optimizations
             newinstr, newt, apendee = self.check_semiconstexpr_optimization(
-                a, b, op, evaluator)
+                a, b, op, evaluator, optoken)
 
             # if no valid optimizations couild be made:
             #       do the normal evaluation
@@ -731,7 +732,7 @@ class ExpressionEvaluator:
 
             if (op in SETTERS):
                 ninster, o, apendee = self.doAssignment(
-                    a, b, op, evaluator)
+                    a, b, op, evaluator, optoken)
                 instr += ninster
                 stack.append(apendee)
             # op is -> or .

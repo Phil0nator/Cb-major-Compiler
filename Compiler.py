@@ -100,7 +100,7 @@ class Compiler:
     # ensure a semicolon was used, and move on
     def checkSemi(self) -> None:
         if(self.current_token.tok != T_ENDL):
-            throw(ExpectedSemicolon(self.current_token))
+            throw(ExpectedSemicolon(self.currentTokens[self.ctidx-1]))
         self.advance()
 
     def isType(self, q: str) -> bool:                # return: if q is type
@@ -1007,9 +1007,7 @@ class Compiler:
         if(self.isIntrinsic(ntn)):
             INTRINSICS.append(newtype.copy())
         self.advance()
-        if(self.current_token.tok != T_ENDL):
-            throw(ExpectedSemicolon(self.current_token))
-        self.advance()
+        self.checkSemi()
 
     def determineFunctionOrVar(self) -> None:
         self.advance()

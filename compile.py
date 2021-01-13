@@ -50,6 +50,7 @@ from globals import fileTemplate
 import cProfile
 import pstats
 import io
+import resource
 
 from Lexer import Lexer
 from PreParser import PreProcessor
@@ -181,6 +182,7 @@ if(__name__ == "__main__"):
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())
+        print(f"Peak Memory Usage: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}kb")
     # normal usage
     else:
         main()

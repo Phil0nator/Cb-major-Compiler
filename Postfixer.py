@@ -78,6 +78,8 @@ class Postfixer:
 
                     else:  # variable is local or global or function pointer
                         v.referenced = True
+                        if v.parent is not None:
+                            v.parent.referenced = True
                         v.refcount += 1
                         if self.fn.isReturning == False or v.register is None:
                             ec = EC.ExpressionComponent(v, v.t)

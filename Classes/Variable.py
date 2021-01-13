@@ -12,7 +12,8 @@
 ###################################
 class Variable:
     def __init__(self, t, name, glob=False, offset=0, initializer=None,
-                 isptr=False, mutable=True, signed=True, isStackarr=False, static=False, bpr="rbp-"):
+                 isptr=False, mutable=True, signed=True, isStackarr=False, 
+                 static=False, bpr="rbp-", parent=None):
         self.t = t                      # data type
         self.name = name                  # str: name
         self.glob = glob                  # bool: is global
@@ -37,10 +38,13 @@ class Variable:
         # number of times referenced (for optimization)
         self.refcount = 0
         self.dtok = None
+        
+        self.parent = parent
 
     def copy(self):
         out = Variable(self.t, self.name, self.glob, self.offset, self.initializer,
-                       self.isptr, self.mutable, self.signed, self.isStackarr, self.static)
+                       self.isptr, self.mutable, self.signed, self.isStackarr, self.static,
+                       bpr=self.baseptr, parent=self.parent)
         out.referenced = self.referenced
         out.refcount = self.refcount
         return out
