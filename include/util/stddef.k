@@ -64,6 +64,7 @@ typedef short int32;
 # define safetype
 # define __noalign
 # define lambda
+# define __vectorize
 
 #endif
 

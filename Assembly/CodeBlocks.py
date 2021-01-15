@@ -986,7 +986,7 @@ def registerizeValueType(t, obj, countn, counts):
         instr = f"lea {reg}, {addrtext}\n"
     elif regclass == 2:
         reg = sse_parameter_registers[counts].replace("x", "y")
-        instr = f"vmovdqu {reg}, {addrtext}\n"
+        instr = packVarToYmm(obj, reg, t.csize())
         counts += 1
     elif regclass == 1:
         reg = sse_parameter_registers[counts]
@@ -1008,47 +1008,58 @@ def savePartOfReg(var, extraoff, reg, b):
     instr = ""
     if b<=0: return ""
     if b > 8:
-        instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 8)}\n"
+        instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 8)}\n"
 
     elif b % 2 == 0 or b == 1:
-        instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, b)}\n"
+        instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, b)}\n"
     else:
         if b == 3:
-            instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 2)}\n"
+            instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 2)}\n"
             extraoff += 2
-            instr += f"shl {reg}, 16\n"
+            instr += f"sar {reg}, 16\n"
             instr += savePartOfReg(var, extraoff, reg, 1)
         elif b == 5:
-            instr += f"mov [{var.baseptr}{var.offset+extraoff}], {setSize(reg, 4)}\n"
+            instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 4)}\n"
             extraoff += 4
-            instr += f"shl {reg}, 32\n"
+            instr += f"sar {reg}, 32\n"
             instr += savePartOfReg(var, extraoff, reg, 1)
 
     return instr
 
+
+def packVarToYmm(var, reg, size):
+    instr = ""
+    if size == 32:
+        return f"vmovdqu {reg}, [{var.baseptr}{var.offset+size}]\n"
+    else:
+        xmmreg = reg.replace("y",'x')
+        instr += packVarToXmm(var, xmmreg, size-16)
+        instr += f"vinsertf128 {reg}, {reg}, {xmmreg}, 1\n"
+        instr += f"movdqu {xmmreg}, [{var.baseptr}{var.offset+size}]\n"
+        return instr
+
 def packVarToXmm(var, reg, size):
     instr = ""
-    #if size == 16:
-    return f"movdqu {reg}, [{var.baseptr}{var.offset + size}]\n"
-    '''
+    if size == 16:
+        return f"movdqu {reg}, [{var.baseptr}{var.offset + size}]\n"
+    
     else:
         instr = f"movq {reg}, [{var.baseptr}{var.offset + size}]\n"
         if size - 8 == 4:
             instr += f"movhpd {reg}, [{var.baseptr}{var.offset + size-8}]\n"
             pass
         else:
-            instr += f'xor rax, rax\nmov {setSize("rax", size-8)}, [{var.baseptr}{var.offset + size}]\n'
+            instr += f'xor rax, rax\nmov {setSize("rax", size-8)}, [{var.baseptr}{var.offset + size-8}]\n'
             cmd = "movd" if size < 4 else "movq"
             ax = 'eax' if size < 4 else "rax"
             instr += f"{cmd} xmm7, {ax}\n"
             instr += f"movlhps {reg}, xmm7\n"
 
         return instr
-    '''
 
 
 
-def unpackXmmToVar(var, extraoff, reg, t, safe=False):
+def unpackXmmToVar(var, extraoff, reg, t, safe=True):
     
     # Safe refers to the need to get the memory bounds exactly correct.
     # For loading and unload parameters, there is no need to be safe.
@@ -1067,11 +1078,11 @@ def unpackXmmToVar(var, extraoff, reg, t, safe=False):
     size = t.csize()
     if size >= 8:
         instr += f"mov [{var.baseptr}{var.offset+extraoff+t.csize()}], rax\n"
-        remaining = t.csize() - 8 - extraoff
-        instr += savePartOfReg(var, t.csize()+extraoff-8, 'rbx', remaining)
+        remaining = t.csize() - 24
+        instr += savePartOfReg(var, extraoff-8, 'rbx', remaining)
     
     else:
-        instr += savePartOfReg(var, extraoff+t.csize(), 'rax', size)
+        instr += savePartOfReg(var, extraoff, 'rax', size)
 
     return instr
 
@@ -1081,7 +1092,6 @@ def deregisterizeValueType(t, var, countn, counts):
     instr = ""
     outreg = ""
     var = var.copy()
-
     regclass = valueTypeClass(t.s)
     
     # too big to registerize
@@ -1124,5 +1134,6 @@ def deregisterizeValueType(t, var, countn, counts):
         reg = norm_parameter_registers[countn]
         countn += 1
         instr += savePartOfReg(var, 0, reg, t.s)
+
 
     return instr, countn, counts

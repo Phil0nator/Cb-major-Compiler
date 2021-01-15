@@ -25,7 +25,7 @@ class Structure:
         self.size = 0
         self.prototypeType = DType("", 0, [], 0, True)
         self.emptyfn = Function("empty", [], VOID.copy(), self.compiler, [])
-        self.doAlign = True
+        self.doAlign = False
 
     # wrapper function
 
@@ -229,8 +229,8 @@ class Structure:
         self.advance()
 
         if self.current_token.tok == T_KEYWORD:
-            if self.current_token.value == '__noalign':
-                self.doAlign=False
+            if self.current_token.value == '__vectorize':
+                self.doAlign=True
                 self.advance()
 
 

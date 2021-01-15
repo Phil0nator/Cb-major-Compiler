@@ -143,7 +143,7 @@ KEYWORDS = [
     "lambda",
     
     
-    "__noalign",
+    "__vectorize",
 
     "noexcept",
     "safetype",

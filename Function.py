@@ -890,7 +890,8 @@ class Function:
                 else:
                     instr, countn, counts = deregisterizeValueType(p.t.copy(), self.variables[-1], countn, counts)
                     self.addline(instr)
-                    self.buildStackStructure(self.variables[-1],  useDefaults=False)
+                    if len(self.variables[-1].t.members) > 0:
+                        self.buildStackStructure(self.variables[-1], startoffset=0, useDefaults=False)
 
         ptr = 16
         # load extra parameters (those that could not be assigned registers)
@@ -1014,9 +1015,7 @@ class Function:
             self.checkTok(T_OPENSCOPE)
             self.compileBodyScope()
             guarentee_else = False
-            self.continues.pop()
             self.advance()
-            return
 
         # check if the resultant will always evaluate to false
         elif(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
@@ -1909,7 +1908,6 @@ class Function:
 
         instructions += self.buildFunctionCallClosing(
             fn, varcall, var if varcall else None)
-
         return instructions, fn
 
     # wrap a function call as a part of an expression
@@ -2177,6 +2175,7 @@ class Function:
             #   current token.
             if(not wasfunc):
                 exprtokens.append(self.current_token)
+
             wasfunc = False
 
             self.advance()
@@ -2292,7 +2291,7 @@ class Function:
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
                     newvar = Variable(v.t.copy(
-                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.s - v.offset, isptr=v.isptr, signed=v.signed)
+                    ), f"{starter}{var.name}.{v.name}", offset=startoffset + var.offset + var.t.csize() - v.offset, isptr=v.isptr, signed=v.signed)
                     newvar.dtok = var.dtok
                     newvar.parent = var
                     self.append_rawVariable(newvar)
