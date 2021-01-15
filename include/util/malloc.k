@@ -84,7 +84,7 @@ size_t cached_size = NULL;
 void merge_right(mblock* b){
     if(b->next != nullptr){
         if(b->next->free == true){
-            if(  ($mblock* b + b->size + sizeof(mblock) )== b->next ){
+            if( ( b + (mblock*)(b->size + sizeof(mblock)))== b->next ){
                 b->size += b->next->size + sizeof(mblock);
                 b->next = b->next->next;
                 if(b->next){
@@ -241,7 +241,7 @@ void split_block(mblock* block, size_t destsize){
         return;
     }
 
-    mblock* newblock = block+destsize+sizeof(mblock);
+    mblock* newblock = block+(mblock*)destsize+sizeof(mblock);
     newblock->prev=block;
     newblock->next=block->next;
 

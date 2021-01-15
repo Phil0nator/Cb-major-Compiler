@@ -12,7 +12,7 @@
 
 #define NULL 0
 
-#define nullterm ($char 0)
+#define nullterm ((char) 0)
 
 /* The type size_t holds all results of the sizeof operator. */
 

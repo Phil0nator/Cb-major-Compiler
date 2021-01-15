@@ -26,8 +26,8 @@ function int scanint(char* str, long* dest, bool s){
     long val = 0;
     char* ogstr =str;
     bool negative = fixNegative(@str,s);
-    str+=negative;
-    char c = $char (@str);
+    str+=(char*)negative;
+    char c =  (@str);
     
     /*
     if(c == '-' && s){
@@ -42,7 +42,7 @@ function int scanint(char* str, long* dest, bool s){
         val *= 10;
         val += (c&&0xff);
         str+=1;
-        c = $char (@str);
+        c = (@str);
     }
     if(!negative){
         @dest = val;
@@ -72,7 +72,7 @@ function int scansd(char* str, double* dest){
     long integral;
     long decimal;
     ssize_t diff = scanint(str, &integral, true);
-    str+=diff;
+    str+=(char*)diff;
     if(@str != '.'){
         @dest = integral;
         return diff;
@@ -83,7 +83,7 @@ function int scansd(char* str, double* dest){
     integral *= n;
     double num = integral+decimal;
 
-    @dest = num/($double n);
+    @dest = num/((double) n);
 
 
     return diff+dif2;
@@ -115,13 +115,13 @@ int __SSCANF(char* format, char* input, void** args){
             size_t diff;
             if(c == SSCANF_FORMAT_INT){
                 diff = scanint(input, args[argc], true);
-                input+=diff;
+                input+=(char*)diff;
                 format++;
 
             }else if (c == SSCANF_FORMAT_UINT){
 
                 diff = scanint(input, args[argc], false);
-                input += diff;
+                input +=(char*) diff;
                 format++;
 
             }else if (c == SSCANF_FORMAT_CHAR){
@@ -135,11 +135,11 @@ int __SSCANF(char* format, char* input, void** args){
             }else if (c == SSCANF_FORMAT_STRING){
                 format++;
                 diff = scanstr(input, @format, args[argc]);
-                input+=diff;
+                input+=(char*)diff;
             }else if (c == SSCANF_FORMAT_FLOAT || c == SSCANF_FORMAT_DOUBLE){
 
                 diff = scansd(input, args[argc]);
-                input+=diff;
+                input+=(char*)diff;
                 format++;
             }
 

@@ -201,6 +201,10 @@ class ExpressionEvaluator:
         if op == "<=>":
             return self.swap_op(a, b)
 
+        if not typematch(a.type,b.type,True):
+            throw(TypeMismatch(a.token, a.type, b.type))
+
+
         instrs = ""
         # get the necessary opcode for the operation,
         # and determine if it can be done in one line.
@@ -381,8 +385,8 @@ class ExpressionEvaluator:
         # place info on the ternary stack for the ternarypartA function
         ternarystack.append(
             (newinstr, EC.ExpressionComponent(
-                areg, a.type), EC.ExpressionComponent(
-                breg, b.type)))
+                areg, a.type, token=a.token), EC.ExpressionComponent(
+                breg, b.type, token=b.token)))
         return outinstr, a.type.copy(), EC.ExpressionComponent(
             resultreg, a.type.copy(), token=a.token)
 
@@ -814,6 +818,13 @@ class ExpressionEvaluator:
 
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
+        
+        for i in reversed(range(len(pfix))):
+            if pfix[i].accessor == "pop":
+                newreg = ralloc(pfix[i].type.isflt())
+                instr += loadToReg(newreg, pfix[i].accessor)
+                pfix[i].accessor = newreg
+
         stack = []      # used for evaluation
         o = LONG.copy()
         for e in pfix:  # for each component
@@ -830,7 +841,7 @@ class ExpressionEvaluator:
                     if(len(stack) < 1):
                         if(op == '-'):
                             a = EC.ExpressionComponent(
-                                0, LITERAL, constint=True)
+                                0, LITERAL, constint=True, token=b.token)
                         else:
                             throw(HangingOperator(pfix[-1].token))
                     else:
@@ -969,7 +980,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr = self.compile_aopb(
                 a,
                 op[0],
-                EC.ExpressionComponent(1, LITERAL, constint=True),
+                EC.ExpressionComponent(1, LITERAL, constint=True, token=a.token),
                 self,
                 tmpstack
             )
@@ -1140,7 +1151,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         areg, breg, o, ninstr = optloadRegs(a, None, "[", VOID.copy())
         instr += ninstr
         out = instr, a.type.down(), EC.ExpressionComponent(
-            areg, a.type.down(), memloc=True)
+            areg, a.type.down(), memloc=True, token=a.token)
         return out
 
     # cast a to type e
@@ -1164,8 +1175,10 @@ class LeftSideEvaluator(ExpressionEvaluator):
         result = ralloc(t.isflt(), t.csize())
 
         instr += bringdown_memloc(a)
-        cst = castABD(EC.ExpressionComponent("", t),
-                      EC.ExpressionComponent("", a.type), "", aval, result)
+        cst = castABD(EC.ExpressionComponent("", t, token=e.token),
+                      EC.ExpressionComponent("", a.type, token=a.token), "", aval, result)
+
+
         if(cst != False):
             instr += loadToReg(aval, a.accessor)
             instr += cst

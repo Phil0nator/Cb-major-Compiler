@@ -875,7 +875,7 @@ class Function:
                     self.addcomment(f"Load Parameter: {p}")
                 
                 # primitive types
-                if p.t.isintrinsic():
+                if p.t.isintrinsic() or p.t.function_template is not None:
                 
                     if(p.isflt()):
                         self.addline(movRegToVar(
@@ -1676,7 +1676,7 @@ class Function:
 
                 sseused += 1
             # load data structure
-            elif not parameters[i].t.isintrinsic():
+            elif not parameters[i].t.isintrinsic() and not parameters[i].t.function_template:
                 
                 # determine value
                 inst, final = self.evaluateExpression()
@@ -1990,8 +1990,25 @@ class Function:
             elif(self.current_token.tok == T_OPENP):
                 opens += 1
 
+
             if(opens <= 0):
                 break
+
+            elif (self.current_token.tok == T_OPENP):
+                ogctidx = self.ctidx-1
+                self.advance()
+                iftype = self.checkForType(False)
+                if iftype is None:
+                    self.ctidx = ogctidx
+                    self.advance()
+                else:
+                    exprtokens.append(
+                        Token(
+                            T_TYPECAST, iftype, self.tokens[ogctidx+1], self.current_token.end
+                        )
+                    )
+                    opens-=1
+                    wasfunc = True
 
             # since function calls have the highest precedence in an expression, they can be called
             #   before the rest of the expression is evaluated.
@@ -2161,6 +2178,7 @@ class Function:
                             label,
                             start,
                             self.current_token.end))
+                    
                     self.advance()
                     break
                 else:
