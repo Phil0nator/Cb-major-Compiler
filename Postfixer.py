@@ -56,7 +56,6 @@ class Postfixer:
                         t.value, LITERAL.copy(), token=t)
 
                 else:
-
                     v: Variable = self.fn.getVariable(t.value)
                     if(v is None):
 

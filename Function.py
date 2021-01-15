@@ -875,7 +875,7 @@ class Function:
                     self.addcomment(f"Load Parameter: {p}")
                 
                 # primitive types
-                if p.t.isintrinsic():
+                if p.t.isintrinsic() or p.t.function_template is not None:
                 
                     if(p.isflt()):
                         self.addline(movRegToVar(
@@ -1676,7 +1676,7 @@ class Function:
 
                 sseused += 1
             # load data structure
-            elif not parameters[i].t.isintrinsic():
+            elif not parameters[i].t.isintrinsic() and not parameters[i].t.function_template:
                 
                 # determine value
                 inst, final = self.evaluateExpression()
@@ -2178,6 +2178,7 @@ class Function:
                             label,
                             start,
                             self.current_token.end))
+                    
                     self.advance()
                     break
                 else:

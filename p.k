@@ -1,17 +1,13 @@
-#define __CBLIB_SOURCE
 #include "cblib.cb"
 
+function int main(){
 
-
-function int main(int argc){
-
-
-
+    
     return 0;
 }
 
 
-
+/*
 
 void nc(char* ip, short port){
     Socket sock;
@@ -63,3 +59,4 @@ float benchmark(){
 }
 
 
+*/
