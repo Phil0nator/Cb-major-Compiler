@@ -42,7 +42,7 @@ CBLIBENTRY clock_t clock();
 /**
  * Get the difference between two clock values in seconds as a double.
  */
-#define clockdif(end, beginning) ((($double end-beginning)/CLOCKS_PER_SEC))
+#define clockdif(end, beginning) ((((double) end-beginning)/CLOCKS_PER_SEC))
 
 
 

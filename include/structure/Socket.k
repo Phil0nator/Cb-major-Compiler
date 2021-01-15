@@ -16,7 +16,7 @@ CBLIBENTRY err_t Socket::connect(char* ip, int port){
     int err;
     sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = hton16($short port);
+    addr.sin_port = hton16((short) port);
     
     inet_aton(ip, &addr.sin_addr);
     

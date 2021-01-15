@@ -75,8 +75,8 @@ void* floads(fd_t fd){
 
     int fsize = lseek(fd, 0, SEEK_END);
     lseek(fd, 0-fsize, SEEK_END);
-    char* buffer = mapalloc($size_t fsize);
-    size_t out = read(fd,buffer,$size_t fsize);
+    char* buffer = mapalloc((size_t) fsize);
+    size_t out = read(fd,buffer,(size_t) fsize);
     if(out < 0){
         return out;
     }

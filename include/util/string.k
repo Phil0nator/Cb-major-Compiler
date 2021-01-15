@@ -37,8 +37,8 @@ size_t strlen(char *str){
 
 
 char* memchr(char* str, char c, size_t n){
-    register size_t finalptr = str+n;
-    while(str < finalptr){
+    register size_t finalptr = ((size_t) str)+n;
+    while((size_t)str < finalptr){
         if(@str == c){
             return str;
         }
@@ -51,7 +51,7 @@ char* memchr(char* str, char c, size_t n){
 int memcmp(char* str1, char* str2, size_t n){
     
     register int value = 0;
-    register size_t maxstr = str1+n;
+    register char* maxstr = str1+ (char*) n;
     while(str1 < maxstr){
         
         if(@str1 < @str2){

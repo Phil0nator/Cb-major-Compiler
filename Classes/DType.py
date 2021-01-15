@@ -135,19 +135,17 @@ type_precedence = {
 
     "bool": 0,
     "char": 0,
-    "unsigned char": 1,
-    "unsigned bool": 1,
-    "small": 2,
-    "unsigned small": 3,
-    "short": 4,
-    "unsigned short": 5,
-    "int": 6,
-    "unsigned int": 10,
-    "long": 11,
-    "unsigned long": 12,
-    "float": 13,
-    "double": 14,
-    "void": 15,
+    "unsigned char": 0,
+    "unsigned bool": 0,
+    "short": 1,
+    "unsigned short": 1,
+    "int": 2,
+    "unsigned int": 2,
+    "long": 3,
+    "unsigned long": 3,
+    "float": 4,
+    "double": 4,
+    "void": 5,
     "&LITERAL&": -1
 
 
@@ -220,8 +218,9 @@ def typematch(a, b, implicit):
         # two equal types are compatible
         if(a.__eq__(b)):
             return True
-
-        if a.ptrdepth != b.ptrdepth and not implicit:
+        # two variables with different pointer depths are not compatible (at
+        # this point no void types)
+        if a.ptrdepth != b.ptrdepth:
             return False
 
         # two equal types with different signs are compatible
@@ -231,6 +230,10 @@ def typematch(a, b, implicit):
         # two integer values are compatible in implicit situations
         if(not a.isflt() and not b.isflt() and implicit):
             return True
+
+        if (a.isintrinsic() and b.isflt() and implicit):
+            return True
+
         # two floats are compatible
         if(a.isflt() and b.isflt() and ((a.csize() == b.csize()) or (a.csize() > b.csize()))):
             return True
@@ -239,14 +242,12 @@ def typematch(a, b, implicit):
         # elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
         #    return True
 
-        # two variables with different pointer depths are not compatible (at
-        # this point no void types)
-        if(a.ptrdepth != b.ptrdepth):
-            return False
+
+
 
         # if the type precedence checks out, they are compatible, else not
         if(a.isintrinsic() and b.isintrinsic() and implicit):
-            if(type_precedence[a.name] > type_precedence[b.name]):
+            if(type_precedence[a.name] >= type_precedence[b.name]):
                 return True
             return False
 

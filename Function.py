@@ -1990,8 +1990,25 @@ class Function:
             elif(self.current_token.tok == T_OPENP):
                 opens += 1
 
+
             if(opens <= 0):
                 break
+
+            elif (self.current_token.tok == T_OPENP):
+                ogctidx = self.ctidx-1
+                self.advance()
+                iftype = self.checkForType(False)
+                if iftype is None:
+                    self.ctidx = ogctidx
+                    self.advance()
+                else:
+                    exprtokens.append(
+                        Token(
+                            T_TYPECAST, iftype, self.tokens[ogctidx+1], self.current_token.end
+                        )
+                    )
+                    opens-=1
+                    wasfunc = True
 
             # since function calls have the highest precedence in an expression, they can be called
             #   before the rest of the expression is evaluated.

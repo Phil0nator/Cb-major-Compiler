@@ -71,7 +71,7 @@ function long toStr(T val, char* buffer, bool s, long base){
     while(val != 0){
 
         long mod;
-        val = divmod($long val,base,&mod);
+        val = divmod((long)val,base,&mod);
         //mod = val % 10;
         //val /= 10;
 
@@ -96,7 +96,7 @@ function long toStr(T val, char* buffer, bool s, long base){
 
 
 size_t toBinary(char* buffer, unsigned long val, int bits){
-    buffer += bits;
+    buffer += (char*) bits;
     for(int i = 0 ; i < bits;i++){
         if( (val&&1) ){
             @buffer = '1';
@@ -142,7 +142,7 @@ function long toStr(double val, char* buffer, long multiplier){
         
     }
     l += toStr<long>(mantissa, buffer, 1, 10);
-    buffer+=l-1;
+    buffer+=(char*)l-1;
     val = (abs(val)-abs(mantissa))*multiplier;
     long decimal = abs(round(val));
     long leading = toStr<long>(decimal, buffer, 1, 10)-1;
@@ -202,18 +202,18 @@ int __sprintf(char* str, char* fmt, void* args){
                 case FORMAT_INT{
                     int inum = args[argc];
                     size_t isize = toStr<int>(inum, str, 1, 10);
-                    str += isize-1;
+                    str += (char*) isize-1;
                     break;
                 }
 
                 case FORMAT_INT64 {
                     long num = (args[argc]);
                     long size = toStr<long>(num, str, 1, 10);
-                    str+=size-1;
+                    str+=(char*)size-1;
                     break;
                 }
                 case FORMAT_CHAR {
-                    char cf = $char args[argc];
+                    char cf = (char) args[argc];
                     @str = cf;
                     str++;
                     break;
@@ -223,14 +223,14 @@ int __sprintf(char* str, char* fmt, void* args){
 
                     long numx = (args[argc]);
                     long sx = toStr<long>(numx, str, 0, 16);
-                    str+=sx-1;
+                    str+=(char*)sx-1;
                     break;
                 }
                 case FORMAT_OCTAL {
 
                     long numo = (args[argc]);
                     long so = toStr<int>(numo, str, 0, 8);
-                    str+=so-1;
+                    str+=(char*)so-1;
                     break;
                 }
                 case FORMAT_UNSIGNED {
@@ -239,12 +239,12 @@ int __sprintf(char* str, char* fmt, void* args){
                     if (typespec == FORMAT_INT64){
                         long unum = (args[argc]);
                         int usize = toStr<long>(unum, str, 0, 10);
-                        str+=usize-1;
+                        str+=(char*)usize-1;
                         fmt++;
                     }else{
                         long unum = (args[argc]);
                         int usize = toStr<int>(unum, str, 0, 10);
-                        str+=usize-1;
+                        str+=(char*)usize-1;
                     }
                     break;
 
@@ -253,7 +253,7 @@ int __sprintf(char* str, char* fmt, void* args){
                 }
                 case FORMAT_STRING {
                     int ssize = strcpy(str,args[argc]);
-                    str+=ssize;
+                    str+=(char*)ssize;
                     break;
                 }
                 case FORMAT_BOOL {
@@ -264,20 +264,20 @@ int __sprintf(char* str, char* fmt, void* args){
                     }
                     int bsize = strcpy(str, boolean_string);
                     
-                    str+=bsize;
+                    str+=(char*)bsize;
                     break;
                 }
                 case FORMAT_DOUBLE {
                     double d = args[argc];
                     int dsize = toStr(d, str, DOUBLE_PRECISION_MULTIPLIER);
-                    str += dsize-1;
+                    str += (char*)dsize-1;
                     break;
                 }
                 case FORMAT_FLOAT {
                     float flt = args[argc];
                     double dflt = flt;
                     int fsize = toStr(dflt, str, 10000000);
-                    str += fsize-1;
+                    str +=(char*) fsize-1;
                     break;
                 }
 
@@ -300,7 +300,7 @@ int __sprintf(char* str, char* fmt, void* args){
                         fmt++;
                     }
                     long sb = toBinary(str,numb, bits);
-                    str+=sb;
+                    str+=(char*)sb;
                     break;
                 }
             }
@@ -317,7 +317,7 @@ int __sprintf(char* str, char* fmt, void* args){
     }
 
 
-    return ($long str)-og;
+    return ((long) str)-og;
 
 
 

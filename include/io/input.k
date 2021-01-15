@@ -48,18 +48,18 @@ int toInteger(char* str, bool s){
     while(@str == ' '){
         str+=1;
     }
-    char c = $char (@str);
+    char c = (@str);
     int val = 0;
     bool negative = false;
     if(c == '-' && s){
         negative = true;
         str+=1;
-        c = $char(@str);
+        c = (@str);
     }
     while(c != 0 && c != 10 && c != ' '){
         val = (val*10)+(c-'0');
         str+=1;
-        c = $char (@str);
+        c = (@str);
     }
 
     if(negative){

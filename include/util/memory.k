@@ -59,7 +59,7 @@ void avx_memzer(void* dest, size_t bytes){
     avx_memzeraligned(dest, avxcount);
 
     if(offset != 0){
-        memset(dest+avxcount, 0, $size_t offset);
+        memset(dest+avxcount, 0, (size_t) offset);
     }
 }
 

@@ -661,6 +661,7 @@ def castABD(a, b, areg, breg, newbreg):
         else:
             return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
 
+
     # size cast for integer types
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() < b.type.csize()):
@@ -691,7 +692,7 @@ def castABD(a, b, areg, breg, newbreg):
 
     # float-integer conversion
     if(b.type.isflt() and not a.type.isflt()):
-
+        
         if sizeOf(newbreg) < 4:
             breg = setSize(newbreg, 4)
 
