@@ -999,7 +999,7 @@ def registerizeValueType(t, obj, countn, counts):
             reg = norm_parameter_registers[countn]
         else:
             reg = "rax"
-        instr = f"mov {setSize(reg, t.csize())}, {addrtext}\n"
+        instr = f"mov {setSize(reg, t.csize())}, [{obj.baseptr}{obj.offset}]\n"
         countn += 1
 
     return instr, addrtext, countn, counts
@@ -1134,7 +1134,7 @@ def deregisterizeValueType(t, var, countn, counts):
 
         reg = norm_parameter_registers[countn]
         countn += 1
-        instr += savePartOfReg(var, 0, reg, t.s)
+        instr += savePartOfReg(var, -t.s, reg, t.s)
 
 
     return instr, countn, counts

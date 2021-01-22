@@ -509,6 +509,8 @@ class Compiler:
             if name not in OPERATORS:
                 throw(UnkownOperator(name))
             self.advance()
+            if name == "[" or name == "(":
+                self.advance()
 
         # ensure syntax
         if(self.current_token.tok != T_OPENP):

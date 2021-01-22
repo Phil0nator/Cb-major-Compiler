@@ -9,7 +9,8 @@
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
 
-from colorama import Style, Fore
+from colorama import Style, Fore, init
+init()
 import argparse as arg
 import sys
 import Classes.Error as E
@@ -29,6 +30,7 @@ import platform
 ###################################
 
 parser = arg.ArgumentParser(
+    prog="cbm",
     description='Compile, link, and debug Cb major programs.')
 
 parser.add_argument("input", help="Name of input file")

@@ -1,9 +1,28 @@
 #include "cblib.cb"
 
+
+template <typename T>
+struct pointer{
+
+    T* raw;
+
+    pointer(T* initializer){raw = initializer;}
+    ~pointer(){free(raw);}
+    function T* operator ->(){return raw;}
+    function T* operator =(T* initializer){return raw = initializer;}
+    function T* operator @(){return raw;}
+};
+
+function int test(pointer<int> p){
+    return @p;
+}
+
+
 function int main(){
 
-    
-    return 0;
+    pointer<int> p = newarray(int, 256);
+    int at = test(p);
+    return at;
 }
 
 
