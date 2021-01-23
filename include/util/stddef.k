@@ -65,7 +65,7 @@ typedef short int32;
 # define __noalign
 # define lambda
 # define __vectorize
-
+# define __STRINGIFY__
 #endif
 
 

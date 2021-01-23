@@ -852,6 +852,21 @@ def lea_mul_opt(shiftval, areg, a, b):
 def magic_division(a, areg, d, internal=False):
     instr = ""
     
+#     ax = setSize("rax", a.type.csize())    
+#     # alden solution
+#     return f"""
+# mov {ax}, {areg}
+# imul {ax}, {ax}, {(int(1/d*2**(a.type.csize()*2)))}
+# sar {ax}, 16
+# {f"mov {areg}, {ax}"if not internal else ""}
+# """
+    
+    
+    
+    
+    
+    
+    
     # temporary solution
     return f"""
 mov rdx, {floatTo64h(float(d))}

@@ -12,7 +12,7 @@ __literal = "&LITERAL&"
 
 class DType:
     def __init__(self, name, size, members=None, ptrdepth=0,
-                 signed=True, destructor=None, constructor=None, stackarr=False, operators=None,
+                 signed=True, destructor=None, constructors=None, stackarr=False, operators=None,
                  function_template=None):
         self.name = name
         self.s = size  # base size if not pointer
@@ -21,7 +21,7 @@ class DType:
         # signed vs unsigned integers / chars/ bools/ etc...
         self.signed = signed
         self.destructor = destructor  # only for structures
-        self.constructor = constructor  # only for structures
+        self.constructors = constructors  # only for structures
         self.stackarr = stackarr        # is stack-based array
         self.operators = operators if operators is not None else {}
         self.function_template = function_template  # function types
@@ -55,12 +55,12 @@ class DType:
 
     def load(self, other):  # accept properties of another DType object
         self.__init__(other.name, other.s, other.members.copy() if other.members is not None else None, other.ptrdepth,
-                      other.signed, other.destructor, other.constructor, other.operators.copy(),
+                      other.signed, other.destructor, other.constructors, other.operators.copy(),
                       other.function_template.reset() if other.function_template is not None else None)
 
     def copy(self):  # duplicate
         return DType(self.name, self.s, members=(self.members.copy()) if self.members is not None else None, ptrdepth=self.ptrdepth,
-                     signed=self.signed, constructor=self.constructor, destructor=self.destructor, operators=self.operators.copy(),
+                     signed=self.signed, constructors=self.constructors, destructor=self.destructor, operators=self.operators.copy(),
                      function_template=self.function_template.reset() if self.function_template is not None else None)
 
     def isflt(self):  # determine if at the current ptrdepth the type is a double/float
@@ -104,6 +104,14 @@ class DType:
                     return overload
 
             return None
+
+    def getConstructor(self, types):
+        types = types[1:]
+        for constructor in self.constructors:
+            if len(types) == len(constructor.parameters)-1 and \
+                 all((typematch(types[i], constructor.parameters[i].t, False) for i in range(len(constructor.parameters[1:])))):
+                return constructor
+        return None
 
     def isintrinsic(self):
         return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
@@ -224,7 +232,7 @@ def typematch(a, b, implicit):
             return False
 
         # two equal types with different signs are compatible
-        if(DType(a.name, a.size, a.members, a.ptrdepth, False, a.destructor, a.constructor).__eq__(DType(b.name, b.size, b.members, b.ptrdepth, False, b.destructor, b.constructor))):
+        if(DType(a.name, a.size, a.members, a.ptrdepth, False, a.destructor, a.constructors).__eq__(DType(b.name, b.size, b.members, b.ptrdepth, False, b.destructor, b.constructors))):
             return True
 
         # two integer values are compatible in implicit situations

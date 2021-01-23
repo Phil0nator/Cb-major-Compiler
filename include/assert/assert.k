@@ -5,8 +5,7 @@
 void __assert(bool condition, char* fname, int line, char* assertion){
 
     if(!condition){
-
-        eprintf("%s:%i: Assertion '%s' failed.\n", fname, line, assertion);
+        eprintf(" %s:%i: Assertion '%s' failed.\n", fname, line, assertion);
         exit(1);
     }
 

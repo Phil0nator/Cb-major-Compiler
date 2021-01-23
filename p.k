@@ -1,28 +1,36 @@
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
-template <typename T>
-struct pointer{
+void printvec(vector<int> v){
+    size_t size = v.size();
+    puts("[");
+    for(size_t i = 0; i < size-1; i++){
+        printf("%i, ", v.at(i));
+    }
+    printf("%i]\n", v.at(size-1));
 
-    T* raw;
+}
 
-    pointer(T* initializer){raw = initializer;}
-    ~pointer(){free(raw);}
-    function T* operator ->(){return raw;}
-    function T* operator =(T* initializer){return raw = initializer;}
-    function T* operator @(){return raw;}
-};
+#define TESTCONST 5
 
-function int test(pointer<int> p){
-    return @p;
+void checknum(long num){
+    long test = TESTCONST;
+    if (num/test != num/TESTCONST){
+        printf("Failed to divide: %i\n", num);
+        exit(1);
+    }
 }
 
 
 function int main(){
-
-    pointer<int> p = newarray(int, 256);
-    int at = test(p);
-    return at;
+    for (long i = 1; i<LONG_MAX;i++){
+        if(i){
+            checknum(i);
+        }
+    }
+    puts("All good.");
+    return 0;
 }
 
 

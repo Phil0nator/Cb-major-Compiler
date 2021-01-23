@@ -2,7 +2,42 @@
 #define __VECTOR
 
 #include "algorithm/algorithm.cb"
+template<typename T>
+struct vector{
 
+    T* begin;
+    T* end;
+    T* stop;
+
+    vector(){
+        begin = mapalloc(10*sizeof(T));
+        end = begin;
+        stop = begin+(10*sizeof(T));
+    }
+
+    function size_t size(){
+        return (end-begin)/sizeof(T);
+    }
+
+    function T at(size_t index){
+        return begin[index];
+    }
+
+    function void push_back(T item){
+        if (end == stop){
+            size_t size = (size_t) (stop-begin);
+            maprealloc(begin, (2*size));
+            stop += (T*) size;
+        }
+        @end = item;
+        end+=sizeof(T);
+    }
+
+    ~vector(){
+        mapfree(begin);
+    }
+
+};
 
 
 

@@ -834,14 +834,7 @@ class Compiler:
         # types, and offsets
         struct.s = 0
         struct.name += ''.join([t.name for t in types])
-
-        if struct.constructor is not None:
-            struct.constructor = self.buildTemplateFunction(
-                struct.constructor, tns, types)
-        if struct.destructor is not None:
-            struct.destructor = self.buildTemplateFunction(
-                struct.destructor, tns, types)
-
+        
         for member in struct.members:
 
             # if template has effect:
@@ -851,16 +844,29 @@ class Compiler:
                 member.t = assosiation[member.t.name].copy()
                 member.t.ptrdepth = pd
 
+
+            if(isinstance(member.initializer, Function)):    
+                pass                
+            else:
+                # apply offset, and overall size
+                member.offset = struct.s
+                struct.s += member.t.csize()
+
+        for member in struct.members:
             if(isinstance(member.initializer, Function)):
-
                 member.initializer.parameters[0].t = struct.up()
-
                 member.initializer = self.buildTemplateFunction(
                     member.initializer, tns, types)
 
-            # apply offset, and overall size
-            member.offset = struct.s
-            struct.s += member.t.csize()
+
+        for i in range(len(struct.constructors)):
+            struct.constructors[i] = self.buildTemplateFunction(
+                struct.constructors[i], tns, types)
+
+        if struct.destructor is not None:
+            struct.destructor = self.buildTemplateFunction(
+                struct.destructor, tns, types)
+
 
         for op in struct.operators:
             for i in range(len(struct.operators[op])):
@@ -928,6 +934,7 @@ class Compiler:
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
+            
 
             # compile
             fn.compile()
@@ -943,7 +950,6 @@ class Compiler:
         self.types = self.types[:restore_types]
         self.tdefs = self.tdefs[:restore_tdefs]
         self.tdef_hash = restore_tdefhash
-
         return fn
 
     # unsigned keyword is always followed by a normal variable

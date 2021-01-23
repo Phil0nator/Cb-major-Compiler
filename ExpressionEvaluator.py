@@ -1009,7 +1009,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
                 #instr += zeroize(setSize(breg, 8))
                 instr += ninstr
-
                 if sizeOf(breg) < 8:
                     instr += cast_regUp("rax", breg, b.type.signed)
                     rfree(breg)

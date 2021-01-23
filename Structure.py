@@ -23,7 +23,7 @@ class Structure:
         self.compiler = compiler
         self.current_token = self.compiler.current_token
         self.size = 0
-        self.prototypeType = DType("", 0, [], 0, True)
+        self.prototypeType = DType("", 0, [], 0, True, constructors=[])
         self.emptyfn = Function("empty", [], VOID.copy(), self.compiler, [])
         self.doAlign = False
 
@@ -124,7 +124,7 @@ class Structure:
         if(len(self.compiler.functions) - lf > 0):
             f = self.compiler.functions[-1]
             f.name = f"_C{f.name}"
-            self.prototypeType.constructor = f
+            self.prototypeType.constructors.append(f)
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()
         else:
@@ -174,7 +174,11 @@ class Structure:
             else:
                 self.compiler.possible_members.append(f.name)
                 self.prototypeType.members.append(
-                    Variable(f.returntype.up(), f.name, initializer=f))
+                    Variable(DType(
+                        f"function {f.createTypename()}",
+                        8,
+                        function_template=f
+                    ), f.name, initializer=f))
 
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()
@@ -242,7 +246,7 @@ class Structure:
             else:
                 throw(ExpectedToken(self.current_token, "{"))
         # build prototype DType as placeholder
-        self.prototypeType = DType(id, 0, [], 0, True)
+        self.prototypeType = DType(id, 0, [], 0, True, constructors=[])
 
         self.compiler.types.append(self.prototypeType)
 

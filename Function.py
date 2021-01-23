@@ -788,12 +788,16 @@ class Function:
         # with a base pointer of rdi+ instead of rbp- for access.
         if self.memberfn:
             # load members:
-            for member in self.parentstruct.members:
+            for member in (self.parentstruct.members):
                 # not member functions
                 if not isinstance(member.initializer, Function):
+                    pdepth, sign = (member.t.ptrdepth, member.t.signed)
+                    member.t = self.compiler.getType(member.t.name)
+                    member.t.ptrdepth = pdepth
+                    member.t.signed = sign
                     # create a rdi+ based variable for each member
                     v = Variable(
-                        member.t,
+                        member.t.copy(),
                         member.name,
                         glob=False,
                         offset=member.offset,
@@ -802,6 +806,7 @@ class Function:
                         bpr="rdi+")
                     v.referenced = True
                     self.append_rawVariable(v)
+
             # build this regdecl
             self.regdecls.append(
                 EC.ExpressionComponent('rdi', self.parentstruct)
@@ -892,6 +897,7 @@ class Function:
                     self.addline(instr)
                     if len(self.variables[-1].t.members) > 0:
                         self.buildStackStructure(self.variables[-1], startoffset=0, useDefaults=False)
+                    self.stackCounter+=8
 
         ptr = 16
         # load extra parameters (those that could not be assigned registers)
@@ -1791,6 +1797,23 @@ class Function:
 
         return instructions
 
+
+    def determineFnCallParameterTypes(self):
+        types = []
+        start = self.ctidx
+        # build parameters, without storing instructions in order to determine
+        # the datatypes, and place them in types[]
+        while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
+            o = self.determineExpressionType(False)
+
+            if(self.current_token.tok == ","):
+                self.advance()
+            types.append(o)
+        self.ctidx = start - 1
+        self.advance()
+        return types
+
+
     def buildFunctionCall(self):
 
         # TODO:
@@ -1813,17 +1836,8 @@ class Function:
 
         self.checkTok(T_OPENP)
 
-        types = []
-
-        start = self.ctidx
-        # build parameters, without storing instructions in order to determine
-        # the datatypes, and place them in types[]
-        while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
-            o = self.determineExpressionType(False)
-
-            if(self.current_token.tok == ","):
-                self.advance()
-            types.append(o)
+        types = self.determineFnCallParameterTypes()
+        
 
         # using the fn name, and the parameter types find the actual function
         # object best suited for this call
@@ -1839,8 +1853,6 @@ class Function:
         if(fn is self and self.inline):
             throw(RecursiveInlineCall(self.current_token))
 
-        self.ctidx = start - 1
-        self.advance()
         # check for var function
         if(fn is None and self.compiler.getFunction(fid) is None):
             var = self.getVariable(fid)
@@ -2407,18 +2419,39 @@ class Function:
 
         # if it is a stack-based structure, and it has a destructor
         #      add it's destructor to the end of the function
-        if(not isIntrinsic(var.t.name)):
+        if(not var.t.isintrinsic()) and (var.t.function_template is None and var.t.ptrdepth==0):
+            
+            # add default destructor
             if (var.t.destructor is not None):
                 self.destructor_text += self.createDestructor(var)
 
-            if (self.current_token.tok == T_OPENP):
+            exlicitConstructor = False
 
-                if var.t.constructor is not None:
+            # check for explicit constructor
+            if (self.current_token.tok == T_OPENP):
+                exlicitConstructor = True
+                types = [var.t.up()] + self.determineFnCallParameterTypes()
+            # implicit constructor
+            else:
+                types = [var.t.up()]
+            # find Function object of constructor, and call it if able / necessary
+            constructor = var.t.getConstructor(types)
+            if constructor is not None:
+            
+                if exlicitConstructor:
                     self.ctidx -= 2
-                    self.memberCall(var.t.constructor, var)
+                    self.memberCall(constructor, var)
                     self.addline("pop rax")
                 else:
-                    throw(UnkownConstructor(self.tokens[self.ctidx - 1]))
+                    self.addline(f"lea rdi, [rbp-{var.offset+var.t.s}]\n")
+                    self.addline(fncall(constructor))
+
+            elif not exlicitConstructor:
+                pass
+            else:
+                throw(UnkownConstructor(self.tokens[self.ctidx - 1]))
+
+
 
         autoArrsize = False
 
