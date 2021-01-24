@@ -787,6 +787,7 @@ class Function:
         # and the members of the parent structure need to be added as variables to this function
         # with a base pointer of rdi+ instead of rbp- for access.
         if self.memberfn:
+            
             # load members:
             for member in (self.parentstruct.members):
                 # not member functions
@@ -806,6 +807,7 @@ class Function:
                         bpr="rdi+")
                     v.referenced = True
                     self.append_rawVariable(v)
+                    
 
             # build this regdecl
             self.regdecls.append(
@@ -1642,7 +1644,6 @@ class Function:
             parameters = fn.parameters
         pcount = len(parameters)
         rng = range(1, pcount) if offset else range(pcount)
-
         extra_params = []
 
         # for each parameter
@@ -1805,7 +1806,6 @@ class Function:
         # the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
             o = self.determineExpressionType(False)
-
             if(self.current_token.tok == ","):
                 self.advance()
             types.append(o)

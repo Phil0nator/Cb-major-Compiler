@@ -2,6 +2,12 @@
 #define __VECTOR
 
 #include "algorithm/algorithm.cb"
+
+
+/**
+ * The vector class is used to manage a dynamically allocated array.
+ * Specifically to properly resize, access, mutate, and destroy it's contents.
+ */
 template<typename T>
 struct vector{
 
@@ -9,20 +15,109 @@ struct vector{
     T* end;
     T* stop;
 
+    // Constructors
+
+    /**
+     * Create a vector of type T, starting with 10 empty elements.
+     */
     vector(){
         begin = mapalloc(10*sizeof(T));
         end = begin;
         stop = begin+(10*sizeof(T));
     }
 
-    function size_t size(){
+    
+
+    /**
+     * Access the first element of the vector.
+     * @returns the first element
+     */
+    inline T front(){
+        return @begin;
+    }
+    /**
+     * Access the last element of the vector.
+     * @returns the last element
+     */
+    function T back(){
+        if (end==begin){
+            return @end;
+        }
+        return @(end-sizeof(T));
+    }
+    /**
+     * Get the total capacity of the vector, beyond just what has been filled with 
+     * elements.
+     * @returns total vector capacity.
+     */
+    inline size_t capacity(){
+        return (stop-begin)/sizeof(T);
+    }
+
+    /**
+     * Check if the vector is empty.
+     * @returns number of elements == 0
+     */
+    inline bool empty(){
+        return end == begin;
+    }
+
+    /**
+     * Reserve n elements worth of memory for use without reallocating.
+     * @param n number of elements to allocate
+     * @returns None
+     */
+    function void reserve(size_t n){
+        if (this->capacity() < n){
+            size_t bytes = n*sizeof(T);
+            maprealloc(begin, bytes);
+            stop = begin+(T*)bytes;
+        }
+    }
+
+    /**
+     * Resize the vector's memory map to the new size, even if that would delete some elements.
+     * @param newsize new number of elements in the vector.
+     * @warning Any elements cut off will be lost, and this could cause memory leaks. Make sure
+     *          you've properly destructed any elements that might be cut off, or don't resize the 
+     *          vector to a size smaller than it's current state.
+     */
+    function void resize(size_t newsize){
+        size_t bytes = newsize*sizeof(T);
+        maprealloc(begin, bytes);
+        stop = begin+(T*)bytes;
+        if (end > stop){
+            end = stop;
+        }
+    }
+    /**
+     * Determine the number of elements in the vector.
+     * @returns number of elements in the vector
+     */
+    inline size_t size(){
         return (end-begin)/sizeof(T);
     }
 
+
+    inline T operator[](size_t index){
+        return begin[index];
+    }
+
+
+    /**
+     * Get the nth element of the vector.
+     * @param index index to draw from
+     * @returns the value of the vector at index index. (vector[index])
+     */
     function T at(size_t index){
         return begin[index];
     }
 
+    /**
+     * Push an element onto the end of the vector.
+     * @param item the item to push onto the end
+     * @return None
+     */
     function void push_back(T item){
         if (end == stop){
             size_t size = (size_t) (stop-begin);
@@ -31,6 +126,26 @@ struct vector{
         }
         @end = item;
         end+=sizeof(T);
+    }
+
+    /**
+     * Pop an element off the end of the vector (like a stack).
+     * @returns the last element of the vector.
+     */
+    function T pop_back(){
+        end-=sizeof(T);
+        return @end;
+    }
+
+
+    inline void assign(size_t idx, T value){
+        begin[idx]=value;
+    }
+
+    function void assign(size_t start, size_t finish, T value){
+        for(start;start<finish;start++){
+            begin[start]=value;
+        }
     }
 
     ~vector(){

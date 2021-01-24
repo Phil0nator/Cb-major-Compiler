@@ -12,24 +12,32 @@ void printvec(vector<int> v){
 
 }
 
-#define TESTCONST 5
-
-void checknum(long num){
-    long test = TESTCONST;
-    if (num/test != num/TESTCONST){
-        printf("Failed to divide: %i\n", num);
-        exit(1);
-    }
-}
+#define TESTCONST (-7)
 
 
 function int main(){
-    for (long i = 1; i<LONG_MAX;i++){
-        if(i){
-            checknum(i);
+    
+    /*
+    vector<int> test;
+    for range(i, 100){
+        test.push_back(i);
+    }
+    
+    printvec(test);
+    */
+    srand();
+    long tmp = TESTCONST;
+    for range(i, 1000000){
+        long test = rand();
+        if (test/TESTCONST != test/tmp){
+            printf("Error: %l, bad: %l, correct: %l\n", test, test/TESTCONST, test/tmp);
+            exit(1);
         }
     }
+
+
     puts("All good.");
+    
     return 0;
 }
 

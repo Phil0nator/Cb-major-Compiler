@@ -529,7 +529,7 @@ class Compiler:
 
         # count of each type of parameter
         ssecount = 0
-        normcount = 0
+        normcount = int(thisp)
 
         # load parameters until end of fn header at ')'
         while self.current_token.tok != T_CLSP:

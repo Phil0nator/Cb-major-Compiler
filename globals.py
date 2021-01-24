@@ -1,5 +1,5 @@
 import Classes.DType as Type
-from Classes.DType import DType, typematch, __literal
+from Classes.DType import DType, typematch, literal
 from Classes.Variable import Variable
 import Classes.Token as T
 import time
@@ -45,7 +45,7 @@ DOUBLE = DType("double", 8, signed=True)
 FLOAT = DType("float", 4, signed=True)
 VOID = DType("void", 8, signed=True)
 BOOL = DType("bool", 1, signed=True)
-LITERAL = DType(__literal, 8, signed=True)
+LITERAL = DType(literal, 8, signed=True)
 
 
 INTRINSICS = [INT, LONG, BOOL, DOUBLE, CHAR, BOOL, VOID, SHORT, LITERAL, FLOAT]

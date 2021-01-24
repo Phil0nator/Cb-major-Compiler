@@ -124,6 +124,7 @@ class Structure:
         if(len(self.compiler.functions) - lf > 0):
             f = self.compiler.functions[-1]
             f.name = f"_C{f.name}"
+            
             self.prototypeType.constructors.append(f)
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()

@@ -1,7 +1,7 @@
 import config
 from Classes.Error import *
 
-__literal = "&LITERAL&"
+literal = "&LITERAL&"
 
 
 ###########################
@@ -96,8 +96,7 @@ class DType:
             if op not in self.operators:
                 return None
 
-            if param.name == "&LITERAL&":
-                param.name = "int"
+            
 
             for overload in self.operators[op]:
                 if overload.parameters[1].t.__eq__(param):
@@ -119,7 +118,7 @@ class DType:
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
-            return (self.name == other.name or config.GlobalCompiler.Tequals(
+            return (other.name == literal and not self.isflt()) or (self.name == other.name or config.GlobalCompiler.Tequals(
                 self.name, other.name)) and self.ptrdepth == other.ptrdepth and self.signed == other.signed
         else:
             return False
@@ -213,7 +212,7 @@ def typematch(a, b, implicit):
 
         
 
-        if(a.name == __literal or b.name == __literal):
+        if(a.name == literal or b.name == literal):
             return True
 
         # anything can be cast to or from void

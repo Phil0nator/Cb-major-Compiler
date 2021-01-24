@@ -852,7 +852,7 @@ class ExpressionEvaluator:
 
                         if fntypematch(a.type, b.type):
                             instr += self.compile_aopb(a,
-                                                       op, b, evaluator, stack)
+                                                       op, b, evaluator, stack, e)
                         else:
                             throw(TypeMismatch(a.token, a.type, b.type))
 
@@ -982,7 +982,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 op[0],
                 EC.ExpressionComponent(1, LITERAL, constint=True, token=a.token),
                 self,
-                tmpstack
+                tmpstack,
+                None
             )
             instr += loadToReg(a.accessor, tmpstack[1].accessor)
             return instr, a.type.copy(), tmpstack[1]
