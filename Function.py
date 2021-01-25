@@ -1966,22 +1966,23 @@ class Function:
     # build a function call that takes a pointer to an object as the first parameter.
     # (Functions defined in a structure that need a definition of 'this')
 
-    def memberCall(self, fn, this):
+    def memberCall(self, fn, this, doublecheck=True):
         
         # verify that this memberfn exists with the correct types
-        fnname = fn.name
-        ogctidx = self.ctidx-1
-        self.advance()
-        self.advance()
-        types = self.determineFnCallParameterTypes()
-        self.ctidx = ogctidx
-        self.advance()
+        if doublecheck:
+            fnname = fn.name
+            ogctidx = self.ctidx-1
+            self.advance()
+            self.advance()
+            types = self.determineFnCallParameterTypes()
+            self.ctidx = ogctidx
+            self.advance()
 
-        parentType = this.t if isinstance(this, Variable) else this.type
+            parentType = this.t if isinstance(this, Variable) else this.type
 
-        fn = parentType.getMemberFn(fn.name, types)
-        if fn is None:
-            throw(UnkownFunction(self.current_token, f"{parentType}::{fnname}", types))
+            fn = parentType.getMemberFn(fn.name, types)
+            if fn is None:
+                throw(UnkownFunction(self.current_token, f"{parentType}::{fnname}", types))
         
         
         
@@ -2481,7 +2482,7 @@ class Function:
             
                 if exlicitConstructor:
                     self.ctidx -= 2
-                    self.memberCall(constructor, var)
+                    self.memberCall(constructor, var, False)
                     self.addline("pop rax")
                 else:
                     self.addline(f"lea rdi, [rbp-{var.offset+var.t.s}]\n")

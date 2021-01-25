@@ -1155,7 +1155,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # cast a to type e
     def typecast(self, a, e, o):
-
         instr = ""
         t = self.fn.compiler.getType(
             e.type) if isinstance(
@@ -1188,6 +1187,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
         else:
             rfree(aval)
             rfree(result)
+            o = t
             return instr, o, EC.ExpressionComponent(
                 a.accessor, t.copy(), token=a.token)
 

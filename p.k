@@ -18,10 +18,15 @@ void printvec(vector<int> v){
 function int main(){
     
 
+
+
+
     vector<int> test;
     for range(i, 100){
         test.push_back((int) i);
     }
+
+
     printvec(test);
 
     nc("127.0.0.1", 5501);

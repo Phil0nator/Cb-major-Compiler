@@ -181,6 +181,60 @@ _void__Cvector_pvector:
 	mov qword[rdi+16], rbx
 	xor rax, rax
 	ret
+_void_insert_pvectorint.size_tint:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 48
+	mov [rbp-8], rdi
+	mov [rbp-16], rsi
+	mov [rbp-24], rdx
+	push rdi
+	mov rdi, qword[rbp-8]
+	mov r10, qword[rdi+0]
+	mov rbx, qword[rdi+8]
+	sub rbx, r10
+	sar rbx, 2
+	mov rax, rbx
+.L0x19:
+	pop rdi
+	mov rbx, rax
+	mov qword[rbp-32], rbx
+	push rdi
+	mov rdi, qword[rbp-8]
+	mov rbx, qword[rbp-32]
+	inc rbx
+	mov rsi, rbx
+	call _void_reserve_pvectorint.size_t
+	pop rdi
+	mov rbx, rax
+	mov r10, qword[rbp-32]
+	mov qword[rbp-40], r10
+	jmp .L0x2b
+.L0x2a:
+	mov rbx, qword[rbp-40]
+	inc rbx
+	mov r10, qword[rdi+0]
+	lea r11, [r10+rbx*4]
+	mov r10, qword[rbp-40]
+	mov rbx, qword[rdi+0]
+	mov r12d, [rbx+r10*4]
+	mov [r11], r12d
+.L0x2c:
+	sub qword[rbp-40], 1
+.L0x2b:
+	mov r10, qword[rbp-16]
+	cmp qword[rbp-40], r10
+	jge .L0x2a
+.L0x2d:
+	add qword[rdi+8], 4
+	mov r10, qword[rbp-16]
+	mov rbx, qword[rdi+0]
+	lea r11, [rbx+r10*4]
+	mov r10d, dword[rbp-24]
+	mov [r11], r10d
+	xor rax, rax
+	leave
+	ret
 _void_assign_pvectorint.size_tsize_tint:
 	push rbp
 	mov rbp, rsp
@@ -340,7 +394,7 @@ _void__DSocket_pSocket:
 	mov r10, rcx
 	syscall
 	mov rbx, rax
-.L0x35:
+.L0x39:
 	pop rdi
 	mov rbx, rax
 	xor rax, rax
@@ -363,8 +417,8 @@ _void_printvec_pvectorint:
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov qword[rbp-48], 0
-	jmp .L0x37
-.L0x36:
+	jmp .L0x3b
+.L0x3a:
 	lea rdi, [rbp-32]
 	mov rbx, qword[rbp-48]
 	mov rsi, rbx
@@ -373,14 +427,14 @@ _void_printvec_pvectorint:
 	mov rdi, __LC.S1
 	call printf
 	mov rbx, rax
-.L0x38:
+.L0x3c:
 	add qword[rbp-48], 1
-.L0x37:
+.L0x3b:
 	mov rbx, qword[rbp-40]
 	dec rbx
 	cmp qword[rbp-48], rbx
-	jl .L0x36
-.L0x39:
+	jl .L0x3a
+.L0x3d:
 	lea rdi, [rbp-32]
 	mov rbx, qword[rbp-40]
 	dec rbx
@@ -400,20 +454,20 @@ main:
 	lea rdi, [rbp-32]
 	call _void__Cvector_pvector
 	mov qword[rbp-40], 0
-	jmp .L0x3b
-.L0x3a:
+	jmp .L0x3f
+.L0x3e:
 	lea rdi, [rbp-32]
 	mov rbx, qword[rbp-40]
 	mov r10, rbx
 	mov esi, r10d
 	call _void_push_back_pvectorint.int
 	mov rbx, rax
-.L0x3c:
+.L0x40:
 	add qword[rbp-40], 1
-.L0x3b:
+.L0x3f:
 	cmp qword[rbp-40], 100
-	jl .L0x3a
-.L0x3d:
+	jl .L0x3e
+.L0x41:
 	movq xmm0, [rbp-16]
 	xor rax, rax
 	mov rax, [rbp-8]
@@ -453,7 +507,7 @@ _void_nc_pchar.short:
 	mov dword[rbp-40], ebx
 	mov ebx, dword[rbp-40]
 	test ebx, ebx
-	jz .L0x3e
+	jz .L0x42
 	movsxd rdi, dword[rbp-40]
 	call _char._strerror_pvoid
 	mov rdi, rax
@@ -464,20 +518,20 @@ _void_nc_pchar.short:
 	mov r10, rcx
 	syscall
 	mov rbx, rax
-.L0x43:
+.L0x47:
 	mov rbx, rax
-	jmp .L0x3f
-.L0x3e:
-.L0x3f:
+	jmp .L0x43
+.L0x42:
+.L0x43:
 	mov rdi, 1024
 	call _void._mapalloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-48], rbx
 	mov qword[rbp-56], 0
-	jmp .L0x45
-.L0x44:
-	jmp .L0x48
-.L0x47:
+	jmp .L0x49
+.L0x48:
+	jmp .L0x4c
+.L0x4b:
 	lea rdi, [rbp-32]
 	mov rdx, 1024
 	mov rbx, qword[rbp-48]
@@ -485,22 +539,22 @@ _void_nc_pchar.short:
 	call _ssize_t_recv_pSocketchar.size_t
 	mov rbx, rax
 	mov qword[rbp-56], rbx
-.L0x48:
+.L0x4c:
 	mov rbx, qword[rbp-56]
 	test rbx, rbx
-	jz .L0x47
-.L0x49:
+	jz .L0x4b
+.L0x4d:
 	xor r10, r10
 	cmp qword[rbp-56], r10
-	jge .L0x4a
+	jge .L0x4e
 	mov rdi, __LC.S4
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov rax, -1
 	jmp ___void_nc_pchar.short__return
-	jmp .L0x4b
-.L0x4a:
-.L0x4b:
+	jmp .L0x4f
+.L0x4e:
+.L0x4f:
 	mov rbx, qword[rbp-48]
 	mov rdi, rbx
 	call _size_t_puts_pchar.
@@ -511,9 +565,9 @@ _void_nc_pchar.short:
 	call _void_memzer_pvoid.size_t
 	mov rbx, rax
 	mov qword[rbp-56], 0
-.L0x45:
-	jmp .L0x44
-.L0x46:
+.L0x49:
+	jmp .L0x48
+.L0x4a:
 	mov rdi, qword[rbp-48]
 	call _void_mapfree_pvoid.
 	mov rbx, rax
@@ -535,8 +589,8 @@ _float_benchmark_p:
 	call _void_memzer_pvoid.size_t
 	mov rbx, rax
 	mov qword[rbp-1015], 0
-	jmp .L0x4d
-.L0x4c:
+	jmp .L0x51
+.L0x50:
 	mov r8, 1056964608
 	mov rcx, __LC.S6
 	mov rdx, 123
@@ -545,12 +599,12 @@ _float_benchmark_p:
 	mov rdi, rbx
 	call sprintf
 	mov rbx, rax
-.L0x4e:
+.L0x52:
 	add qword[rbp-1015], 1
-.L0x4d:
+.L0x51:
 	cmp qword[rbp-1015], 250
-	jl .L0x4c
-.L0x4f:
+	jl .L0x50
+.L0x53:
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	call _size_t_puts_pchar.
