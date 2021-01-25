@@ -8,7 +8,6 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons, floatTo64h, floatTo32h)
 from Assembly.Registers import *
-from Assembly.Registers import ralloc, ralloc_last, rfree, rfreeAll
 from Assembly.TypeSizes import dwordImmediate, psizeof, psizeoft
 from Classes.Constexpr import calculateConstant, ternarystack
 from Classes.DType import *

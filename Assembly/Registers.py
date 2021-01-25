@@ -286,9 +286,11 @@ norm_scratch_registers_inuse = [
 ]
 
 
-# register allocation and deallocation system:
 
-def ralloc(flt, size=8):
+
+
+# register allocation and deallocation system:
+def ralloc(flt, size=8, allow_volatile=True):
 
     # Register leak debugging:
     #config.LAST_RALLOC = traceback.format_stack()
@@ -302,6 +304,7 @@ def ralloc(flt, size=8):
 
     else:
         for i in range(len(norm_scratch_registers_inuse)):
+
             if(not norm_scratch_registers_inuse[i]):
                 out = norm_scratch_registers[i]
                 norm_scratch_registers_inuse[i] = True
@@ -317,6 +320,11 @@ def reralloc(r):
         sse_scratch_registers_inuse[sse_scratch_registers.index(r)] = True
     else:
         norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = True
+
+def ravailable(r):
+    if "xmm" in r:
+        return sse_scratch_registers_inuse[sse_scratch_registers.index(r)]
+    return norm_scratch_registers_inuse[norm_scratch_registers.index(setSize(r, 8))]
 
 
 def ralloc_last(flt=False):

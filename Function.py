@@ -1525,7 +1525,7 @@ class Function:
             var = Variable(value.type, name)
             var.dtok = nametok
             if register:
-                var.register = ralloc(value.type.isflt())
+                var.register = ralloc(value.type.isflt(), allow_volatile=False)
 
             self.addVariable(var, False)
             self.addline(
@@ -1561,17 +1561,26 @@ class Function:
             throw(UnkownIdentifier(self.tokens[self.ctidx - 1]))
         if(v.glob):
             throw(GlobalDeletion(self.tokens[self.ctidx - 2]))
-        if(v.register is None):
+        if(v.register is None and v.t.isintrinsic()):
             throw(NonRegisterDeletion(self.tokens[self.ctidx - 2]))
 
         self.variables.remove(v)
         del self.variable_reference[v.name]
-        rfree(v.register)
 
-        if("xmm" in v.register):
-            self.regdeclremain_sse -= 1
+        if v.register is not None: 
+            rfree(v.register)
+
+            if("xmm" in v.register):
+                self.regdeclremain_sse -= 1
+            else:
+                self.regdeclremain_norm -= 1
+        
         else:
-            self.regdeclremain_norm -= 1
+            pass
+            #self.addline(self.createDestructor(v))
+        
+        
+        
         self.advance()
 
     def buildGoto(self):
@@ -1632,10 +1641,19 @@ class Function:
     # load the parameters to call a function
     def rawFNParameterLoad(self, fn, sseused, normused,
                            pcount, offset=False, types=None):
+        
+        global functioncalls_inprogress
+        
         paraminst = ""
         # when parameters are being loaded it signifies that a function has been called,
         # so the counter needs to be incremented
         self.fncalls += 1
+
+
+        # inform the register allocator that rdx and rcx are off limits now that they are being
+        # used for parameters (if they are needed)
+        rdxneeded = len(fn.parameters) - sum((p.t.isflt() for p in fn.parameters)) > 2
+        config.functioncalls_inprogress += rdxneeded
 
         if fn.variardic:
             parameters = fn.parameters + \
@@ -1751,7 +1769,9 @@ class Function:
 
         if fn.variardic:
             paraminst += f"mov al, {sseused}\n"
-
+        
+        # inform the register allocator that rdx, and rcx are back on the market
+        config.functioncalls_inprogress -= rdxneeded
         return paraminst
 
     def doVarcall(self, var):
@@ -1784,7 +1804,7 @@ class Function:
 
         # save return value for register restores
         if(contains_sseregs):
-            tmp = ralloc(False)
+            tmp = ralloc(False, allow_volatile=False)
             instructions += raw_regmov(
                 tmp, sse_return_register if fn.returntype.isflt() else norm_return_register)
 
@@ -2365,7 +2385,7 @@ class Function:
 
         # set the variable's register if one is given
         vprot.register = ralloc(
-            t.isflt()) if register != False else None
+            t.isflt(), allow_volatile=False) if register != False else None
 
         # add variable correctly to get extra properties added to it
         self.addVariable(vprot, False)

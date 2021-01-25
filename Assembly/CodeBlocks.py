@@ -462,6 +462,15 @@ def getFromRax(areg):
 def getFromRdx(areg):
     return Instruction("mov", [areg, setSize(rdx, sizeOf(areg))])
 
+def saveRdx():
+    if config.functioncalls_inprogress:
+        return "push rdx\n"
+    return ""
+
+def restoreRdx():
+    if config.functioncalls_inprogress:
+        return "pop rdx\n"
+    return ""
 # perform integer arithmatic op on areg by breg
 # (op areg, breg)
 
@@ -476,14 +485,18 @@ def doIntOperation(areg, breg, op, signed, size=8):
 
         return f"imul {areg}, {breg}\n" if size != 1 else f"imul {setSize(areg, 2)}, {setSize(breg,2)}\n"
     elif(op == "*"):
-        return f"{loadToRax(areg)}\nmul {breg}\n{getFromRax(areg)}\n"
+    
+    
+        return f"{loadToRax(areg)}{saveRdx()}\nmul {breg}\n{restoreRdx()}{getFromRax(areg)}\n"
+    
+    
     elif(op == "/"):
 
         if(signed):
             asmop = "idiv"
         else:
             asmop = "div"
-        return f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRax(areg)}\n"
+        return f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{restoreRdx()}{getFromRax(areg)}\n"
 
     elif(op == "%"):
         if(signed):
@@ -491,7 +504,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
         else:
             asmop = "div"
 
-        out = f"xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRdx(areg)}\n"
+        out = f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRdx(areg)}\n{restoreRdx()}"
         return out
     elif(op in [">>", "<<"]):
         return shiftInt(areg, breg, op, signed)
@@ -852,16 +865,16 @@ def lea_mul_opt(shiftval, areg, a, b):
 def magic_division(a, areg, d, internal=False):
     instr = ""
     
-    ax = setSize("rax", a.type.csize())
-    magic_number = (int(1/d*2**(a.type.csize()*8)))
-    dx = setSize("rdx", a.type.csize())
-    # alden solution
-    return f"""
- mov {ax}, {areg}
- mov rdx, {magic_number}
- imul {dx}
- {f"mov {areg}, {dx}"if not internal else ""}
- """
+#     ax = setSize("rax", a.type.csize())
+#     magic_number = (int(1/d*2**(a.type.csize()*8)))
+#     dx = setSize("rdx", a.type.csize())
+#     # alden solution
+#     return f"""
+#  mov {ax}, {areg}
+#  mov rdx, {magic_number}
+#  imul {dx}
+#  {f"mov {areg}, {dx}"if not internal else ""}
+#  """
     
     
     

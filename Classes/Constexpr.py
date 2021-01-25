@@ -11,7 +11,7 @@ from globals import LONG, operatorISO, DOUBLE, LITERAL
 import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
-from Assembly.Registers import rfree
+from Assembly.Registers import *
 
 
 ternarystack = []  # ternary operator -- extra storage

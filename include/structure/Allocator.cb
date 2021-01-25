@@ -1,0 +1,21 @@
+#ifndef __ALLOCATOR
+#define __ALLOCATOR
+
+template<typename T>
+struct allocator{
+
+    inline T* allocate(size_t n){
+        return mapalloc(n*sizeof(T));
+    }
+
+    inline void deallocate(T* block){
+        return mapfree(block);
+    }
+    
+
+};
+
+
+
+
+#endif

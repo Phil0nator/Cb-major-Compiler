@@ -1,4 +1,4 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
@@ -17,14 +17,16 @@ void printvec(vector<int> v){
 
 function int main(){
     
-    /*
+
     vector<int> test;
     for range(i, 100){
         test.push_back(i);
     }
-    
+    test.assign(10, 20, 69);
     printvec(test);
-    */
+
+    
+    /*
     srand();
     long tmp = TESTCONST;
     for range(i, 1000000){
@@ -34,10 +36,8 @@ function int main(){
             exit(1);
         }
     }
-
-
     puts("All good.");
-    
+    */
     return 0;
 }
 

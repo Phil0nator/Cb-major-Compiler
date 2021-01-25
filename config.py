@@ -207,3 +207,9 @@ for feature in __features__:
     if(feature == "stack-protection"):
         __linkables__.append(f"{includepath}features/stackprotection.o")
         __CEXTERNS__ += "extern __stack_chk_fail\n"
+
+
+
+
+# registers
+functioncalls_inprogress = 0

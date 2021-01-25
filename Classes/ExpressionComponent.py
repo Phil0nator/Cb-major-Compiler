@@ -1,5 +1,5 @@
 import config
-from Assembly.Registers import REGISTERS
+from Assembly.Registers import *
 from globals import *
 ############################
 #   The ExpressionComponent class is used to represent parts of a leftside expression.
