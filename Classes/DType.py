@@ -108,9 +108,18 @@ class DType:
         types = types[1:]
         for constructor in self.constructors:
             if len(types) == len(constructor.parameters)-1 and \
-                 all((typematch(types[i], constructor.parameters[i].t, False) for i in range(len(constructor.parameters[1:])))):
+                 all((typematch(constructor.parameters[i+1].t,types[i], False) for i in range(len(constructor.parameters[1:])))):
                 return constructor
         return None
+
+    def getMemberFn(self, name, types):
+        for member in self.members:
+            if member.t.function_template is not None and member.name == name:
+                fn = member.initializer
+                if len(types) == len(fn.parameters)-1 and \
+                    all((typematch(fn.parameters[i+1].t,types[i], False) for i in range(len(fn.parameters[1:])))):
+                    return fn
+
 
     def isintrinsic(self):
         return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
@@ -253,7 +262,7 @@ def typematch(a, b, implicit):
 
 
         # if the type precedence checks out, they are compatible, else not
-        if(a.isintrinsic() and b.isintrinsic() and implicit):
+        if(a.isintrinsic() and b.isintrinsic()):
             if(type_precedence[a.name] >= type_precedence[b.name]):
                 return True
             return False

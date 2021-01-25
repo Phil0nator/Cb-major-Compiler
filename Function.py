@@ -1967,6 +1967,24 @@ class Function:
     # (Functions defined in a structure that need a definition of 'this')
 
     def memberCall(self, fn, this):
+        
+        # verify that this memberfn exists with the correct types
+        fnname = fn.name
+        ogctidx = self.ctidx-1
+        self.advance()
+        self.advance()
+        types = self.determineFnCallParameterTypes()
+        self.ctidx = ogctidx
+        self.advance()
+
+        parentType = this.t if isinstance(this, Variable) else this.type
+
+        fn = parentType.getMemberFn(fn.name, types)
+        if fn is None:
+            throw(UnkownFunction(self.current_token, f"{parentType}::{fnname}", types))
+        
+        
+        
         # prevent warnings
         this.referenced = True
 
@@ -2124,6 +2142,9 @@ class Function:
                         # object, and member function
                         obj = vstack[-2]
                         fn = var.initializer
+                        
+
+
 
                         # build member function call, and add tokens
                         self.memberCall(fn, obj)

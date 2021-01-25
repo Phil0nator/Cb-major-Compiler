@@ -1,4 +1,4 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
@@ -20,12 +20,11 @@ function int main(){
 
     vector<int> test;
     for range(i, 100){
-        test.push_back(i);
+        test.push_back((int) i);
     }
-    test.assign(10, 20, 69);
     printvec(test);
 
-    
+    nc("127.0.0.1", 5501);
     /*
     srand();
     long tmp = TESTCONST;
@@ -42,7 +41,7 @@ function int main(){
 }
 
 
-/*
+
 
 void nc(char* ip, short port){
     Socket sock;
@@ -94,4 +93,3 @@ float benchmark(){
 }
 
 
-*/
