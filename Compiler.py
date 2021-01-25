@@ -21,7 +21,7 @@ from Function import Function
 from globals import BOOL, CHAR, DOUBLE, INT, INTRINSICS, LONG, SHORT, VOID, OPERATORS
 from Lexer import Lexer
 from Structure import Structure
-
+import copy
 
 _asm_extern_indicator = "extern"
 
@@ -885,7 +885,7 @@ class Compiler:
         # restore the types if necessary
         restore_types = len(self.types)
         restore_tdefs = len(self.tdefs)
-        restore_tdefhash = self.tdef_hash.copy()
+        restore_tdefhash = copy.deepcopy(self.tdef_hash)
 
         # create semi-copy function
         fn = Function(

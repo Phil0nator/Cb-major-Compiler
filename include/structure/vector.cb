@@ -130,6 +130,7 @@ struct vector{
             maprealloc(begin, (2*size));
             stop += (T*) size;
         }
+
         @end = item;
         end+=sizeof(T);
     }

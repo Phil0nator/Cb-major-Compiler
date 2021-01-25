@@ -166,6 +166,18 @@ class Lexer:
                         begin,
                         self.loc)))
         self.advance()
+        if self.ch != "'":
+            raise(
+                TokenMismatch(
+                    Token(
+                        T.T_CHAR,
+                        v,
+                        begin,
+                        self.loc
+                    )
+                )
+            )
+
         self.advance()
         return Token(T.T_CHAR, v, begin, self.loc.copy())
 
@@ -286,6 +298,7 @@ class Lexer:
                 # not a comment
                 else:
                     self.chidx -= 2
+                    self.loc.ch -= 2
                     advance()
                     tokens.append(self.buildMultichar())
 

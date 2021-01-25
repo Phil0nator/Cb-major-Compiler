@@ -866,7 +866,7 @@ class ExpressionEvaluator:
                             throw(TypeMismatch(a.token, a.type, b.type))
 
                     # check for non-primitive types for operator overloading:
-                    elif not a.type.isintrinsic() and op not in ["=", "->", "."]:
+                    elif not a.type.isintrinsic() and op not in ["->", "."]:
                         # check for operator accepting b's type
                         instr += self.compile_AoverloadB(a,
                                                         op, b, evaluator, stack)

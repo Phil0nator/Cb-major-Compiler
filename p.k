@@ -20,11 +20,17 @@ void printvec(vector<int> v){
 function int main(){
     
 
+    int a = 5;
+    int *b = &a;
+
+
     vector<int> test;
     for range(i, 100){
         test.push_back((int) i);
     }
 
+    vector< vector<int > > big(1);
+    big.push_back(test);
 
     printvec(test);
 
