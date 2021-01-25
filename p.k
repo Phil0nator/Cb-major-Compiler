@@ -1,4 +1,4 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
@@ -6,7 +6,7 @@ void printvec(vector<int> v){
     size_t size = v.size();
     puts("[");
     for(size_t i = 0; i < size-1; i++){
-        printf("%i, ", v.at(i));
+        printf("%i, ", v[i]);
     }
     printf("%i]\n", v.at(size-1));
 
@@ -15,11 +15,10 @@ void printvec(vector<int> v){
 #define TESTCONST (-7)
 
 
+
+
 function int main(){
     
-
-
-
 
     vector<int> test;
     for range(i, 100){

@@ -358,9 +358,10 @@ void mapfree(void* ptr){
     ptr-=sizeof(long);
     size_t size = @ptr;
     munmap(ptr, size);
-
 }
 
 void maprealloc(void* ptr, size_t newsize){
-    mmap(ptr, newsize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0); 
+    ptr-=sizeof(long);
+    mmap(ptr, newsize+sizeof(long), PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0); 
+    @ptr = newsize+sizeof(long);
 }

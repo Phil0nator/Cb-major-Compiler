@@ -815,7 +815,7 @@ class Compiler:
         # so that it can be used to instantiate multiple different template
         # structure types
         struct = tstruct[0].copy()
-
+        
         # deep copy
         for i in range(len(tstruct[0].members)):
             struct.members[i] = tstruct[0].members[i].copy()
@@ -830,11 +830,11 @@ class Compiler:
         for i in range(len(tns)):
             assosiation[tns[i]] = types[i].copy()
 
+
         # all the members of the new templated type need to be given their new
         # types, and offsets
         struct.s = 0
         struct.name += ''.join([t.name for t in types])
-        
         for member in struct.members:
 
             # if template has effect:
@@ -854,25 +854,27 @@ class Compiler:
 
         for member in struct.members:
             if(isinstance(member.initializer, Function)):
+                member.initializer = member.initializer.deepCopy()
                 member.initializer.parameters[0].t = struct.up()
                 member.initializer = self.buildTemplateFunction(
                     member.initializer, tns, types)
 
 
+
         for i in range(len(struct.constructors)):
             struct.constructors[i] = self.buildTemplateFunction(
-                struct.constructors[i], tns, types)
+                struct.constructors[i].deepCopy(), tns, types)
 
         if struct.destructor is not None:
             struct.destructor = self.buildTemplateFunction(
-                struct.destructor, tns, types)
+                struct.destructor.deepCopy(), tns, types)
 
 
         for op in struct.operators:
             for i in range(len(struct.operators[op])):
                 struct.operators[op][i].parameters[0].t = struct.up()
                 struct.operators[op][i] = self.buildTemplateFunction(
-                    struct.operators[op][i], tns, types
+                    struct.operators[op][i].deepCopy(), tns, types
                 )
 
         self.template_cache.append([template, types, struct])

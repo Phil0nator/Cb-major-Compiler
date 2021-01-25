@@ -26,6 +26,12 @@ struct vector{
         stop = begin+(10*sizeof(T));
     }
 
+    vector(size_t initialSize){
+        begin = mapalloc(initialSize*sizeof(T));
+        end = begin;
+        stop = begin+((T*) initialSize*sizeof(T));
+    }
+
     
 
     /**

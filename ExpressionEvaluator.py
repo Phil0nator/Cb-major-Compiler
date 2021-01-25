@@ -4,7 +4,7 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize,
-                                 lea_struct, fncall, cast_regUp, createFloatConstant)
+                                 lea_struct, fncall, cast_regUp, createFloatConstant, registerizeValueType)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons, floatTo64h, floatTo32h)
 from Assembly.Registers import *
@@ -110,8 +110,18 @@ def bringdown_memloc(a: EC.ExpressionComponent) -> str:
             rfree(a.accessor)
             a.accessor = out
         else:
-            instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
-            a.accessor = setSize(a.accessor, a.type.csize())
+            
+            if a.type.isintrinsic() or a.type.function_template is not None:
+                instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
+                a.accessor = setSize(a.accessor, a.type.csize())
+            else:
+                tempvar= Variable(a.type,'__tmp__',bpr=setSize(a.accessor,8))
+                reginstr, _, __, ___ = registerizeValueType(a.type, tempvar, -1, 0)
+                instr += reginstr
+                a.accessor = "rax" if a.type.s <= 8 else "xmm0"
+        
+        
+        
         # once a memloc has been lowered, it is no longer representable, for compiler purposes, as a
         # memory location.
         # It can still be dereferenced again by the user, but the compiler will not see it strictly as

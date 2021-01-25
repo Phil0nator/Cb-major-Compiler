@@ -7,7 +7,7 @@
 
 #include "util/stddef.k"
 
-#include "Allocator.cb"
+#include "unique_ptr.cb"
 #include "Stack.cb"
 #include "list.cb"
 #include "Vec3f.cb"

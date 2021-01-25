@@ -651,14 +651,14 @@ class Function:
 
         # build a string constant based on the id
         constant = createStringConstant(typeq.__repr__())
-        self.compiler.constants += constant[0]
+        #self.compiler.constants += constant[0]
         self.compiler.globals.append(
             Variable(
                 CHAR.up(),
                 constant[1],
                 glob=True,
                 isptr=True,
-                initializer=typeq.__repr__()))
+                initializer=f"`{typeq.__repr__()}`"))
         # return the string as a token
         return Token(T_ID, constant[1], starttok.start, starttok.end)
 
@@ -787,7 +787,6 @@ class Function:
         # and the members of the parent structure need to be added as variables to this function
         # with a base pointer of rdi+ instead of rbp- for access.
         if self.memberfn:
-            
             # load members:
             for member in (self.parentstruct.members):
                 # not member functions
@@ -814,7 +813,6 @@ class Function:
                 EC.ExpressionComponent('rdi', self.parentstruct)
             )
             self.regdecls[-1].supposed_value = "this"
-
         extra_params = []
 
         # This function's parameters now need to be loaded as variables.
@@ -822,7 +820,6 @@ class Function:
         # function, and how much of an improvement that would give. (@see
         # Intraprocedural.py)
         for p in self.parameters:
-
             # if the next parameter is an extra parameter (more than 6)
             # if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
             #    break
@@ -830,7 +827,8 @@ class Function:
             # if the compiler has already identified this parameter as dead,
             # add to the register counters and continue to next parameter.
             if self.compileCount and p.referenced == False:
-                if p.t.isflt() or p.t.csize() > 8:
+                if p.t.isflt() or (p.t.csize() > 8 and not p.name == "this"):
+                    
                     counts += 1
                 else:
                     countn += 1
@@ -921,7 +919,7 @@ class Function:
 
         # for functions that contain a return statement, extra info is needed
         # at the end of the function.
-        if self.containsReturn:
+        if True:
             self.addline(function_closer(
                 self.getCallingLabel(), self.destructor_text, self))
         else:
@@ -974,8 +972,11 @@ class Function:
                     oreg, self.returntype.copy()), val)
             # data structure returntypes
             else:
-                ninstr, ___, _, __ = registerizeValueType(self.returntype, val.accessor, -1, 0)
-            
+                if isinstance(val.accessor, Variable):
+                    ninstr, ___, _, __ = registerizeValueType(self.returntype, val.accessor, -1, 0)
+                else:
+                    ninstr = loadToReg('rax', val.accessor)
+
             # final
             instr += ninstr
             rfree(val.accessor)
@@ -1822,6 +1823,7 @@ class Function:
     def determineFnCallParameterTypes(self):
         types = []
         start = self.ctidx
+
         # build parameters, without storing instructions in order to determine
         # the datatypes, and place them in types[]
         while self.current_token.tok != ")" and self.current_token.tok != T_ENDL:
@@ -2002,13 +2004,13 @@ class Function:
         pcount = len(fn.parameters)
         self.advance()
         self.advance()
-        paraminst += self.rawFNParameterLoad(
+        paraminst = self.rawFNParameterLoad(
             fn,
             sseused,
             normused,
             pcount,
             True,
-            False)
+            False) + paraminst
 
         # save regdecls
         self.addline(self.pushregs())
@@ -2472,6 +2474,7 @@ class Function:
             # check for explicit constructor
             if (self.current_token.tok == T_OPENP):
                 exlicitConstructor = True
+                self.advance()
                 types = [var.t.up()] + self.determineFnCallParameterTypes()
             # implicit constructor
             else:
@@ -2484,6 +2487,7 @@ class Function:
                     self.ctidx -= 2
                     self.memberCall(constructor, var, False)
                     self.addline("pop rax")
+                    self.advance()
                 else:
                     self.addline(f"lea rdi, [rbp-{var.offset+var.t.s}]\n")
                     self.addline(fncall(constructor))
@@ -2492,7 +2496,6 @@ class Function:
                 pass
             else:
                 throw(UnkownConstructor(self.tokens[self.ctidx - 1]))
-
 
 
         autoArrsize = False
@@ -3032,6 +3035,16 @@ class Function:
         return Function(self.name, self.parameters, self.returntype,
                         self.compiler, self.tokens, extern=self.extern, inline=self.inline, compileCount=self.compileCount, memberfn=self.memberfn, parentstruct=self.parentstruct,
                         lambdas=self.lambdas)
+
+    def deepCopy(self):
+        shallow = self.reset()
+        shallow.parameters = shallow.parameters.copy()
+        shallow.compileCount=0
+        shallow.isCompiled=False
+        shallow.GC()
+        for i in range(len(shallow.parameters)):
+            shallow.parameters[i] = shallow.parameters[i].copy()
+        return shallow
 
     def GC(self):
         self.asm = ""
