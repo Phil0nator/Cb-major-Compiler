@@ -19,8 +19,10 @@ from globals import VOID, OPERATORS
 
 
 class Structure:
-    def __init__(self, compiler):
+    def __init__(self, compiler, templated, tns):
         self.compiler = compiler
+        self.templated = templated
+        self.tns = tns
         self.current_token = self.compiler.current_token
         self.size = 0
         self.prototypeType = DType("", 0, [], 0, True, constructors=[])
@@ -249,7 +251,10 @@ class Structure:
         # build prototype DType as placeholder
         self.prototypeType = DType(id, 0, [], 0, True, constructors=[])
 
-        self.compiler.types.append(self.prototypeType)
+        if self.templated:
+            self.compiler.template_types.append([self.prototypeType, self.tns])
+        else:
+            self.compiler.types.append(self.prototypeType)
 
         # empty function used in the constexpr postfixer
 

@@ -4,7 +4,8 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize,
-                                 lea_struct, fncall, cast_regUp, createFloatConstant, registerizeValueType)
+                                 lea_struct, fncall, cast_regUp, createFloatConstant, 
+                                 registerizeValueType, deregisterizeValueType)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons, floatTo64h, floatTo32h)
 from Assembly.Registers import *
@@ -775,12 +776,36 @@ class ExpressionEvaluator:
                 o = newt.copy()
         return instr
 
+    def buildDefaultOperatorEquals(self, a, b, evaluator, stack):
+        instr = ""
+        if isinstance(b.accessor, Variable):
+            ninstr, _, __, ___ = registerizeValueType(b.type, b.accessor, -1, 0)
+        else:
+            ninstr, _, __, ___ = registerizeValueType(b.type, Variable(
+                b.type, "__tmp__",bpr=b.accessor+'+'
+            ), -1, 0)
+        instr += ninstr
+        
+        if isinstance(a.accessor, Variable):
+            ninstr, _, __ = deregisterizeValueType(a.type, a.accessor, -1, 0)
+        else:
+            ninstr, _, __ = deregisterizeValueType(a.type, Variable(
+                a.type, "__tmp__",bpr=a.accessor+'+'
+            ), -1, 0)
+        instr += ninstr
+        rfree(a.accessor)
+        stack.append(b)
+
+        return instr
+
+
     # compile the overloaded operator of type a.type, with input b
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
 
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
-
+            if op == "=" and self.fn.compiler.Tequals(a.type.name, b.type.name):
+                return self.buildDefaultOperatorEquals(a,b,evaluator,stack)
             throw(NoOverloadOp(a.token, a.type, b.type, op))
 
         instr = ""
@@ -1056,6 +1081,11 @@ class LeftSideEvaluator(ExpressionEvaluator):
             member = member.name
         pdepth = a.type.ptrdepth
         a.type = self.fn.compiler.getType(a.type.name)
+        if a.type is None:
+            # this should not happen
+            print(f"This error is a sign of a compiler bug:{a.accessor}")
+            throw(UnkownType(a.token))
+
         a.type.ptrdepth = pdepth
 
         if a.type.ptrdepth != 0 and optok.value == ".":

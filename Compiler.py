@@ -194,12 +194,19 @@ class Compiler:
         out.ptrdepth = pd
         return out
 
+    def deriveBaseType(self, t: DType) -> DType:
+        for base in self.tdef_hash:
+            if t.name not in self.tdef_hash and t.name in self.tdef_hash[base]:
+                return self.getType(base)
+        return t
+
     def parseTemplate(self) -> list:
         types = []
         # loop through layer of decorator (' <int, double ... > '  )
         while self.current_token.tok != ">":
             self.advance()
             t: DType = self.checkType()
+            t = self.deriveBaseType(t)
             types.append(t)
         return types
 
@@ -679,10 +686,10 @@ class Compiler:
 
     # isolate and build a structure
 
-    def buildStruct(self, thisp=False, thispt=None) -> None:
+    def buildStruct(self, thisp=False, thispt=None, templated=False, tns=None) -> None:
         # \see Structure
         # structure wrapper
-        parser = Structure(self)
+        parser = Structure(self, templated, tns)
 
         try:
             parser.construct()
@@ -766,11 +773,11 @@ class Compiler:
         # structs are a simpler process that can be streamlined:
         if(self.current_token.value == "struct"):
             restorefn = len(self.functions)
-            self.buildStruct()
+            self.buildStruct(templated=True, tns=tns)
             self.functions = self.functions[:restorefn]
-            newt = self.types.pop()
+            #newt = self.types.pop()
             # templated types have their own special list
-            self.template_types.append([newt, tns])
+            #self.template_types[-1].append(tns)
 
         # functions:
         else:
@@ -862,19 +869,22 @@ class Compiler:
 
 
         for i in range(len(struct.constructors)):
+            struct.constructors[i] = struct.constructors[i].deepCopy()
             struct.constructors[i] = self.buildTemplateFunction(
                 struct.constructors[i].deepCopy(), tns, types)
 
         if struct.destructor is not None:
+            struct.destructor = struct.destructor.deepCopy()
             struct.destructor = self.buildTemplateFunction(
-                struct.destructor.deepCopy(), tns, types)
+                struct.destructor, tns, types)
 
 
         for op in struct.operators:
             for i in range(len(struct.operators[op])):
+                struct.operators[op][i] = struct.operators[op][i].deepCopy()
                 struct.operators[op][i].parameters[0].t = struct.up()
                 struct.operators[op][i] = self.buildTemplateFunction(
-                    struct.operators[op][i].deepCopy(), tns, types
+                    struct.operators[op][i], tns, types
                 )
 
         self.template_cache.append([template, types, struct])
