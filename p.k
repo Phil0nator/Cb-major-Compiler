@@ -1,4 +1,4 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
@@ -12,18 +12,27 @@ void printvec(vector<int> v){
 
 }
 
-#define TESTCONST (-7)
+#define TESTCONST (3)
 
-
+function void check(long num){
+    long test = TESTCONST;
+    if(num/TESTCONST != num/test){
+        printf("Failed: %i/%i != %i, but %i", num, TESTCONST, num/TESTCONST, num/test);
+        exit(1);
+    }
+}
 
 function int main(){
     
-
+    for(long _ = 15; _ < LONG_MAX;_++){
+        check(_);
+    }
 
     vector<int> test;
     for range(i, 100){
         test.push_back((int) i);
     }
+
 
     
     printvec(test);

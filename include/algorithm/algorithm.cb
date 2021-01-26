@@ -87,7 +87,15 @@ function bool none_of(T* begin, T* end, function bool(T) cmpfn){
     return true;
 }
 
-
+template<typename T>
+function bool any_of(T* begin, T* end, function bool(T) cmpfn){
+    for(begin; begin < end; begin+=sizeof(T)){
+        if( cmpfn(@begin) == true){
+            return true;
+        }
+    }
+    return false;
+}
 
 
 

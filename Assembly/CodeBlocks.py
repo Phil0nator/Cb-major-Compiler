@@ -865,20 +865,33 @@ def lea_mul_opt(shiftval, areg, a, b):
 def magic_division(a, areg, d, internal=False):
     instr = ""
     
-#     ax = setSize("rax", a.type.csize())
-#     magic_number = (int(1/d*2**(a.type.csize()*8)))
-#     dx = setSize("rdx", a.type.csize())
-#     # alden solution
-#     return f"""
-#  mov {ax}, {areg}
-#  mov rdx, {magic_number}
-#  imul {dx}
-#  {f"mov {areg}, {dx}"if not internal else ""}
-#  """
+    ax = setSize("rax", a.type.csize())
+    magic_number = (int((1/d)*2**(a.type.csize()*8+1)))
+    #magic_number = (-2**65)-1
+    qword_magic = magic_number&((2**64)-1)
+    
+    #extra_flag = abs(magic_number)>((2**65)-1)
+    extra_flag = magic_number>>64
+    print(f"{bin(magic_number)}", extra_flag, d, magic_number, qword_magic)
+    print(f"{bin(qword_magic)}")
+    dx = setSize("rdx", a.type.csize())
     
     
+    # alden solution
+    out = f"""
+ {saveRdx()}
+ mov {ax}, {areg}
+ mov rdx, {(qword_magic)}
+ imul {dx}
+ sar {dx}, 1
+ {f"inc {dx}" if extra_flag else ""}
+ {f"mov {areg}, {dx}"if not internal else ""}
+ {restoreRdx()}
+ """
     
+    print(out)
     
+    #return out
     
     
     
