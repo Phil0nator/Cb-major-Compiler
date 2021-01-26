@@ -28,8 +28,8 @@
 
 #include "util/memory.cb"
 
-/* iterable pointer datatype */
-typedef void* iterable;
+
+
 
 
 #include "api.cb"
@@ -39,13 +39,6 @@ typedef void* iterable;
 
 
 
-/**
- * Do function fn for each item in ptr array of length.
- * @returns Does not return
- */
-#define for_each(array, length, fn) for(size_t __foreachiterator__ = 0; __foreachiterator__ < length; __foreachiterator__++) {\
-                                        fn((array)[__foreachiterator__]);\
-                                    }(0)
 /**
  * The value of x implies y
  */
@@ -61,51 +54,49 @@ typedef void* iterable;
 #define new(type) mapalloc(sizeof(type))
 
 
+#define begin(x) (&x)
 
-CBLIBENTRY bool all_of_raw(iterable array, size_t itemsize,size_t itemcount, void* cmpfn);
-
-
-/**
- * Use cmpfn to compare all elements of an array.
- * @param array the array to use
- * @param items number of items
- * @param cmpfn comparison function (return boolean)
- * @returns true if cmpfn returns true for all elements, else none
- */
-#define all_of(array,items,cmpfn) all_of_raw(array, typeof(@(array)) ,(items), cmpfn)
+#define end(x)   ((&x)+sizeof(x))
 
 
-CBLIBENTRY bool any_of_raw(iterable array, size_t itemsize, size_t items, void* cmpfn);
+template<typename T>
+function void for_each(T* begin, T* end, function any(T) cmpfn){
+    for(begin; begin < end; begin+=sizeof(T)){
+        cmpfn(@begin);
+    }
+}
+
+template<typename T>
+function bool all_of(T* begin, T* end, function bool(T) cmpfn){
+    for(begin; begin < end; begin+=sizeof(T)){
+        if( cmpfn(@begin) == false){
+            return false;
+        }
+    }
+    return true;
+}
 
 
-/**
- * Use cmpfn to compare all elements of an array.
- * @param array the array to use
- * @param items number of items
- * @param cmpfn comparison function (return boolean)
- * @returns true if cmpfn returns true for any elements, else none
- */
-#define any_of(array, items, cmpfn) any_of_raw(array, typeof(@(array)), items, cmpfn)
+template<typename T>
+function bool none_of(T* begin, T* end, function bool(T) cmpfn){
+    for(begin; begin < end; begin+=sizeof(T)){
+        if( cmpfn(@begin) == true){
+            return false;
+        }
+    }
+    return true;
+}
 
-CBLIBENTRY bool none_of_raw(iterable array, size_t itemsize, size_t items, void* cmpfn);
 
 
-/**
- * Use cmpfn to compare all elements of an array.
- * @param array the array to use
- * @param items number of items
- * @param cmpfn comparison function (return boolean)
- * @returns true if cmpfn returns true for no elements, else none
- */
-#define none_of(array, items, cmpfn) none_of_raw(array, typeof(@(array)), items, cmpfn)
+
 
 /**
  * Loop header for a for loop that traverses an array.
  * @param varname name of iterator
- * @param array the array
  * @param items the number of items
  */
-#define each(varname, array, items) (size_t varname = 0; varname < (items); varname++)
+#define each(varname, items) (size_t varname = 0; varname < (items); varname++)
 
 /**
  * Loop header for a for loop that traverses an array with an iterator.
@@ -155,7 +146,7 @@ CBLIBENTRY bool none_of_raw(iterable array, size_t itemsize, size_t items, void*
  * @param max max value of x possible (inclusive)
  * @returns None. (the value of x will be changed)
  */
-#define clamp(x, min, max) (x < min) ? min : ((x>max)?max:x)
+#define clamp(x, min, max) ((x < min) ? min : ((x>max)?max:x))
 
 
 

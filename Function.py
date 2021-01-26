@@ -615,11 +615,26 @@ class Function:
         if (typeq is None):
             self.ctidx = startidx - 1
             self.advance()
-            # determine type of the argument
-            dtype = self.determineExpressionType(False)
+            self.advance()
+            
+            # check for a simple variable
+            varq = self.getVariable( self.checkForId() )
+            if varq is not None:
+                if varq.isStackarr:
+                    size = varq.stackarrsize+varq.t.csize()
+                else:
+                    size = varq.t.csize()
+                self.advance()
+            else:
+                self.ctidx = startidx - 1
+                self.advance()
+                # determine type of the argument
+                dtype = self.determineExpressionType(False)
+                size = dtype.csize()
+
+
             # return as a token
-            return Token(T_INT, dtype.csize(
-            ), starttok.start, starttok.end)
+            return Token(T_INT, size, starttok.start, starttok.end)
 
         # if so,
         else:
@@ -1707,7 +1722,7 @@ class Function:
                 # determine value
                 inst, final = self.evaluateExpression()
                 if not typematch(final.type, parameters[i].t, False):
-                    throw(TypeMismatch(final.token, final.type, parameters[i].t))
+                    throw(TypeMismatch(final.token,  parameters[i].t, final.type))
                 ninst, _,normused, sseused = registerizeValueType(parameters[i].t, final.accessor, normused, sseused)
                 inst += ninst
                 rfree(final.accessor)
@@ -2653,7 +2668,7 @@ class Function:
                 if autoArrsize:
                     itervar.offset += (len(setval.accessor) -
                                        1) * var.t.csize()
-                    var.offset = itervar.offset
+                    #var.offset = itervar.offset
 
                 # load values
                 self.advance()
@@ -2704,7 +2719,7 @@ class Function:
                 else:
                     offset = var.offset + len(content)
                     var.offset = offset
-
+                content = eval(f'"{content}"')
                 longs, ints, shorts, chars = pack_string(var, content)
                 for l in longs:
                     self.addline(
@@ -2757,7 +2772,8 @@ class Function:
                 autolen = 0
 
             if autoArrsize:
-                var.t.stackarrsize = autolen
+                var.stackarrsize = autolen
+                print(var)
                 self.stackCounter += autolen + 8
 
         self.checkSemi()

@@ -39,6 +39,8 @@ class DType:
     def csize(self):
         return self.size(0)
 
+    
+
     def hasMember(self, name):  # structures
         for m in self.members:
             if m.name == name:
