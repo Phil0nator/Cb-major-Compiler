@@ -530,7 +530,7 @@ class Compiler:
         # thisp means that this function is a member, and should have 'this' as
         # it's first parameter
         if(thisp):
-            parameters.append(Variable(thispt, "this", isptr=True))
+            parameters.append(Variable(thispt.bottom().up(), "this", isptr=True))
         # denoted by '...'
         variardic = False
 

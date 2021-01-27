@@ -12,7 +12,7 @@ import Classes.ExpressionComponent as EC
 from Postfixer import Postfixer
 from Classes.Variable import Variable
 from Assembly.Registers import *
-
+from Classes.Error import *
 
 ternarystack = []  # ternary operator -- extra storage
 
@@ -22,6 +22,8 @@ def calculateConstant(a, b, op, c=None):
         return EC.ExpressionComponent(
             int(a.accessor * b.accessor), LITERAL.copy(), constint=True)
     elif(op == "/"):
+        if b.accessor == 0:
+            throw(DivisionByZero(b.token))
         return EC.ExpressionComponent(
             int(a.accessor / b.accessor), LITERAL.copy(), constint=True)
     elif(op == "+"):

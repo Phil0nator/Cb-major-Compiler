@@ -94,17 +94,19 @@ class DType:
         return out
 
     def getOpOverload(self, op, param=None):
+        if op not in self.operators:
+            return None
         if param is not None:
-            if op not in self.operators:
-                return None
-
-            
-
             for overload in self.operators[op]:
                 if overload.parameters[1].t.__eq__(param):
                     return overload
 
             return None
+        else:
+            if self.operators[op] != []:
+                return self.operators[op][0]
+            else:
+                return None
 
     def getConstructor(self, types):
         types = types[1:]
@@ -124,8 +126,10 @@ class DType:
 
 
     def isintrinsic(self):
-        return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
-            self.name) is not None
+        #return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
+        #    self.name) is not None
+        return self.ptrdepth != 0 or self.members is None
+
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):

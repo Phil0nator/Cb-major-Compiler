@@ -82,7 +82,8 @@ class Function:
         # its parent.
         self.memberfn = memberfn
         self.parentstruct = parentstruct
-
+        
+        
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.stackTotal = 8                     # maintain total count
         self.variables = []                     # all local variables
@@ -989,6 +990,11 @@ class Function:
             else:
                 if isinstance(val.accessor, Variable):
                     ninstr, ___, _, __ = registerizeValueType(self.returntype, val.accessor, -1, 0)
+                elif isinstance(val.accessor, str):
+                    if val.accessor in ['rax', "xmm0", "ymm0"]:
+                        pass
+                    else:
+                        print("something has gone with returning vectorized structures")
                 else:
                     ninstr = loadToReg('rax', val.accessor)
 
@@ -2998,6 +3004,8 @@ class Function:
     def compile(self):      # main
         if(self.current_token is None):
             return
+
+        
 
         self.initializeProperties()
 

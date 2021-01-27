@@ -1,4 +1,4 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 
@@ -22,34 +22,25 @@ function void check(long num){
     }
 }
 
+
+
 function int main(){
     
     for(long _ = 15; _ < LONG_MAX;_++){
         check(_);
     }
 
+    unique_ptr<Vec3f> ptr(new(Vec3f));
+
     vector<int> test;
     for range(i, 100){
         test.push_back((int) i);
     }
 
-
-    
     printvec(test);
 
     nc("127.0.0.1", 5501);
-    /*
-    srand();
-    long tmp = TESTCONST;
-    for range(i, 1000000){
-        long test = rand();
-        if (test/TESTCONST != test/tmp){
-            printf("Error: %l, bad: %l, correct: %l\n", test, test/TESTCONST, test/tmp);
-            exit(1);
-        }
-    }
-    puts("All good.");
-    */
+
     return 0;
 }
 

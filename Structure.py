@@ -295,6 +295,7 @@ class Structure:
                 self.size = sizes[valueTypeClass(self.size)]
                 self.prototypeType.s = self.size
 
+
         # finalize
         # self.compiler.types.pop()
         # self.compiler.types.append(self.prototypeType)

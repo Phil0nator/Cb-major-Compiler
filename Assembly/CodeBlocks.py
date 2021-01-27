@@ -866,15 +866,17 @@ def magic_division(a, areg, d, internal=False):
     instr = ""
     
     ax = setSize("rax", a.type.csize())
-    magic_number = (int((1/d)*2**(a.type.csize()*8+1)))
+    dx = setSize("rdx", a.type.csize())
+    
+    precision = a.type.csize()*8
+    magic_number = int(round((1/d)*2**precision))
     #magic_number = (-2**65)-1
     qword_magic = magic_number&((2**64)-1)
     
     #extra_flag = abs(magic_number)>((2**65)-1)
     extra_flag = magic_number>>64
-    print(f"{bin(magic_number)}", extra_flag, d, magic_number, qword_magic)
-    print(f"{bin(qword_magic)}")
-    dx = setSize("rdx", a.type.csize())
+    #print(f"{bin(magic_number)}", extra_flag, d, magic_number, qword_magic)
+    #print(f"{bin(qword_magic)}")
     
     
     # alden solution
@@ -883,13 +885,13 @@ def magic_division(a, areg, d, internal=False):
  mov {ax}, {areg}
  mov rdx, {(qword_magic)}
  imul {dx}
- sar {dx}, 1
+ sar {ax}, {precision-1}
+ sub {dx}, {ax}
  {f"inc {dx}" if extra_flag else ""}
  {f"mov {areg}, {dx}"if not internal else ""}
  {restoreRdx()}
  """
     
-    print(out)
     
     #return out
     

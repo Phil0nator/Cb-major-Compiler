@@ -116,11 +116,12 @@ def bringdown_memloc(a: EC.ExpressionComponent) -> str:
                 instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
                 a.accessor = setSize(a.accessor, a.type.csize())
             else:
-                tempvar= Variable(a.type,'__tmp__',bpr=setSize(a.accessor,8))
+                tempvar= Variable(a.type,'__tmp__',bpr=setSize(a.accessor,8)+'+')
                 reginstr, _, __, ___ = registerizeValueType(a.type, tempvar, -1, 0)
                 instr += reginstr
-                a.accessor = "rax" if a.type.s <= 8 else "xmm0"
-        
+                rfree(a.accessor)
+                a.accessor = "rax" if a.type.s <= 8 else ("xmm0" if a.type.s <= 16 else ('xmm0' if a.type.s <= 32 else "rax"))
+
         
         
         # once a memloc has been lowered, it is no longer representable, for compiler purposes, as a
@@ -799,8 +800,44 @@ class ExpressionEvaluator:
         return instr
 
 
+    def compile_memberAccessOverload(self, a, b, evaluator, stack):
+        instr = ""
+        
+        overload = a.type.getOpOverload('->')
+        if overload is None:
+            throw(NoOverloadOp(a.token, a.type, "", op))
+        o = overload.returntype.copy()
+        
+        if a.memory_location and a.isRegister():
+            instr += f"mov rdi, {a.accessor}\n"
+        else:
+            instr += lea_struct('rdi', a)
+        rfree(a.accessor)
+        fltret = overload.returntype.isflt() or overload.returntype.csize() > 8
+
+        oreg = norm_return_register if not fltret else sse_return_register
+
+        instr += fncall(overload)
+
+        newleft = EC.ExpressionComponent(
+            oreg, o, token=a.token
+        )
+
+
+        ninstr, o, apendee = evaluator.memberAccess(newleft, b, Token(
+            '->','->',a.token.start, a.token.end
+        ))
+        instr += ninstr
+        stack.append(apendee)
+
+        return instr
+
+
     # compile the overloaded operator of type a.type, with input b
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
+
+        if op == "->":
+            return self.compile_memberAccessOverload(a, b, evaluator, stack)
 
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
@@ -815,7 +852,7 @@ class ExpressionEvaluator:
             instr += lea_struct('rdi', a)
         rfree(a.accessor)
 
-        fltret = overload.returntype.isflt()
+        fltret = overload.returntype.isflt() or overload.returntype.csize() > 8
         fltparam = overload.parameters[1].t.isflt()
 
         if b.type.isintrinsic():
@@ -845,8 +882,31 @@ class ExpressionEvaluator:
         pass
 
     # compile the overloaded single operand operator for struct a
-    def compile_AoverloadSingleOperand(self, a, op, evaluator, stack):
-        pass
+    def compile_AoverloadSingleOperand(self, a, op):
+        instr =""
+        overload = a.type.getOpOverload(op)
+        if overload is None:
+            throw(NoOverloadOp(a.token, a.type, "", op))
+        o = overload.returntype.copy()
+        
+        if a.memory_location and a.isRegister():
+            instr += f"mov rdi, {a.accessor}\n"
+        else:
+            instr += lea_struct('rdi', a)
+        rfree(a.accessor)
+        fltret = overload.returntype.isflt() or overload.returntype.csize() > 8
+
+        oreg = norm_return_register if not fltret else sse_return_register
+
+        instr += fncall(overload)
+
+        apendee = EC.ExpressionComponent(
+            oreg, o, token=a.token
+        )
+
+        
+
+        return instr, o, apendee
 
     # evaluate a generated postfix list of EC's
 
@@ -891,7 +951,7 @@ class ExpressionEvaluator:
                             throw(TypeMismatch(a.token, a.type, b.type))
 
                     # check for non-primitive types for operator overloading:
-                    elif not a.type.isintrinsic() and op not in ["->", "."]:
+                    elif not a.type.isintrinsic() and op not in ["."]:
                         # check for operator accepting b's type
                         instr += self.compile_AoverloadB(a,
                                                         op, b, evaluator, stack)
@@ -906,12 +966,20 @@ class ExpressionEvaluator:
 
                 else:  # op takes only one operand
 
+                    
+
                     if(len(stack) < 1):
                         throw(HangingOperator(pfix[-1].token))
                     a = stack.pop()  # operand
 
+                    if not a.type.isintrinsic() and e.accessor not in ['.', "&"]:
+                        ninstr, o, apendee = self.compile_AoverloadSingleOperand(a, e.accessor)
+                        stack.append(apendee)
+                        instr += ninstr
+
+                    
                     # op == !
-                    if(e.accessor == T_NOT):
+                    elif(e.accessor == T_NOT):
 
                         ninstr, o, apendee = evaluator.evalNot(a)
                         stack.append(apendee)

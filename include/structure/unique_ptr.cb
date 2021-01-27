@@ -19,6 +19,7 @@ struct unique_ptr{
         return ptr;
     }
 
+    function T operator@(){return @ptr;}
 
     ~unique_ptr(){
         mapfree(ptr);
