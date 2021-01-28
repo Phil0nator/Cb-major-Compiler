@@ -12,12 +12,14 @@ void printvec(vector<int> v){
 
 }
 
-#define TESTCONST (3)
+#define TESTCONST (-17)
 
 function void check(long num){
     long test = TESTCONST;
-    if(num/TESTCONST != num/test){
-        printf("Failed: %i/%i != %i, but %i", num, TESTCONST, num/TESTCONST, num/test);
+    auto magic = num/TESTCONST;
+    auto real = num/test;
+    if(magic != real){
+        printf("Failed: %l/%l != %l, but %l", num, TESTCONST, magic, real);
         exit(1);
     }
 }
@@ -26,8 +28,10 @@ function void check(long num){
 
 function int main(){
     
-    for(long _ = 15; _ < LONG_MAX;_++){
+    for(long _ = 1; _ < LONG_MAX;_++){
+        if(_){
         check(_);
+        }
     }
 
     unique_ptr<Vec3f> ptr(new(Vec3f));

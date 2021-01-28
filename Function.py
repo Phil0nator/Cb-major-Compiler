@@ -1740,6 +1740,8 @@ class Function:
                 # determine size:
                 needpush = (fn.winextern and normused > 4)
 
+
+
                 # handle calling conventions:
                 if fn.winextern:
 
@@ -1789,7 +1791,7 @@ class Function:
         if fn.winextern:
             paraminst += win_align_stack
 
-        if fn.variardic:
+        if fn.variardic or fn.extern:
             paraminst += f"mov al, {sseused}\n"
         
         # inform the register allocator that rdx, and rcx are back on the market

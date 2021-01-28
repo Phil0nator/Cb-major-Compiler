@@ -24,7 +24,7 @@ from Assembly.TypeSizes import (getConstantReserver, getHeapReserver, isfloat,
                                 valueTypeClass)
 
 from globals import canShiftmul, OPERATORS
-
+import decimal
 
 win_align_stack = """
 enter 0,0
@@ -471,10 +471,17 @@ def restoreRdx():
     if config.functioncalls_inprogress:
         return "pop rdx\n"
     return ""
+
+division_sign_extension = {
+    2: "cwd",
+    4: "cdq",
+    8: "cqo"
+}
+
+
+
 # perform integer arithmatic op on areg by breg
 # (op areg, breg)
-
-
 def doIntOperation(areg, breg, op, signed, size=8):
 
     if(op == "+"):
@@ -491,20 +498,23 @@ def doIntOperation(areg, breg, op, signed, size=8):
     
     
     elif(op == "/"):
-
         if(signed):
+            signextend = division_sign_extension[sizeOf(areg)]
             asmop = "idiv"
         else:
+            signextend=""
             asmop = "div"
-        return f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{restoreRdx()}{getFromRax(areg)}\n"
+        return f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{signextend}\n{asmop} {breg}\n{restoreRdx()}{getFromRax(areg)}\n"
 
     elif(op == "%"):
         if(signed):
+            signextend = division_sign_extension[sizeOf(areg)]
             asmop = "idiv"
         else:
+            signextend=""
             asmop = "div"
 
-        out = f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{asmop} {breg}\n{getFromRdx(areg)}\n{restoreRdx()}"
+        out = f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{signextend}\n{asmop} {breg}\n{getFromRdx(areg)}\n{restoreRdx()}"
         return out
     elif(op in [">>", "<<"]):
         return shiftInt(areg, breg, op, signed)
@@ -869,10 +879,10 @@ def magic_division(a, areg, d, internal=False):
     dx = setSize("rdx", a.type.csize())
     
     precision = a.type.csize()*8
-    magic_number = int(round((1/d)*2**precision))
+    magic_number = int(math.ceil((decimal.Decimal(1)/d)*2**precision))
     #magic_number = (-2**65)-1
-    qword_magic = magic_number&((2**64)-1)
-    
+    #qword_magic = magic_number&((precision)-1)
+    qword_magic = magic_number#//2
     #extra_flag = abs(magic_number)>((2**65)-1)
     extra_flag = magic_number>>64
     #print(f"{bin(magic_number)}", extra_flag, d, magic_number, qword_magic)
@@ -885,9 +895,9 @@ def magic_division(a, areg, d, internal=False):
  mov {ax}, {areg}
  mov rdx, {(qword_magic)}
  imul {dx}
- sar {ax}, {precision-1}
- sub {dx}, {ax}
- {f"inc {dx}" if extra_flag else ""}
+ mov {ax}, {dx}
+ shr {ax}, {precision-1}
+ add {dx}, {ax}
  {f"mov {areg}, {dx}"if not internal else ""}
  {restoreRdx()}
  """
