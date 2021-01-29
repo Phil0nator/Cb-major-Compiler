@@ -438,7 +438,7 @@ class ExpressionEvaluator:
             areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
             newinstr += i
 
-            shiftdir = "<<" if op == "*" else ">>"
+            shiftdir =  op
             newinstr += shiftInt(setSize(areg, a.type.csize()),
                                  shiftmul(b.accessor),
                                  shiftdir,

@@ -12,15 +12,16 @@ void printvec(vector<int> v){
 
 }
 
-#define TESTCONST (-17)
+#define TESTCONST (-8)
 
 function void check(long num){
     long test = TESTCONST;
     auto magic = num/TESTCONST;
     auto real = num/test;
     if(magic != real){
-        printf("Failed: %l/%l != %l, but %l", num, TESTCONST, magic, real);
-        exit(1);
+        //printf("Failed: %l/%l != %l, but %l\n", num, TESTCONST, magic, real);
+        //exit(1);
+        printf("%l: %l\n", num, magic);
     }
 }
 
@@ -28,9 +29,11 @@ function void check(long num){
 
 function int main(){
     
-    for(long _ = 1; _ < LONG_MAX;_++){
+    for(long _ = -256; _ < LONG_MAX;_++){
         if(_){
         check(_);
+        }else{
+            break;
         }
     }
 

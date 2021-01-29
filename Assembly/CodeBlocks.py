@@ -421,19 +421,24 @@ def getLogicLabel(inf):
 
 def shiftInt(a, b, op, signed):
     cmd = ""
-    if(op == ">>"):
+    if(op == ">>" or op == "/"):
         if(signed):
             cmd = "sar"
         else:
             cmd = "shr"
-    elif(op == "<<"):
+    elif(op == "<<" or op == "*"):
         if(signed):
             cmd = "sal"
         else:
             cmd = "shl"
 
     if(isinstance(b, int)):
-        return f"{cmd} {a}, {b}\n"
+        if not signed or op == "<<" or op == ">>":
+            return f"{cmd} {a}, {b}\n"
+        else:
+            size = sizeOf(a)
+            ax = setSize('rax', size)
+            return f"mov {ax}, {a}\nshr {a}, {size*8-1}\nadd {a}, {ax}\nsar {a}, {b}\n"
     else:
         if(a == rcx):
             tmp = rax
@@ -878,15 +883,14 @@ def magic_division(a, areg, d, internal=False):
     ax = setSize("rax", a.type.csize())
     dx = setSize("rdx", a.type.csize())
     
+    
     precision = a.type.csize()*8
-    magic_number = int(math.ceil((decimal.Decimal(1)/d)*2**precision))
-    #magic_number = (-2**65)-1
-    #qword_magic = magic_number&((precision)-1)
-    qword_magic = magic_number#//2
-    #extra_flag = abs(magic_number)>((2**65)-1)
+    if d > 0:
+        magic_number = int(math.ceil((decimal.Decimal(1)/d)*2**precision))
+    else:
+        magic_number = int(math.floor((decimal.Decimal(1)/d)*2**precision))
+    qword_magic = magic_number
     extra_flag = magic_number>>64
-    #print(f"{bin(magic_number)}", extra_flag, d, magic_number, qword_magic)
-    #print(f"{bin(qword_magic)}")
     
     
     # alden solution
@@ -903,93 +907,7 @@ def magic_division(a, areg, d, internal=False):
  """
     
     
-    #return out
-    
-    
-    
-    # temporary solution
-    return f"""
-mov rdx, {floatTo64h(float(d))}
-{cast_regUp('rax', areg, a.type.signed)}
-movq xmm0, rdx
-cvtsi2sd xmm1, rax
-divsd xmm1, xmm0
-cvttsd2si {setSize(areg, 8)}, xmm1
-"""
-    #TODO:
-    # fix magic division
-    
-    # precomutation:
-    bits = a.type.csize()*8
-    # p=⌈log2d⌉
-    p: int  = math.ceil(math.log2(d))
-    # m=⌈ (2^32+p ) / d⌉
-    m: int  = math.ceil(    (2**(bits + p)) / d ) & (2**bits-1)
-    
-    # computation:
-    ax = setSize('rax', sizeOf(areg))
-    dx = setSize('rdx', sizeOf(areg))
-    instr += cast_regUp('rax', areg, a.type.signed)
-    instr += loadToReg(dx, m)
-    #q = (dx)
-    instr += f"imul {dx}\n" 
-    # t = ((n-q) >> 2) + q
-    instr += f"""
-sub {areg}, {dx}
-sar {areg}, 1
-add {areg}, {dx}
-sar {areg}, {p-1}
-    """
-
-    return instr
-
-
-'''
-def magic_division(a, areg, b, internal=False):
-
-
-
-   
-    # new eq : f(n, d) = (n * m(d)) >> 33
-    # m(x) = 2^33 / x + 1
-    postshift = math.ceil(math.log2(b))
-    twopower = 8 * a.type.csize() + 1
-
-    #                2^33     / x + 1
-    if twopower < 60:
-        multiplicand = math.ceil(pow(2, twopower) / b)
-    else:
-        extrabit = math.ceil(pow(2, twopower) / (b)) > 9223372036854775807
-        multiplicand = (math.ceil(pow(2, twopower) / (b))
-                        ) & 9223372036854775807
-
-    #mulcmd = "imul" if a.type.signed else "mul"
-    shiftcmd = "sar" if a.type.signed else "shr"
-
-    # TODO:
-    # Make work for signed integers
-
-    ax = setSize('rax', sizeOf(areg))
-    dx = setSize('rdx', sizeOf(areg))
-
-    instr = f"{zeroize('rax')}\nmov {ax}, {areg}\n"
-    instr += f"mov {dx}, {multiplicand}\n"
-    instr += f"imul {dx}\n"
-
-    if a.type.csize() != 8:
-        instr += f"{shiftcmd} {dx}, 1\n"
-        instr += f"mov {areg}, {dx}\n" if not internal else f"mov {ax}, {dx}\n"
-    else:  # 64bit magic division
-
-        if extrabit:
-            instr += f"mov rax, {setSize(areg, 8)}\nsub rax, rdx\nshr rax, 1\nadd rax, rdx\nshr rax, {math.ceil(math.log2(b))-1}\n"
-        else:
-            instr += f"mov rax, rdx\nshr rax, {1}\n"
-
-        instr += getFromRax(areg) if not internal else f""
-
-    return instr
-'''
+    return out
 
 
 def magic_modulo(a, areg, b):
