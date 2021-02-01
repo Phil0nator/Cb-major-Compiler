@@ -1,0 +1,33 @@
+#ifndef __SHAREDPTR
+#define __SHAREDPTR
+
+template<typename T>
+struct shared_ptr{
+
+    T* ptr;
+    int usecount = 0;
+
+    shared_ptr(T* init){
+        ptr = init;
+    }
+
+
+    function T operator[](size_t index){
+        return ptr[index];
+    }
+
+    function T* operator->(){
+        return ptr;
+    }
+
+    function T operator@(){return @ptr;}
+
+    ~shared_ptr(){
+        mapfree(ptr);
+    }
+
+
+};
+
+
+#endif

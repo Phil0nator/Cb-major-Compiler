@@ -1,0 +1,38 @@
+#ifndef __YMM
+#define __YMM
+#include "util/stddef.k"
+#define YMMINSTRRETURN __asm{"mov rax, rdi"}
+#define YMMDEPOSIT     __asm{"vmovdqu [rdi], ymm0"}
+#define YMMLOAD        __asm{"vmovdqu ymm0, [rdi]"}
+#define YMMINSTR2(instr, type1, type2, body) inline Ymm* instr(type1 x, type2 y){__asm{body}YMMDEPOSIT YMMINSTRRETURN}
+#define YMMINSTR1(instr, type, body) inline Ymm* instr(type x){__asm{body}YMMDEPOSIT YMMINSTRRETURN}
+#define YMMOP1(instr, type, body) inline Ymm* instr(type x){YMMLOAD __asm{body} YMMDEPOSIT YMMINSTRRETURN}
+
+
+struct Ymm{
+
+    any x;
+    any y;
+    any z;
+    any a;
+
+    Ymm(any ix, any iy, any iz, any ia){
+        x=ix;
+        y=iy;
+        z=iz;
+        a=ia;
+    }
+
+    YMMINSTR1(vbroadcastss, float, "vbroadcastss ymm0, xmm0")
+
+    YMMINSTR1(vbroadcastsd, double, "vbroadcastsd ymm0, xmm0")
+
+    YMMINSTR1(vmovdqu, Ymm, "")
+
+    
+
+};
+
+
+
+#endif

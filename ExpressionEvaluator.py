@@ -58,13 +58,16 @@ def optloadRegs(a: EC.ExpressionComponent, b: EC.ExpressionComponent,
         return areg, breg, o, instr
 
     # override a load if constant can be used
-    if(a.isRegister() or overrideAload):
+    if(a.isRegister() or overrideAload) and not (a.accessor == setSize('rax', a.type.csize())):
         areg = a.accessor
         needLoadA = False
 
     else:
         # if not, a new register can be allocated
-        areg = ralloc(a.type.isflt(), size=a.type.csize())
+        if op not in ["*", "/", "%"] or a.type.isflt():
+            areg = ralloc(a.type.isflt(), size=a.type.csize())
+        else:
+            areg = setSize("rax", a.type.csize())
 
     # sometimes this function is called with None for b if the caller just wants to load a,
     # so if b is not None, it will be loaded in a similar way to a.
@@ -1108,9 +1111,19 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 areg, breg, o, ninstr = optloadRegs(a, None, op, o)
                 instr += ninstr
 
+            elif (isinstance(a.accessor, Variable) and a.accessor.isStackarr) and a.type.csize() in [1,2,4,8]:
+                itemsize = a.type.csize()
+                offset = a.accessor.offset
+                areg = ralloc(False)
+                if isinstance(b.accessor, int):
+                    newoffset = offset - itemsize*b.accessor+a.accessor.stackarrsize
+                    instr += f"lea {areg}, [{a.accessor.baseptr}{newoffset}]\n"
+                    breg = 'rax'
+                else:
+                    breg, _, __, ninstr = optloadRegs(b, None, '[', o)
+                    instr += f"{ninstr}lea {areg}, [{a.accessor.baseptr}{offset+a.accessor.stackarrsize}+{breg}*{itemsize}]\n"
             else:
                 areg, breg, o, ninstr = optloadRegs(a, b, op, o)
-                #instr += zeroize(setSize(breg, 8))
                 instr += ninstr
                 if sizeOf(breg) < 8:
                     instr += cast_regUp("rax", breg, b.type.signed)
@@ -1301,7 +1314,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
 
     # no deposit is necessary for leftside evaluation
     def depositFinal(self, final):
-        print(final)
         return final
 
     # main wrapper
@@ -1509,7 +1521,7 @@ def performCastAndOperation(fn, a, b, op, o):
             caster = b
             reverse = True
 
-        creg, coreg, __, loadinstr = optloadRegs(caster, castee, "op", o)
+        creg, coreg, __, loadinstr = optloadRegs(caster, castee, op, o)
         instr += loadinstr
         newcoreg = ralloc(caster.type.isflt(), caster.type.csize())
 

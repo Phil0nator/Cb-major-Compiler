@@ -241,6 +241,7 @@ sse_parameter_registers = [
 norm_scratch_registers = [
 
     rbx,
+    rcx,
     r10,
     r11,
     r12,
@@ -282,6 +283,7 @@ norm_scratch_registers_inuse = [
     False,
     False,
     False,
+    False,
     False
 ]
 
@@ -304,6 +306,9 @@ def ralloc(flt, size=8, allow_volatile=True):
 
     else:
         for i in range(len(norm_scratch_registers_inuse)):
+
+            if i == 1 and config.rcx_functioncalls_inprogress > 0:
+                continue
 
             if(not norm_scratch_registers_inuse[i]):
                 out = norm_scratch_registers[i]

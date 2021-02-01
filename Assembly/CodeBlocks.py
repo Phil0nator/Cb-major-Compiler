@@ -468,12 +468,12 @@ def getFromRdx(areg):
     return Instruction("mov", [areg, setSize(rdx, sizeOf(areg))])
 
 def saveRdx():
-    if config.functioncalls_inprogress:
+    if config.rdx_functioncalls_inprogress:
         return "push rdx\n"
     return ""
 
 def restoreRdx():
-    if config.functioncalls_inprogress:
+    if config.rdx_functioncalls_inprogress:
         return "pop rdx\n"
     return ""
 

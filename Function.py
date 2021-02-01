@@ -1274,7 +1274,6 @@ class Function:
 
         for d in defns:
             content = content.replace(d[0], d[1])
-
         lnum = getLogicLabel("")
         content = content.replace("%L", lnum)
 
@@ -1664,7 +1663,7 @@ class Function:
     def rawFNParameterLoad(self, fn, sseused, normused,
                            pcount, offset=False, types=None):
         
-        global functioncalls_inprogress
+        global rdx_functioncalls_inprogress, rcx_functioncalls_inprogress
         
         paraminst = ""
         # when parameters are being loaded it signifies that a function has been called,
@@ -1675,7 +1674,9 @@ class Function:
         # inform the register allocator that rdx and rcx are off limits now that they are being
         # used for parameters (if they are needed)
         rdxneeded = len(fn.parameters) - sum((p.t.isflt() for p in fn.parameters)) > 2
-        config.functioncalls_inprogress += rdxneeded
+        rcxneeded = len(fn.parameters) - sum((p.t.isflt() for p in fn.parameters)) > 1
+        config.rdx_functioncalls_inprogress += rdxneeded
+        config.rcx_functioncalls_inprogress += rcxneeded
 
         if fn.variardic:
             parameters = fn.parameters + \
@@ -1795,7 +1796,9 @@ class Function:
             paraminst += f"mov al, {sseused}\n"
         
         # inform the register allocator that rdx, and rcx are back on the market
-        config.functioncalls_inprogress -= rdxneeded
+        config.rdx_functioncalls_inprogress -= rdxneeded
+        config.rcx_functioncalls_inprogress -= rcxneeded
+
         return paraminst
 
     def doVarcall(self, var):
@@ -2781,7 +2784,6 @@ class Function:
 
             if autoArrsize:
                 var.stackarrsize = autolen
-                print(var)
                 self.stackCounter += autolen + 8
 
         self.checkSemi()

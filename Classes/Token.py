@@ -151,6 +151,7 @@ KEYWORDS = [
     "private",
     "public",
     "protected",
+    "virtual",
 
     "for",
     "while",

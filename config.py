@@ -212,4 +212,5 @@ for feature in __features__:
 
 
 # registers
-functioncalls_inprogress = 0
+rdx_functioncalls_inprogress = 0
+rcx_functioncalls_inprogress = 0

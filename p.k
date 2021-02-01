@@ -25,10 +25,7 @@ function void check(long num){
     }
 }
 
-
-
-function int main(){
-    
+void testdivision(){
     for(long _ = -256; _ < LONG_MAX;_++){
         if(_){
         check(_);
@@ -36,8 +33,17 @@ function int main(){
             break;
         }
     }
+}
 
-    unique_ptr<Vec3f> ptr(new(Vec3f));
+
+
+
+
+function int main(){
+    
+
+
+    
 
     vector<int> test;
     for range(i, 100){
