@@ -269,7 +269,7 @@ def typematch(a, b, implicit):
 
         # if the type precedence checks out, they are compatible, else not
         if(a.isintrinsic() and b.isintrinsic()):
-            if(type_precedence[a.name] >= type_precedence[b.name]):
+            if a.name in type_precedence and b.name in type_precedence and (type_precedence[a.name] >= type_precedence[b.name]):
                 return True
             return False
 

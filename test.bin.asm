@@ -65,10 +65,10 @@ global _void._floads_pfd_t:
 	extern fprintf
 global _void___assert_pboolchar.intchar.:
 global _void_free_pvoid.:
-global _void._malloc_psize_t:
-global _void._realloc_pvoid.size_t:
-global _void._calloc_psize_t:
-global _void._mapalloc_psize_t:
+global _mallocptr._malloc_psize_t:
+global _mallocptr._realloc_pvoid.size_t:
+global _mallocptr._calloc_psize_t:
+global _mallocptr._mapalloc_psize_t:
 global _void_mapfree_pvoid.:
 global _void_maprealloc_pvoid.size_t:
 global _void_memcpy_pvoid.void.size_t:
@@ -478,7 +478,7 @@ _void__Cvector_pvector.size_t:
 	add rax, rax
 	sar rax, 2
 	mov rdi, rax
-	call _void._mapalloc_psize_t
+	call _mallocptr._mapalloc_psize_t
 	pop rdi
 	mov rbx, rax
 	mov qword[rdi+0], rbx
@@ -498,7 +498,7 @@ ___void__Cvector_pvector.size_t__return:
 _void__Cvector_pvector.:
 	push rdi
 	mov rdi, 40
-	call _void._mapalloc_psize_t
+	call _mallocptr._mapalloc_psize_t
 	pop rdi
 	mov rbx, rax
 	mov qword[rdi+0], rbx
@@ -2598,7 +2598,7 @@ _void._floads_pfd_t:
 	mov ebx, dword[rbp-16]
 	movsxd rcx, ebx
 	mov rdi, rcx
-	call _void._mapalloc_psize_t
+	call _mallocptr._mapalloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-24], rbx
 	mov ebx, dword[rbp-16]
@@ -3216,7 +3216,7 @@ _void_free_pvoid.:
 ___void_free_pvoid.__return:
 	leave
 	ret
-_void._malloc_psize_t:
+_mallocptr._malloc_psize_t:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 24
@@ -3241,7 +3241,7 @@ _void._malloc_psize_t:
 	mov rbx, qword[rbp-16]
 	add rbx, 32
 	mov rax, rbx
-	jmp ___void._malloc_psize_t__return
+	jmp ___mallocptr._malloc_psize_t__return
 	jmp .L0x18c
 .L0x18b:
 .L0x18c:
@@ -3261,7 +3261,7 @@ _void._malloc_psize_t:
 	mov rbx, qword[rbp-16]
 	add rbx, 32
 	mov rax, rbx
-	jmp ___void._malloc_psize_t__return
+	jmp ___mallocptr._malloc_psize_t__return
 	jmp .L0x190
 .L0x18f:
 .L0x190:
@@ -3289,10 +3289,10 @@ _void._malloc_psize_t:
 	mov rbx, qword[rbp-16]
 	add rbx, 32
 	mov rax, rbx
-___void._malloc_psize_t__return:
+___mallocptr._malloc_psize_t__return:
 	leave
 	ret
-_void._realloc_pvoid.size_t:
+_mallocptr._realloc_pvoid.size_t:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 48
@@ -3312,15 +3312,14 @@ _void._realloc_pvoid.size_t:
 	mov rbx, rax
 	mov rbx, qword[rbp-16]
 	mov rdi, rbx
-	call _void._malloc_psize_t
+	call _mallocptr._malloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-40], rbx
 	mov rcx, qword[rbp-40]
 	cmp qword[rbp-8], rcx
 	jne .L0x193
-	mov rbx, qword[rbp-8]
-	mov rax, rbx
-	jmp ___void._realloc_pvoid.size_t__return
+	mov rax, qword[rbp-8]
+	jmp ___mallocptr._realloc_pvoid.size_t__return
 	jmp .L0x194
 .L0x193:
 .L0x194:
@@ -3332,9 +3331,8 @@ _void._realloc_pvoid.size_t:
 	mov rdi, rbx
 	call _void_memcpy_pvoid.void.size_t
 	mov rbx, rax
-	mov rbx, qword[rbp-40]
-	mov rax, rbx
-	jmp ___void._realloc_pvoid.size_t__return
+	mov rax, qword[rbp-40]
+	jmp ___mallocptr._realloc_pvoid.size_t__return
 	jmp .L0x192
 .L0x191:
 .L0x192:
@@ -3352,19 +3350,18 @@ _void._realloc_pvoid.size_t:
 	mov rbx, rax
 .L0x198:
 	mov rbx, rax
-	mov rbx, qword[rbp-8]
-	mov rax, rbx
-___void._realloc_pvoid.size_t__return:
+	mov rax, qword[rbp-8]
+___mallocptr._realloc_pvoid.size_t__return:
 	leave
 	ret
-_void._calloc_psize_t:
+_mallocptr._calloc_psize_t:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 24
 	mov [rbp-8], rdi
 	mov rbx, qword[rbp-8]
 	mov rdi, rbx
-	call _void._malloc_psize_t
+	call _mallocptr._malloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-16], rbx
 	mov rbx, qword[rbp-8]
@@ -3373,12 +3370,11 @@ _void._calloc_psize_t:
 	mov rdi, rbx
 	call _void_memzer_pvoid.size_t
 	mov rbx, rax
-	mov rbx, qword[rbp-16]
-	mov rax, rbx
-___void._calloc_psize_t__return:
+	mov rax, qword[rbp-16]
+___mallocptr._calloc_psize_t__return:
 	leave
 	ret
-_void._mapalloc_psize_t:
+_mallocptr._mapalloc_psize_t:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 24
@@ -3406,7 +3402,7 @@ _void._mapalloc_psize_t:
 	mov rbx, qword[rbp-16]
 	add rbx, 8
 	mov rax, rbx
-___void._mapalloc_psize_t__return:
+___mallocptr._mapalloc_psize_t__return:
 	leave
 	ret
 _void_mapfree_pvoid.:
@@ -4485,7 +4481,7 @@ _void_alloc_pStack.size_t:
 	push rdi
 	mov rbx, qword[rbp-8]
 	mov rdi, rbx
-	call _void._mapalloc_psize_t
+	call _mallocptr._mapalloc_psize_t
 	pop rdi
 	mov rbx, rax
 	mov qword[rdi+8], rbx
@@ -4957,7 +4953,7 @@ _int___scanf_pchar.void..fd_tbool:
 	test al, al
 	jz .L0x28d
 	mov rdi, 1000
-	call _void._mapalloc_psize_t
+	call _mallocptr._mapalloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-40], rbx
 	mov rdx, 1000
@@ -5578,7 +5574,7 @@ _void_nc_pchar.short:
 .L0x2ec:
 .L0x2ed:
 	mov rdi, 1024
-	call _void._mapalloc_psize_t
+	call _mallocptr._mapalloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-48], rbx
 	mov qword[rbp-56], 0

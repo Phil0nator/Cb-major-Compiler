@@ -279,7 +279,7 @@ void free(void* usrptr){
 }
 
 
-void* malloc(size_t size){
+mallocptr* malloc(size_t size){
 
     mblock* out;
     if(size >= MALLOC_PAGESIZE){
@@ -317,7 +317,7 @@ void* malloc(size_t size){
 
 
 
-void* realloc(void* addr, size_t newsize){
+mallocptr* realloc(void* addr, size_t newsize){
     
     mblock *block = MALLOC_LOCALPTR(addr);
     size_t oldsize = block->size;
@@ -340,7 +340,7 @@ void* realloc(void* addr, size_t newsize){
 
 
 
-void* calloc(size_t size){
+mallocptr* calloc(size_t size){
     void* out = malloc(size);
     memzer(out, size);
     return out;
@@ -348,7 +348,7 @@ void* calloc(size_t size){
 
 
 
-void* mapalloc(size_t size){
+mallocptr* mapalloc(size_t size){
     void* out = qmmap(size+sizeof(long));
     @out = size;
     return out+sizeof(long);

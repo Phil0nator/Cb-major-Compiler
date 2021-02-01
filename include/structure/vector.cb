@@ -21,7 +21,7 @@ struct vector{
      * Create a vector of type T, starting with 10 empty elements.
      */
     vector(){
-        begin = mapalloc(10*sizeof(T));
+        begin = (T*) mapalloc(10*sizeof(T));
         end = begin;
         stop = begin+(10*sizeof(T));
     }

@@ -979,6 +979,21 @@ class Compiler:
         v.t.signed = False
         v.glob = True
 
+
+    def buildSafetype(self, thisp=False, thispt=None) -> None:
+        self.advance()
+        tat = self.current_token
+        typeAName = self.checkType()
+        typeBName = self.checkId()
+        typeA = self.getType(typeAName)
+        if typeA is None:
+            fatalThrow(ExpectedType(tat))
+        newtype = typeA.copy()
+        newtype.name = typeBName
+        self.types.append(newtype)
+
+        self.checkSemi()
+
     # typedef is always followed by two types and an endline:
     def buildTypedef(self, thisp=False, thispt=None) -> None:
 
@@ -1280,5 +1295,6 @@ keyword_responses = {
     "template": Compiler.beginTemplate,
     "auto": Compiler.buildAutofn,
     "enum": Compiler.buildEnum,
-    "class": Compiler.buildStruct
+    "class": Compiler.buildStruct,
+    "safetype": Compiler.buildSafetype
 }

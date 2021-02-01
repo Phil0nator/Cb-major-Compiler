@@ -34,10 +34,19 @@
 #include "stddef.k"
 #include "bits/limits.k"
 
+/**
+ * A safe datatype is used for malloc's returned pointers to avoid
+ * accidentally implicitly casting them.
+ */
+typedef char mallocptr;
+
 #include "api.cb"
 #ifdef __CBLIB_SOURCE
 #   include "malloc.k"
 #endif
+
+
+
 
 /**
  * Deallocate a malloc'd pointer
@@ -51,7 +60,7 @@ CBLIBENTRY void free(void* usrptr);
  * @param size minimum number of bytes to allocate
  * @returns a pointer with at least (size) bytes of free space
  */
-CBLIBENTRY void* malloc(size_t size);
+CBLIBENTRY mallocptr* malloc(size_t size);
 
 /**
  * Reallocate a malloc'd pointer with a new size.
@@ -59,7 +68,7 @@ CBLIBENTRY void* malloc(size_t size);
  * @param newsize the new size for the addr
  * @returns a new pointer of size (newsize). (Can be the same as addr).
  */
-CBLIBENTRY void* realloc(void* addr, size_t newsize);
+CBLIBENTRY mallocptr* realloc(void* addr, size_t newsize);
 
 
 /**
@@ -67,7 +76,7 @@ CBLIBENTRY void* realloc(void* addr, size_t newsize);
  * @param size number of bytes to allocate
  * @returns a malloc'd block of memory containing only zeros, with a size of at least (size).
  */
-CBLIBENTRY void* calloc(size_t size);
+CBLIBENTRY mallocptr* calloc(size_t size);
 
 /**
  * mapalloc is a more simplified allocator that just wraps the basic functionality
@@ -77,7 +86,7 @@ CBLIBENTRY void* calloc(size_t size);
  * @param size number of bytes to allocate
  * @returns a pointer with size bytes mapped after it
  */
-CBLIBENTRY void* mapalloc(size_t size);
+CBLIBENTRY mallocptr* mapalloc(size_t size);
 
 /**
  * Free a pointer allocated using mapalloc
