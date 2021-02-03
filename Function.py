@@ -1102,6 +1102,7 @@ class Function:
     def buildForloop(self):
         self.advance()
         self.checkTok(T_OPENP)
+        beginfncalls = self.fncalls
         asmrestore = len(self.asm)
         # pre determine jumping labels:
         toplabel = getLogicLabel("FORTOP")
@@ -1141,8 +1142,11 @@ class Function:
         self.checkTok(T_CLSP)
         self.checkTok(T_OPENSCOPE)
 
+        bodystart = self.ctidx
         # compile the body of the flp
         self.beginRecursiveCompile()
+        body = self.tokens[bodystart:self.ctidx]
+
 
         # add in the instruction blocks in the correct order
         self.addline(f"{updatelabel}:")
@@ -1152,6 +1156,12 @@ class Function:
 
         # check for constexpr
         if(not resultant.isconstint()):
+
+            containsfncalls = self.fncalls-beginfncalls > 0
+            if (config.__oplevel__ == 3 and not containsfncalls):
+                optimizer = LoopOptimizer(self)
+
+
             self.addline(f"{checkTrue(resultant)}\njnz {toplabel}\n")
             self.addline(f"{endlabel}:")
 
@@ -1164,10 +1174,13 @@ class Function:
             pass
 
         self.advance()
-
         self.continues.pop()
         self.breaks.pop()
         self.pop_stackstate()
+
+
+
+
 
     def buildWhileloop(self):
         self.advance()
@@ -2115,19 +2128,6 @@ class Function:
                         token, inst = self.wrapExpressionFunctionCall()
                         exprtokens.append(token)
                         instructions += inst
-
-                elif(self.checkForType(False) is not None):
-                    self.ctidx = startidx - 1
-                    self.advance()
-                    t = self.checkForType()
-                    self.ctidx -= 1
-                    exprtokens.append(
-                        Token(
-                            T_TYPECAST,
-                            t,
-                            start,
-                            self.current_token.start))
-                    wasfunc = True
 
                 # Member variables accessed from stack based structures can be abstracted as Variable objects
                 #   because they are effectively stored the same.

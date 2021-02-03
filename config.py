@@ -18,16 +18,7 @@ import os
 import subprocess
 import pkg_resources
 import platform
-#required = {'argparse', 'colorama', "termcolor", "cpuid"}
-#installed = {pkg.key for pkg in pkg_resources.working_set}
-#missing = required - installed
 
-
-# if missing:
-#    python = sys.executable
-#    subprocess.check_call(
-#        [python, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
-###################################
 
 parser = arg.ArgumentParser(
     prog="cbm",
@@ -85,14 +76,14 @@ parser.add_argument(
     help="Specify an alternate platform (OS) to compile for. e.g: Compile a windows program on linux."
 )
 
-
-args = parser.parse_args()
-
 # extra compiler features that the user can specify
 ExtraFeatures = {
     "stack-protection": False,
     "address-sanitizing": False
 }
+
+args = parser.parse_args()
+
 
 
 # load arguments to variables

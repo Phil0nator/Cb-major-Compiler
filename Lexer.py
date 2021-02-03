@@ -192,12 +192,12 @@ class Lexer:
         end = ambiguous_regex.search(raw, chidx).end() - 1
         value = (raw[chidx - 1:end])
         lv = end - (chidx - 1) - 2
-
         self.chidx += lv
         self.loc.ch += lv
         self.advance()
 
         if(value in T.KEYWORDS):
+            
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
 
