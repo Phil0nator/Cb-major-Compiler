@@ -419,14 +419,17 @@ class Function:
                 # handle variardic functions
                 types = types[:len(f.parameters)] if f.variardic else types
                 valid = True
+                # ensure functions share types
+                valid = all((f.parameters[i].t.__eq__(types[i]) for i in range(len(types))))
 
+                """ 
                 # ensure functions share types
                 for i in range(len(types)):
                     # check for inequal parameter types
                     if(not f.parameters[i].t.__eq__(types[i])):
 
                         valid = False
-                        break
+                        break """
 
                 # check for equal returntypes (if specified by caller)
                 if rettype is not None and not rettype.__eq__(f.returntype):
@@ -448,12 +451,16 @@ class Function:
                         continue
                     valid = True
                     # check matching / compatible types
-                    for i in range(lt):
+                    valid = all(TsCompatible(
+                                f.parameters[i].t, types[i], self) for i in range(lt))
+
+
+                    """ for i in range(lt):
                         # determine compatiblity
                         if (not TsCompatible(
                                 f.parameters[i].t, types[i], self)):
                             valid = False
-                            break
+                            break """
                     # check for valid returntype matching
                     if rettype is not None and not TsCompatible(
                             rettype, f.returntype, self):
@@ -2870,6 +2877,7 @@ class Function:
             pass  # ambiguous statement
             throw(UnexpectedToken(self.current_token))
             self.advance()
+        
 
     # compile the body of some control structures
     def compileBodyScope(self):

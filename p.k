@@ -42,8 +42,7 @@ void testdivision(){
 
 function int main(){
     
-
-
+    
     
     vector<int> test;
     for range(i, 100){
@@ -51,7 +50,6 @@ function int main(){
     }
 
     printvec(test);
-
     nc("127.0.0.1", 5501);
     return 0;
 }

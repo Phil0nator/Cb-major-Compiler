@@ -352,10 +352,11 @@ __LC.S172: db `[`, 0
 __LC.S173: db `%i, `, 0
 __LC.S174: db `%i]\n`, 0
 __LC.S175: db `%l: %l\n`, 0
-__LC.S176: db `127.0.0.1`, 0
-__LC.S177: db `Lost connection to host.`, 0
-__LC.S178: db `123hd0.5: \t %i%s%f`, 0
-__LC.S179: db `hd`, 0
+__LC.S176: db `%i\n`, 0
+__LC.S177: db `127.0.0.1`, 0
+__LC.S178: db `Lost connection to host.`, 0
+__LC.S179: db `123hd0.5: \t %i%s%f`, 0
+__LC.S180: db `hd`, 0
 	section .bss align=8
 __tmbuf: resb 36
 __internaltime: resb 8
@@ -5500,41 +5501,50 @@ ___void_testdivision_p__return:
 main:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 48
-	lea rdi, [rbp-32]
+	sub rsp, 56
+	mov rcx, L0x2e8
+	mov qword[rbp-8], rcx
+	mov rdi, 26
+	call qword[rbp-8]
+	mov rsi, rax
+	mov rdi, __LC.S176
+	mov al, 0
+	call printf
+	mov rbx, rax
+	lea rdi, [rbp-40]
 	call _void__Cvector_pvector.
-	mov qword[rbp-40], 0
-	jmp .L0x2e9
-.L0x2e8:
-	mov rbx, qword[rbp-40]
+	mov qword[rbp-48], 0
+	jmp .L0x2ea
+.L0x2e9:
+	mov rbx, qword[rbp-48]
 	mov r10, rbx
 	mov esi, r10d
-	lea rdi, [rbp-32]
+	lea rdi, [rbp-40]
 	call _void_push_back_pvectorint.int
 	mov rbx, rax
-.L0x2ea:
-	add qword[rbp-40], 1
-.L0x2e9:
-	cmp qword[rbp-40], 100
-	jl .L0x2e8
 .L0x2eb:
-	movq xmm0, [rbp-16]
+	add qword[rbp-48], 1
+.L0x2ea:
+	cmp qword[rbp-48], 100
+	jl .L0x2e9
+.L0x2ec:
+	movq xmm0, [rbp-24]
 	xor rax, rax
-	mov rax, [rbp-8]
+	mov rax, [rbp-16]
 	movq xmm7, rax
 	movlhps xmm0, xmm7
 	vinsertf128 ymm0, ymm0, xmm0, 1
-	movdqu xmm0, [rbp-32]
+	movdqu xmm0, [rbp-40]
 	call _void_printvec_pvectorint
 	mov rbx, rax
 	mov si, 5501
-	mov rdi, __LC.S176
+	mov rdi, __LC.S177
 	call _void_nc_pchar.short
 	mov rbx, rax
 	xor eax, eax
 __main__return:
 	push rax
-	lea rdi, [rbp-32]
+	lea rdi, [rbp-40]
 	call _void__Dvector_pvector.
 	pop rax
 	leave
@@ -5557,7 +5567,7 @@ _void_nc_pchar.short:
 	mov dword[rbp-40], ebx
 	mov ebx, dword[rbp-40]
 	test ebx, ebx
-	jz .L0x2ec
+	jz .L0x2ed
 	movsxd rdi, dword[rbp-40]
 	call _char._strerror_pvoid
 	mov rdi, rax
@@ -5568,20 +5578,20 @@ _void_nc_pchar.short:
 	mov r10, rcx
 	syscall
 	mov rbx, rax
-.L0x2f1:
+.L0x2f2:
 	mov rbx, rax
-	jmp .L0x2ed
-.L0x2ec:
+	jmp .L0x2ee
 .L0x2ed:
+.L0x2ee:
 	mov rdi, 1024
 	call _mallocptr._mapalloc_psize_t
 	mov rbx, rax
 	mov qword[rbp-48], rbx
 	mov qword[rbp-56], 0
-	jmp .L0x2f3
-.L0x2f2:
-	jmp .L0x2f6
-.L0x2f5:
+	jmp .L0x2f4
+.L0x2f3:
+	jmp .L0x2f7
+.L0x2f6:
 	mov rdx, 1024
 	mov rbx, qword[rbp-48]
 	mov rsi, rbx
@@ -5589,22 +5599,22 @@ _void_nc_pchar.short:
 	call _ssize_t_recv_pSocket.char.size_t
 	mov rbx, rax
 	mov qword[rbp-56], rbx
-.L0x2f6:
+.L0x2f7:
 	mov rbx, qword[rbp-56]
 	test rbx, rbx
-	jz .L0x2f5
-.L0x2f7:
+	jz .L0x2f6
+.L0x2f8:
 	xor rcx, rcx
 	cmp qword[rbp-56], rcx
-	jge .L0x2f8
-	mov rdi, __LC.S177
+	jge .L0x2f9
+	mov rdi, __LC.S178
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov rax, -1
 	jmp ___void_nc_pchar.short__return
-	jmp .L0x2f9
-.L0x2f8:
+	jmp .L0x2fa
 .L0x2f9:
+.L0x2fa:
 	mov rbx, qword[rbp-48]
 	mov rdi, rbx
 	call _size_t_puts_pchar.
@@ -5615,9 +5625,9 @@ _void_nc_pchar.short:
 	call _void_memzer_pvoid.size_t
 	mov rbx, rax
 	mov qword[rbp-56], 0
-.L0x2f3:
-	jmp .L0x2f2
 .L0x2f4:
+	jmp .L0x2f3
+.L0x2f5:
 	mov rdi, qword[rbp-48]
 	call _void_mapfree_pvoid.
 	mov rbx, rax
@@ -5639,23 +5649,23 @@ _float_benchmark_p:
 	call _void_memzer_pvoid.size_t
 	mov rbx, rax
 	mov qword[rbp-1015], 0
-	jmp .L0x2fb
-.L0x2fa:
+	jmp .L0x2fc
+.L0x2fb:
 	mov r8, 1056964608
-	mov rcx, __LC.S179
+	mov rcx, __LC.S180
 	mov rdx, 123
-	mov rsi, __LC.S178
+	mov rsi, __LC.S179
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	mov al, 0
 	call sprintf
 	mov rbx, rax
-.L0x2fc:
-	add qword[rbp-1015], 1
-.L0x2fb:
-	cmp qword[rbp-1015], 250
-	jl .L0x2fa
 .L0x2fd:
+	add qword[rbp-1015], 1
+.L0x2fc:
+	cmp qword[rbp-1015], 250
+	jl .L0x2fb
+.L0x2fe:
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	call _size_t_puts_pchar.
@@ -5665,5 +5675,10 @@ _float_benchmark_p:
 	movsd xmm0, xmm7
 ___float_benchmark_p__return:
 	leave
+	ret
+L0x2e8:
+	inc rdi
+	mov rax, rdi
+__L0x2e8__return:
 	ret
 	
