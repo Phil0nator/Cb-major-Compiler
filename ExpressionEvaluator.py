@@ -707,15 +707,7 @@ class ExpressionEvaluator:
 
             )
 
-        # check for double/float literals that can be converted to immediates
-        if (isinstance(b.accessor, Variable) and b.type.isflt()
-                and b.accessor.glob and not b.accessor.mutable):
-            b, ninstr = self.makeFloatImmediate(b)
-            instr += ninstr
-        if (isinstance(a.accessor, Variable) and a.type.isflt()
-                and a.accessor.glob and not a.accessor.mutable):
-            a, ninstr = self.makeFloatImmediate(a)
-            instr += ninstr
+        
 
         # optimize for constant expressions
         if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
@@ -878,7 +870,7 @@ class ExpressionEvaluator:
         stack.append(
             EC.ExpressionComponent(output, rett.copy(), token=a.token)
         )
-
+        rfree(b.accessor)
         return instr
 
     # compile a implicit cast of struct b to type a.type
@@ -943,6 +935,20 @@ class ExpressionEvaluator:
                             throw(HangingOperator(pfix[-1].token))
                     else:
                         a = stack.pop()              # first operand
+
+
+
+                    # check for double/float literals that can be converted to immediates
+                    if (isinstance(b.accessor, Variable) and b.type.isflt()
+                            and b.accessor.glob and not b.accessor.mutable):
+                        b, ninstr = self.makeFloatImmediate(b)
+                        instr += ninstr
+                    if (isinstance(a.accessor, Variable) and a.type.isflt()
+                            and a.accessor.glob and not a.accessor.mutable):
+                        a, ninstr = self.makeFloatImmediate(a)
+                        instr += ninstr
+
+
 
                     # check for function types
                     if a.type.function_template is not None or b.type.function_template is not None:

@@ -1,0 +1,62 @@
+#include "io/io.k"
+
+
+struct ostream{
+
+    long handle = STDOUT;
+
+    ostream(fd_t descriptor){
+        handle=descriptor;
+    }
+
+    function ostream operator <<(char* data){
+        fputs(handle, data);
+        return @this;
+    }
+
+    function ostream operator <<(long data){
+        fprintf(handle, "%l", data);
+        return @this;
+    }
+
+    function ostream operator <<(unsigned long data){
+        fprintf(handle, "%ul", data);
+        return @this;
+    }
+
+    function ostream operator <<(float data){
+        fprintf(handle, "%f", data);
+        return @this;
+    }
+
+    function ostream operator <<(double data){
+        fprintf(handle, "%e", data);
+        return @this;
+    }
+
+    function ostream operator << (char data){
+        fprintf(handle, "%c", data);
+        return @this;
+    }
+
+
+};
+
+
+ostream cout;
+ostream cerr = {STDERR};
+ostream clog = {STDERR};
+
+struct istream{
+    long handle = STDIN;
+
+
+    
+
+
+
+};
+
+
+
+istream cin;

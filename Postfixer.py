@@ -117,7 +117,6 @@ class Postfixer:
                     mutable=False)
 
                 self.fn.compiler.globals.append(v)
-
                 if self.globalScope:
                     # add allocator to constants
                     self.fn.compiler.constants += instruct

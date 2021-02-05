@@ -157,6 +157,7 @@ class Lexer:
         self.advance()
         begin = self.loc.copy()
         v = ord(self.ch)
+        # check for EOF
         if self.size - self.chidx < 3:
             raise(
                 UnexepectedEOFError(
@@ -165,7 +166,12 @@ class Lexer:
                         self.ch,
                         begin,
                         self.loc)))
+        # handle escapes
+        if self.ch == "\\":
+            self.advance()
+            v = ord(eval(f""" '\\{self.ch}' """))
         self.advance()
+        # check for proper closing
         if self.ch != "'":
             raise(
                 TokenMismatch(

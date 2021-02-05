@@ -6,6 +6,7 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+#define endl '\n'
 #endif
 
 #ifndef __LINUX
@@ -18,6 +19,7 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+#define endl '\n'
 #endif
 
 

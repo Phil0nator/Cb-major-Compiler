@@ -95,6 +95,10 @@ class DType:
         if op not in self.operators:
             return None
         if param is not None:
+            
+            if param.name == literal:
+                param = config.GlobalCompiler.getType('long')
+
             for overload in self.operators[op]:
                 if overload.parameters[1].t.__eq__(param):
                     return overload
@@ -221,7 +225,7 @@ def fntypematch(a, b):
 def typematch(a, b, implicit):
     if(isinstance(a, DType) and isinstance(b, DType)):
 
-        if(a.name == literal or b.name == literal):
+        if(a.name == literal or b.name == literal) and (a.ptrdepth == b.ptrdepth):
             return True
 
         # anything can be cast to or from void

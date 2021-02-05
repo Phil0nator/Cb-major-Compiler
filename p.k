@@ -1,7 +1,6 @@
 #define __CBLIB_SOURCE
 #include "cblib.cb"
 
-
 void printvec(vector<int> v){
     size_t size = v.size();
     puts("[");
@@ -42,8 +41,9 @@ void testdivision(){
 
 function int main(){
     
-    
-    
+    cout << "Test123:" << endl;
+
+
     vector<int> test;
     for range(i, 100){
         test.push_back((int) i);

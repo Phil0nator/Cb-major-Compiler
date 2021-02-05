@@ -132,7 +132,7 @@ struct vector{
         }
 
         @end = item;
-        end+=sizeof(T);
+        end+=(T*)sizeof(T);
     }
 
     /**
@@ -140,7 +140,7 @@ struct vector{
      * @returns the last element of the vector.
      */
     function T pop_back(){
-        end-=sizeof(T);
+        end-=(T*)sizeof(T);
         return @end;
     }
 
@@ -161,7 +161,7 @@ struct vector{
         for(size_t i = size;i>=idx;i--){
             begin[i+1]=begin[i];
         }
-        end+=sizeof(T);
+        end+=(T*)sizeof(T);
         begin[idx] = value;
     }
 

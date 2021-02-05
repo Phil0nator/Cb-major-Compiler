@@ -996,12 +996,6 @@ class Function:
                 if isinstance(val.accessor, Variable):
                     ninstr, ___, _, __ = registerizeValueType(
                         self.returntype, val.accessor, -1, 0)
-                elif isinstance(val.accessor, str):
-                    if val.accessor in ['rax', "xmm0", "ymm0"]:
-                        pass
-                    else:
-                        print(
-                            "something has gone with returning vectorized structures")
                 else:
                     ninstr = loadToReg('rax', val.accessor)
 
