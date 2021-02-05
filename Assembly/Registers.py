@@ -288,9 +288,6 @@ norm_scratch_registers_inuse = [
 ]
 
 
-
-
-
 # register allocation and deallocation system:
 def ralloc(flt, size=8, allow_volatile=True):
 
@@ -326,10 +323,12 @@ def reralloc(r):
     else:
         norm_scratch_registers_inuse[norm_scratch_registers.index(r)] = True
 
+
 def ravailable(r):
     if "xmm" in r:
         return sse_scratch_registers_inuse[sse_scratch_registers.index(r)]
-    return norm_scratch_registers_inuse[norm_scratch_registers.index(setSize(r, 8))]
+    return norm_scratch_registers_inuse[norm_scratch_registers.index(
+        setSize(r, 8))]
 
 
 def ralloc_last(flt=False):

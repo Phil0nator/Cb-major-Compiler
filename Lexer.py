@@ -197,7 +197,7 @@ class Lexer:
         self.advance()
 
         if(value in T.KEYWORDS):
-            
+
             return Token(T.T_KEYWORD, value, begin, self.loc.copy())
         return Token(T.T_ID, value, begin, self.loc.copy())
 
@@ -317,7 +317,7 @@ class Lexer:
                     t.value = -t.value
                 else:
                     self.chidx -= 2
-                    self.loc.ch-=2
+                    self.loc.ch -= 2
                     advance()
                     t = self.buildMultichar()
 

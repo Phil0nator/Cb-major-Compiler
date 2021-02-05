@@ -330,7 +330,7 @@ class Peephole:
                 elif (line.op in MOV_INST and prev.op == line.op):
                     # if same source  ->  destination, but both not addresses
                     if(line.source == prev.dest and not (line.hasAddr() or prev.hasAddr())):
-                        
+
                         splitted[line.idx] = f"{getMovop(line.dest, prev.source)} {line.dest}, {prev.source}"
 
                         # TODO:
@@ -338,7 +338,7 @@ class Peephole:
                         splitted[prev.idx] = ""
                         optims += 1
 
-                    #elif (line.source == prev.dest and line.dest == prev.source):
+                    # elif (line.source == prev.dest and line.dest == prev.source):
                     #    splitted[line.idx] = ""
                     #    optims += 1
 

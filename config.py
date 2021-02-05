@@ -9,15 +9,15 @@
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
 
+import platform
+import pkg_resources
+import subprocess
+import os
+import Classes.Error as E
+import sys
+import argparse as arg
 from colorama import Style, Fore, init
 init()
-import argparse as arg
-import sys
-import Classes.Error as E
-import os
-import subprocess
-import pkg_resources
-import platform
 
 
 parser = arg.ArgumentParser(
@@ -83,7 +83,6 @@ ExtraFeatures = {
 }
 
 args = parser.parse_args()
-
 
 
 # load arguments to variables
@@ -198,8 +197,6 @@ for feature in __features__:
     if(feature == "stack-protection"):
         __linkables__.append(f"{includepath}features/stackprotection.o")
         __CEXTERNS__ += "extern __stack_chk_fail\n"
-
-
 
 
 # registers

@@ -39,8 +39,6 @@ class DType:
     def csize(self):
         return self.size(0)
 
-    
-
     def hasMember(self, name):  # structures
         for m in self.members:
             if m.name == name:
@@ -111,8 +109,8 @@ class DType:
     def getConstructor(self, types):
         types = types[1:]
         for constructor in self.constructors:
-            if len(types) == len(constructor.parameters)-1 and \
-                 all((typematch(constructor.parameters[i+1].t,types[i], False) for i in range(len(constructor.parameters[1:])))):
+            if len(types) == len(constructor.parameters) - 1 and \
+                    all((typematch(constructor.parameters[i + 1].t, types[i], False) for i in range(len(constructor.parameters[1:])))):
                 return constructor
         return None
 
@@ -120,16 +118,14 @@ class DType:
         for member in self.members:
             if member.t.function_template is not None and member.name == name:
                 fn = member.initializer
-                if len(types) == len(fn.parameters)-1 and \
-                    all((typematch(fn.parameters[i+1].t,types[i], False) for i in range(len(fn.parameters[1:])))):
+                if len(types) == len(fn.parameters) - 1 and \
+                        all((typematch(fn.parameters[i + 1].t, types[i], False) for i in range(len(fn.parameters[1:])))):
                     return fn
 
-
     def isintrinsic(self):
-        #return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
+        # return self.ptrdepth != 0 or config.GlobalCompiler.isIntrinsic(
         #    self.name) is not None
         return self.ptrdepth != 0 or self.members is None
-
 
     def __eq__(self, other):  # determine if this type is the same as another type (reguardless of typedefs)
         if(isinstance(other, DType)):
@@ -225,8 +221,6 @@ def fntypematch(a, b):
 def typematch(a, b, implicit):
     if(isinstance(a, DType) and isinstance(b, DType)):
 
-        
-
         if(a.name == literal or b.name == literal):
             return True
 
@@ -264,12 +258,10 @@ def typematch(a, b, implicit):
         # elif(DType(a.name, a.size, None, a.ptrdepth, False).__eq__(DType(b.name, b.size, None, b.ptrdepth, False))):
         #    return True
 
-
-
-
         # if the type precedence checks out, they are compatible, else not
         if(a.isintrinsic() and b.isintrinsic()):
-            if a.name in type_precedence and b.name in type_precedence and (type_precedence[a.name] >= type_precedence[b.name]):
+            if a.name in type_precedence and b.name in type_precedence and (
+                    type_precedence[a.name] >= type_precedence[b.name]):
                 return True
             return False
 

@@ -126,7 +126,7 @@ class Structure:
         if(len(self.compiler.functions) - lf > 0):
             f = self.compiler.functions[-1]
             f.name = f"_C{f.name}"
-            
+
             self.prototypeType.constructors.append(f)
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()
@@ -186,7 +186,6 @@ class Structure:
             if(self.current_token.tok == T_CLSSCOPE):
                 self.advance()
 
-
     def buildCastOverload(self):
         starttok = self.current_token
         self.advance()
@@ -205,7 +204,7 @@ class Structure:
         self.compiler.skipBody()
         end = self.compiler.ctidx
 
-        body =self.compiler.currentTokens[start:end+1]
+        body = self.compiler.currentTokens[start:end + 1]
 
         fun = Function(
             f"operator@{t}",
@@ -219,9 +218,9 @@ class Structure:
         )
         self.compiler.functions.append(fun)
         self.prototypeType.operators[t.name] = fun
-        self.current_token = self.compiler.currentTokens[end+1]
-        #self.update()
-        #if(self.current_token.tok == T_CLSSCOPE):
+        self.current_token = self.compiler.currentTokens[end + 1]
+        # self.update()
+        # if(self.current_token.tok == T_CLSSCOPE):
         #   self.advance()
 
     # main function
@@ -237,9 +236,8 @@ class Structure:
 
         if self.current_token.tok == T_KEYWORD:
             if self.current_token.value == '__vectorize':
-                self.doAlign=True
+                self.doAlign = True
                 self.advance()
-
 
         if(self.current_token.tok != T_OPENSCOPE):
             if self.current_token.tok == T_ENDL:
@@ -289,12 +287,11 @@ class Structure:
                 self.buildDestructor()
 
         # do alignment
-        sizes = [8,16,32]
+        sizes = [8, 16, 32]
         if self.size != 0 and self.doAlign:
             if self.size <= 32:
                 self.size = sizes[valueTypeClass(self.size)]
                 self.prototypeType.s = self.size
-
 
         # finalize
         # self.compiler.types.pop()

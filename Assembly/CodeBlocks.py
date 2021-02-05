@@ -64,9 +64,6 @@ def functionlabel(fn):
     return out
 
 
-
-
-
 def extra_parameterlabel(fn, num):
     return f"{functionlabel(fn)[:-2]}{len(fn.parameters)-num}thp:"
 
@@ -467,22 +464,24 @@ def getFromRax(areg):
 def getFromRdx(areg):
     return Instruction("mov", [areg, setSize(rdx, sizeOf(areg))])
 
+
 def saveRdx():
     if config.rdx_functioncalls_inprogress:
         return "push rdx\n"
     return ""
+
 
 def restoreRdx():
     if config.rdx_functioncalls_inprogress:
         return "pop rdx\n"
     return ""
 
+
 division_sign_extension = {
     2: "cwd",
     4: "cdq",
     8: "cqo"
 }
-
 
 
 # perform integer arithmatic op on areg by breg
@@ -497,17 +496,15 @@ def doIntOperation(areg, breg, op, signed, size=8):
 
         return f"imul {areg}, {breg}\n" if size != 1 else f"imul {setSize(areg, 2)}, {setSize(breg,2)}\n"
     elif(op == "*"):
-    
-    
+
         return f"{loadToRax(areg)}{saveRdx()}\nmul {breg}\n{restoreRdx()}{getFromRax(areg)}\n"
-    
-    
+
     elif(op == "/"):
         if(signed):
             signextend = division_sign_extension[sizeOf(areg)]
             asmop = "idiv"
         else:
-            signextend=""
+            signextend = ""
             asmop = "div"
         return f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{signextend}\n{asmop} {breg}\n{restoreRdx()}{getFromRax(areg)}\n"
 
@@ -516,7 +513,7 @@ def doIntOperation(areg, breg, op, signed, size=8):
             signextend = division_sign_extension[sizeOf(areg)]
             asmop = "idiv"
         else:
-            signextend=""
+            signextend = ""
             asmop = "div"
 
         out = f"{saveRdx()}xor rdx, rdx\n{loadToRax(areg)}\n{signextend}\n{asmop} {breg}\n{getFromRdx(areg)}\n{restoreRdx()}"
@@ -689,7 +686,6 @@ def castABD(a, b, areg, breg, newbreg):
         else:
             return f"movq {valueOf(newbreg)}, {valueOf(breg)}\n"
 
-
     # size cast for integer types
     if(not a.type.isflt() and not b.type.isflt()):
         if(a.type.csize() < b.type.csize()):
@@ -720,7 +716,7 @@ def castABD(a, b, areg, breg, newbreg):
 
     # float-integer conversion
     if(b.type.isflt() and not a.type.isflt()):
-        
+
         if sizeOf(newbreg) < 4:
             breg = setSize(newbreg, 4)
 
@@ -876,23 +872,20 @@ def lea_mul_opt(shiftval, areg, a, b):
     return newinstr
 
 
-
 def magic_division(a, areg, d, internal=False):
     instr = ""
-    
+
     ax = setSize("rax", a.type.csize())
     dx = setSize("rdx", a.type.csize())
-    
-    
-    precision = a.type.csize()*8
+
+    precision = a.type.csize() * 8
     if d > 0:
-        magic_number = int(math.ceil((decimal.Decimal(1)/d)*2**precision))
+        magic_number = int(math.ceil((decimal.Decimal(1) / d) * 2**precision))
     else:
-        magic_number = int(math.floor((decimal.Decimal(1)/d)*2**precision))
+        magic_number = int(math.floor((decimal.Decimal(1) / d) * 2**precision))
     qword_magic = magic_number
-    extra_flag = magic_number>>64
-    
-    
+    extra_flag = magic_number >> 64
+
     # alden solution
     out = f"""
  {saveRdx()}
@@ -905,8 +898,7 @@ def magic_division(a, areg, d, internal=False):
  {f"mov {areg}, {dx}"if not internal else ""}
  {restoreRdx()}
  """
-    
-    
+
     return out
 
 
@@ -980,7 +972,8 @@ def registerizeValueType(t, obj, countn, counts):
 
 def savePartOfReg(var, extraoff, reg, b):
     instr = ""
-    if b<=0: return ""
+    if b <= 0:
+        return ""
     if b > 8:
         instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 8)}\n"
 
@@ -1006,17 +999,18 @@ def packVarToYmm(var, reg, size):
     if size == 32:
         return f"vmovdqu {reg}, [{var.baseptr}{var.offset+size}]\n"
     else:
-        xmmreg = reg.replace("y",'x')
-        instr += packVarToXmm(var, xmmreg, size-16)
+        xmmreg = reg.replace("y", 'x')
+        instr += packVarToXmm(var, xmmreg, size - 16)
         instr += f"vinsertf128 {reg}, {reg}, {xmmreg}, 1\n"
         instr += f"movdqu {xmmreg}, [{var.baseptr}{var.offset+size}]\n"
         return instr
+
 
 def packVarToXmm(var, reg, size):
     instr = ""
     if size == 16:
         return f"movdqu {reg}, [{var.baseptr}{var.offset + size}]\n"
-    
+
     else:
         instr = f"movq {reg}, [{var.baseptr}{var.offset + size}]\n"
         if size - 8 == 4:
@@ -1032,9 +1026,8 @@ def packVarToXmm(var, reg, size):
         return instr
 
 
-
 def unpackXmmToVar(var, extraoff, reg, t, safe=True):
-    
+
     # Safe refers to the need to get the memory bounds exactly correct.
     # For loading and unload parameters, there is no need to be safe.
     # However, when dereferencing pointers with an unkown origin,
@@ -1043,7 +1036,7 @@ def unpackXmmToVar(var, extraoff, reg, t, safe=True):
 
     if safe == False:
         return f"movdqu [{var.baseptr}{var.offset+t.csize()+extraoff}], {reg}\n"
-    
+
     instr = ""
     instr += f"movq rax, {reg}\n"
     instr += f"movhlps {reg}, {reg}\n"
@@ -1053,8 +1046,8 @@ def unpackXmmToVar(var, extraoff, reg, t, safe=True):
     if size >= 8:
         instr += f"mov [{var.baseptr}{var.offset+extraoff+t.csize()}], rax\n"
         remaining = t.csize() - 24
-        instr += savePartOfReg(var, extraoff-8, 'rbx', remaining)
-    
+        instr += savePartOfReg(var, extraoff - 8, 'rbx', remaining)
+
     else:
         instr += savePartOfReg(var, extraoff, 'rax', size)
 
@@ -1067,7 +1060,7 @@ def deregisterizeValueType(t, var, countn, counts):
     outreg = ""
     var = var.copy()
     regclass = valueTypeClass(t.s)
-    
+
     # too big to registerize
     if regclass == 3:
         reg = norm_parameter_registers[countn]
@@ -1083,7 +1076,7 @@ def deregisterizeValueType(t, var, countn, counts):
 
         reg = sse_parameter_registers[counts].replace('x', 'y')
         counts += 1
-        
+
         if t.csize() == 32:
             instr += f"vmovdqu [{var.baseptr}{var.offset+t.csize()}], {reg}\n"
         else:
@@ -1108,6 +1101,5 @@ def deregisterizeValueType(t, var, countn, counts):
         reg = norm_parameter_registers[countn]
         countn += 1
         instr += savePartOfReg(var, -t.s, reg, t.s)
-
 
     return instr, countn, counts

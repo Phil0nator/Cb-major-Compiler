@@ -12,7 +12,7 @@
 ###################################
 class Variable:
     def __init__(self, t, name, glob=False, offset=0, initializer=None,
-                 isptr=False, mutable=True, signed=True, isStackarr=False, 
+                 isptr=False, mutable=True, signed=True, isStackarr=False,
                  static=False, bpr="rbp-", parent=None):
         self.t = t                      # data type
         self.name = name                  # str: name
@@ -38,7 +38,7 @@ class Variable:
         # number of times referenced (for optimization)
         self.refcount = 0
         self.dtok = None
-        
+
         self.parent = parent
 
     def copy(self):

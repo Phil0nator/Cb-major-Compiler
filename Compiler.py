@@ -100,7 +100,7 @@ class Compiler:
     # ensure a semicolon was used, and move on
     def checkSemi(self) -> None:
         if(self.current_token.tok != T_ENDL):
-            throw(ExpectedSemicolon(self.currentTokens[self.ctidx-1]))
+            throw(ExpectedSemicolon(self.currentTokens[self.ctidx - 1]))
         self.advance()
 
     def isType(self, q: str) -> bool:                # return: if q is type
@@ -530,7 +530,11 @@ class Compiler:
         # thisp means that this function is a member, and should have 'this' as
         # it's first parameter
         if(thisp):
-            parameters.append(Variable(thispt.bottom().up(), "this", isptr=True))
+            parameters.append(
+                Variable(
+                    thispt.bottom().up(),
+                    "this",
+                    isptr=True))
         # denoted by '...'
         variardic = False
 
@@ -686,7 +690,8 @@ class Compiler:
 
     # isolate and build a structure
 
-    def buildStruct(self, thisp=False, thispt=None, templated=False, tns=None) -> None:
+    def buildStruct(self, thisp=False, thispt=None,
+                    templated=False, tns=None) -> None:
         # \see Structure
         # structure wrapper
         parser = Structure(self, templated, tns)
@@ -777,7 +782,7 @@ class Compiler:
             self.functions = self.functions[:restorefn]
             #newt = self.types.pop()
             # templated types have their own special list
-            #self.template_types[-1].append(tns)
+            # self.template_types[-1].append(tns)
 
         # functions:
         else:
@@ -822,7 +827,7 @@ class Compiler:
         # so that it can be used to instantiate multiple different template
         # structure types
         struct = tstruct[0].copy()
-        
+
         # deep copy
         for i in range(len(tstruct[0].members)):
             struct.members[i] = tstruct[0].members[i].copy()
@@ -837,7 +842,6 @@ class Compiler:
         for i in range(len(tns)):
             assosiation[tns[i]] = types[i].copy()
 
-
         # all the members of the new templated type need to be given their new
         # types, and offsets
         struct.s = 0
@@ -851,9 +855,8 @@ class Compiler:
                 member.t = assosiation[member.t.name].copy()
                 member.t.ptrdepth = pd
 
-
-            if(isinstance(member.initializer, Function)):    
-                pass                
+            if(isinstance(member.initializer, Function)):
+                pass
             else:
                 # apply offset, and overall size
                 member.offset = struct.s
@@ -866,8 +869,6 @@ class Compiler:
                 member.initializer = self.buildTemplateFunction(
                     member.initializer, tns, types)
 
-
-
         for i in range(len(struct.constructors)):
             struct.constructors[i] = struct.constructors[i].deepCopy()
             struct.constructors[i] = self.buildTemplateFunction(
@@ -877,7 +878,6 @@ class Compiler:
             struct.destructor = struct.destructor.deepCopy()
             struct.destructor = self.buildTemplateFunction(
                 struct.destructor, tns, types)
-
 
         for op in struct.operators:
             for i in range(len(struct.operators[op])):
@@ -946,7 +946,6 @@ class Compiler:
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
-            
 
             # compile
             fn.compile()
@@ -978,7 +977,6 @@ class Compiler:
         v.t = v.t.copy()
         v.t.signed = False
         v.glob = True
-
 
     def buildSafetype(self, thisp=False, thispt=None) -> None:
         self.advance()

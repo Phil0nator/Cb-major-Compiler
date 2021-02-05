@@ -182,7 +182,8 @@ if(__name__ == "__main__"):
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())
-        print(f"Peak Memory Usage: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}kb")
+        print(
+            f"Peak Memory Usage: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}kb")
     # normal usage
     else:
         main()

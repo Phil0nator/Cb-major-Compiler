@@ -82,8 +82,7 @@ class Function:
         # its parent.
         self.memberfn = memberfn
         self.parentstruct = parentstruct
-        
-        
+
         self.stackCounter = 8                   # counter to keep track of stacksize
         self.stackTotal = 8                     # maintain total count
         self.variables = []                     # all local variables
@@ -420,9 +419,12 @@ class Function:
                 types = types[:len(f.parameters)] if f.variardic else types
                 valid = True
                 # ensure functions share types
-                valid = all((f.parameters[i].t.__eq__(types[i]) for i in range(len(types))))
+                valid = all(
+                    (f.parameters[i].t.__eq__(
+                        types[i]) for i in range(
+                        len(types))))
 
-                """ 
+                """
                 # ensure functions share types
                 for i in range(len(types)):
                     # check for inequal parameter types
@@ -453,7 +455,6 @@ class Function:
                     # check matching / compatible types
                     valid = all(TsCompatible(
                                 f.parameters[i].t, types[i], self) for i in range(lt))
-
 
                     """ for i in range(lt):
                         # determine compatiblity
@@ -624,12 +625,12 @@ class Function:
             self.ctidx = startidx - 1
             self.advance()
             self.advance()
-            
+
             # check for a simple variable
-            varq = self.getVariable( self.checkForId() )
+            varq = self.getVariable(self.checkForId())
             if varq is not None:
                 if varq.isStackarr:
-                    size = varq.stackarrsize+varq.t.csize()
+                    size = varq.stackarrsize + varq.t.csize()
                 else:
                     size = varq.t.csize()
                 self.advance()
@@ -639,7 +640,6 @@ class Function:
                 # determine type of the argument
                 dtype = self.determineExpressionType(False)
                 size = dtype.csize()
-
 
             # return as a token
             return Token(T_INT, size, starttok.start, starttok.end)
@@ -829,7 +829,6 @@ class Function:
                         bpr="rdi+")
                     v.referenced = True
                     self.append_rawVariable(v)
-                    
 
             # build this regdecl
             self.regdecls.append(
@@ -851,7 +850,7 @@ class Function:
             # add to the register counters and continue to next parameter.
             if self.compileCount and p.referenced == False:
                 if p.t.isflt() or (p.t.csize() > 8 and not p.name == "this"):
-                    
+
                     counts += 1
                 else:
                     countn += 1
@@ -880,7 +879,6 @@ class Function:
                     (not p.isflt()) and countn == 2) and not(
                     p.isflt() and counts == 0) and (p.t.isintrinsic()))
 
-
             if makeParameterRegdecl:
                 # construct a variable that uses a register value
                 if(p.isflt()):
@@ -901,10 +899,10 @@ class Function:
                 # construct a normal variable
                 if(config.DO_DEBUG):
                     self.addcomment(f"Load Parameter: {p}")
-                
+
                 # primitive types
                 if p.t.isintrinsic() or p.t.function_template is not None:
-                
+
                     if(p.isflt()):
                         self.addline(movRegToVar(
                             p.offset, sse_parameter_registers[counts]))
@@ -916,11 +914,13 @@ class Function:
                         countn += 1
                 # const data structures
                 else:
-                    instr, countn, counts = deregisterizeValueType(p.t.copy(), self.variables[-1], countn, counts)
+                    instr, countn, counts = deregisterizeValueType(
+                        p.t.copy(), self.variables[-1], countn, counts)
                     self.addline(instr)
                     if len(self.variables[-1].t.members) > 0:
-                        self.buildStackStructure(self.variables[-1], startoffset=0, useDefaults=False)
-                    self.stackCounter+=8
+                        self.buildStackStructure(
+                            self.variables[-1], startoffset=0, useDefaults=False)
+                    self.stackCounter += 8
 
         ptr = 16
         # load extra parameters (those that could not be assigned registers)
@@ -932,8 +932,6 @@ class Function:
 
         if self.variardic:
             return self.loadVariardicParameters(countn, counts)
-
-
 
     def createClosing(self):                    # create end of the function
 
@@ -966,7 +964,7 @@ class Function:
         og_fncalls = self.fncalls
 
         if(self.current_token.tok != T_ENDL):
-            
+
             # expression
             instr, val = self.evaluateExpression(destination=False)
 
@@ -996,12 +994,14 @@ class Function:
             # data structure returntypes
             else:
                 if isinstance(val.accessor, Variable):
-                    ninstr, ___, _, __ = registerizeValueType(self.returntype, val.accessor, -1, 0)
+                    ninstr, ___, _, __ = registerizeValueType(
+                        self.returntype, val.accessor, -1, 0)
                 elif isinstance(val.accessor, str):
                     if val.accessor in ['rax', "xmm0", "ymm0"]:
                         pass
                     else:
-                        print("something has gone with returning vectorized structures")
+                        print(
+                            "something has gone with returning vectorized structures")
                 else:
                     ninstr = loadToReg('rax', val.accessor)
 
@@ -1015,7 +1015,7 @@ class Function:
             self.addline(instr)
 
         self.checkSemi()
-        
+
         if self.recursive_depth <= 1:
             self.hasReturned = True
             #self.fncalls = og_fncalls
@@ -1154,7 +1154,6 @@ class Function:
         self.beginRecursiveCompile()
         body = self.tokens[bodystart:self.ctidx]
 
-
         # add in the instruction blocks in the correct order
         self.addline(f"{updatelabel}:")
         self.addline(updatev)
@@ -1164,10 +1163,9 @@ class Function:
         # check for constexpr
         if(not resultant.isconstint()):
 
-            containsfncalls = self.fncalls-beginfncalls > 0
+            containsfncalls = self.fncalls - beginfncalls > 0
             if (config.__oplevel__ == 3 and not containsfncalls):
                 optimizer = LoopOptimizer(self)
-
 
             self.addline(f"{checkTrue(resultant)}\njnz {toplabel}\n")
             self.addline(f"{endlabel}:")
@@ -1184,10 +1182,6 @@ class Function:
         self.continues.pop()
         self.breaks.pop()
         self.pop_stackstate()
-
-
-
-
 
     def buildWhileloop(self):
         self.advance()
@@ -1608,20 +1602,18 @@ class Function:
         self.variables.remove(v)
         del self.variable_reference[v.name]
 
-        if v.register is not None: 
+        if v.register is not None:
             rfree(v.register)
 
             if("xmm" in v.register):
                 self.regdeclremain_sse -= 1
             else:
                 self.regdeclremain_norm -= 1
-        
+
         else:
             pass
-            #self.addline(self.createDestructor(v))
-        
-        
-        
+            # self.addline(self.createDestructor(v))
+
         self.advance()
 
     def buildGoto(self):
@@ -1682,19 +1674,20 @@ class Function:
     # load the parameters to call a function
     def rawFNParameterLoad(self, fn, sseused, normused,
                            pcount, offset=False, types=None):
-        
+
         global rdx_functioncalls_inprogress, rcx_functioncalls_inprogress
-        
+
         paraminst = ""
         # when parameters are being loaded it signifies that a function has been called,
         # so the counter needs to be incremented
         self.fncalls += 1
 
-
         # inform the register allocator that rdx and rcx are off limits now that they are being
         # used for parameters (if they are needed)
-        rdxneeded = len(fn.parameters) - sum((p.t.isflt() for p in fn.parameters)) > 2
-        rcxneeded = len(fn.parameters) - sum((p.t.isflt() for p in fn.parameters)) > 1
+        rdxneeded = len(fn.parameters) - sum((p.t.isflt()
+                                              for p in fn.parameters)) > 2
+        rcxneeded = len(fn.parameters) - sum((p.t.isflt()
+                                              for p in fn.parameters)) > 1
         config.rdx_functioncalls_inprogress += rdxneeded
         config.rcx_functioncalls_inprogress += rcxneeded
 
@@ -1745,23 +1738,24 @@ class Function:
                 sseused += 1
             # load data structure
             elif not parameters[i].t.isintrinsic() and not parameters[i].t.function_template:
-                
+
                 # determine value
                 inst, final = self.evaluateExpression()
                 if not typematch(final.type, parameters[i].t, False):
-                    throw(TypeMismatch(final.token,  parameters[i].t, final.type))
-                ninst, _,normused, sseused = registerizeValueType(parameters[i].t, final.accessor, normused, sseused)
+                    throw(
+                        TypeMismatch(
+                            final.token,
+                            parameters[i].t,
+                            final.type))
+                ninst, _, normused, sseused = registerizeValueType(
+                    parameters[i].t, final.accessor, normused, sseused)
                 inst += ninst
                 rfree(final.accessor)
-
-
 
             # else, load to normal register of the correct size
             else:
                 # determine size:
                 needpush = (fn.winextern and normused > 4)
-
-
 
                 # handle calling conventions:
                 if fn.winextern:
@@ -1814,8 +1808,9 @@ class Function:
 
         if fn.variardic or fn.extern:
             paraminst += f"mov al, {sseused}\n"
-        
-        # inform the register allocator that rdx, and rcx are back on the market
+
+        # inform the register allocator that rdx, and rcx are back on the
+        # market
         config.rdx_functioncalls_inprogress -= rdxneeded
         config.rcx_functioncalls_inprogress -= rcxneeded
 
@@ -1865,7 +1860,6 @@ class Function:
 
         return instructions
 
-
     def determineFnCallParameterTypes(self):
         types = []
         start = self.ctidx
@@ -1880,7 +1874,6 @@ class Function:
         self.ctidx = start - 1
         self.advance()
         return types
-
 
     def buildFunctionCall(self):
 
@@ -1905,7 +1898,6 @@ class Function:
         self.checkTok(T_OPENP)
 
         types = self.determineFnCallParameterTypes()
-        
 
         # using the fn name, and the parameter types find the actual function
         # object best suited for this call
@@ -2015,11 +2007,11 @@ class Function:
     # (Functions defined in a structure that need a definition of 'this')
 
     def memberCall(self, fn, this, doublecheck=True):
-        
+
         # verify that this memberfn exists with the correct types
         if doublecheck:
             fnname = fn.name
-            ogctidx = self.ctidx-1
+            ogctidx = self.ctidx - 1
             self.advance()
             self.advance()
             types = self.determineFnCallParameterTypes()
@@ -2030,10 +2022,12 @@ class Function:
 
             fn = parentType.getMemberFn(fn.name, types)
             if fn is None:
-                throw(UnkownFunction(self.current_token, f"{parentType}::{fnname}", types))
-        
-        
-        
+                throw(
+                    UnkownFunction(
+                        self.current_token,
+                        f"{parentType}::{fnname}",
+                        types))
+
         # prevent warnings
         this.referenced = True
 
@@ -2089,12 +2083,11 @@ class Function:
             elif(self.current_token.tok == T_OPENP):
                 opens += 1
 
-
             if(opens <= 0):
                 break
 
             elif (self.current_token.tok == T_OPENP):
-                ogctidx = self.ctidx-1
+                ogctidx = self.ctidx - 1
                 self.advance()
                 iftype = self.checkForType(False)
                 if iftype is None:
@@ -2103,10 +2096,11 @@ class Function:
                 else:
                     exprtokens.append(
                         Token(
-                            T_TYPECAST, iftype, self.tokens[ogctidx+1], self.current_token.end
+                            T_TYPECAST, iftype, self.tokens[ogctidx +
+                                                            1], self.current_token.end
                         )
                     )
-                    opens-=1
+                    opens -= 1
                     wasfunc = True
 
             # since function calls have the highest precedence in an expression, they can be called
@@ -2178,9 +2172,6 @@ class Function:
                         # object, and member function
                         obj = vstack[-2]
                         fn = var.initializer
-                        
-
-
 
                         # build member function call, and add tokens
                         self.memberCall(fn, obj)
@@ -2267,7 +2258,7 @@ class Function:
                             label,
                             start,
                             self.current_token.end))
-                    
+
                     self.advance()
                     break
                 else:
@@ -2374,7 +2365,7 @@ class Function:
                 out = norm_return_register if not output.type.isflt() else sse_return_register
                 instructions += spop(
                     EC.ExpressionComponent(
-                        norm_return_register, LONG))                
+                        norm_return_register, LONG))
                 output.accessor = out
 
         return instructions, output
@@ -2393,7 +2384,8 @@ class Function:
         instructions = f"{params}call {call_label[:-2]}\n"
         return instructions
 
-    def buildStackStructure(self, var, starter="", startoffset=0, useDefaults=True):
+    def buildStackStructure(self, var, starter="",
+                            startoffset=0, useDefaults=True):
         if(not var.isptr) and (var.t.ptrdepth == 0 and var.t.members is not None):
             for v in var.t.members:
                 if(isinstance(v, Variable) and not isinstance(v.initializer, Function)):
@@ -2417,7 +2409,7 @@ class Function:
                                     else floatTo32h(float(v.initializer))
                         else:
                             value = v.initializer
-                        
+
                         if not dwordImmediate(value):
                             self.addline(
                                 loadToReg('rax', value)
@@ -2496,8 +2488,8 @@ class Function:
 
         # if it is a stack-based structure, and it has a destructor
         #      add it's destructor to the end of the function
-        if(not var.t.isintrinsic()) and (var.t.function_template is None and var.t.ptrdepth==0):
-            
+        if(not var.t.isintrinsic()) and (var.t.function_template is None and var.t.ptrdepth == 0):
+
             # add default destructor
             if (var.t.destructor is not None):
                 self.destructor_text += self.createDestructor(var)
@@ -2512,10 +2504,11 @@ class Function:
             # implicit constructor
             else:
                 types = [var.t.up()]
-            # find Function object of constructor, and call it if able / necessary
+            # find Function object of constructor, and call it if able /
+            # necessary
             constructor = var.t.getConstructor(types)
             if constructor is not None:
-            
+
                 if exlicitConstructor:
                     self.ctidx -= 2
                     self.memberCall(constructor, var, False)
@@ -2529,7 +2522,6 @@ class Function:
                 pass
             else:
                 throw(UnkownConstructor(self.tokens[self.ctidx - 1]))
-
 
         autoArrsize = False
 
@@ -2877,9 +2869,9 @@ class Function:
             pass  # ambiguous statement
             throw(UnexpectedToken(self.current_token))
             self.advance()
-        
 
     # compile the body of some control structures
+
     def compileBodyScope(self):
         self.max_depth += 1
         self.push_stackstate()
@@ -3017,8 +3009,6 @@ class Function:
         if(self.current_token is None):
             return
 
-        
-
         self.initializeProperties()
 
         self.loadParameters()             # parameters
@@ -3075,8 +3065,8 @@ class Function:
     def deepCopy(self):
         shallow = self.reset()
         shallow.parameters = shallow.parameters.copy()
-        shallow.compileCount=0
-        shallow.isCompiled=False
+        shallow.compileCount = 0
+        shallow.isCompiled = False
         shallow.GC()
         for i in range(len(shallow.parameters)):
             shallow.parameters[i] = shallow.parameters[i].copy()

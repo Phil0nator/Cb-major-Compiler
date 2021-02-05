@@ -141,8 +141,8 @@ KEYWORDS = [
     "explicit",
     "enum",
     "lambda",
-    
-    
+
+
     "__vectorize",
 
     "noexcept",

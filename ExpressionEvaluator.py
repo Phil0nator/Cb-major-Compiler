@@ -4,7 +4,7 @@ from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
                                  loadToReg, magic_division, magic_modulo,
                                  maskset, shiftInt, shiftmul, valueOf, zeroize,
-                                 lea_struct, fncall, cast_regUp, createFloatConstant, 
+                                 lea_struct, fncall, cast_regUp, createFloatConstant,
                                  registerizeValueType, deregisterizeValueType)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
                                    signed_comparisons, floatTo64h, floatTo32h)
@@ -114,19 +114,22 @@ def bringdown_memloc(a: EC.ExpressionComponent) -> str:
             rfree(a.accessor)
             a.accessor = out
         else:
-            
+
             if a.type.isintrinsic() or a.type.function_template is not None:
                 instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
                 a.accessor = setSize(a.accessor, a.type.csize())
             else:
-                tempvar= Variable(a.type,'__tmp__',bpr=setSize(a.accessor,8)+'+')
-                reginstr, _, __, ___ = registerizeValueType(a.type, tempvar, -1, 0)
+                tempvar = Variable(
+                    a.type, '__tmp__', bpr=setSize(
+                        a.accessor, 8) + '+')
+                reginstr, _, __, ___ = registerizeValueType(
+                    a.type, tempvar, -1, 0)
                 instr += reginstr
                 rfree(a.accessor)
-                a.accessor = "rax" if a.type.s <= 8 else ("xmm0" if a.type.s <= 16 else ('xmm0' if a.type.s <= 32 else "rax"))
+                a.accessor = "rax" if a.type.s <= 8 else (
+                    "xmm0" if a.type.s <= 16 else (
+                        'xmm0' if a.type.s <= 32 else "rax"))
 
-        
-        
         # once a memloc has been lowered, it is no longer representable, for compiler purposes, as a
         # memory location.
         # It can still be dereferenced again by the user, but the compiler will not see it strictly as
@@ -215,9 +218,8 @@ class ExpressionEvaluator:
         if op == "<=>":
             return self.swap_op(a, b)
 
-        if not typematch(a.type,b.type,True):
+        if not typematch(a.type, b.type, True):
             throw(TypeMismatch(a.token, a.type, b.type))
-
 
         instrs = ""
         # get the necessary opcode for the operation,
@@ -441,7 +443,7 @@ class ExpressionEvaluator:
             areg, ___, _, i = optloadRegs(a, None, op, LONG.copy())
             newinstr += i
 
-            shiftdir =  op
+            shiftdir = op
             newinstr += shiftInt(setSize(areg, a.type.csize()),
                                  shiftmul(b.accessor),
                                  shiftdir,
@@ -783,18 +785,19 @@ class ExpressionEvaluator:
     def buildDefaultOperatorEquals(self, a, b, evaluator, stack):
         instr = ""
         if isinstance(b.accessor, Variable):
-            ninstr, _, __, ___ = registerizeValueType(b.type, b.accessor, -1, 0)
+            ninstr, _, __, ___ = registerizeValueType(
+                b.type, b.accessor, -1, 0)
         else:
             ninstr, _, __, ___ = registerizeValueType(b.type, Variable(
-                b.type, "__tmp__",bpr=b.accessor+'+'
+                b.type, "__tmp__", bpr=b.accessor + '+'
             ), -1, 0)
         instr += ninstr
-        
+
         if isinstance(a.accessor, Variable):
             ninstr, _, __ = deregisterizeValueType(a.type, a.accessor, -1, 0)
         else:
             ninstr, _, __ = deregisterizeValueType(a.type, Variable(
-                a.type, "__tmp__",bpr=a.accessor+'+'
+                a.type, "__tmp__", bpr=a.accessor + '+'
             ), -1, 0)
         instr += ninstr
         rfree(a.accessor)
@@ -802,15 +805,14 @@ class ExpressionEvaluator:
 
         return instr
 
-
     def compile_memberAccessOverload(self, a, b, evaluator, stack):
         instr = ""
-        
+
         overload = a.type.getOpOverload('->')
         if overload is None:
             throw(NoOverloadOp(a.token, a.type, "", op))
         o = overload.returntype.copy()
-        
+
         if a.memory_location and a.isRegister():
             instr += f"mov rdi, {a.accessor}\n"
         else:
@@ -826,17 +828,16 @@ class ExpressionEvaluator:
             oreg, o, token=a.token
         )
 
-
         ninstr, o, apendee = evaluator.memberAccess(newleft, b, Token(
-            '->','->',a.token.start, a.token.end
+            '->', '->', a.token.start, a.token.end
         ))
         instr += ninstr
         stack.append(apendee)
 
         return instr
 
-
     # compile the overloaded operator of type a.type, with input b
+
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
 
         if op == "->":
@@ -844,8 +845,9 @@ class ExpressionEvaluator:
 
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
-            if op == "=" and self.fn.compiler.Tequals(a.type.name, b.type.name):
-                return self.buildDefaultOperatorEquals(a,b,evaluator,stack)
+            if op == "=" and self.fn.compiler.Tequals(
+                    a.type.name, b.type.name):
+                return self.buildDefaultOperatorEquals(a, b, evaluator, stack)
             throw(NoOverloadOp(a.token, a.type, b.type, op))
 
         instr = ""
@@ -886,12 +888,12 @@ class ExpressionEvaluator:
 
     # compile the overloaded single operand operator for struct a
     def compile_AoverloadSingleOperand(self, a, op):
-        instr =""
+        instr = ""
         overload = a.type.getOpOverload(op)
         if overload is None:
             throw(NoOverloadOp(a.token, a.type, "", op))
         o = overload.returntype.copy()
-        
+
         if a.memory_location and a.isRegister():
             instr += f"mov rdi, {a.accessor}\n"
         else:
@@ -907,15 +909,13 @@ class ExpressionEvaluator:
             oreg, o, token=a.token
         )
 
-        
-
         return instr, o, apendee
 
     # evaluate a generated postfix list of EC's
 
     def evaluatePostfix(self, pfix, evaluator):
         instr = ""
-        
+
         for i in reversed(range(len(pfix))):
             if pfix[i].accessor == "pop":
                 newreg = ralloc(pfix[i].type.isflt())
@@ -957,7 +957,7 @@ class ExpressionEvaluator:
                     elif not a.type.isintrinsic() and op not in ["."]:
                         # check for operator accepting b's type
                         instr += self.compile_AoverloadB(a,
-                                                        op, b, evaluator, stack)
+                                                         op, b, evaluator, stack)
 
                     elif not b.type.isintrinsic():
                         pass
@@ -965,22 +965,26 @@ class ExpressionEvaluator:
 
                     else:
                         # normal conditions:
-                        instr += self.compile_aopb(a, op, b, evaluator, stack, e.token)
+                        instr += self.compile_aopb(a,
+                                                   op,
+                                                   b,
+                                                   evaluator,
+                                                   stack,
+                                                   e.token)
 
                 else:  # op takes only one operand
-
-                    
 
                     if(len(stack) < 1):
                         throw(HangingOperator(pfix[-1].token))
                     a = stack.pop()  # operand
 
-                    if not a.type.isintrinsic() and e.accessor not in ['.', "&"]:
-                        ninstr, o, apendee = self.compile_AoverloadSingleOperand(a, e.accessor)
+                    if not a.type.isintrinsic() and e.accessor not in [
+                            '.', "&"]:
+                        ninstr, o, apendee = self.compile_AoverloadSingleOperand(
+                            a, e.accessor)
                         stack.append(apendee)
                         instr += ninstr
 
-                    
                     # op == !
                     elif(e.accessor == T_NOT):
 
@@ -1085,7 +1089,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr = self.compile_aopb(
                 a,
                 op[0],
-                EC.ExpressionComponent(1, LITERAL, constint=True, token=a.token),
+                EC.ExpressionComponent(
+                    1, LITERAL, constint=True, token=a.token),
                 self,
                 tmpstack,
                 None
@@ -1111,12 +1116,12 @@ class LeftSideEvaluator(ExpressionEvaluator):
                 areg, breg, o, ninstr = optloadRegs(a, None, op, o)
                 instr += ninstr
 
-            elif (isinstance(a.accessor, Variable) and a.accessor.isStackarr) and a.type.csize() in [1,2,4,8]:
+            elif (isinstance(a.accessor, Variable) and a.accessor.isStackarr) and a.type.csize() in [1, 2, 4, 8]:
                 itemsize = a.type.csize()
                 offset = a.accessor.offset
                 areg = ralloc(False)
                 if isinstance(b.accessor, int):
-                    newoffset = offset - itemsize*b.accessor+a.accessor.stackarrsize
+                    newoffset = offset - itemsize * b.accessor + a.accessor.stackarrsize
                     instr += f"lea {areg}, [{a.accessor.baseptr}{newoffset}]\n"
                     breg = 'rax'
                 else:
@@ -1170,10 +1175,9 @@ class LeftSideEvaluator(ExpressionEvaluator):
         a.type.ptrdepth = pdepth
 
         if a.type.ptrdepth != 0 and optok.value == ".":
-            throw(WrongMemberAccess(a.token,optok,b.token,a.type,'.'))
+            throw(WrongMemberAccess(a.token, optok, b.token, a.type, '.'))
         elif a.type.ptrdepth == 0 and optok.value == "->":
-            throw(WrongMemberAccess(a.token,optok,b.token,a.type,'->'))
-
+            throw(WrongMemberAccess(a.token, optok, b.token, a.type, '->'))
 
         memv = a.type.getMember(member)
         if(memv is None):
@@ -1296,7 +1300,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
         instr += bringdown_memloc(a)
         cst = castABD(EC.ExpressionComponent("", t, token=e.token),
                       EC.ExpressionComponent("", a.type, token=a.token), "", aval, result)
-
 
         if(cst != False):
             instr += loadToReg(aval, a.accessor)
