@@ -7,7 +7,7 @@
 #include "util/stddef.k"
 #include "io/filesystem.cb"
 #include "util/memory.cb"
-#include "util/string.cb"
+#include "util/cstring.cb"
 #include "sys/syscall.k"
 typedef long pid_t;
 

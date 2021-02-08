@@ -39,6 +39,11 @@ struct ostream{
         return @this;
     }
 
+    function ostream operator << (string data){
+        fputs(handle , data.raw);
+        return @this;
+    }
+
 
 };
 

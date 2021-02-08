@@ -8,7 +8,7 @@
 
 
 #include "math/math.cb"
-#include "util/string.cb"
+#include "util/cstring.cb"
 #include "bits/endian.k"
 #include "algorithm/algorithm.cb"
 

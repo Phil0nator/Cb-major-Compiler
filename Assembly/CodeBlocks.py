@@ -122,12 +122,28 @@ def setValueOf(val, flt, ptr):
         else:
             return setValueOf(val.accessor.initializer, flt, False)
 
+def createSetInitializedGlobalStructure(variable):
+    assert (isinstance(variable.initializer, list))
+    if len(variable.initializer) != len(variable.t.members):
+        fatalThrow(SetLiteralSizeMismatch(variable.dtok))
+    out = f"{variable.name}:\n"
+    for i in range(len(variable.initializer)):
+        t = variable.t.members[i].t
+        item = variable.initializer[i]
+
+        out+=f"{getConstantReserver(t)} {setValueOf(item, t.isflt(), t.ptrdepth)}\n"
+    
+    return out
+
+
 
 # generate .data code for an intrinsic constant (can be a set)
 def createIntrinsicConstant(variable):
 
     # if it is a set
     if(isinstance(variable.initializer, list)):
+        if not variable.t.isintrinsic():
+            return createSetInitializedGlobalStructure(variable)
         t = variable.t.down()
         if(t.isflt()):
 
@@ -396,6 +412,8 @@ def movRegToVar(od, reg):
 def lea_struct(dest: str, source: EC.ExpressionComponent) -> str:
 
     if isinstance(source.accessor, Variable):
+        if source.accessor.glob:
+            return f"mov {dest}, {source.accessor.name}\n"
         return f"lea {dest}, [{source.accessor.baseptr}{source.accessor.offset+source.type.s}]\n"
     else:
         return f"mov {dest}, {source.accessor}\n"
@@ -969,6 +987,26 @@ def registerizeValueType(t, obj, countn, counts):
 
     return instr, addrtext, countn, counts
 
+
+def moveParameterVector(size, regsource, countn, counts):
+    if size <= 8:
+        regdest = setSize(norm_parameter_registers[countn] if countn != -1 else "rax", size) 
+        return loadToReg(regdest, regsource)
+    else:
+        regdest = sse_parameter_registers[counts]
+    
+    if size <= 16:
+        return f"movdqa {regdest}, {regsource}\n"
+
+    return f"vmovdqa y{regdest[1:]}, {regsource}\n"
+
+def moveVector(size, regdest, regsource):
+    if size <= 8:
+        return loadToReg(regdest, regsource)
+    elif size <= 16:
+        return f"movdqa {regdest}, {regsource}\n"
+    else:
+        return f"vmovdqa y{regdest[1:]}, y{regsource[1:]}\n"
 
 def savePartOfReg(var, extraoff, reg, b):
     instr = ""

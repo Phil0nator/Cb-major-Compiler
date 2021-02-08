@@ -36,12 +36,8 @@ void testdivision(){
 }
 
 
-
-
-
 function int main(){
-    
-    cout << "Test123:" << endl;
+
 
 
     vector<int> test;

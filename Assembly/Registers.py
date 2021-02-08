@@ -294,7 +294,7 @@ def ralloc(flt, size=8, allow_volatile=True):
     # Register leak debugging:
     #config.LAST_RALLOC = traceback.format_stack()
 
-    if(flt):
+    if(flt or size > 8):
         for i in range(len(sse_scratch_registers_inuse)):
             if(not sse_scratch_registers_inuse[i]):
                 out = sse_scratch_registers[i]

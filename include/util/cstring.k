@@ -1,5 +1,5 @@
 #ifndef __STRING
-#   error   "string.k should only be included through string.cb"
+#   error   "cstring.k should only be included through cstring.cb"
 #endif
 
 

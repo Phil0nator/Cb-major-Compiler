@@ -1,13 +1,15 @@
 # used to store out-of-order instructions for ternary operator
 import Classes.ExpressionComponent as EC
-from Assembly.CodeBlocks import (boolmath, castABD, doOperation, getComparater,
+from Assembly.CodeBlocks import (boolmath, cast_regUp, castABD,
+                                 createFloatConstant, deregisterizeValueType,
+                                 doOperation, fncall, getComparater,
                                  getOnelineAssignmentOp, lea_mul_opt,
-                                 loadToReg, magic_division, magic_modulo,
-                                 maskset, shiftInt, shiftmul, valueOf, zeroize,
-                                 lea_struct, fncall, cast_regUp, createFloatConstant,
-                                 registerizeValueType, deregisterizeValueType)
+                                 lea_struct, loadToReg, magic_division,
+                                 magic_modulo, maskset, moveParameterVector,
+                                 registerizeValueType, shiftInt, shiftmul,
+                                 valueOf, zeroize, moveVector)
 from Assembly.Instructions import (ONELINE_ASSIGNMENTS, Instruction,
-                                   signed_comparisons, floatTo64h, floatTo32h)
+                                   floatTo32h, floatTo64h, signed_comparisons)
 from Assembly.Registers import *
 from Assembly.TypeSizes import dwordImmediate, psizeof, psizeoft
 from Classes.Constexpr import calculateConstant, ternarystack
@@ -119,6 +121,7 @@ def bringdown_memloc(a: EC.ExpressionComponent) -> str:
                 instr += f"mov {setSize( a.accessor, a.type.csize())}, {psizeoft(a.type)}[{setSize(a.accessor,8)}]\n"
                 a.accessor = setSize(a.accessor, a.type.csize())
             else:
+
                 tempvar = Variable(
                     a.type, '__tmp__', bpr=setSize(
                         a.accessor, 8) + '+')
@@ -158,6 +161,20 @@ class ExpressionEvaluator:
     def __init__(self, fn):
         self.fn = fn
         self.resultflags = None
+
+
+    def overloadHeader(self):
+        out = ""
+        if self.fn.memberfn:
+            out += "push rdi\n"
+        return out
+
+    def overloadFooter(self):
+        out = ""
+        if self.fn.memberfn:
+            out += "pop rdi\n"
+        return out
+        
 
     # swap_op refers to the swap operator '<=>'
     def swap_op(self, a: EC.ExpressionComponent,
@@ -779,6 +796,8 @@ class ExpressionEvaluator:
         if isinstance(b.accessor, Variable):
             ninstr, _, __, ___ = registerizeValueType(
                 b.type, b.accessor, -1, 0)
+        elif not b.type.isintrinsic():
+            ninstr = moveParameterVector(b.type.csize(), b.accessor, -1, 0)
         else:
             ninstr, _, __, ___ = registerizeValueType(b.type, Variable(
                 b.type, "__tmp__", bpr=b.accessor + '+'
@@ -791,38 +810,57 @@ class ExpressionEvaluator:
             ninstr, _, __ = deregisterizeValueType(a.type, Variable(
                 a.type, "__tmp__", bpr=a.accessor + '+'
             ), -1, 0)
+
         instr += ninstr
         rfree(a.accessor)
         stack.append(b)
 
         return instr
 
-    def compile_memberAccessOverload(self, a, b, evaluator, stack):
-        instr = ""
 
+    def compile_memberAccessOverload(self, a, b, evaluator, stack):
+        """
+        - compile_memberAccessOverload serves to handle the special case where the '->' operator is overloaded.
+        In this case, there are two operands provided on the compiler level, but only one on the assembly level.
+        This is the only operator that satisfies the above condition, so it has its own special case here.
+        
+        - The register dependencies handled by ExpressionEvaluator.overloadHeader() and ExpressionEvaluator.overloadFooter()
+        are handled by the caller for this function.
+        """
+        instr = ""
+        
+        # get the actual overload
         overload = a.type.getOpOverload('->')
         if overload is None:
             throw(NoOverloadOp(a.token, a.type, "", op))
+        # legacy
         o = overload.returntype.copy()
 
+        # load single assembly-level parameter
         if a.memory_location and a.isRegister():
             instr += f"mov rdi, {a.accessor}\n"
         else:
             instr += lea_struct('rdi', a)
+        # old value is irrevelant 
         rfree(a.accessor)
+        # check if the return value will be in an xmm/ymm register
         fltret = overload.returntype.isflt() or overload.returntype.csize() > 8
-
+        
+        # determine output register
         oreg = norm_return_register if not fltret else sse_return_register
 
+        # call overload
         instr += fncall(overload)
 
+        # determine new leftside to this template: (left)->(right)
         newleft = EC.ExpressionComponent(
             oreg, o, token=a.token
         )
-
+        # perform the member access using the new left value
         ninstr, o, apendee = evaluator.memberAccess(newleft, b, Token(
             '->', '->', a.token.start, a.token.end
         ))
+        # close up
         instr += ninstr
         stack.append(apendee)
 
@@ -831,46 +869,85 @@ class ExpressionEvaluator:
     # compile the overloaded operator of type a.type, with input b
 
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
+        # handle potential register dependencies
+        instr = self.overloadHeader()
 
+        # check for special case with member access
         if op == "->":
-            return self.compile_memberAccessOverload(a, b, evaluator, stack)
+            return self.compile_memberAccessOverload(a, b, evaluator, stack) + self.overloadFooter()
 
+        # check to see if this type has an overload for this operation
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
+        # if not:
+            # special case with default copy overload
             if op == "=" and self.fn.compiler.Tequals(
                     a.type.name, b.type.name):
-                return self.buildDefaultOperatorEquals(a, b, evaluator, stack)
+                return self.buildDefaultOperatorEquals(a, b, evaluator, stack) + self.overloadFooter()
+            # otherwise, throw an error
             throw(NoOverloadOp(a.token, a.type, b.type, op))
 
-        instr = ""
-        if a.memory_location and a.isRegister():
-            instr += f"mov rdi, {a.accessor}\n"
-        else:
-            instr += lea_struct('rdi', a)
-        rfree(a.accessor)
-
+        # check if the overload returns with an xmm/ymm/r register
         fltret = overload.returntype.isflt() or overload.returntype.csize() > 8
+        # check if the overload expects an xmm/ymm/r register
         fltparam = overload.parameters[1].t.isflt()
 
+        # Load the parameter:
+
+        # if the parameter is primitive, it is a simple loadToReg
         if b.type.isintrinsic():
             instr += loadToReg(
                 norm_parameter_registers[1] if not fltparam
                 else sse_parameter_registers[0],
                 b.accessor)
+        # otherwise, it needs to be vectorized
         else:
-            instr += lea_struct('rsi', b)
+            if isinstance(b.accessor, Variable):
+                ninstr, _, __, ___ = registerizeValueType(
+                    b.type, b.accessor, 1, 0)
+            else:
 
+                ninstr, _, __, ___ = registerizeValueType(b.type, Variable(
+                    b.type, "__tmp__", bpr=b.accessor + '+'
+                        ), 1, 0)
+                
+            instr += ninstr
+
+        # the value for 'this' can be loaded:
+        if a.memory_location and a.isRegister():
+            instr += f"mov rdi, {a.accessor}\n"
+        else:
+            instr += lea_struct('rdi', a)
+        
+        # the old value of a is now garbage
+        rfree(a.accessor)
+
+        # call the overload
         instr += fncall(overload)
+        # begin cleanup:
 
+        # returntype
         rett = self.fn.compiler.getType(overload.returntype.name)
+        # allocate a new register for the return value of this overload
         output = ralloc(fltret, rett.csize())
-        instr += loadToReg(output,
-                           norm_return_register if not fltret else sse_return_register)
+        
+        # if the returntype is primitive, it can be loaded to its new register with a simple loadToReg
+        if rett.isintrinsic():
+            instr += loadToReg(output,
+                            norm_return_register if not fltret else sse_return_register)
+        # otherwise, it needs to be vector moved
+        else:
+            instr +=  moveVector(rett.csize(), output, norm_return_register if rett.csize() <= 8 else sse_return_register)
 
+        # the new expression value can be added to the stack
         stack.append(
             EC.ExpressionComponent(output, rett.copy(), token=a.token)
         )
+        # b's value is now also garbage
         rfree(b.accessor)
+        
+        # closing for register dependencies
+        instr += self.overloadFooter()
         return instr
 
     # compile a implicit cast of struct b to type a.type
@@ -880,7 +957,7 @@ class ExpressionEvaluator:
 
     # compile the overloaded single operand operator for struct a
     def compile_AoverloadSingleOperand(self, a, op):
-        instr = ""
+        instr = self.overloadHeader()
         overload = a.type.getOpOverload(op)
         if overload is None:
             throw(NoOverloadOp(a.token, a.type, "", op))
@@ -900,7 +977,7 @@ class ExpressionEvaluator:
         apendee = EC.ExpressionComponent(
             oreg, o, token=a.token
         )
-
+        instr += self.overloadFooter()
         return instr, o, apendee
 
     # evaluate a generated postfix list of EC's

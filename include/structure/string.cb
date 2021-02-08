@@ -1,0 +1,73 @@
+#ifndef __STRINGCLASS
+#define __STRINGCLASS
+
+#include "algorithm/algorithm.cb"
+#include "api.cb"
+#include "util/cstring.cb"
+
+class string{
+
+    char* raw;
+    size_t length = NULL;
+
+    string(){
+        raw = mapalloc(1);
+        @raw = NULL;
+    }
+
+    string(char* init){
+        length = strlen(init);
+        raw = mapalloc(length+1);
+        raw[length+1] = 0;
+        strcpy(raw, init);
+    }
+
+    function string operator =(char* init){
+        length = strlen(init);
+        maprealloc(raw, length);
+        raw[length+1] = 0;
+        strcpy(raw, init);
+        return @this;
+    }
+
+    function string operator += (string other){
+        length += other.length;
+        maprealloc(raw, length+1);
+        strcpy(raw+(char*)(length-other.length), other.raw);
+        return @this;
+    }
+
+    function string operator +(string other){
+        string out = raw;
+        out += other;
+        return out;
+    }
+
+    function string operator +(char* other){
+        string out = raw;
+        out += other;
+        return out;
+    }
+
+    function string operator += (char* other){
+        size_t otherlen = strlen(other);
+        maprealloc(raw, length+otherlen+1);
+        strcpy(raw + (char*)length, other);
+        length+=otherlen;
+        return @this;
+    }
+
+
+
+
+    ~string(){
+        mapfree(raw);
+    }
+
+};
+
+
+
+
+
+#endif

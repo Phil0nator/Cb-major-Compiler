@@ -1,6 +1,6 @@
 /**
- * string.k provides functions for working with strings, (char arrays).
- * Functions provided in string.k assume null terminated char* values.
+ * cstring.k provides functions for working with strings, (char arrays).
+ * Functions provided in cstring.k assume null terminated char* values.
  */
 #ifndef __STRING
 #define __STRING 1
@@ -11,7 +11,7 @@
 
 #include "api.cb"
 #ifdef __CBLIB_SOURCE
-#   include    "string.k"
+#   include    "cstring.k"
 #endif
 
 /**

@@ -151,6 +151,12 @@ class Function:
         # ExpressionComponents to keep track of register declarations
         self.regdecls = []
 
+        # disowned[...] stores all non-primitive objects created within a function, whose ownership
+        # is transfered outside of the function. In short, all the objects that the function disowns.
+        # An example of this would be returning a local data structure.
+        self.disowned: List[str] = []
+
+
         # Static variables will not inherit their actual name in the final assembly,
         # this is where their actual labels can be associated with their given
         # names.
@@ -935,6 +941,12 @@ class Function:
 
     def createClosing(self):                    # create end of the function
 
+        for var in self.variables:
+            # add default destructor
+            if (var.t.destructor is not None and var.dtok in self.tokens and var.name not in self.disowned):
+                self.destructor_text += self.createDestructor(var)
+
+
         if self.destructor_text != "":
             self.destructor_text = f"push rax\n{self.destructor_text}\npop rax\n"
 
@@ -993,7 +1005,9 @@ class Function:
                     oreg, self.returntype.copy()), val)
             # data structure returntypes
             else:
+
                 if isinstance(val.accessor, Variable):
+                    self.disowned.append(val.accessor.name)
                     ninstr, ___, _, __ = registerizeValueType(
                         self.returntype, val.accessor, -1, 0)
                 else:
@@ -2137,23 +2151,23 @@ class Function:
                     # object.member.member    =   "object.member.member"
                     vname = f"{self.current_token.value}"
                     var = self.getVariable(self.current_token.value)
+                    if not var.glob:
+                        # vstack keeps track of all the variable objects found in
+                        # the chain
+                        vstack = [var]
+                        while(self.tokens[self.ctidx + 1].tok == T_DOT):
+                            if(var is None):
+                                throw(UnkownIdentifier(self.current_token))
+                            self.advance()
+                            self.advance()
+                            member = self.current_token.value
+                            memvar = var.t.getMember(member)
+                            if(memvar is None):
+                                throw(UnkownIdentifier(self.current_token))
+                            vname += f".{memvar.name}"
 
-                    # vstack keeps track of all the variable objects found in
-                    # the chain
-                    vstack = [var]
-                    while(self.tokens[self.ctidx + 1].tok == T_DOT):
-                        if(var is None):
-                            throw(UnkownIdentifier(self.current_token))
-                        self.advance()
-                        self.advance()
-                        member = self.current_token.value
-                        memvar = var.t.getMember(member)
-                        if(memvar is None):
-                            throw(UnkownIdentifier(self.current_token))
-                        vname += f".{memvar.name}"
-
-                        var = memvar
-                        vstack.append(var)
+                            var = memvar
+                            vstack.append(var)
 
                     # for member access, the token can simply be added.
                     # for member function calls, a more complex function call
@@ -2484,9 +2498,7 @@ class Function:
         #      add it's destructor to the end of the function
         if(not var.t.isintrinsic()) and (var.t.function_template is None and var.t.ptrdepth == 0):
 
-            # add default destructor
-            if (var.t.destructor is not None):
-                self.destructor_text += self.createDestructor(var)
+            
 
             exlicitConstructor = False
 
@@ -2509,8 +2521,12 @@ class Function:
                     self.addline("pop rax")
                     self.advance()
                 else:
+                    if self.memberfn:
+                        self.addline(f"push rdi")
                     self.addline(f"lea rdi, [rbp-{var.offset+var.t.s}]\n")
                     self.addline(fncall(constructor))
+                    if self.memberfn:
+                        self.addline(f"pop rdi")
 
             elif not exlicitConstructor:
                 pass
@@ -2639,7 +2655,7 @@ class Function:
                 self.asm = self.asm[:asmrestore]
                 self.popVar()
                 self.stackCounter = stackRestore
-
+            rfree(__.accessor)
             var.referenced = False
             var.refcount = 0
 

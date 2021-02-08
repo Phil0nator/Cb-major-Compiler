@@ -28,7 +28,7 @@
 
 #include "structure/structure.cb"   /* standard data structures */
 
-#include "util/string.cb"                 /* high level string functions */
+#include "util/cstring.cb"                 /* high level string functions */
 #include "io/input.cb"               /* input functions */
 #include "io/filesystem.cb"          /* high level file interaction */
 #include "util/system.cb"           /* Call bash commands */
