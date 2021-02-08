@@ -391,7 +391,13 @@ class Compiler:
                 self.globals[-1].dtok = dtok
                 # since the var has no initializer, it is stored in the .bss
                 # section
-                self.heap += f"{name}: resb {intr.csize()}\n"
+                
+                # handle structures
+                if not intr.isintrinsic():
+                    self.createGlobalStructure(self.globals[-1], dtok, True)
+                else:
+                    self.heap += f"{name}: resb {intr.csize()}\n"
+                
                 # close
                 self.advance()
                 return
@@ -437,8 +443,25 @@ class Compiler:
 
         # add .data instructions to self.constants
         self.constants += createIntrinsicConstant(self.globals[-1])
+
+        if not intr.isintrinsic():
+            self.createGlobalStructure(self.globals[-1], dtok, False)
+
         # close
         self.checkSemi()
+
+    def createGlobalStructure(self, var, dtok, addToHeap, starter=""):
+        if addToHeap:
+            self.heap += f"{var.name}:\n"
+        for v in var.t.members:
+            if isinstance(v.initializer, Function):
+                continue 
+            self.globals.append(
+                Variable(v.t, f"{starter}{var.name}.{v.name}",glob=True)
+            )
+            self.globals[-1].dtok = dtok
+            if addToHeap:
+                self.heap+=f"{self.globals[-1].name}: resb {v.t.csize()}\n"
 
     # isolate a function and build a Function object
     def buildFunction(self, thisp=False, thispt=None,

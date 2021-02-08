@@ -1,67 +1,115 @@
+#ifndef __IOSTREAM
+#define __IOSTREAM
+#include "api.cb"
 #include "io/io.k"
+#include "sys/files.k"
+#include "string.cb"
 
-
+/**
+ * the ostream structure is used to facilitate writing output to files and streams.
+ */
 struct ostream{
+    /**
+     * handle holds the file descriptor for this ostream.
+     */
+    fd_t handle = STDOUT;
 
-    long handle = STDOUT;
+    /**
+     * Assign a new file descriptor to an output stream.
+     * @param newhandle a new file descriptor
+     * @returns None
+     */
+    CBLIBENTRY void operator =(fd_t newhandle);
 
-    ostream(fd_t descriptor){
-        handle=descriptor;
-    }
+    /**
+     * Emit the contents of a cstring.
+     * @param data cstring to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator <<(char* data);
 
-    function ostream operator <<(char* data){
-        fputs(handle, data);
-        return @this;
-    }
+    /**
+     * Emit a long.
+     * @param data long to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator <<(long data);
 
-    function ostream operator <<(long data){
-        fprintf(handle, "%l", data);
-        return @this;
-    }
+    /**
+     * Emit an unsigned long.
+     * @param data unsigned long to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator <<(unsigned long data);
 
-    function ostream operator <<(unsigned long data){
-        fprintf(handle, "%ul", data);
-        return @this;
-    }
+    /**
+     * Emit a float.
+     * @param data float to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator <<(float data);
 
-    function ostream operator <<(float data){
-        fprintf(handle, "%f", data);
-        return @this;
-    }
+    /**
+     * Emit a double.
+     * @param data double to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator <<(double data);
 
-    function ostream operator <<(double data){
-        fprintf(handle, "%e", data);
-        return @this;
-    }
+    /**
+     * Emit a single character.
+     * @param data char to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator << (char data);
 
-    function ostream operator << (char data){
-        fprintf(handle, "%c", data);
-        return @this;
-    }
-
-    function ostream operator << (string data){
-        fputs(handle , data.raw);
-        return @this;
-    }
+    /**
+     * Emit a string object.
+     * @param data string to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator << (string data);
 
 
 };
 
 
-ostream cout;
-ostream cerr = {STDERR};
-ostream clog = {STDERR};
 
 struct istream{
     long handle = STDIN;
 
+    function void getLine(char* dest, size_t size){
+        size_t bytes = read(handle, dest, size);
+        dest[bytes-1]= NULL;
+    }
 
+    function void get(char* dest, size_t size){
+        read(handle, dest, size);
+    }
+
+    function void get(char* dest){
+        read(handle, dest, 1);
+    }
+
+    
     
 
 
 
 };
 
+#ifdef __CBLIB_SOURCE
+#   include "iostream.k"
+#endif
 
-
+/**
+ * Standard streams for terminal IO
+ */
+ostream cout;
+ostream cerr = {STDERR};
+ostream clog = {STDERR};
 istream cin;
+
+
+
+#endif

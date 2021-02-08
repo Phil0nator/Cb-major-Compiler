@@ -130,9 +130,9 @@ def createSetInitializedGlobalStructure(variable):
     out = f"{variable.name}:\n"
     for i in range(len(variable.initializer)):
         t = variable.t.members[i].t
+        name = variable.name + "." + variable.t.members[i].name
         item = variable.initializer[i]
-
-        out += f"{getConstantReserver(t)} {setValueOf(item, t.isflt(), t.ptrdepth)}\n"
+        out += f"{name}: {getConstantReserver(t)} {setValueOf(item, t.isflt(), t.ptrdepth)}\n"
 
     return out
 
@@ -448,7 +448,7 @@ def shiftInt(a, b, op, signed):
             cmd = "shl"
 
     if(isinstance(b, int)):
-        if not signed or op == "<<" or op == ">>":
+        if not signed or op != "/":
             return f"{cmd} {a}, {b}\n"
         else:
             size = sizeOf(a)

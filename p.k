@@ -1,4 +1,4 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 void printvec(vector<int> v){
@@ -38,7 +38,7 @@ void testdivision(){
 
 function int main(){
 
-
+    
 
     vector<int> test;
     for range(i, 100){

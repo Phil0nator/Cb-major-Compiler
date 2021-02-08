@@ -464,7 +464,6 @@ class ExpressionEvaluator:
                                  shiftmul(b.accessor),
                                  shiftdir,
                                  a.type.signed)
-
             a.accessor = areg
             apendee = a
 

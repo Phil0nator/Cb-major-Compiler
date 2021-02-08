@@ -2040,7 +2040,10 @@ class Function:
         # load 'this'
         paraminst = ""
         if(isinstance(this, Variable)):
-            paraminst += (f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
+            if this.glob:
+                paraminst += (f"mov rdi, {this.name}\n")
+            else:
+                paraminst += (f"lea rdi, [rbp-{this.offset+this.t.s}]\n")
         elif(isinstance(this, EC.ExpressionComponent)):
             paraminst += (f"mov rdi, {valueOf(this.accessor)}\n")
 
@@ -2149,23 +2152,23 @@ class Function:
                     # object.member.member    =   "object.member.member"
                     vname = f"{self.current_token.value}"
                     var = self.getVariable(self.current_token.value)
-                    if not var.glob:
-                        # vstack keeps track of all the variable objects found in
-                        # the chain
-                        vstack = [var]
-                        while(self.tokens[self.ctidx + 1].tok == T_DOT):
-                            if(var is None):
-                                throw(UnkownIdentifier(self.current_token))
-                            self.advance()
-                            self.advance()
-                            member = self.current_token.value
-                            memvar = var.t.getMember(member)
-                            if(memvar is None):
-                                throw(UnkownIdentifier(self.current_token))
-                            vname += f".{memvar.name}"
+                    glob = var.glob
+                    # vstack keeps track of all the variable objects found in
+                    # the chain
+                    vstack = [var]
+                    while(self.tokens[self.ctidx + 1].tok == T_DOT):
+                        if(var is None):
+                            throw(UnkownIdentifier(self.current_token))
+                        self.advance()
+                        self.advance()
+                        member = self.current_token.value
+                        memvar = var.t.getMember(member)
+                        if(memvar is None):
+                            throw(UnkownIdentifier(self.current_token))
+                        vname += f".{memvar.name}"
 
-                            var = memvar
-                            vstack.append(var)
+                        var = memvar
+                        vstack.append(var)
 
                     # for member access, the token can simply be added.
                     # for member function calls, a more complex function call
