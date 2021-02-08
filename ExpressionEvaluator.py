@@ -162,7 +162,6 @@ class ExpressionEvaluator:
         self.fn = fn
         self.resultflags = None
 
-
     def overloadHeader(self):
         out = ""
         if self.fn.memberfn:
@@ -174,9 +173,9 @@ class ExpressionEvaluator:
         if self.fn.memberfn:
             out += "pop rdi\n"
         return out
-        
 
     # swap_op refers to the swap operator '<=>'
+
     def swap_op(self, a: EC.ExpressionComponent,
                 b: EC.ExpressionComponent) -> (str, DType, EC.ExpressionComponent):
 
@@ -724,8 +723,6 @@ class ExpressionEvaluator:
 
             )
 
-        
-
         # optimize for constant expressions
         if(a.isconstint() and b.isconstint() and (c is None or c.isconstint())):
 
@@ -817,18 +814,17 @@ class ExpressionEvaluator:
 
         return instr
 
-
     def compile_memberAccessOverload(self, a, b, evaluator, stack):
         """
         - compile_memberAccessOverload serves to handle the special case where the '->' operator is overloaded.
         In this case, there are two operands provided on the compiler level, but only one on the assembly level.
         This is the only operator that satisfies the above condition, so it has its own special case here.
-        
+
         - The register dependencies handled by ExpressionEvaluator.overloadHeader() and ExpressionEvaluator.overloadFooter()
         are handled by the caller for this function.
         """
         instr = ""
-        
+
         # get the actual overload
         overload = a.type.getOpOverload('->')
         if overload is None:
@@ -841,11 +837,11 @@ class ExpressionEvaluator:
             instr += f"mov rdi, {a.accessor}\n"
         else:
             instr += lea_struct('rdi', a)
-        # old value is irrevelant 
+        # old value is irrevelant
         rfree(a.accessor)
         # check if the return value will be in an xmm/ymm register
         fltret = overload.returntype.isflt() or overload.returntype.csize() > 8
-        
+
         # determine output register
         oreg = norm_return_register if not fltret else sse_return_register
 
@@ -874,16 +870,18 @@ class ExpressionEvaluator:
 
         # check for special case with member access
         if op == "->":
-            return self.compile_memberAccessOverload(a, b, evaluator, stack) + self.overloadFooter()
+            return self.compile_memberAccessOverload(
+                a, b, evaluator, stack) + self.overloadFooter()
 
         # check to see if this type has an overload for this operation
         overload = a.type.getOpOverload(op, b.type)
         if overload is None:
-        # if not:
+            # if not:
             # special case with default copy overload
             if op == "=" and self.fn.compiler.Tequals(
                     a.type.name, b.type.name):
-                return self.buildDefaultOperatorEquals(a, b, evaluator, stack) + self.overloadFooter()
+                return self.buildDefaultOperatorEquals(
+                    a, b, evaluator, stack) + self.overloadFooter()
             # otherwise, throw an error
             throw(NoOverloadOp(a.token, a.type, b.type, op))
 
@@ -909,8 +907,8 @@ class ExpressionEvaluator:
 
                 ninstr, _, __, ___ = registerizeValueType(b.type, Variable(
                     b.type, "__tmp__", bpr=b.accessor + '+'
-                        ), 1, 0)
-                
+                ), 1, 0)
+
             instr += ninstr
 
         # the value for 'this' can be loaded:
@@ -918,7 +916,7 @@ class ExpressionEvaluator:
             instr += f"mov rdi, {a.accessor}\n"
         else:
             instr += lea_struct('rdi', a)
-        
+
         # the old value of a is now garbage
         rfree(a.accessor)
 
@@ -930,14 +928,16 @@ class ExpressionEvaluator:
         rett = self.fn.compiler.getType(overload.returntype.name)
         # allocate a new register for the return value of this overload
         output = ralloc(fltret, rett.csize())
-        
-        # if the returntype is primitive, it can be loaded to its new register with a simple loadToReg
+
+        # if the returntype is primitive, it can be loaded to its new register
+        # with a simple loadToReg
         if rett.isintrinsic():
             instr += loadToReg(output,
-                            norm_return_register if not fltret else sse_return_register)
+                               norm_return_register if not fltret else sse_return_register)
         # otherwise, it needs to be vector moved
         else:
-            instr +=  moveVector(rett.csize(), output, norm_return_register if rett.csize() <= 8 else sse_return_register)
+            instr += moveVector(rett.csize(), output,
+                                norm_return_register if rett.csize() <= 8 else sse_return_register)
 
         # the new expression value can be added to the stack
         stack.append(
@@ -945,7 +945,7 @@ class ExpressionEvaluator:
         )
         # b's value is now also garbage
         rfree(b.accessor)
-        
+
         # closing for register dependencies
         instr += self.overloadFooter()
         return instr
@@ -1013,9 +1013,8 @@ class ExpressionEvaluator:
                     else:
                         a = stack.pop()              # first operand
 
-
-
-                    # check for double/float literals that can be converted to immediates
+                    # check for double/float literals that can be converted to
+                    # immediates
                     if (isinstance(b.accessor, Variable) and b.type.isflt()
                             and b.accessor.glob and not b.accessor.mutable):
                         b, ninstr = self.makeFloatImmediate(b)
@@ -1024,8 +1023,6 @@ class ExpressionEvaluator:
                             and a.accessor.glob and not a.accessor.mutable):
                         a, ninstr = self.makeFloatImmediate(a)
                         instr += ninstr
-
-
 
                     # check for function types
                     if a.type.function_template is not None or b.type.function_template is not None:

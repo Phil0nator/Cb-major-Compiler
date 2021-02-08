@@ -122,6 +122,7 @@ def setValueOf(val, flt, ptr):
         else:
             return setValueOf(val.accessor.initializer, flt, False)
 
+
 def createSetInitializedGlobalStructure(variable):
     assert (isinstance(variable.initializer, list))
     if len(variable.initializer) != len(variable.t.members):
@@ -131,10 +132,9 @@ def createSetInitializedGlobalStructure(variable):
         t = variable.t.members[i].t
         item = variable.initializer[i]
 
-        out+=f"{getConstantReserver(t)} {setValueOf(item, t.isflt(), t.ptrdepth)}\n"
-    
-    return out
+        out += f"{getConstantReserver(t)} {setValueOf(item, t.isflt(), t.ptrdepth)}\n"
 
+    return out
 
 
 # generate .data code for an intrinsic constant (can be a set)
@@ -990,15 +990,19 @@ def registerizeValueType(t, obj, countn, counts):
 
 def moveParameterVector(size, regsource, countn, counts):
     if size <= 8:
-        regdest = setSize(norm_parameter_registers[countn] if countn != -1 else "rax", size) 
+        regdest = setSize(
+            norm_parameter_registers[countn] if countn != -
+            1 else "rax",
+            size)
         return loadToReg(regdest, regsource)
     else:
         regdest = sse_parameter_registers[counts]
-    
+
     if size <= 16:
         return f"movdqa {regdest}, {regsource}\n"
 
     return f"vmovdqa y{regdest[1:]}, {regsource}\n"
+
 
 def moveVector(size, regdest, regsource):
     if size <= 8:
@@ -1007,6 +1011,7 @@ def moveVector(size, regdest, regsource):
         return f"movdqa {regdest}, {regsource}\n"
     else:
         return f"vmovdqa y{regdest[1:]}, y{regsource[1:]}\n"
+
 
 def savePartOfReg(var, extraoff, reg, b):
     instr = ""

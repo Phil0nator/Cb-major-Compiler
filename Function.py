@@ -156,7 +156,6 @@ class Function:
         # An example of this would be returning a local data structure.
         self.disowned: List[str] = []
 
-
         # Static variables will not inherit their actual name in the final assembly,
         # this is where their actual labels can be associated with their given
         # names.
@@ -945,7 +944,6 @@ class Function:
             # add default destructor
             if (var.t.destructor is not None and var.dtok in self.tokens and var.name not in self.disowned):
                 self.destructor_text += self.createDestructor(var)
-
 
         if self.destructor_text != "":
             self.destructor_text = f"push rax\n{self.destructor_text}\npop rax\n"
@@ -2497,8 +2495,6 @@ class Function:
         # if it is a stack-based structure, and it has a destructor
         #      add it's destructor to the end of the function
         if(not var.t.isintrinsic()) and (var.t.function_template is None and var.t.ptrdepth == 0):
-
-            
 
             exlicitConstructor = False
 

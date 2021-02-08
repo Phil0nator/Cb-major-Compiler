@@ -95,7 +95,7 @@ class DType:
         if op not in self.operators:
             return None
         if param is not None:
-            
+
             if param.name == literal:
                 param = config.GlobalCompiler.getType('long')
 
