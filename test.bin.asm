@@ -620,7 +620,10 @@ _void_printvec_pvectorint:
 	mov rsi, rax
 	mov rdi, __LC.S1
 	mov al, 0
+	enter 0, 0
+	and rsp, -16
 	call printf
+	leave
 	mov rbx, rax
 .L0x5a:
 	add qword[rbp-48], 1
@@ -638,7 +641,10 @@ _void_printvec_pvectorint:
 	mov rsi, rax
 	mov rdi, __LC.S2
 	mov al, 0
+	enter 0, 0
+	and rsp, -16
 	call printf
+	leave
 	mov rbx, rax
 	xor rax, rax
 ___void_printvec_pvectorint__return:
@@ -671,7 +677,10 @@ _void_check_plong:
 	mov rsi, qword[rbp-8]
 	mov rdi, __LC.S3
 	mov al, 0
+	enter 0, 0
+	and rsp, -16
 	call printf
+	leave
 	mov rbx, rax
 	jmp .L0x5d
 .L0x5c:
@@ -713,6 +722,13 @@ main:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 48
+	push r15
+	push r14
+	push r13
+	push r12
+	push r11
+	push r10
+	push rbx
 	lea rdi, [rbp-32]
 	call _void__Cvector_pvector.
 	mov qword[rbp-40], 0
@@ -744,6 +760,13 @@ main:
 	call _void_nc_pchar.short
 	mov rbx, rax
 	xor eax, eax
+	pop rbx
+	pop r10
+	pop r11
+	pop r12
+	pop r13
+	pop r14
+	pop r15
 __main__return:
 	push rax
 	lea rdi, [rbp-32]
@@ -860,7 +883,10 @@ _float_benchmark_p:
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	mov al, 0
+	enter 0, 0
+	and rsp, -16
 	call sprintf
+	leave
 	mov rbx, rax
 .L0x78:
 	add qword[rbp-1015], 1

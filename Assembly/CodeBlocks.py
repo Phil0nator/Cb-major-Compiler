@@ -247,7 +247,13 @@ def fncall(fn):
     global norm_scratch_registers_inuse, sse_scratch_registers_inuse
     fn.references += 1
     if(not fn.inline):
-        return "call %s\n" % fn.getCallingLabel()
+        out = ""
+        if fn.extern:
+            out += """enter 0, 0\nand rsp, -16\n"""
+        out += "call %s\n" % fn.getCallingLabel()
+        if fn.extern:
+            out += "leave"
+        return out
     else:
         if not fn.isCompiled:
             # save register allocation for calling

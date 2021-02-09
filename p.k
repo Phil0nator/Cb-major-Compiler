@@ -38,7 +38,6 @@ void testdivision(){
 
 function int main(){
 
-    
 
     vector<int> test;
     for range(i, 100){

@@ -6,7 +6,7 @@
 #endif
 
 #include "util/stddef.k"
-#include "string.cb"
+#include "structure/string.cb"
 #include "iostream.cb"
 #include "unique_ptr.cb"
 #include "Stack.cb"

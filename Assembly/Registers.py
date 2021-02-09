@@ -251,6 +251,16 @@ norm_scratch_registers = [
 
 ]
 
+callee_registers = [
+    "rbx",
+    "r10",
+    "r11",
+    "r12",
+    "r13",
+    "r14",
+    "r15"
+]
+
 sse_scratch_registers = [
 
     xmm7,
@@ -286,6 +296,7 @@ norm_scratch_registers_inuse = [
     False,
     False
 ]
+
 
 
 # register allocation and deallocation system:

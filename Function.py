@@ -54,7 +54,8 @@ predefs = [
     "typeid",
     "__isflt",
     "__syscall",
-    "static_assert"
+    "static_assert",
+    "__exists"
 ]
 
 
@@ -765,6 +766,23 @@ class Function:
             Error(starttok, message)
         )
 
+    def evaluate__exists(self, starttok) -> Token:
+        self.advance()
+        symbol = self.checkForId()
+        TRUE = Token(T_INT, 1, starttok.start,self.current_token.end)
+        FALSE = Token(T_INT, 0, starttok.start,self.current_token.end)
+        self.advance()
+        for v in self.variables:
+            if v.name == symbol:
+                return TRUE
+        for v in self.compiler.globals:
+            if v.name == symbol:
+                return TRUE
+        for f in self.compiler.functions:
+            if f.name == symbol:
+                return TRUE
+        return FALSE
+
     # construct a result for a builtin function
 
     def buildPredef(self) -> Token:
@@ -954,6 +972,9 @@ class Function:
         # for functions that contain a return statement, extra info is needed
         # at the end of the function.
         if True:
+            if self.extern:
+                for reg in callee_registers:
+                    self.addline(f"pop {reg}")
             self.addline(function_closer(
                 self.getCallingLabel(), self.destructor_text, self))
         else:
@@ -1805,12 +1826,14 @@ class Function:
             # memory location
 
             newinst, final = self.evaluateExpression()
-            paraminst += newinst + spush(final)
+            paraminst = newinst + spush(final) + paraminst
 
             rfree(final.accessor)
 
             if(self.current_token.tok == ","):
                 self.advance()
+
+        fn.extra_params = len(extra_params)
 
         if fn.winextern:
             paraminst += win_align_stack
@@ -2989,10 +3012,14 @@ class Function:
         realValue = function_allocator(
             self.stackCounter) if self.stackCounter > 0 or not self.inline else ""
         realValue += feature_instructions
+        if self.extern:
+            for reg in reversed(callee_registers):
+                realValue+=(f"push {reg}\n")
 
         # fill in allocator with real value
         self.asm = self.asm.replace(
             "/*ALLOCATOR*/", realValue)
+
 
     def finalWarningCheck(self):
         # warning checking:
@@ -3124,5 +3151,6 @@ function_builtin_responses = {
     "typeid": Function.evaluateTypeid,
     "__isflt": Function.evaluate__isflt,
     "__syscall": Function.evaluate__syscall,
-    "static_assert": Function.evaluateStatic_assert
+    "static_assert": Function.evaluateStatic_assert,
+    "__exists" : Function.evaluate__exists
 }
