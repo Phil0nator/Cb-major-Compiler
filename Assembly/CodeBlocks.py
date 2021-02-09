@@ -103,7 +103,7 @@ def function_closer(name, destructions, fn):
 %s
 leave
 ret
-""" % (name, destructions) if fn.stackCounter > 8 else f"__{name}__return:\nret\n"
+""" % (name, destructions) if (fn.stackCounter > 8 or fn.cexterncalls) else f"__{name}__return:\nret\n"
 
 
 # Get the value of a number that is within a set ( a set refers to this

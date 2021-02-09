@@ -199,6 +199,9 @@ class Function:
         # (other than just reaching then end).
         self.containsReturn = False
 
+        # cexterncalls tracks the number of C functions called
+        self.cexterncalls = 0
+
         # if the return value is a constexpr
         self.returnsConstexpr = False
         self.constexpr_returnvalue = 0
@@ -1834,12 +1837,14 @@ class Function:
         instructions = ""
 
         # actual 'call' instruction
-
         instructions += (fncall(fn) if not varcall else self.doVarcall(var))
 
         # handle windows functions
         if fn.winextern:
             instructions += win_unalign_stack
+
+        if fn.extern:
+            self.cexterncalls+=1
 
         # handle big functions
         if fn.extra_params > 0:
@@ -2977,6 +2982,10 @@ class Function:
         # handle addition features
         feature_instructions = ""
 
+        if self.cexterncalls:
+            self.stackCounter += 32
+            self.stackCounter -= self.stackCounter % 32
+
         realValue = function_allocator(
             self.stackCounter) if self.stackCounter > 0 or not self.inline else ""
         realValue += feature_instructions
@@ -3029,7 +3038,7 @@ class Function:
         # return, destructors, stack frame closing
         if(self.inline):
             self.addline(self.closinglabel)
-            if(self.stackCounter):
+            if(self.stackCounter or self.cexterncalls):
                 self.addline("leave")
         elif not self.inline:
             if not self.containsReturn and not self.contains_rawasm:

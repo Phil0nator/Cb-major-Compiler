@@ -7,6 +7,7 @@ from Postfixer import Postfixer
 from Lexer import Lexer
 from config import include_directories
 from Function import Function
+from globals import VOID
 import os
 import platform
 import cpuid
@@ -476,7 +477,7 @@ class PreProcessor:
             definitionTokens.append(self.current_token)
             self.delmov()
 
-        tmpfn = Function("empty", [], None, config.GlobalCompiler, [])
+        tmpfn = Function("empty", [], VOID, config.GlobalCompiler, [])
         value = determineConstexpr(False, definitionTokens, tmpfn)
         if value.accessor == 0:
             self.skipIfbody()

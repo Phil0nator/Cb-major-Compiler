@@ -167,11 +167,10 @@ __LC.S0: db `[`, 0
 __LC.S1: db `%i, `, 0
 __LC.S2: db `%i]\n`, 0
 __LC.S3: db `%l: %l\n`, 0
-__LC.S4: db `This is a string`, 0
-__LC.S5: db `127.0.0.1`, 0
-__LC.S6: db `Lost connection to host.`, 0
-__LC.S7: db `123hd0.5: \t %i%s%f`, 0
-__LC.S8: db `hd`, 0
+__LC.S4: db `127.0.0.1`, 0
+__LC.S5: db `Lost connection to host.`, 0
+__LC.S6: db `123hd0.5: \t %i%s%f`, 0
+__LC.S7: db `hd`, 0
 	section .bss align=8
 cout:
 cout.handle: resb 8
@@ -592,7 +591,7 @@ ___void__DSocket_pSocket.__return:
 _void_printvec_pvectorint:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 56
+	sub rsp, 64
 	movdqu [rbp-32], xmm0
 	vextracti128 xmm7, ymm0, 1
 	movsd [rbp-16], xmm7
@@ -648,7 +647,7 @@ ___void_printvec_pvectorint__return:
 _void_check_plong:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 40
+	sub rsp, 64
 	mov [rbp-8], rdi
 	mov qword[rbp-16], -8
 	mov rax, qword[rbp-8]
@@ -713,58 +712,41 @@ ___void_testdivision_p__return:
 main:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 72
-	mov qword[rbp-16], 0
-	lea rdi, [rbp-24]
-	call _void__Cstring_pstring.
-	mov rsi, __LC.S4
-	lea rdi, [rbp-24]
-	call _string_.operator32_pstring.char.
-	movdqa xmm7, xmm0
-	movdqu xmm0, [rbp-24]
-	mov rdi, cout
-	call _ostream_.operator18_postream.string
-	mov rbx, rax
-	mov rsi, 10
-	mov rdi, rbx
-	call _ostream_.operator18_postream.char
-	mov rbx, rax
-	lea rdi, [rbp-56]
+	sub rsp, 48
+	lea rdi, [rbp-32]
 	call _void__Cvector_pvector.
-	mov qword[rbp-64], 0
+	mov qword[rbp-40], 0
 	jmp .L0x65
 .L0x64:
-	mov rbx, qword[rbp-64]
+	mov rbx, qword[rbp-40]
 	mov r10, rbx
 	mov esi, r10d
-	lea rdi, [rbp-56]
+	lea rdi, [rbp-32]
 	call _void_push_back_pvectorint.int
 	mov rbx, rax
 .L0x66:
-	add qword[rbp-64], 1
+	add qword[rbp-40], 1
 .L0x65:
-	cmp qword[rbp-64], 100
+	cmp qword[rbp-40], 100
 	jl .L0x64
 .L0x67:
-	movq xmm0, [rbp-40]
+	movq xmm0, [rbp-16]
 	xor rax, rax
-	mov rax, [rbp-32]
+	mov rax, [rbp-8]
 	movq xmm7, rax
 	movlhps xmm0, xmm7
 	vinsertf128 ymm0, ymm0, xmm0, 1
-	movdqu xmm0, [rbp-56]
+	movdqu xmm0, [rbp-32]
 	call _void_printvec_pvectorint
 	mov rbx, rax
 	mov si, 5501
-	mov rdi, __LC.S5
+	mov rdi, __LC.S4
 	call _void_nc_pchar.short
 	mov rbx, rax
 	xor eax, eax
 __main__return:
 	push rax
-	lea rdi, [rbp-24]
-	call _void__Dstring_pstring.
-	lea rdi, [rbp-56]
+	lea rdi, [rbp-32]
 	call _void__Dvector_pvector.
 	pop rax
 	leave
@@ -827,7 +809,7 @@ _void_nc_pchar.short:
 	xor rcx, rcx
 	cmp qword[rbp-56], rcx
 	jge .L0x74
-	mov rdi, __LC.S6
+	mov rdi, __LC.S5
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov rax, -1
@@ -862,7 +844,7 @@ ___void_nc_pchar.short__return:
 _float_benchmark_p:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 1023
+	sub rsp, 1024
 	mov rsi, 1000
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
@@ -872,9 +854,9 @@ _float_benchmark_p:
 	jmp .L0x77
 .L0x76:
 	mov r8, 1056964608
-	mov rcx, __LC.S8
+	mov rcx, __LC.S7
 	mov rdx, 123
-	mov rsi, __LC.S7
+	mov rsi, __LC.S6
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	mov al, 0
