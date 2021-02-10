@@ -866,7 +866,12 @@ class ExpressionEvaluator:
     def compile_AoverloadB(self, a, op, b, evaluator, stack):
         # handle potential register dependencies
         instr = self.overloadHeader()
-
+        """"""
+        # TODO::
+        #       Make sure to bringdown memlocks here!
+        """"""
+        
+        
         # check for special case with member access
         if op == "->":
             return self.compile_memberAccessOverload(

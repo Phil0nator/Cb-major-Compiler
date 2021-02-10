@@ -318,8 +318,8 @@ def valueOf(x, dflt=False, exactSize=True):
         if x.parent is not None:
             x.parent.referenced = True
         if(x.glob):
-            if(x.t.ptrdepth > 1 or x.isptr):
-
+            if(x.name.startswith("__LC.S") or x.t.function_template is not None):
+            
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
         else:
@@ -373,8 +373,10 @@ def loadToReg(reg, value, flt32=False):
             return f"lea {setSize(reg,8)}, [{value.baseptr}{value.offset+value.stackarrsize}] \n"
 
         if(isfloat(value)):
-
-            return f"movq {reg}, {valueOf(value)}\n"
+            if not (isinstance(value, Variable) and value.glob and value.t.ptrdepth==0):
+                return f"movq {reg}, {valueOf(value)}\n"
+            else:
+                return f"movs{'d' if value.t.csize()==8 else 's'} {reg}, [{value.name}]\n"
 
         if(reg in normal_size):
             if(isinstance(value, Variable)):

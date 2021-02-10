@@ -10,7 +10,9 @@ def link(i, o):
 
         linktext = f"\"{i}.o\"" +\
             "".join(
-                (f" -l\"{linkable}\"" if '.' not in linkable else f" \"{linkable}\"" for linkable in links))
+                (f" \"{linkable}\"" for linkable in links if '.' in linkable))+\
+            "".join(
+                (f" -l\"{linkable}\""  for linkable in links if '.' not in linkable))
     else:
         linktext = f"\"{i}.o\""
 

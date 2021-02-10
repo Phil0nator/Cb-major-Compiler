@@ -432,13 +432,18 @@ class Compiler:
         # if the final value is a variable, the initializer to that variable is
         # taken
         if(isinstance(value.accessor, Variable)):
-            value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
-                1 else value.accessor.initializer
-            isptr = True
+            #value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
+            #    1 else value.accessor.initializer
+            #isptr = True
+            if value.accessor.glob and value.accessor.t.ptrdepth > 0:
+                value.accessor = value.accessor.name
+            elif value.accessor.glob:
+                value.accessor = value.accessor.initializer
 
         # add new Variable
         self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor, isptr=isptr))
+        
         self.globals[-1].dtok = dtok
 
         # add .data instructions to self.constants

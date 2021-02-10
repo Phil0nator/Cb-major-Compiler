@@ -163,14 +163,16 @@ cerr:
 cerr.handle: DQ 2
 clog:
 clog.handle: DQ 2
+teststr: DQ __LC.S4
 __LC.S0: db `[`, 0
 __LC.S1: db `%i, `, 0
 __LC.S2: db `%i]\n`, 0
 __LC.S3: db `%l: %l\n`, 0
-__LC.S4: db `127.0.0.1`, 0
-__LC.S5: db `Lost connection to host.`, 0
-__LC.S6: db `123hd0.5: \t %i%s%f`, 0
-__LC.S7: db `hd`, 0
+__LC.S4: db `x123`, 0
+__LC.S5: db `127.0.0.1`, 0
+__LC.S6: db `Lost connection to host.`, 0
+__LC.S7: db `123hd0.5: \t %i%s%f`, 0
+__LC.S8: db `hd`, 0
 	section .bss align=8
 cout:
 cout.handle: resb 8
@@ -287,19 +289,19 @@ ___void_insert_pvectorint.size_tint__return:
 _void_assign_pvectorint.size_tsize_tint:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 24
-	mov [rbp-8], rsi
-	mov [rbp-16], rdx
+	sub rsp, 16
+	mov [rbp-8], rdx
 	jmp .L0x2c
 .L0x2b:
-	mov rcx, qword[rbp-8]
+	mov r10, rsi
 	mov rbx, qword[rdi+0]
-	mov [rbx+rcx*4], ecx
+	lea r11, [rbx+r10*4]
+	mov r10d, ecx
+	mov [r11], r10d
 .L0x2d:
-	add qword[rbp-8], 1
+	inc rsi
 .L0x2c:
-	mov rcx, qword[rbp-16]
-	cmp qword[rbp-8], rcx
+	cmp rsi, qword[rbp-8]
 	jl .L0x2b
 .L0x2e:
 	xor rax, rax
@@ -347,16 +349,10 @@ ___void_push_back_pvectorint.int__return:
 	leave
 	ret
 _int_at_pvectorint.size_t:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rsi
-	mov rcx, qword[rbp-8]
 	mov rbx, qword[rdi+0]
-	mov r10d, [rbx+rcx*4]
-	mov eax, r10d
+	mov ecx, [rbx+rsi*4]
+	mov eax, ecx
 ___int_at_pvectorint.size_t__return:
-	leave
 	ret
 _void_resize_pvectorint.size_t:
 	push rbp
@@ -757,7 +753,7 @@ main:
 	call _void_printvec_pvectorint
 	mov rbx, rax
 	mov si, 5501
-	mov rdi, __LC.S4
+	mov rdi, __LC.S5
 	call _void_nc_pchar.short
 	mov rbx, rax
 	xor eax, eax
@@ -826,7 +822,7 @@ _void_nc_pchar.short:
 	xor rcx, rcx
 	cmp qword[rbp-56], rcx
 	jge .L0x74
-	mov rdi, __LC.S5
+	mov rdi, __LC.S6
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov rax, -1
@@ -871,9 +867,9 @@ _float_benchmark_p:
 	jmp .L0x77
 .L0x76:
 	mov r8, 1056964608
-	mov rcx, __LC.S7
+	mov rcx, __LC.S8
 	mov rdx, 123
-	mov rsi, __LC.S6
+	mov rsi, __LC.S7
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	mov al, 0
