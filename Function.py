@@ -912,6 +912,8 @@ class Function:
                     counts += 1
                 else:
                     p.register = norm_parameter_registers[countn]
+                    if (p.register == "rcx"):
+                        reralloc(p.register)
                     countn += 1
                 self.regdecls.append(
                     EC.ExpressionComponent(
@@ -972,7 +974,7 @@ class Function:
         # for functions that contain a return statement, extra info is needed
         # at the end of the function.
         if True:
-            if self.extern:
+            if self.extern and self.name != "main":
                 for reg in callee_registers:
                     self.addline(f"pop {reg}")
             self.addline(function_closer(
@@ -1714,10 +1716,10 @@ class Function:
 
         # inform the register allocator that rdx and rcx are off limits now that they are being
         # used for parameters (if they are needed)
-        rdxneeded = len(fn.parameters) - sum((p.t.isflt()
-                                              for p in fn.parameters)) > 2
-        rcxneeded = len(fn.parameters) - sum((p.t.isflt()
-                                              for p in fn.parameters)) > 1
+        rdxneeded = (len(fn.parameters) - sum((p.t.isflt()
+                                              for p in fn.parameters))) > 2
+        rcxneeded = (len(fn.parameters) - sum((p.t.isflt()
+                                              for p in fn.parameters))) > 1
         config.rdx_functioncalls_inprogress += rdxneeded
         config.rcx_functioncalls_inprogress += rcxneeded
 
@@ -3012,7 +3014,7 @@ class Function:
         realValue = function_allocator(
             self.stackCounter) if self.stackCounter > 0 or not self.inline else ""
         realValue += feature_instructions
-        if self.extern:
+        if self.extern and self.name != "main":
             for reg in reversed(callee_registers):
                 realValue+=(f"push {reg}\n")
 
@@ -3032,9 +3034,8 @@ class Function:
                     warn(UnusedVariable(v.dtok, v, self))
 
     def finalCleanup(self):
-        if self.regdeclremain_norm != 2 or self.regdeclremain_sse != 4:
-            for v in self.variables:
-                rfree(v.register)
+        for v in self.variables:
+            rfree(v.register)
 
     def optimize(self):
         # extra optimization:

@@ -287,17 +287,19 @@ ___void_insert_pvectorint.size_tint__return:
 _void_assign_pvectorint.size_tsize_tint:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 16
-	mov [rbp-8], rdx
+	sub rsp, 24
+	mov [rbp-8], rsi
+	mov [rbp-16], rdx
 	jmp .L0x2c
 .L0x2b:
-	mov rcx, rsi
+	mov rcx, qword[rbp-8]
 	mov rbx, qword[rdi+0]
 	mov [rbx+rcx*4], ecx
 .L0x2d:
-	inc rsi
+	add qword[rbp-8], 1
 .L0x2c:
-	cmp rsi, qword[rbp-8]
+	mov rcx, qword[rbp-16]
+	cmp qword[rbp-8], rcx
 	jl .L0x2b
 .L0x2e:
 	xor rax, rax
@@ -345,10 +347,16 @@ ___void_push_back_pvectorint.int__return:
 	leave
 	ret
 _int_at_pvectorint.size_t:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+	mov [rbp-8], rsi
+	mov rcx, qword[rbp-8]
 	mov rbx, qword[rdi+0]
-	mov ecx, [rbx+rsi*4]
-	mov eax, ecx
+	mov r10d, [rbx+rcx*4]
+	mov eax, r10d
 ___int_at_pvectorint.size_t__return:
+	leave
 	ret
 _void_resize_pvectorint.size_t:
 	push rbp
@@ -722,13 +730,6 @@ main:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 48
-	push r15
-	push r14
-	push r13
-	push r12
-	push r11
-	push r10
-	push rbx
 	lea rdi, [rbp-32]
 	call _void__Cvector_pvector.
 	mov qword[rbp-40], 0
@@ -760,13 +761,6 @@ main:
 	call _void_nc_pchar.short
 	mov rbx, rax
 	xor eax, eax
-	pop rbx
-	pop r10
-	pop r11
-	pop r12
-	pop r13
-	pop r14
-	pop r15
 __main__return:
 	push rax
 	lea rdi, [rbp-32]
