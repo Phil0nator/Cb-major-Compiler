@@ -252,7 +252,7 @@ def fncall(fn):
             out += """enter 0, 0\nand rsp, -16\n"""
         out += "call %s\n" % fn.getCallingLabel()
         if fn.extern:
-            out += "leave"
+            out += "leave\n"
         return out
     else:
         if not fn.isCompiled:

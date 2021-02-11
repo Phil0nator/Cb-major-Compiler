@@ -39,6 +39,10 @@ char* teststr = "x123";
 
 function int main(){
 
+    float t[] = {
+        2.5f
+    };
+
     vector<int> test;
     for range(i, 100){
         test.push_back((int) i);

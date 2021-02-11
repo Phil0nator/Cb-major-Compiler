@@ -2182,6 +2182,8 @@ class Function:
                     # object.member.member    =   "object.member.member"
                     vname = f"{self.current_token.value}"
                     var = self.getVariable(self.current_token.value)
+                    if var is None:
+                        throw(UnkownIdentifier(self.current_token))
                     glob = var.glob
                     # vstack keeps track of all the variable objects found in
                     # the chain
@@ -2735,8 +2737,7 @@ class Function:
                         else:
                             self.addline(loadToReg(itervar, value.accessor))
 
-                    elif isinstance(value.accessor, Variable):
-
+                    elif isinstance(value.accessor, Variable) and not (value.accessor.name.startswith("__LC.F")):
                         self.addline(
                             loadToReg(
                                 itervar, value.accessor
@@ -2746,8 +2747,11 @@ class Function:
                     else:
                         self.addline(
                             loadToReg(
-                                itervar, floatTo64h(
+                                'rax', floatTo64h(
                                     value.accessor.initializer)))
+                        self.addline(
+                            loadToReg(itervar, 'rax')
+                        )
                     itervar.offset -= var.t.csize()
 
                 autolen = (len(setval.accessor) - 1) * var.t.csize()
