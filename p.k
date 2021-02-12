@@ -1,4 +1,4 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 void printvec(vector<int> v){
@@ -39,9 +39,7 @@ char* teststr = "x123";
 
 function int main(){
 
-    float t[] = {
-        2.5f
-    };
+
 
     vector<int> test;
     for range(i, 100){

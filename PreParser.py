@@ -87,6 +87,7 @@ def getCompilerDefines():
 
     return defines
 
+predef_defines = ["__LINE__", "__FILE__", "__TIME__"]
 
 ##############################
 #

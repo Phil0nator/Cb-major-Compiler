@@ -227,7 +227,7 @@ def spush(v: EC.ExpressionComponent):
         return f"movq {rax}, {v.accessor}\npush {rax}\n"
     if(isinstance(v.accessor, Variable)):
         return f"{cast_regUp(rax, v.accessor, v.type.signed)}\npush {rax}\n"
-    return f"push {v.accessor}\n"
+    return f"push {setSize(v.accessor, 8)}\n"
 
 
 # pop from the stack into v
@@ -236,7 +236,7 @@ def spop(v: EC.ExpressionComponent):
         return f"pop {rax}\nmovq {valueOf(v.accessor)}, {rax}\n"
     if(isinstance(v.accessor, Variable)):
         return f"pop {rax}\nmov {valueOf(v.accessor)}, {rax}\n"
-    return f"pop {v.accessor}\n"
+    return f"pop {setSize(v.accessor, 8)}\n"
 
 
 # call a function
@@ -318,7 +318,7 @@ def valueOf(x, dflt=False, exactSize=True):
         if x.parent is not None:
             x.parent.referenced = True
         if(x.glob):
-            if(x.name.startswith("__LC.S") or x.t.function_template is not None):
+            if(x.name.startswith("__LC.S") or x.t.function_template is not None or x.t.ptrdepth > 1):
             
                 return f"{x.name}"
             return f"[{x.name}]" if not exactSize else f"{psizeoft(x.t)}[{x.name}]"
