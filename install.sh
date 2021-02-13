@@ -34,7 +34,7 @@ python3 -m pip install termcolor
 # it has available.
 python3 -m pip install cpuid
 python3 -m pip install python-Levenshtein
-
+python3 -m pip install llist
 
 # linux_installer contains all of the linux-specific operations
 function linux_installer(){

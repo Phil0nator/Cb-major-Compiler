@@ -180,18 +180,14 @@ class Compiler:
         #    (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
 
     def getType(self, qu: str) -> DType:               # get type of name q
-        q: str = f"{qu}"  # copy of querry
-        pd = q.count(".")   # pointer depth
-        q = q.replace(".", "")            # remove points from name for search
-
+        
         # search types for a datatype that shares a name with the querry
-        out: DType = next((t for t in self.types if t.name == q), None)
+        out: DType = next((t for t in self.types if t.name == qu), None)
         # if none exists, return
         if(out is None):
             return None
         # return safe copy of the type with the restored pointer depth
         out = out.copy()
-        out.ptrdepth = pd
         return out
 
     def deriveBaseType(self, t: DType) -> DType:
