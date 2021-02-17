@@ -13,6 +13,8 @@ import platform
 import cpuid
 import datetime
 import time
+from collections import deque
+
 
 
 
@@ -97,8 +99,8 @@ def getCompilerDefines():
 
 class PreProcessor:
     def __init__(self, tokens):
-
-        self.tokens = tokens                    # all tokens
+        self.tokens = deque(tokens)                    # all tokens
+        
         self.current_token = tokens[0]          # current token
         self.tkidx = 0                          # current position
 
@@ -137,6 +139,7 @@ class PreProcessor:
         self.tokens[self.tkidx] = None
         self.advance()
 
+
     # get a definition by name
     def getDefn(self, name) -> list:
         return self.definitions[name] if name in self.definitions else None
@@ -159,10 +162,26 @@ class PreProcessor:
     def loadRaw(self, path) -> str:
         return config.loadRawFile(path, self.current_token)
 
+
+    def insertTokens(self, start, end, tokens) -> None:
+        if start == end and len(tokens)>0:
+            rotation = ((len(self.tokens)-end))
+            self.tokens.rotate(rotation)
+            self.tokens.extend(tokens)
+            self.tokens.rotate(-rotation)
+            #exit()
+        elif len(tokens) == 0:
+            return
+        else:
+            ogstart = start
+            for i in range((end-start)):
+                self.tokens.remove(self.tokens[start])
+            self.insertTokens(ogstart, ogstart, tokens)
+
+
     # #include directive
     def buildIncludeStatement(self) -> None:
         self.delmov()
-
         # verify syntax
         self.checkToks([T_STRING, T_INCLUDER])
         path = self.current_token.value
@@ -188,7 +207,8 @@ class PreProcessor:
         self.delmov()
 
         # emplace the new tokens ahead of the current position
-        self.tokens[self.tkidx:self.tkidx] = tokens[:-1]
+        #self.tokens[self.tkidx:self.tkidx] = tokens[:-1]
+        self.insertTokens(self.tkidx, self.tkidx, tokens[:-1])
         self.update()
 
         
@@ -267,7 +287,8 @@ class PreProcessor:
         # if a define was found:
         self.delmov()
         # replace its token with the tokens found in it's definition
-        self.tokens[self.tkidx:self.tkidx] = dq[1]
+        self.insertTokens(self.tkidx, self.tkidx, dq[1])
+        #self.tokens[self.tkidx:self.tkidx] = dq[1]
 
     # #ifdef directive
     def buildifdef(self) -> None:
@@ -379,6 +400,7 @@ class PreProcessor:
             if (id == "__STRINGIFY__"):
                 o = self.doStringify()
                 self.tokens[startidx] = None
+                
                 self.tokens[startidx:self.tkidx] = [
                     Token(T_STRING, o, starttok.start, starttok.end)]
                 self.tkidx = startidx
@@ -445,7 +467,8 @@ class PreProcessor:
             tks = macro.get(inps, starttok)
 
             self.tokens[startidx] = None
-            self.tokens[startidx:self.tkidx] = tks
+            self.insertTokens(startidx, self.tkidx, tks)
+            #self.tokens[startidx:self.tkidx] = tks
 
             self.tkidx = startidx
             self.update()
@@ -510,8 +533,9 @@ class PreProcessor:
 
     # main function
     def process(self):
-
+        
         while self.current_token.tok != T_EOF:
+
             self.update()
             if(self.current_token.tok == T_DIRECTIVE):
                 # token is directive

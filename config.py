@@ -8,7 +8,6 @@
 ########
 #   (The below snippet is used to ensure all dependencies are satisfied)
 ########
-
 import platform
 import pkg_resources
 import subprocess
