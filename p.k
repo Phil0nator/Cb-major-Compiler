@@ -1,4 +1,4 @@
-#define __CBLIB_SOURCE
+//#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 void printvec(vector<int> v){
@@ -36,16 +36,14 @@ void testdivision(){
 }
 
 char* teststr = "x123";
+vector<int> test;
 
 function int main(){
 
-
-
-    vector<int> test;
     for range(i, 100){
         test.push_back((int) i);
     }
-
+    
     printvec(test);
     nc("127.0.0.1", 5501);
     return 0;

@@ -959,7 +959,10 @@ def registerizeValueType(t, obj, countn, counts):
     instr = ""
     outreg = ""
     if isinstance(obj, Variable):
-        addrtext = f'[{obj.baseptr}{obj.offset+t.csize()}]'
+        if obj.glob:
+            addrtext = f'[{obj.name}]'
+        else:
+            addrtext = f'[{obj.baseptr}{obj.offset+t.csize()}]'
 
     elif isinstance(obj, str) and obj in normal_size:
         addrtext = f'[{obj}]'
@@ -1023,21 +1026,24 @@ def moveVector(size, regdest, regsource):
 
 def savePartOfReg(var, extraoff, reg, b):
     instr = ""
+    addrtext = f"{var.baseptr}{var.offset+extraoff + var.t.csize()}" if not var.glob    \
+        else f"{var.name}+{extraoff + var.t.csize()}"
+    
     if b <= 0:
         return ""
     if b > 8:
-        instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 8)}\n"
+        instr += f"mov [{addrtext}], {setSize(reg, 8)}\n"
 
     elif b % 2 == 0 or b == 1:
-        instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, b)}\n"
+        instr += f"mov [{addrtext}], {setSize(reg, b)}\n"
     else:
         if b == 3:
-            instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 2)}\n"
+            instr += f"mov [{addrtext}], {setSize(reg, 2)}\n"
             extraoff += 2
             instr += f"sar {reg}, 16\n"
             instr += savePartOfReg(var, extraoff, reg, 1)
         elif b == 5:
-            instr += f"mov [{var.baseptr}{var.offset+extraoff + var.t.csize()}], {setSize(reg, 4)}\n"
+            instr += f"mov [{addrtext}], {setSize(reg, 4)}\n"
             extraoff += 4
             instr += f"sar {reg}, 32\n"
             instr += savePartOfReg(var, extraoff, reg, 1)
@@ -1047,28 +1053,34 @@ def savePartOfReg(var, extraoff, reg, b):
 
 def packVarToYmm(var, reg, size):
     instr = ""
+    addrtext = f"{var.baseptr}{var.offset+size}" if not var.glob \
+        else f"{var.name}"
     if size == 32:
-        return f"vmovdqu {reg}, [{var.baseptr}{var.offset+size}]\n"
+        return f"vmovdqu {reg}, [{addrtext}]\n"
     else:
         xmmreg = reg.replace("y", 'x')
         instr += packVarToXmm(var, xmmreg, size - 16)
         instr += f"vinsertf128 {reg}, {reg}, {xmmreg}, 1\n"
-        instr += f"movdqu {xmmreg}, [{var.baseptr}{var.offset+size}]\n"
+        instr += f"movdqu {xmmreg}, [{addrtext}]\n"
         return instr
 
 
 def packVarToXmm(var, reg, size):
     instr = ""
+    baseAddr = f"{var.baseptr}{var.offset + size}" if not var.glob \
+        else f"{var.name}"
+    secondaryAddr = f"{var.baseptr}{var.offset + size-8}" if not var.glob \
+        else f"{var.name}-8"
     if size == 16:
-        return f"movdqu {reg}, [{var.baseptr}{var.offset + size}]\n"
+        return f"movdqu {reg}, [{baseAddr}]\n"
 
     else:
-        instr = f"movq {reg}, [{var.baseptr}{var.offset + size}]\n"
+        instr = f"movq {reg}, [{baseAddr}]\n"
         if size - 8 == 4:
-            instr += f"movhpd {reg}, [{var.baseptr}{var.offset + size-8}]\n"
+            instr += f"movhpd {reg}, [{secondaryAddr}]\n"
             pass
         else:
-            instr += f'xor rax, rax\nmov {setSize("rax", size-8)}, [{var.baseptr}{var.offset + size-8}]\n'
+            instr += f'xor rax, rax\nmov {setSize("rax", size-8)}, [{secondaryAddr}]\n'
             cmd = "movd" if size < 4 else "movq"
             ax = 'eax' if size < 4 else "rax"
             instr += f"{cmd} xmm7, {ax}\n"
@@ -1084,9 +1096,10 @@ def unpackXmmToVar(var, extraoff, reg, t, safe=True):
     # However, when dereferencing pointers with an unkown origin,
     # it is important to get the memory bounds exactly correct
     # to avoid a segmentation fault.
-
+    addrtext = f"{var.baseptr}{var.offset+t.csize()+extraoff}" if not var.glob \
+        else f"{var.name}+{extraoff}"
     if safe == False:
-        return f"movdqu [{var.baseptr}{var.offset+t.csize()+extraoff}], {reg}\n"
+        return f"movdqu [{addrtext}], {reg}\n"
 
     instr = ""
     instr += f"movq rax, {reg}\n"
@@ -1095,7 +1108,7 @@ def unpackXmmToVar(var, extraoff, reg, t, safe=True):
 
     size = t.csize()
     if size >= 8:
-        instr += f"mov [{var.baseptr}{var.offset+extraoff+t.csize()}], rax\n"
+        instr += f"mov [{addrtext}], rax\n"
         remaining = t.csize() - 24
         instr += savePartOfReg(var, extraoff - 8, 'rbx', remaining)
 

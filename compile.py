@@ -115,6 +115,8 @@ def main():
     asm = asm.replace("%%CEXTERNS%%", config.__CEXTERNS__)
     asm = asm.replace("%%CONSTANTS%%", c.constants)
     asm = asm.replace("%%MACROTEXT%%", config.__macrotext__)
+    asm = asm.replace("%%INIT%%", c.inittext)
+    asm = asm.replace("%%FINI%%", c.fini)
     del c
     # cleanup
 

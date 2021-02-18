@@ -2495,7 +2495,8 @@ class Function:
 
         # keep track of the old stack counter for dead code elimination
         stackRestore = self.stackCounter
-
+        # keep track of old assembly so that dead code can be removed
+        asmrestore = len(self.asm)
         # declaration datatype
         t = self.checkForType()
 
@@ -2675,7 +2676,7 @@ class Function:
             self.ctidx -= 3
             self.advance()
             # record asm state in case this turns out to be dead code
-            asmrestore = len(self.asm)
+            
 
             instr, __ = self.evaluateExpression(destination=False)
             if var.name not in self.unreferenced:

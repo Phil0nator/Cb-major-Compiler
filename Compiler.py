@@ -2,7 +2,7 @@ import Classes.DType as Type
 import config
 from Assembly.CodeBlocks import (createFloatConstant, createIntrinsicConstant,
                                  createStringConstant, extra_parameterlabel,
-                                 functionlabel)
+                                 functionlabel, fncall)
 from Assembly.Registers import (norm_parameter_registers,
                                 norm_scratch_registers,
                                 norm_scratch_registers_inuse, ralloc, rfree,
@@ -53,6 +53,8 @@ class Compiler:
         # raw assembly to call the given entrypoint (usually main)
         self.entry: str = ""
         self.text: str = ""                  # raw .text assembly
+        self.inittext: str = ""             # raw init assembly
+        self.fini: str = ""                 # raw fini assembly
         self.currentfname: str = ""          # current filename
         self.currentTokens: list = []         # current tokens: Token
 
@@ -335,7 +337,7 @@ class Compiler:
         self.globals.append(v)
 
     # create an arbitrary constant in self.constants
-    def createConstant(self, extern=False) -> None:
+    def buildGlobal(self, extern=False) -> None:
         # track start
         startidx = self.ctidx
         # check for a datatype
@@ -453,7 +455,19 @@ class Compiler:
 
     def createGlobalStructure(self, var, dtok, addToHeap, starter=""):
         if addToHeap:
+        
             self.heap += f"{var.name}:\n"
+            # implicit constructor
+            implicitConstructor = var.t.getConstructor([var.t.up])
+            if implicitConstructor is not None:
+                self.inittext += f"mov rdi, {var.name}\n{fncall(implicitConstructor)}"
+            destructor = var.t.destructor
+            if destructor is not None:
+                self.fini += f"mov rdi, {var.name}\n{fncall(destructor)}"
+        
+        size_added = 0
+        
+        
         for v in var.t.members:
             if isinstance(v.initializer, Function):
                 continue 
@@ -462,7 +476,15 @@ class Compiler:
             )
             self.globals[-1].dtok = dtok
             if addToHeap:
+                size_added += v.t.csize()
                 self.heap+=f"{self.globals[-1].name}: resb {v.t.csize()}\n"
+
+        
+        
+        
+        if addToHeap and size_added != var.t.csize():
+            self.heap += f"resb {var.t.csize()-size_added}\n"
+
 
     # isolate a function and build a Function object
     def buildFunction(self, thisp=False, thispt=None,
@@ -992,7 +1014,7 @@ class Compiler:
     def buildUnsigned(self, thisp=False, thispt=None) -> None:
         s = self.current_token
         self.advance()
-        self.createConstant()
+        self.buildGlobal()
         v = self.globals[-1]
         if(v.isflt()):
             throw(InvalidSignSpecifier(s))
@@ -1106,7 +1128,7 @@ class Compiler:
 
         else:  # if is variable
 
-            self.createConstant(True)
+            self.buildGlobal(True)
 
             config.__CEXTERNS__ += f"{_asm_extern_indicator} " + \
                 self.globals[-1].name + "\n"
@@ -1127,7 +1149,7 @@ class Compiler:
 
         else:
 
-            self.createConstant(True)
+            self.buildGlobal(True)
             config.__CEXTERNS__ += f"{_asm_extern_indicator} " + \
                 self.globals[-1].name + "\n"
     # __cdecl is always followed by a function declaration
@@ -1192,7 +1214,7 @@ class Compiler:
         # lines begining with an ID will be a global variable
         # (Or function, but that is handled in createConstant())
         if (self.current_token.tok == T_ID):
-            self.createConstant()
+            self.buildGlobal()
         elif (self.current_token.tok == T_KEYWORD):
 
             # check if a response exists for given keyword
