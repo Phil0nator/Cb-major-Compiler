@@ -29,7 +29,7 @@ from Classes.Error import *
 from Classes.Token import *
 from Classes.Variable import *
 from ExpressionEvaluator import (ExpressionEvaluator, LeftSideEvaluator,
-                                 depositFinal, optloadRegs)
+                                 depositFinal)
 from globals import (BOOL, CHAR, DOUBLE, INT, LONG, OPERATORS, SHORT, VOID,
                      TsCompatible, isIntrinsic)
 from Optimizers.Intraprocedural import IntraproceduralOptimizer

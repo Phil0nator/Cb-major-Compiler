@@ -1,4 +1,4 @@
-//#define __CBLIB_SOURCE
+#define __CBLIB_SOURCE
 #include "cblib.cb"
 
 void printvec(vector<int> v){
