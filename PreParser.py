@@ -412,9 +412,13 @@ class PreProcessor:
                     self.current_token.value) is not None or self.getDefn(
                     self.current_token.value) is not None
 
-                self.tokens[startidx:self.tkidx + 2] = [
+                #self.tokens[startidx:self.tkidx + 2] = [
+                #    Token(T_INT, int(value), starttok.start, starttok.end)
+                #]
+
+                self.insertTokens(startidx, self.tkidx+2, [
                     Token(T_INT, int(value), starttok.start, starttok.end)
-                ]
+                ])
 
                 self.tkidx = startidx
 

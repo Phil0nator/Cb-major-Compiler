@@ -39,6 +39,11 @@ ostream ostream::operator << (char data){
     return @this;
 }
 
+ostream ostream::operator <<(int data){
+    fprintf(handle, "%i", data);
+    return @this;
+}
+
 ostream ostream::operator << (string data){
     fputs(handle , data.raw);
     return @this;
