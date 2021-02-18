@@ -212,7 +212,6 @@ class UnkownFunction(Error):
     def __init__(self, tok, name, types):
         self.tok = tok
         self.message = f"Unkown function {name} with parameter types {types} :"
-
         for function in config.GlobalCompiler.functions:
             if function.name == name:
                 notestack.append(

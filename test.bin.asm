@@ -168,7 +168,7 @@ global _long_system_pchar.:
 global _void_mutex_cmpxchg_pmutex.intint:
 global _void_mlock_pmutex.:
 global _void_munlock_pmutex.:
-global _void_thread_create_pthread_t.__threadcallablevoid.:
+global _void_thread_create_pthread_t.__threadcallable.void.:
 global _void_thread_join_pthread_t.:
 	section .data align=8
 __linux_errstrlist: DQ __LC.S0, __LC.S1, __LC.S2, __LC.S3, __LC.S4, __LC.S5, __LC.S6, __LC.S7, __LC.S8, __LC.S9, __LC.S10, __LC.S11, __LC.S12, __LC.S13, __LC.S14, __LC.S15, __LC.S16, __LC.S17, __LC.S18, __LC.S19, __LC.S20, __LC.S21, __LC.S22, __LC.S23, __LC.S24, __LC.S25, __LC.S26, __LC.S27, __LC.S28, __LC.S29, __LC.S30, __LC.S31, __LC.S32, __LC.S33, __LC.S34, __LC.S35, __LC.S36, __LC.S37, __LC.S38, __LC.S39, __LC.S40, __LC.S41, __LC.S42, __LC.S43, __LC.S44, __LC.S45, __LC.S46, __LC.S47, __LC.S48, __LC.S49, __LC.S50, __LC.S51, __LC.S52, __LC.S53, __LC.S54, __LC.S55, __LC.S56, __LC.S57, __LC.S58, __LC.S59, __LC.S60, __LC.S61, __LC.S62, __LC.S63, __LC.S64, __LC.S65, __LC.S66, __LC.S67, __LC.S68, __LC.S69, __LC.S70, __LC.S71, __LC.S72, __LC.S73, __LC.S74, __LC.S75, __LC.S76, __LC.S77, __LC.S78, __LC.S79, __LC.S80, __LC.S81, __LC.S82, __LC.S83, __LC.S84, __LC.S85, __LC.S86, __LC.S87, __LC.S88, __LC.S89, __LC.S90, __LC.S91, __LC.S92, __LC.S93, __LC.S94, __LC.S95, __LC.S96, __LC.S97, __LC.S98, __LC.S99, __LC.S100, __LC.S101, __LC.S102, __LC.S103, __LC.S104, __LC.S105, __LC.S106, __LC.S107, __LC.S108, __LC.S109, __LC.S110, __LC.S111, __LC.S112, __LC.S113, __LC.S114, __LC.S115, __LC.S116, __LC.S117, __LC.S118, __LC.S119, __LC.S120, __LC.S121, __LC.S122, __LC.S123, __LC.S124, __LC.S125, __LC.S126, __LC.S127, __LC.S128
@@ -403,13 +403,21 @@ test:
 test.begin: resb 8
 test.end: resb 8
 test.stop: resb 8
+testptr:
+testptr.begin: resb 8
+testptr.end: resb 8
+testptr.stop: resb 8
 	section .init align=16
 __cbbuiltin_initheader:
 	mov rdi, test
 	call _void__Cvector_pvector.
+	mov rdi, testptr
+	call _void__Cvector_pvector.
 	section .fini align=16
 __cbbuiltin_finifooter:
 	mov rdi, test
+	call _void__Dvector_pvector.
+	mov rdi, testptr
 	call _void__Dvector_pvector.
 	section .text align=16
 	global main
@@ -5944,7 +5952,7 @@ _long_thrdcrt_pvoid.thread_t.void.:
 	mov rdi, r15
 	mov rsi, r14
 	mov rdx, r13
-	call _long___enterthread_p__threadcallablethread_t.void.
+	call _long___enterthread_p__threadcallable.thread_t.void.
 	mov rdi, rax
 	call _void___thrdext_plong
 .L0x2ef__end:
@@ -5964,7 +5972,7 @@ _void.___crtstack_p:
 .L0x2f3:
 ___void.___crtstack_p__return:
 	ret
-_long___enterthread_p__threadcallablethread_t.void.:
+_long___enterthread_p__threadcallable.thread_t.void.:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 40
@@ -5982,10 +5990,10 @@ _long___enterthread_p__threadcallablethread_t.void.:
 	mov rbx, rax
 	mov rbx, qword[rbp-32]
 	mov rax, rbx
-___long___enterthread_p__threadcallablethread_t.void.__return:
+___long___enterthread_p__threadcallable.thread_t.void.__return:
 	leave
 	ret
-_void_thread_create_pthread_t.__threadcallablevoid.:
+_void_thread_create_pthread_t.__threadcallable.void.:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 32
@@ -6000,7 +6008,8 @@ _void_thread_create_pthread_t.__threadcallablevoid.:
 	mov rdx, rbx
 	mov rbx, qword[rbp-8]
 	mov rsi, rbx
-	mov rdi, qword[rbp-16]
+	mov rbx, qword[rbp-16]
+	mov rdi, rbx
 	call _long_thrdcrt_pvoid.thread_t.void.
 	mov rbx, rax
 	mov rcx, qword[rbp-8]
@@ -6010,7 +6019,7 @@ _void_thread_create_pthread_t.__threadcallablevoid.:
 	mov r10, qword[rbp-16]
 	mov [rbx], r10
 	xor rax, rax
-___void_thread_create_pthread_t.__threadcallablevoid.__return:
+___void_thread_create_pthread_t.__threadcallable.void.__return:
 	leave
 	ret
 _void_thread_join_pthread_t.:

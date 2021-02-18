@@ -41,7 +41,7 @@ long thrdcrt(void* fn, thread_t* dest, void* arg){
     mov rdi, r15
     mov rsi, r14
     mov rdx, r13
-    call _long___enterthread_p__threadcallablethread_t.void.
+    call _long___enterthread_p__threadcallable.thread_t.void.
     mov rdi, rax
     call _void___thrdext_plong
 

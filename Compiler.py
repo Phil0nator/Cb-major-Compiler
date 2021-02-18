@@ -306,7 +306,7 @@ class Compiler:
 
         self.advance()
         # get pointer depth:
-        ptrdepth = 0
+        ptrdepth = t.ptrdepth
         while self.current_token.tok == "*":
             ptrdepth += 1
             self.advance()
@@ -858,8 +858,8 @@ class Compiler:
                 if len(t[1]) != len(types):
                     break
 
-                fulleq = ''.join([ty.name for ty in t[1]]) == ''.join(
-                    [ty.name for ty in types])
+                fulleq = ''.join([str(ty) for ty in t[1]]) == ''.join(
+                    [str(ty) for ty in types])
 
                 if fulleq:
                     return t[2].copy()
@@ -899,7 +899,7 @@ class Compiler:
                 # update type, but maintain pointer depth
                 pd = member.t.ptrdepth
                 member.t = assosiation[member.t.name].copy()
-                member.t.ptrdepth = pd
+                member.t.ptrdepth += pd
 
             if(isinstance(member.initializer, Function)):
                 pass
@@ -968,7 +968,7 @@ class Compiler:
                 fn.parameters[i] = fn.parameters[i].copy()
                 pd = fn.parameters[i].t.ptrdepth
                 fn.parameters[i].t = types[tns.index(p.t.name)]
-                fn.parameters[i].t.ptrdepth = pd
+                fn.parameters[i].t.ptrdepth += pd
 
         # check if the function has already been built before
         fnexist = templatefn.getFunction(

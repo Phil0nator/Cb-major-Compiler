@@ -1010,8 +1010,10 @@ def moveParameterVector(size, regsource, countn, counts):
         regdest = sse_parameter_registers[counts]
 
     if size <= 16:
-        return f"movdqa {regdest}, {regsource}\n"
-
+        if "xmm" in regsource:
+            return f"movdqa {regdest}, {regsource}\n"
+        else:
+            return f"movdqu {regdest}, [{regsource}]\n"
     return f"vmovdqa y{regdest[1:]}, {regsource}\n"
 
 

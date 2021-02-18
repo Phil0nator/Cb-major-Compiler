@@ -1004,7 +1004,7 @@ class ExpressionEvaluator:
         
         # check for special case with member access
         if op == "->":
-            return self.compile_memberAccessOverload(
+            return instr + self.compile_memberAccessOverload(
                 a, b, evaluator, stack) + self.overloadFooter()
 
         # check to see if this type has an overload for this operation
@@ -1014,7 +1014,7 @@ class ExpressionEvaluator:
             # special case with default copy overload
             if op == "=" and self.fn.compiler.Tequals(
                     a.type.name, b.type.name):
-                return self.buildDefaultOperatorEquals(
+                return instr + self.buildDefaultOperatorEquals(
                     a, b, evaluator, stack) + self.overloadFooter()
             # otherwise, throw an error
             throw(NoOverloadOp(a.token, a.type, b.type, op))

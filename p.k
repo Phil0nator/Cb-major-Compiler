@@ -37,9 +37,11 @@ void testdivision(){
 
 char* teststr = "x123";
 vector<int> test;
-
+vector<int> testptr;
 function int main(){
 
+
+    
     for range(i, 100){
         test.push_back((int) i);
     }
