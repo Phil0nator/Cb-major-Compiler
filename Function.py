@@ -1087,7 +1087,7 @@ class Function:
             self.advance()
 
         # check if the resultant will always evaluate to false
-        elif(resultant.isconstint() and resultant.accessor != 0) or not resultant.isconstint():
+        elif not resultant.isconstint():
 
             preInstructions += f"{checkTrue(resultant)}jz {postlabel}\n"
 

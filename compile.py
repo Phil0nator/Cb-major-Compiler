@@ -39,7 +39,6 @@
 #           - run
 #           etc...
 #######################################################
-
 import time
 import traceback
 import re
@@ -64,7 +63,6 @@ def asm_labelRepl(match):
 
 
 def main():
-
     # record time of start
     beginTime = time.time()
 

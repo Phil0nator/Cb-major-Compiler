@@ -34,6 +34,13 @@ struct ostream{
      * @returns A const copy of this, for use in larger expressions
      */
     CBLIBENTRY ostream operator <<(long data);
+    
+    /**
+     * Emit an integer.
+     * @param data integer to emit
+     * @returns A const copy of this, for use in larger expressions
+     */
+    CBLIBENTRY ostream operator <<(int data);
 
     /**
      * Emit an unsigned long.
@@ -67,9 +74,9 @@ struct ostream{
      * Emit a string object.
      * @param data string to emit
      * @returns A const copy of this, for use in larger expressions
-     */
+     
     CBLIBENTRY ostream operator << (string data);
-
+    */
 
 };
 

@@ -13,13 +13,9 @@ import platform
 import cpuid
 import datetime
 import time
+from collections import deque
 
 
-def join(arr, d):
-    out = ""
-    for s in arr:
-        out += s + d
-    return out
 
 
 # add the compiler-produced define macros
@@ -87,7 +83,6 @@ def getCompilerDefines():
 
     return defines
 
-predef_defines = ["__LINE__", "__FILE__", "__TIME__"]
 
 ##############################
 #
@@ -104,8 +99,8 @@ predef_defines = ["__LINE__", "__FILE__", "__TIME__"]
 
 class PreProcessor:
     def __init__(self, tokens):
-
-        self.tokens = tokens                    # all tokens
+        self.tokens = deque(tokens)                    # all tokens
+        
         self.current_token = tokens[0]          # current token
         self.tkidx = 0                          # current position
 
@@ -119,14 +114,16 @@ class PreProcessor:
         # }
 
         self.definitions = {}
-
+        self.possible_defines = ["__LINE__", "__FILE__", "__TIME__"]+[d[0] for d in definitions]
         for d in definitions:
             self.definitions[d[0]] = d
 
         # macros are #defines that define a function-like directive:
         # e.g: #define MY_MACRO(x) (x*x-x+x/x)
         self.macros = []
-        self.dels = 0                           # number of tokens deleted
+
+        self.includeCache = {}
+        self.includeMulti = {}
 
     # move to next token
     def advance(self) -> None:
@@ -141,7 +138,7 @@ class PreProcessor:
     def delmov(self) -> None:
         self.tokens[self.tkidx] = None
         self.advance()
-        self.dels += 1
+
 
     # get a definition by name
     def getDefn(self, name) -> list:
@@ -165,25 +162,56 @@ class PreProcessor:
     def loadRaw(self, path) -> str:
         return config.loadRawFile(path, self.current_token)
 
+
+    def insertTokens(self, start, end, tokens) -> None:
+        if start == end and len(tokens)>0:
+            rotation = ((len(self.tokens)-end))
+            self.tokens.rotate(rotation)
+            self.tokens.extend(tokens)
+            self.tokens.rotate(-rotation)
+            #exit()
+        elif len(tokens) == 0:
+            return
+        else:
+            ogstart = start
+            for i in range((end-start)):
+                self.tokens.remove(self.tokens[start])
+            self.insertTokens(ogstart, ogstart, tokens)
+
+
     # #include directive
     def buildIncludeStatement(self) -> None:
         self.delmov()
-
         # verify syntax
         self.checkToks([T_STRING, T_INCLUDER])
         path = self.current_token.value
-        # \see loadRaw
-        rawdata = self.loadRaw(path)
+        
+        if path not in self.includeCache:
+        
+            # \see loadRaw
+            rawdata = self.loadRaw(path)
 
-        # create tokens from new file, and insert them in this PreProcessor's
-        # tokenlist
-        lex = Lexer(path, rawdata)
+            # create tokens from new file, and insert them in this PreProcessor's
+            # tokenlist
+            lex = Lexer(path, rawdata)
 
-        tokens = lex.getTokens()
+            tokens = lex.getTokens()
+
+
+            self.includeCache[path] = tokens
+            self.includeMulti[path] = False
+        elif self.includeMulti[path]:
+            tokens = self.includeCache[path]
+        else:
+            tokens = []
         self.delmov()
+
         # emplace the new tokens ahead of the current position
-        self.tokens[self.tkidx:self.tkidx] = tokens[:-1]
+        #self.tokens[self.tkidx:self.tkidx] = tokens[:-1]
+        self.insertTokens(self.tkidx, self.tkidx, tokens[:-1])
         self.update()
+
+        
 
     # #define directive
     def buildDefine(self) -> None:
@@ -208,6 +236,7 @@ class PreProcessor:
             # add new defn
             self.definitions[name] = [
                 name, []]
+            self.possible_defines.append(name)
             return
 
         # begin collecting tokens for a longer definition
@@ -225,6 +254,7 @@ class PreProcessor:
 
         # add new defn
         self.definitions[name] = [name, definitionTokens]
+        self.possible_defines.append(name)
 
     # check if current token (id) is a macro
     # if so, replace it with the actual values for that macro
@@ -257,7 +287,8 @@ class PreProcessor:
         # if a define was found:
         self.delmov()
         # replace its token with the tokens found in it's definition
-        self.tokens[self.tkidx:self.tkidx] = dq[1]
+        self.insertTokens(self.tkidx, self.tkidx, dq[1])
+        #self.tokens[self.tkidx:self.tkidx] = dq[1]
 
     # #ifdef directive
     def buildifdef(self) -> None:
@@ -279,7 +310,6 @@ class PreProcessor:
     def skipIfbody(self) -> None:
         opens = 1
         # opens mark the number of nested if's that are started
-
         # while the scope is within the original #if, delete tokens
         while opens > 0:
             self.delmov()
@@ -340,6 +370,7 @@ class PreProcessor:
         # leave the rest of the construction to the Macro class
         m = Macro(name, inputs, body)
         self.macros.append(m)
+        self.possible_defines.append(name)
 
     # handle the builtin __STRINGIFY__ macro
     def doStringify(self) -> None:
@@ -369,6 +400,7 @@ class PreProcessor:
             if (id == "__STRINGIFY__"):
                 o = self.doStringify()
                 self.tokens[startidx] = None
+                
                 self.tokens[startidx:self.tkidx] = [
                     Token(T_STRING, o, starttok.start, starttok.end)]
                 self.tkidx = startidx
@@ -380,9 +412,13 @@ class PreProcessor:
                     self.current_token.value) is not None or self.getDefn(
                     self.current_token.value) is not None
 
-                self.tokens[startidx:self.tkidx + 2] = [
+                #self.tokens[startidx:self.tkidx + 2] = [
+                #    Token(T_INT, int(value), starttok.start, starttok.end)
+                #]
+
+                self.insertTokens(startidx, self.tkidx+2, [
                     Token(T_INT, int(value), starttok.start, starttok.end)
-                ]
+                ])
 
                 self.tkidx = startidx
 
@@ -435,7 +471,8 @@ class PreProcessor:
             tks = macro.get(inps, starttok)
 
             self.tokens[startidx] = None
-            self.tokens[startidx:self.tkidx] = tks
+            self.insertTokens(startidx, self.tkidx, tks)
+            #self.tokens[startidx:self.tkidx] = tks
 
             self.tkidx = startidx
             self.update()
@@ -500,8 +537,9 @@ class PreProcessor:
 
     # main function
     def process(self):
-
+        
         while self.current_token.tok != T_EOF:
+
             self.update()
             if(self.current_token.tok == T_DIRECTIVE):
                 # token is directive
@@ -513,7 +551,7 @@ class PreProcessor:
                 else:
                     fatalThrow(UnkownDirective(self.current_token))
 
-            elif(self.current_token.tok == T_ID):
+            elif(self.current_token.tok == T_ID and self.current_token.value in self.possible_defines):
                 self.checkDefn()
 
             else:
@@ -523,9 +561,8 @@ class PreProcessor:
         return list(filter(badfilter, self.tokens))
 
 
-def badfilter(token):
-    return token is not None and token.tok != T_BSLASH
 
+badfilter = lambda token : token is not None and token.tok != T_BSLASH
 
 directive_responses = {
     "include": PreProcessor.buildIncludeStatement,
@@ -536,5 +573,5 @@ directive_responses = {
     "endif": PreProcessor.delmov,
     "link": PreProcessor.addobject,
     "error": PreProcessor.buildError,
-    "warning": PreProcessor.buildWarning
+    "warning": PreProcessor.buildWarning,
 }

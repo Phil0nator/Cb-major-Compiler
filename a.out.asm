@@ -108,11 +108,11 @@ global _string_.operator33_pstring.char.:
 global _void_.operator32_postream.fd_t:
 global _ostream_.operator18_postream.char.:
 global _ostream_.operator18_postream.long:
-global _ostream_.operator18_postream.int:
 global _ostream_.operator18_postream.ulong:
 global _ostream_.operator18_postream.float:
 global _ostream_.operator18_postream.double:
 global _ostream_.operator18_postream.char:
+global _ostream_.operator18_postream.string:
 global _void_feed_pStack.void.:
 global _void_alloc_pStack.size_t:
 global _void_destroy_pStack.:
@@ -189,11 +189,11 @@ cerr:
 cerr.handle: DQ 2
 clog:
 clog.handle: DQ 2
-__systembashpath: DQ __LC.S173
-__emptyenv: DQ __LC.S174, 0, 0
-__systemcallargvconst: DQ __LC.S175, __LC.S176, 0, 0
+__systembashpath: DQ __LC.S172
+__emptyenv: DQ __LC.S173, 0, 0
+__systemcallargvconst: DQ __LC.S174, __LC.S175, 0, 0
 clone_threadflags: DQ 4001553
-teststr: DQ __LC.S182
+teststr: DQ __LC.S181
 __LC.S0: db `Operation not permitted`, 0
 __LC.S1: db `No such file or directory`, 0
 __LC.S2: db `No such process`, 0
@@ -366,21 +366,20 @@ __LC.S168: db `%ul`, 0
 __LC.S169: db `%f`, 0
 __LC.S170: db `%e`, 0
 __LC.S171: db `%c`, 0
-__LC.S172: db `%i`, 0
-__LC.S173: db `/bin/bash`, 0
-__LC.S174: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
-__LC.S175: db `sudo`, 0
-__LC.S176: db `-c`, 0
-__LC.S177: db `LOCKED`, 0
-__LC.S178: db `[`, 0
-__LC.S179: db `%i, `, 0
-__LC.S180: db `%i]\n`, 0
-__LC.S181: db `%l: %l\n`, 0
-__LC.S182: db `x123`, 0
-__LC.S183: db `127.0.0.1`, 0
-__LC.S184: db `Lost connection to host.`, 0
-__LC.S185: db `123hd0.5: \t %i%s%f`, 0
-__LC.S186: db `hd`, 0
+__LC.S172: db `/bin/bash`, 0
+__LC.S173: db `PATH=/bin:/usr/bin:/sbin:/usr/sbin`, 0
+__LC.S174: db `sudo`, 0
+__LC.S175: db `-c`, 0
+__LC.S176: db `LOCKED`, 0
+__LC.S177: db `[`, 0
+__LC.S178: db `%i, `, 0
+__LC.S179: db `%i]\n`, 0
+__LC.S180: db `%l: %l\n`, 0
+__LC.S181: db `x123`, 0
+__LC.S182: db `127.0.0.1`, 0
+__LC.S183: db `Lost connection to host.`, 0
+__LC.S184: db `123hd0.5: \t %i%s%f`, 0
+__LC.S185: db `hd`, 0
 	section .bss align=8
 __tmbuf:
 __tmbuf.tm_sec: resb 4
@@ -5032,29 +5031,6 @@ _ostream_.operator18_postream.char:
 ___ostream_.operator18_postream.char__return:
 	leave
 	ret
-_ostream_.operator18_postream.int:
-	push rbp
-	mov rbp, rsp
-	sub rsp, 32
-	mov [rbp-8], rdi
-	mov [rbp-16], rsi
-	push rdi
-	movsxd rdx, dword[rbp-16]
-	mov rsi, __LC.S172
-	mov rbx, qword[rdi+0]
-	mov rdi, rbx
-	mov al, 0
-	enter 0, 0
-	and rsp, -16
-	call fprintf
-	leave
-	pop rdi
-	mov rbx, rax
-	mov rbx, qword[rbp-8]
-	mov rax, rbx
-___ostream_.operator18_postream.int__return:
-	leave
-	ret
 _ostream_.operator18_postream.string:
 	push rbp
 	mov rbp, rsp
@@ -5839,7 +5815,7 @@ _void_mlock_pmutex.:
 	mov ebx, dword[rbp-16]
 	test ebx, ebx
 	jnz .L0x2cf
-	mov rdi, __LC.S177
+	mov rdi, __LC.S176
 	call _size_t_puts_pchar.
 .L0x2d2:
 	mov rbx, rax
@@ -6031,7 +6007,7 @@ _void_printvec_pvectorint:
 	sar rbx, 2
 .L0x1d:
 	mov qword[rbp-40], rbx
-	mov rdi, __LC.S178
+	mov rdi, __LC.S177
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov qword[rbp-48], 0
@@ -6044,7 +6020,7 @@ _void_printvec_pvectorint:
 	mov eax, ecx
 .L0x37:
 	mov rsi, rax
-	mov rdi, __LC.S179
+	mov rdi, __LC.S178
 	mov al, 0
 	enter 0, 0
 	and rsp, -16
@@ -6065,7 +6041,7 @@ _void_printvec_pvectorint:
 	lea rdi, [rbp-32]
 	call _int_at_pvectorint.size_t
 	mov rsi, rax
-	mov rdi, __LC.S180
+	mov rdi, __LC.S179
 	mov al, 0
 	enter 0, 0
 	and rsp, -16
@@ -6101,7 +6077,7 @@ _void_check_plong:
 	je .L0x2f8
 	mov rdx, qword[rbp-24]
 	mov rsi, qword[rbp-8]
-	mov rdi, __LC.S181
+	mov rdi, __LC.S180
 	mov al, 0
 	enter 0, 0
 	and rsp, -16
@@ -6175,7 +6151,7 @@ main:
 	call _void_printvec_pvectorint
 	mov rbx, rax
 	mov si, 5501
-	mov rdi, __LC.S183
+	mov rdi, __LC.S182
 	call _void_nc_pchar.short
 	mov rbx, rax
 	xor eax, eax
@@ -6244,7 +6220,7 @@ _void_nc_pchar.short:
 	xor rcx, rcx
 	cmp qword[rbp-56], rcx
 	jge .L0x310
-	mov rdi, __LC.S184
+	mov rdi, __LC.S183
 	call _size_t_puts_pchar.
 	mov rbx, rax
 	mov rax, -1
@@ -6289,9 +6265,9 @@ _float_benchmark_p:
 	jmp .L0x313
 .L0x312:
 	mov r8, 1056964608
-	mov rcx, __LC.S186
+	mov rcx, __LC.S185
 	mov rdx, 123
-	mov rsi, __LC.S185
+	mov rsi, __LC.S184
 	lea rbx, [rbp-1007]
 	mov rdi, rbx
 	mov al, 0
