@@ -160,6 +160,8 @@ KEYWORDS = [
     "continue",
     "__asm",
     "__simd",
+    "with",
+    "as",
 
     "return",
     "typedef",

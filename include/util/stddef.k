@@ -66,6 +66,8 @@ typedef short int32;
 # define lambda
 # define __vectorize
 # define __STRINGIFY__
+# define with
+# define as
 #endif
 
 

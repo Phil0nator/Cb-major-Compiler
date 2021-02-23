@@ -16,10 +16,10 @@ from Assembly.CodeBlocks import (allocate_readonly, checkTrue,
                                  function_allocator, function_closer,
                                  functionlabel, getLogicLabel, loadToPtr,
                                  loadToReg, maskset, movMemVar, movRegToVar,
-                                 movVarToReg, pack_string, raw_regmov,
+                                 movVarToReg, moveParameterVector, pack_string, raw_regmov,
                                  registerizeValueType, spop, spush, syscall,
                                  valueOf, win_align_stack, win_unalign_stack,
-                                 zeroize)
+                                 zeroize, moveVector)
 from Assembly.Instructions import Instruction, floatTo32h, floatTo64h
 from Assembly.Registers import *
 from Assembly.TypeSizes import INTMAX, dwordImmediate, isfloat
@@ -487,9 +487,9 @@ class Function:
         self.localstate_stack.append((self.stackCounter, len(self.variables)))
 
     def pop_stackstate(self):
-        if len(self.localstate_stack) < 2:
+        if len(self.localstate_stack) < 1:
             return
-        self.stackCounter, newidx = self.localstate_stack.pop()
+        _, newidx = self.localstate_stack.pop()
         for i in range(len(self.variables) - newidx):
             oldvar = self.popVar()
             if(oldvar.register is not None):
@@ -1658,8 +1658,56 @@ class Function:
         self.addline(f"jmp {asmlabel}")
         self.checkSemi()
 
-    # build a statement that starts with a keyword
+    def buildWith(self):
+        self.advance()
+        instr, value = self.evaluateExpression()
+        if not (self.current_token.tok == T_KEYWORD and self.current_token.value == "as"):
+            throw(ExpectedToken(self.current_token,"as"))
+        self.advance()
+        dtok = self.current_token
+        vname = self.checkForId()
+        var = Variable(
+            value.type.copy(),
+            vname
+        )
+        var.dtok = dtok
+        self.push_stackstate()
 
+        self.addVariable(var, False)
+        self.addline(instr)
+        if var.t.isintrinsic():
+            self.addline(loadToReg(var, value.accessor))
+            rfree(value.accessor)
+        else:
+            customEvaluator = ExpressionEvaluator(self)
+            pfix = [
+                EC.ExpressionComponent(var,var.t,token=var.dtok),
+                value,
+                EC.ExpressionComponent('=', VOID, isoperation=True)
+                ]
+            instr, _ = customEvaluator.evaluatePostfix(pfix, customEvaluator)
+            rfree(_.accessor)
+            self.addline(instr)
+
+        self.checkTok("{")
+        self.beginRecursiveCompile()
+        self.pop_stackstate()
+        self.advance()
+        if not var.t.isintrinsic():
+            if (var.t.destructor is not None):
+                self.addline(
+                    self.createDestructor(
+                        var
+                    )
+                )
+        
+        
+
+        return 
+
+
+
+    # build a statement that starts with a keyword
     def buildKeywordStatement(self):
         word = self.current_token.value
         # check available response
@@ -2112,7 +2160,7 @@ class Function:
         # The tokens: ; , } ) etc... will mark the end of an
         # expression
         while opens > 0 and self.current_token.tok not in [
-                T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL]:
+                T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL, T_KEYWORD]:
 
             # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):
@@ -3145,7 +3193,8 @@ function_keyword_responses = {
     "switch": Function.buildSwitch,
     "del": Function.buildRegisterDel,
     "goto": Function.buildGoto,
-    "do": Function.buildDoWhile
+    "do": Function.buildDoWhile,
+    "with" : Function.buildWith
 
 }
 

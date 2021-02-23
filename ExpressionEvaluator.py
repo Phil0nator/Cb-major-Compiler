@@ -1315,11 +1315,24 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr += loadToReg(a.accessor, tmpstack[1].accessor)
             return instr, a.type.copy(), tmpstack[1]
 
-    # Do an operation with a op b -> o:DType
 
+
+    def negate(self, a, o):
+        areg, _, __, instr = self.optloadRegs(a,None,"negate", o)
+        return f"{instr}\nneg {areg}\n", areg
+
+
+    # Do an operation with a op b -> o:DType
     def performCastAndOperation(self, a, b, op, o):
         instr = ""
         apendee = None
+
+        # Check for simple negate:
+        if op == "-" and a.accessor == 0 and not b.type.isflt():
+            instr, breg = self.negate(b, o)
+            apendee = EC.ExpressionComponent(breg, b.type,token=b.token)
+            return instr, o, apendee
+
 
         # Generalized Leftside operation evaluation is only different for the
         # '[' operator.
