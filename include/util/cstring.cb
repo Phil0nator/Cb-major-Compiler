@@ -77,6 +77,15 @@ CBLIBENTRY size_t strcspn(char* str1, char* str2);
  */
 CBLIBENTRY char* strerror(void errnum);
 
+/**
+ * Parse a string into an integer. (decimal)
+ * @param s a string to parse
+ * @returns an integer (64 bit) with the value in the string.
+ */
+CBLIBENTRY long stoi(char* s);
+
+
+
 function char* strpbrk(char* str1, char* str2);
 function char* strrchr(char* str, char c);
 function size_t strspn(char* str1, char* str2);

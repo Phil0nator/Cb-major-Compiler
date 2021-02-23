@@ -366,8 +366,11 @@ class ExpressionEvaluator:
         if op == "<=>":
             return self.swap_op(a, b)
 
-        if not typematch(a.type, b.type, True):
-            throw(TypeMismatch(a.token, a.type, b.type))
+        atesttype = a.type
+        btesttype = b.type
+        if not typematch(atesttype, btesttype, True):
+            print(atesttype, btesttype, self.fn.compiler.getType(atesttype.name))
+            throw(TypeMismatch(a.token, atesttype, btesttype))
 
         instrs = ""
         # get the necessary opcode for the operation,
@@ -1340,7 +1343,7 @@ class LeftSideEvaluator(ExpressionEvaluator):
                     breg = 'rax'
                 else:
                     breg, _, __, ninstr = self.optloadRegs(b, None, '[', o)
-                    instr += f"{ninstr}lea {areg}, [{a.accessor.baseptr}{offset+a.accessor.stackarrsize}+{breg}*{itemsize}]\n"
+                    instr += f"{ninstr}lea {areg}, [{a.accessor.baseptr}{offset+a.accessor.stackarrsize}+{setSize(breg, 8)}*{itemsize}]\n"
             else:
                 areg, breg, o, ninstr = self.optloadRegs(a, b, op, o)
                 instr += ninstr
@@ -1507,7 +1510,6 @@ class LeftSideEvaluator(ExpressionEvaluator):
         #    if a.isRegister():
         #        a.accessor = setSize(a.accessor, t.csize())
         #    return "", t, a
-
         aval = ralloc(a.type.isflt(), a.type.csize())
         result = ralloc(t.isflt(), t.csize())
 

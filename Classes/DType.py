@@ -86,9 +86,9 @@ class DType:
         out.ptrdepth = 0
         return out
 
-    def up(self):
+    def up(self, amt=1):
         out = self.copy()
-        out.ptrdepth += 1
+        out.ptrdepth += amt
         return out
 
     def getOpOverload(self, op, param=None):

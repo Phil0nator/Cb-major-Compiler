@@ -858,9 +858,9 @@ class Compiler:
                 if len(t[1]) != len(types):
                     break
 
-                fulleq = ''.join([str(ty) for ty in t[1]]) == ''.join(
-                    [str(ty) for ty in types])
-
+                #fulleq = ''.join([str(ty) for ty in t[1]]) == ''.join(
+                #    [str(ty) for ty in types])
+                fulleq = all(( t[1][i].__eq__(types[i]) for i in range(len(types))))
                 if fulleq:
                     return t[2].copy()
 
@@ -933,6 +933,7 @@ class Compiler:
                     struct.operators[op][i], tns, types
                 )
 
+
         self.template_cache.append([template, types, struct])
         return struct.copy()
 
@@ -969,6 +970,7 @@ class Compiler:
                 pd = fn.parameters[i].t.ptrdepth
                 fn.parameters[i].t = types[tns.index(p.t.name)]
                 fn.parameters[i].t.ptrdepth += pd
+
 
         # check if the function has already been built before
         fnexist = templatefn.getFunction(

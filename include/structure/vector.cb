@@ -27,7 +27,7 @@ struct vector{
     }
 
     vector(size_t initialSize){
-        begin = mapalloc(initialSize*sizeof(T));
+        begin = (T*)mapalloc(initialSize*sizeof(T));
         end = begin;
         stop = begin+((T*) initialSize*sizeof(T));
     }

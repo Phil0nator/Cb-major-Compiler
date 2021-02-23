@@ -614,7 +614,7 @@ class Function:
             self.advance()
 
         # update type properties
-        t.ptrdepth = ptrdepth
+        t.ptrdepth += ptrdepth
         t.signed = signed
         return t
 
@@ -841,12 +841,9 @@ class Function:
                 # not member functions
                 if not isinstance(member.initializer, Function):
                     pdepth, sign = (member.t.ptrdepth, member.t.signed)
-                    member.t = self.compiler.getType(member.t.name)
-                    member.t.ptrdepth = pdepth
-                    member.t.signed = sign
                     # create a rdi+ based variable for each member
                     v = Variable(
-                        member.t.copy(),
+                        self.compiler.getType(member.t.name).up(pdepth),
                         member.name,
                         glob=False,
                         offset=member.offset,
@@ -871,6 +868,7 @@ class Function:
             # if the next parameter is an extra parameter (more than 6)
             # if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
             #    break
+
 
             # if the compiler has already identified this parameter as dead,
             # add to the register counters and continue to next parameter.

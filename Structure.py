@@ -42,6 +42,7 @@ class Structure:
     def buildMember(self):
         # member type
         t = self.compiler.checkType()
+
         self.update()
         if(self.current_token.tok != T_ID):
             throw(ExpectedIdentifier(self.current_token))

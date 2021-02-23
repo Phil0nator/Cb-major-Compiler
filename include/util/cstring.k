@@ -89,3 +89,29 @@ char* strerror(void errnum){
     }
     return nullptr;
 }
+
+
+long stoi(char* s){
+    long sign = 1;
+    if (@s == '-'){
+        sign = -1;
+        s++;
+    }
+    char reversed[22] = 0;
+    int ridx = 20;
+    while (@s >= '0' && @s <= '9'){
+        reversed[ridx] = @s;
+        ridx--;
+        s++;
+    }
+    char* rev = (&reversed)+((char*)ridx)+1;
+    long out = 0;
+    long pow = 1;
+    for (int i = 0; i < (20-ridx); i++){
+        int c = (rev[i]);
+        out += (c-'0')*pow;
+        pow*=10;
+    }
+    return out*sign;
+
+}
