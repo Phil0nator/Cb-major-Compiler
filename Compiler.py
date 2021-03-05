@@ -182,7 +182,7 @@ class Compiler:
         #    (tdef[0].name == ta and tdef[1].name == tb) or (tdef[0].name == tb and tdef[1].name == ta))), False)
 
     def getType(self, qu: str) -> DType:               # get type of name q
-        
+
         # search types for a datatype that shares a name with the querry
         out: DType = next((t for t in self.types if t.name == qu), None)
         # if none exists, return
@@ -389,13 +389,13 @@ class Compiler:
                 self.globals[-1].dtok = dtok
                 # since the var has no initializer, it is stored in the .bss
                 # section
-                
+
                 # handle structures
                 if not intr.isintrinsic():
                     self.createGlobalStructure(self.globals[-1], dtok, True)
                 else:
                     self.heap += f"{name}: resb {intr.csize()}\n"
-                
+
                 # close
                 self.advance()
                 return
@@ -430,7 +430,7 @@ class Compiler:
         # if the final value is a variable, the initializer to that variable is
         # taken
         if(isinstance(value.accessor, Variable)):
-            #value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
+            # value.accessor = value.accessor.name if intr.ptrdepth == value.accessor.t.ptrdepth + \
             #    1 else value.accessor.initializer
             #isptr = True
             if value.accessor.glob and value.accessor.t.ptrdepth > 0:
@@ -441,7 +441,7 @@ class Compiler:
         # add new Variable
         self.globals.append(Variable(intr.copy(), name,
                                      glob=True, initializer=value.accessor, isptr=isptr))
-        
+
         self.globals[-1].dtok = dtok
 
         # add .data instructions to self.constants
@@ -455,7 +455,7 @@ class Compiler:
 
     def createGlobalStructure(self, var, dtok, addToHeap, starter=""):
         if addToHeap:
-        
+
             self.heap += f"{var.name}:\n"
             # implicit constructor
             implicitConstructor = var.t.getConstructor([var.t.up])
@@ -464,29 +464,25 @@ class Compiler:
             destructor = var.t.destructor
             if destructor is not None:
                 self.fini += f"mov rdi, {var.name}\n{fncall(destructor)}"
-        
+
         size_added = 0
-        
-        
+
         for v in var.t.members:
             if isinstance(v.initializer, Function):
-                continue 
+                continue
             self.globals.append(
-                Variable(v.t, f"{starter}{var.name}.{v.name}",glob=True)
+                Variable(v.t, f"{starter}{var.name}.{v.name}", glob=True)
             )
             self.globals[-1].dtok = dtok
             if addToHeap:
                 size_added += v.t.csize()
-                self.heap+=f"{self.globals[-1].name}: resb {v.t.csize()}\n"
+                self.heap += f"{self.globals[-1].name}: resb {v.t.csize()}\n"
 
-        
-        
-        
         if addToHeap and size_added != var.t.csize():
             self.heap += f"resb {var.t.csize()-size_added}\n"
 
-
     # isolate a function and build a Function object
+
     def buildFunction(self, thisp=False, thispt=None,
                       constructor=False, destructor=False) -> None:
         # track if the function is explicitly inline
@@ -858,9 +854,10 @@ class Compiler:
                 if len(t[1]) != len(types):
                     break
 
-                #fulleq = ''.join([str(ty) for ty in t[1]]) == ''.join(
+                # fulleq = ''.join([str(ty) for ty in t[1]]) == ''.join(
                 #    [str(ty) for ty in types])
-                fulleq = all(( t[1][i].__eq__(types[i]) for i in range(len(types))))
+                fulleq = all((t[1][i].__eq__(types[i])
+                              for i in range(len(types))))
                 if fulleq:
                     return t[2].copy()
 
@@ -933,7 +930,6 @@ class Compiler:
                     struct.operators[op][i], tns, types
                 )
 
-
         self.template_cache.append([template, types, struct])
         return struct.copy()
 
@@ -970,7 +966,6 @@ class Compiler:
                 pd = fn.parameters[i].t.ptrdepth
                 fn.parameters[i].t = types[tns.index(p.t.name)]
                 fn.parameters[i].t.ptrdepth += pd
-
 
         # check if the function has already been built before
         fnexist = templatefn.getFunction(

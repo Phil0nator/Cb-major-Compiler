@@ -298,7 +298,6 @@ norm_scratch_registers_inuse = [
 ]
 
 
-
 # register allocation and deallocation system:
 def ralloc(flt, size=8, allow_volatile=True):
 

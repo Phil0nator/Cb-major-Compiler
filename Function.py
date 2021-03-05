@@ -769,8 +769,8 @@ class Function:
     def evaluate__exists(self, starttok) -> Token:
         self.advance()
         symbol = self.checkForId()
-        TRUE = Token(T_INT, 1, starttok.start,self.current_token.end)
-        FALSE = Token(T_INT, 0, starttok.start,self.current_token.end)
+        TRUE = Token(T_INT, 1, starttok.start, self.current_token.end)
+        FALSE = Token(T_INT, 0, starttok.start, self.current_token.end)
         self.advance()
         for v in self.variables:
             if v.name == symbol:
@@ -868,7 +868,6 @@ class Function:
             # if the next parameter is an extra parameter (more than 6)
             # if(self.parameters.index(p) >= len(self.parameters) - self.extra_params):
             #    break
-
 
             # if the compiler has already identified this parameter as dead,
             # add to the register counters and continue to next parameter.
@@ -1661,8 +1660,9 @@ class Function:
     def buildWith(self):
         self.advance()
         instr, value = self.evaluateExpression()
-        if not (self.current_token.tok == T_KEYWORD and self.current_token.value == "as"):
-            throw(ExpectedToken(self.current_token,"as"))
+        if not (self.current_token.tok ==
+                T_KEYWORD and self.current_token.value == "as"):
+            throw(ExpectedToken(self.current_token, "as"))
         self.advance()
         dtok = self.current_token
         vname = self.checkForId()
@@ -1681,10 +1681,10 @@ class Function:
         else:
             customEvaluator = ExpressionEvaluator(self)
             pfix = [
-                EC.ExpressionComponent(var,var.t,token=var.dtok),
+                EC.ExpressionComponent(var, var.t, token=var.dtok),
                 value,
                 EC.ExpressionComponent('=', VOID, isoperation=True)
-                ]
+            ]
             instr, _ = customEvaluator.evaluatePostfix(pfix, customEvaluator)
             rfree(_.accessor)
             self.addline(instr)
@@ -1700,14 +1700,11 @@ class Function:
                         var
                     )
                 )
-        
-        
 
-        return 
-
-
+        return
 
     # build a statement that starts with a keyword
+
     def buildKeywordStatement(self):
         word = self.current_token.value
         # check available response
@@ -1763,9 +1760,9 @@ class Function:
         # inform the register allocator that rdx and rcx are off limits now that they are being
         # used for parameters (if they are needed)
         rdxneeded = (len(fn.parameters) - sum((p.t.isflt()
-                                              for p in fn.parameters))) > 2
+                                               for p in fn.parameters))) > 2
         rcxneeded = (len(fn.parameters) - sum((p.t.isflt()
-                                              for p in fn.parameters))) > 1
+                                               for p in fn.parameters))) > 1
         config.rdx_functioncalls_inprogress += rdxneeded
         config.rcx_functioncalls_inprogress += rcxneeded
 
@@ -1915,7 +1912,7 @@ class Function:
             instructions += win_unalign_stack
 
         if fn.extern:
-            self.cexterncalls+=1
+            self.cexterncalls += 1
 
         # handle big functions
         if fn.extra_params > 0:
@@ -2722,7 +2719,6 @@ class Function:
             self.ctidx -= 3
             self.advance()
             # record asm state in case this turns out to be dead code
-            
 
             instr, __ = self.evaluateExpression(destination=False)
             if var.name not in self.unreferenced:
@@ -3067,12 +3063,11 @@ class Function:
         realValue += feature_instructions
         if self.extern and self.name != "main":
             for reg in reversed(callee_registers):
-                realValue+=(f"push {reg}\n")
+                realValue += (f"push {reg}\n")
 
         # fill in allocator with real value
         self.asm = self.asm.replace(
             "/*ALLOCATOR*/", realValue)
-
 
     def finalWarningCheck(self):
         # warning checking:
@@ -3194,7 +3189,7 @@ function_keyword_responses = {
     "del": Function.buildRegisterDel,
     "goto": Function.buildGoto,
     "do": Function.buildDoWhile,
-    "with" : Function.buildWith
+    "with": Function.buildWith
 
 }
 
@@ -3205,5 +3200,5 @@ function_builtin_responses = {
     "__isflt": Function.evaluate__isflt,
     "__syscall": Function.evaluate__syscall,
     "static_assert": Function.evaluateStatic_assert,
-    "__exists" : Function.evaluate__exists
+    "__exists": Function.evaluate__exists
 }

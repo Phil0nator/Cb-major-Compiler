@@ -244,7 +244,7 @@ class Peephole:
                             ExpressionComponent(b, None, constint=True),
                             op
                         )
-                        
+
                         splitted[prev.idx] = ""
                         splitted[line.idx] = f"mov {line.dest}, {value.accessor}\n"
                         optims += 1

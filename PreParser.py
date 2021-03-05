@@ -16,8 +16,6 @@ import time
 from collections import deque
 
 
-
-
 # add the compiler-produced define macros
 # EX: __WIN32, __LINUX, __DARWIN, etc...
 oslist = ["Linux", "Darwin", "Windows", "SunOS", "Java", "BSD"]
@@ -100,7 +98,7 @@ def getCompilerDefines():
 class PreProcessor:
     def __init__(self, tokens):
         self.tokens = deque(tokens)                    # all tokens
-        
+
         self.current_token = tokens[0]          # current token
         self.tkidx = 0                          # current position
 
@@ -114,7 +112,8 @@ class PreProcessor:
         # }
 
         self.definitions = {}
-        self.possible_defines = ["__LINE__", "__FILE__", "__TIME__"]+[d[0] for d in definitions]
+        self.possible_defines = ["__LINE__", "__FILE__",
+                                 "__TIME__"] + [d[0] for d in definitions]
         for d in definitions:
             self.definitions[d[0]] = d
 
@@ -139,8 +138,8 @@ class PreProcessor:
         self.tokens[self.tkidx] = None
         self.advance()
 
-
     # get a definition by name
+
     def getDefn(self, name) -> list:
         return self.definitions[name] if name in self.definitions else None
 
@@ -162,32 +161,31 @@ class PreProcessor:
     def loadRaw(self, path) -> str:
         return config.loadRawFile(path, self.current_token)
 
-
     def insertTokens(self, start, end, tokens) -> None:
-        if start == end and len(tokens)>0:
-            rotation = ((len(self.tokens)-end))
+        if start == end and len(tokens) > 0:
+            rotation = ((len(self.tokens) - end))
             self.tokens.rotate(rotation)
             self.tokens.extend(tokens)
             self.tokens.rotate(-rotation)
-            #exit()
+            # exit()
         elif len(tokens) == 0:
             return
         else:
             ogstart = start
-            for i in range((end-start)):
+            for i in range((end - start)):
                 self.tokens.remove(self.tokens[start])
             self.insertTokens(ogstart, ogstart, tokens)
 
-
     # #include directive
+
     def buildIncludeStatement(self) -> None:
         self.delmov()
         # verify syntax
         self.checkToks([T_STRING, T_INCLUDER])
         path = self.current_token.value
-        
+
         if path not in self.includeCache:
-        
+
             # \see loadRaw
             rawdata = self.loadRaw(path)
 
@@ -196,7 +194,6 @@ class PreProcessor:
             lex = Lexer(path, rawdata)
 
             tokens = lex.getTokens()
-
 
             self.includeCache[path] = tokens
             self.includeMulti[path] = False
@@ -211,9 +208,8 @@ class PreProcessor:
         self.insertTokens(self.tkidx, self.tkidx, tokens[:-1])
         self.update()
 
-        
-
     # #define directive
+
     def buildDefine(self) -> None:
         self.delmov()
         # verify syntax
@@ -400,7 +396,7 @@ class PreProcessor:
             if (id == "__STRINGIFY__"):
                 o = self.doStringify()
                 self.tokens[startidx] = None
-                
+
                 self.tokens[startidx:self.tkidx] = [
                     Token(T_STRING, o, starttok.start, starttok.end)]
                 self.tkidx = startidx
@@ -412,11 +408,11 @@ class PreProcessor:
                     self.current_token.value) is not None or self.getDefn(
                     self.current_token.value) is not None
 
-                #self.tokens[startidx:self.tkidx + 2] = [
+                # self.tokens[startidx:self.tkidx + 2] = [
                 #    Token(T_INT, int(value), starttok.start, starttok.end)
-                #]
+                # ]
 
-                self.insertTokens(startidx, self.tkidx+2, [
+                self.insertTokens(startidx, self.tkidx + 2, [
                     Token(T_INT, int(value), starttok.start, starttok.end)
                 ])
 
@@ -537,7 +533,7 @@ class PreProcessor:
 
     # main function
     def process(self):
-        
+
         while self.current_token.tok != T_EOF:
 
             self.update()
@@ -561,8 +557,8 @@ class PreProcessor:
         return list(filter(badfilter, self.tokens))
 
 
+def badfilter(token): return token is not None and token.tok != T_BSLASH
 
-badfilter = lambda token : token is not None and token.tok != T_BSLASH
 
 directive_responses = {
     "include": PreProcessor.buildIncludeStatement,

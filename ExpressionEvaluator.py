@@ -22,8 +22,6 @@ from globals import (BOOL, CHAR, COMMUNITIVE, DOUBLE, INT, INTRINSICS, LITERAL,
                      LONG, SHORT, VOID, canShiftmul, operatorISO)
 
 
-
-
 ###########################
 #   bringdown_memloc takes an expression component
 #       and returns the instructions necessary
@@ -74,9 +72,6 @@ def bringdown_memlocs(a: EC.ExpressionComponent,
     return bringdown_memloc(a) + bringdown_memloc(b)
 
 
-
-
-
 class ExpressionEvaluator:
     '''
         The ExpressionEvaluator class contains functions shared by
@@ -84,14 +79,12 @@ class ExpressionEvaluator:
         semi-constexpr optimizations (int operations with one constant and one var).
         Assignments are also layed out in depth in the normal ExpressionEvaluator class.
     '''
+
     def __init__(self, fn):
         self.fn = fn
         self.resultflags = None
 
-
         self.value_cache = {}
-
-
 
     def optloadRegs(self, a: EC.ExpressionComponent, b: EC.ExpressionComponent,
                     op: str, o: DType, constvalok: bool = False) -> Tuple[str, str, DType, str]:
@@ -173,9 +166,7 @@ class ExpressionEvaluator:
         if (self is not None):
             pass
 
-
         return areg, breg, o, instr
-
 
     def overloadHeader(self):
         out = ""
@@ -188,7 +179,6 @@ class ExpressionEvaluator:
         if self.fn.memberfn:
             out += "pop rdi\n"
         return out
-
 
     def performCastAndGeneralizedOperation(self, fn, a, b, op, o):
         instr = ""
@@ -242,7 +232,7 @@ class ExpressionEvaluator:
             areg, breg, o, ninstr = self.optloadRegs(a, b, op, o)
             instr += ninstr
             instr += doOperation(a.type, areg, breg, op,
-                                a.type.signed or b.type.signed)
+                                 a.type.signed or b.type.signed)
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
                 if(a.type.isflt() or b.type.isflt()):
                     rfree(areg)
@@ -269,7 +259,8 @@ class ExpressionEvaluator:
                 caster = b
                 reverse = True
 
-            creg, coreg, __, loadinstr = self.optloadRegs(caster, castee, op, o)
+            creg, coreg, __, loadinstr = self.optloadRegs(
+                caster, castee, op, o)
             instr += loadinstr
             newcoreg = ralloc(caster.type.isflt(), caster.type.csize())
 
@@ -287,7 +278,7 @@ class ExpressionEvaluator:
                 newcoreg = tmp
 
             instr += doOperation(caster.type, creg,
-                                newcoreg, op, caster.type.signed)
+                                 newcoreg, op, caster.type.signed)
 
             # handle float comparison
             if(op in ["==", "!=", ">", "<", "<=", ">="]):
@@ -305,9 +296,8 @@ class ExpressionEvaluator:
 
         return instr, o, apendee
 
-
-
     # swap_op refers to the swap operator '<=>'
+
     def swap_op(self, a: EC.ExpressionComponent,
                 b: EC.ExpressionComponent) -> Tuple[str, DType, EC.ExpressionComponent]:
 
@@ -369,7 +359,11 @@ class ExpressionEvaluator:
         atesttype = a.type
         btesttype = b.type
         if not typematch(atesttype, btesttype, True):
-            print(atesttype, btesttype, self.fn.compiler.getType(atesttype.name))
+            print(
+                atesttype,
+                btesttype,
+                self.fn.compiler.getType(
+                    atesttype.name))
             throw(TypeMismatch(a.token, atesttype, btesttype))
 
         instrs = ""
@@ -535,7 +529,8 @@ class ExpressionEvaluator:
         return newinstr, b.type.copy(), b
 
     # Compile the second half of a ternary operation
-    def ternarypartB(self, a, b) -> Tuple[str, DType, EC.ExpressionComponent]:  # op == ':'
+    # op == ':'
+    def ternarypartB(self, a, b) -> Tuple[str, DType, EC.ExpressionComponent]:
         # standard header
         newinstr = self.normal_semiconstexprheader(a, b)
 
@@ -558,7 +553,8 @@ class ExpressionEvaluator:
             resultreg, a.type.copy(), token=a.token)
 
     # Bitshift optimization for multiplication and division by multiples of 2
-    def mult_div_optimization(self, a, b, op) -> Tuple[str, DType, EC.ExpressionComponent]:
+    def mult_div_optimization(
+            self, a, b, op) -> Tuple[str, DType, EC.ExpressionComponent]:
         newinstr = None
         newt = None
         apendee = None
@@ -665,7 +661,7 @@ class ExpressionEvaluator:
     # addition or subtraction by one optimization
 
     def inc_dec_optimization(self, a, b, op) -> Tuple[str,
-                                                 DType, EC.ExpressionComponent]:
+                                                      DType, EC.ExpressionComponent]:
         # header
         newinstr = bringdown_memloc(a)
         # load reg
@@ -684,7 +680,8 @@ class ExpressionEvaluator:
     # use of smaller 'test' instruction in place of 'cmp' for particular
     # comparisons
 
-    def test_optimization(self, a, b, op) -> Tuple[str, DType, EC.ExpressionComponent]:
+    def test_optimization(
+            self, a, b, op) -> Tuple[str, DType, EC.ExpressionComponent]:
         # header
         newinstr = bringdown_memlocs(a, b)
         # load regs
@@ -1003,8 +1000,7 @@ class ExpressionEvaluator:
         # TODO::
         #       Make sure to bringdown memlocks here!
         """"""
-        
-        
+
         # check for special case with member access
         if op == "->":
             return instr + self.compile_memberAccessOverload(
@@ -1315,14 +1311,12 @@ class LeftSideEvaluator(ExpressionEvaluator):
             instr += loadToReg(a.accessor, tmpstack[1].accessor)
             return instr, a.type.copy(), tmpstack[1]
 
-
-
     def negate(self, a, o):
-        areg, _, __, instr = self.optloadRegs(a,None,"negate", o)
+        areg, _, __, instr = self.optloadRegs(a, None, "negate", o)
         return f"{instr}\nneg {areg}\n", areg
 
-
     # Do an operation with a op b -> o:DType
+
     def performCastAndOperation(self, a, b, op, o):
         instr = ""
         apendee = None
@@ -1330,9 +1324,8 @@ class LeftSideEvaluator(ExpressionEvaluator):
         # Check for simple negate:
         if op == "-" and a.accessor == 0 and not b.type.isflt():
             instr, breg = self.negate(b, o)
-            apendee = EC.ExpressionComponent(breg, b.type,token=b.token)
+            apendee = EC.ExpressionComponent(breg, b.type, token=b.token)
             return instr, o, apendee
-
 
         # Generalized Leftside operation evaluation is only different for the
         # '[' operator.
@@ -1672,5 +1665,3 @@ def depositFinal(dest, final):
 
         rfree(castdest)
     return instr
-
-
