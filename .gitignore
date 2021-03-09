@@ -14,3 +14,6 @@ __pycache__/config.cpython-38.pyc
 __pycache__/config.cpython-38.pyc
 __pycache__/globals.cpython-38.pyc
 *.pyc
+a.out
+a.out.asm
+p.k

@@ -41,6 +41,7 @@ class Structure:
 
     def buildMember(self):
         # member type
+        starttok = self.current_token
         t = self.compiler.checkType()
 
         self.update()
@@ -98,7 +99,8 @@ class Structure:
 
         # inititialized with constexpr
         if(self.current_token.tok != T_EQUALS):
-            throw(ExpectedToken(self.current_token, '; or ='))
+            throw(ExpectedToken(self.current_token, '; or ='), notes=
+            [Note(starttok, "Did you mean to include 'function' here?")] if self.current_token.tok == "(" else [])
 
         self.advance()
 

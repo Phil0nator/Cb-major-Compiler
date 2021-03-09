@@ -9,27 +9,38 @@ Compile, debug, and link C flat files.
 The file compile.py can be called with the following arguments:
 
 ```bash
-usage: compile.py [-h] -o OUTPUT -i INPUT [-nasm] [-r] [-g] [-O2] [-O3] [-p] [-c] [-l LINK] [-nw] [-E]
+usage: cbm [-h] [-o OUTPUT] [-nasm] [-r] [-g] [-O2] [-O3] [-OS] [-O0] [-p] [-c] [-l LINK] [-L ADDLINK] [-vb] [-v] [-nw] [-E] [-U USE]
+           [-PL PLATFORM]
+           input
 
-Compile, link, and debug .k programs.
+Compile, link, and debug Cb major programs.
+
+positional arguments:
+  input                 Name of input file
 
 optional arguments:
-    -h, --help            show this help message and exit
-    -o OUTPUT, --output OUTPUT
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
                         Name of output file
-    -i INPUT, --input INPUT
-                        Name of input file
-    -nasm, --assembly     Output compiled version in nasm assembly as well as the executable
-    -r, --run             Auto-run the executable after compilation
-    -g, --debug           Add helpful comments in the outputted nasm code if [-nasm] option used
-    -O2, --optimize2      Use level 2 optimization (longer compiletime, but somewhat faster output)
-    -O3, --optimize3      Use level 3 optimization (much longer compiletime, but faster output)
-    -p, --profile         Print profiling statistics about the compiler for debugging/optimization
-    -c, --object          Compile to an object file instead of an executable
-    -l LINK, --link LINK  Link object files
-    -nw, --nowarn         Suppress warnings
-    -E, --preprocess      Only run the preprocessor, and output a single compile-ready file.
-    -U, --use             Specify the use of additional features like address sanitizing, or stack protection.
+  -nasm, --assembly     Output compiled version in nasm assembly as well as the executable
+  -r, --run             Auto-run the executable after compilation
+  -g, --debug           Add helpful comments in the outputted nasm code if [-nasm] option used
+  -O2, --optimize2      Use level 2 optimization (longer compiletime, but somewhat faster output)
+  -O3, --optimize3      Use level 3 optimization (much longer compiletime, but faster output)
+  -OS, --optimize-size  Optimize output for executable size, rather than speed.
+  -O0, --optimize0      Disable all optimizations.
+  -p, --profile         Print profiling statistics about the compiler for debugging/optimization
+  -c, --object          Compile to an object file instead of an executable
+  -l LINK, --link LINK  Link object files
+  -L ADDLINK, --addLink ADDLINK
+                        Add folder to search for object files
+  -vb, --verbose        Print extra information during compilation
+  -v, --version         Get the current c flat version.
+  -nw, --nowarn         Suppress warnings
+  -E, --preprocess      Only run the preprocessor, and output a single compile-ready file.
+  -U USE, --use USE     Specify the use of additional features like address sanitizing, or stack protection.
+  -PL PLATFORM, --platform PLATFORM
+                        Specify an alternate platform (OS) to compile for. e.g: Compile a windows program on linux.
 ```
 
 ## Hello World

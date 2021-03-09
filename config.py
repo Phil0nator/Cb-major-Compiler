@@ -18,6 +18,7 @@ import argparse as arg
 from colorama import Style, Fore, init
 init()
 
+__cflat_version__ = "0.4.1-alpha"
 
 parser = arg.ArgumentParser(
     prog="cbm",
@@ -48,9 +49,11 @@ parser.add_argument("-l", "--link", action="append", help="Link object files")
 parser.add_argument("-L", "--addLink", action="append",
                     help="Add folder to search for object files")
 
-parser.add_argument("-v", "--verbose", action="store_true", default=False,
+parser.add_argument("-vb", "--verbose", action="store_true", default=False,
                     help="Print extra information during compilation")
 
+parser.add_argument("-v", "--version", action="store_true", default=False,
+                    help="Get the current c flat version.")
 
 parser.add_argument(
     "-nw",
@@ -81,7 +84,18 @@ ExtraFeatures = {
     "address-sanitizing": False
 }
 
+
+# quick version-only check:
+if sys.argv[1] == "-v":
+    print(f"cbm compiler version {__cflat_version__}")
+    exit(0)
+
+
+
+
 args = parser.parse_args()
+
+
 
 
 # load arguments to variables

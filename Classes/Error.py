@@ -78,7 +78,9 @@ class Error(BaseException):
         return msg + notes
 
 
-def throw(error):
+def throw(error, notes=[]):
+    global notestack
+    notestack+=notes
     if config.GlobalCompiler is not None:
         config.GlobalCompiler.panicmode = True
         raise(error)
