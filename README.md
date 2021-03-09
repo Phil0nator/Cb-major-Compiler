@@ -46,13 +46,16 @@ optional arguments:
 ## Hello World
 
 The following is a basic hello world program to get started.
+It shows three good ways of printing out the "Hello World!" message.
 
-```C
+```cpp
 #include "cblib.cb"
 
 function int main(int argc, char** argv){
   
   printf("Hello World!");
+  puts("Hello World!");
+  cout << "Hello World!";
 
   return 0;
 }
@@ -60,7 +63,7 @@ function int main(int argc, char** argv){
 ```
 
 
-## Unscoped Keywords
+## Function Keywords
 
 ```function``` Declare a basic function 
 
@@ -76,88 +79,15 @@ function int main(int argc, char** argv){
 
 ```cextern``` Declare a function defined in an object file from gcc
 
+```lambda``` Declare a lambda function in your code somewhere
 
 ## Primitive Types
 
-```C
-long
-```
-A 64 bit integer value (can be signed or unsigned)
-
-```C
-int
-```
-A 32 bit integer value (can be signed or unsigned)
-
-```C
-short
-```
-A 16 bit integer value (can be signed or unsigned)
-
-```C
-char
-``` 
-An 8 bit integer value (can be signed or unsigned)
-
-```C
-bool
-```
-Synonymous to ```char```, with implied usage for true or false
-
-```C
-double
-```
-64 bit signed double precision floating point value
-
-## Type Qualifiers
-
-Type Qualifiers apply extra properties to a variable.
-
-```unsigned``` Makes a type unsigned, cannot be used for floating point types
-
-```register``` Suggests to the compiler that a variable should be stored only in a register
-
-
-
-
-## Operators
-
-```+, -, *, /``` Addition, Subtraction, Multiplication Division
-
-```.``` Stack-based member access
-
-```->``` Pointer-based member access
-
-```!``` bitwize logical not
-
-```~``` bitwize not
-
-```&&``` bitwise and
-
-```||``` bitwize or
-
-```@``` de-reference
-
-```&``` reference
-
-```()``` call
-
-```[]``` index
-
-```(op)=x``` modify value by x with operation op
-
-```++, --``` increment, decrement
-
-``` <, >, >=, <=, !=, == ``` Comparison
-
-```%``` modulo (non-floating point only)
-
-```>> , <<``` bitwize shift
-
-```$type``` Cast to type
-
+C flat major uses the same primitive types as modern C: char, short, int, long, float, double, bool
 
 ## Precompiler Directives
+
+Many of the c flat precompile directives are the same as modern C, but there are a few extras.
 
 ```#include``` (like C) copy the contents of another file for compilation
 EX: ```#include "myfolder/myfile.k"```
@@ -175,39 +105,25 @@ EX: ```#ifndef MYMACRO
 ...
 #endif```
 
+```#if``` Everything between this directive and its respective ```endif``` directive will only be compiled if the expression provided does not evaluate to zero.
+EX: ```#if 1||0&&1^(1||0) 
+... 
+#endif```
+
 ```#endif``` End a precompile if structure
 
 ```#link``` Specify a path to an object file to link
 EX: ```#link "path/to/my/objectfile/lib.o"```
 
-## Pointers
+```#warning``` Emit a warning
+EX: ```#warning "Something is not right"```
 
-The pointer depth of a variable can be specified by adding ```*```'s after the typename.
-
-Example:
-
-```int** a;```
-
-This would produce variable a: a pointer to a pointer to an integer value.
-
-Pointer depth has no upper limit.
-
-### Pointer indexing
-
-Pointers can be indexed like arrays
-
-Example:
-
-```C
-char** args;
-printf(args[0]);
-printf(args[1]);
-```
-
-A pointer's matrix dimention is its depth.
-
+```#error``` Emit an error, and stop compilation
+EX: ```#error "Something is wrong"```
 
 ### Dereferencing
+
+Dereferencing in C flat is different than modern C because it uses the ```@``` operator.
 
 You can dereference a pointer with the ```@``` operator.
 
@@ -215,7 +131,7 @@ This is the same as taking the 0th index.
 
 Example:
 
-```C
+```cpp
 printf("%i\n", @myarr);
 ```
 
@@ -236,49 +152,13 @@ printf("%i\n", a);
 
 (The majority of control structures will look exactly like C family languages.)
 
-### If statement
-
-Example:
-
-```C
-if (condition) {
-  printf("Condition is true");
-}else if (other_condition){
-  printf("Condition is not true, but other condition is true");
-}else {
-  printf("Neither is true");
-}
-```
-
-### While loop
-
-Example: 
-
-```C
-while(condition){
-
-  printf("condition is true");
-
-}
-```
-
-### For loop
-
-Example:
-
-```C
-for (int i = 0; i < 10; i++){
-
-  printf("i is: %i\n", i);
-
-}
-```
-
 ### Switch statement
 
+The only different control structure is a switch statement, which uses curly brackets instead of a colon.
+
 Example:
 
-```C
+```cpp
 switch(expression){
 
   case constexpr{
@@ -299,8 +179,76 @@ switch(expression){
 ```
 
 
+## Example Program
 
+Here is a more lengthy example program showing off more C flat functionality:
 
+```cpp
+#include "cblib.cb"
+/**
+ * miscfn can take in an 'x' of any type that can be added, multiplied and divided.
+ * The returntype of miscfn can be automatically determined by the compiler.
+ */
+template<typename T> // T is an ambiguous type to be determined later
+auto miscfn(T x){
+    return x+(x*10)/(x+22);
+}
+// args is a vector (dynamic array) of c strings.
+// vector is defined in the standard library
+vector<char*> args;
+/**
+ * The main function normally returns int, and accepts an int argc, and char** argv
+ */
+int main(int argc, char** argv){
+    // cout is an output stream object defined in the standard library used
+    // for printing like in c++
+    cout << "Your arguments were: " << endl;
+    // for range will take values of i between 0, and argc
+    // range is defined in the standard library
+    for range(i, argc){
+        // printf is almost identical to the C printf
+        printf("%s, ",argv[i]);
+        // add the argument to the vector
+        args.push_back(argv[i]);
+    }
+    // add a newline character
+    puts("\n");
+    // call our miscfn on our number of arguments, after it is implicitly casted to a double
+    cout << miscfn<double>(argc) << endl;
+    // the type of 'adder' is determined automatically per the 'auto' keyword.
+    // The type of adder will evaluate to function int(int), or in C typing: int(*adder)(int)
+    // The lambda declaration here will create a new anonymous function with the body shown.
+    auto adder = lambda int (int x) { return x+1; };
+    // More complex lambda, with spelled out type
+    function int (int, int) mult = lambda int(int x, int y) {return x*y;};
+    // Even more complex lambda:
+    // The type of miscop would evaluate to: 
+    //          function int (int, int, function int(int, int))
+    // Or in C typing:
+    //          int (*miscop)(int, int, int(*fn)(int, int))
+    auto miscop = lambda int (int x, int y, function int(int, int) fn ) { return fn(x,y); };
+    // We can now find and print our result at the same time, because the '='
+    // operator will return the value.
+    int result;
+    cout << ( result = miscop(adder(adder(mult(2,3))), 3, mult) );
 
+    // This switch can only evaluate to 24 because we fed our expression above constants.
+    switch (result){
+    case 24
+        {
+        printf("\nThe result is 24.");
+        break;
+        }
+    case 10
+        {
+        printf("\nYour CPU is broken.");
+        break;
+        }
+    }
+    // return 0 for success
+    return 0;
+
+}
+```
 
 

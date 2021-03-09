@@ -78,7 +78,7 @@ class DType:
 
     def down(self):
         out = self.copy()
-        out.ptrdepth -= 1 * out.ptrdepth > 0
+        out.ptrdepth -= 1 * (out.ptrdepth > 0)
         return out
 
     def bottom(self):

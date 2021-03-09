@@ -1157,9 +1157,9 @@ class ExpressionEvaluator:
                         a, ninstr = self.makeFloatImmediate(a)
                         instr += ninstr
 
+
                     # check for function types
                     if a.type.function_template is not None or b.type.function_template is not None:
-
                         if fntypematch(a.type, b.type):
                             instr += self.compile_aopb(a,
                                                        op, b, evaluator, stack, e)

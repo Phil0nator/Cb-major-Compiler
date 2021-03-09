@@ -1,3 +1,4 @@
+from math import tanh
 import random
 import time
 
@@ -548,13 +549,11 @@ class Function:
         rett = self.checkForType()
         parameters = self.parseFnDeclParameters(False)
         fnout = Function("", parameters, rett, self.compiler, [])
-
         typeout = DType(
             f"function {fnout.createTypename()}",
             8,
             function_template=fnout
         )
-
         return typeout
 
     # check next tokens for Type, and return it as a DType
@@ -1518,9 +1517,8 @@ class Function:
         rettype = self.checkForType()
 
         parameters = self.parseFnDeclParameters(True)
-
         firsttok = self.ctidx + 1
-
+        self.ctidx-=1
         self.skipBody()
         end = self.ctidx + 1
         tokens = (self.tokens[firsttok:end])
@@ -1529,7 +1527,7 @@ class Function:
         if self.lambdaCount < len(self.lambdas):
             label = self.lambdas[self.lambdaCount].name
         else:
-            self.lambdaCount += 1
+            
             label = getLogicLabel("LAMBDA")[1:]
             fun = Function(
                 label,
@@ -1556,7 +1554,7 @@ class Function:
                     signed=rettype.signed
                 )
             )
-
+        self.lambdaCount += 1
         return label
 
     def buildAutoDefine(self, register=False):
@@ -2157,7 +2155,7 @@ class Function:
         # The tokens: ; , } ) etc... will mark the end of an
         # expression
         while opens > 0 and self.current_token.tok not in [
-                T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL, T_KEYWORD]:
+                T_COMMA, T_OPENSCOPE, T_CLSSCOPE, T_ENDL]:
 
             # maintain track of open/close parenthesis
             if(self.current_token.tok == T_CLSP):
@@ -2328,7 +2326,7 @@ class Function:
                         self.advance()
 
             elif (self.current_token.tok == T_KEYWORD):
-
+                
                 # lambda function declarations are detected and parsed here. The label used
                 # to declare the function is returned by self.buildInineFunction() and used
                 # as a global variable in the context of this expression.
@@ -2342,7 +2340,6 @@ class Function:
                             label,
                             start,
                             self.current_token.end))
-
                     self.advance()
                     break
                 else:
@@ -2719,7 +2716,6 @@ class Function:
             self.ctidx -= 3
             self.advance()
             # record asm state in case this turns out to be dead code
-
             instr, __ = self.evaluateExpression(destination=False)
             if var.name not in self.unreferenced:
                 self.addline(instr)

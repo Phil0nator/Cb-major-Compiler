@@ -62,7 +62,7 @@
 template<typename T>
 function void for_each(T* begin, T* end, function any(T) cmpfn){
     for(begin; begin < end; begin+=sizeof(T)){
-        cmpfn(@begin);
+        cmpfn((@begin));
     }
 }
 

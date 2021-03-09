@@ -1,0 +1,65 @@
+#include "cblib.cb"
+/**
+ * miscfn can take in an 'x' of any type that can be added, multiplied and divided.
+ * The returntype of miscfn can be automatically determined by the compiler.
+ */
+template<typename T> // T is an ambiguous type to be determined later
+auto miscfn(T x){
+    return x+(x*10)/(x+22);
+}
+// args is a vector (dynamic array) of c strings.
+// vector is defined in the standard library
+vector<char*> args;
+/**
+ * The main function normally returns int, and accepts an int argc, and char** argv
+ */
+int main(int argc, char** argv){
+    // cout is an output stream object defined in the standard library used
+    // for printing like in c++
+    cout << "Your arguments were: " << endl;
+    // for range will take values of i between 0, and argc
+    // range is defined in the standard library
+    for range(i, argc){
+        // printf is almost identical to the C printf
+        printf("%s, ",argv[i]);
+        // add the argument to the vector
+        args.push_back(argv[i]);
+    }
+    // add a newline character
+    puts("\n");
+    // call our miscfn on our number of arguments, after it is implicitly casted to a double
+    cout << miscfn<double>(argc) << endl;
+    // the type of 'adder' is determined automatically per the 'auto' keyword.
+    // The type of adder will evaluate to function int(int), or in C typing: int(*adder)(int)
+    // The lambda declaration here will create a new anonymous function with the body shown.
+    auto adder = lambda int (int x) { return x+1; };
+    // More complex lambda, with spelled out type
+    function int (int, int) mult = lambda int(int x, int y) {return x*y;};
+    // Even more complex lambda:
+    // The type of miscop would evaluate to: 
+    //          function int (int, int, function int(int, int))
+    // Or in C typing:
+    //          int (*miscop)(int, int, int(*fn)(int, int))
+    auto miscop = lambda int (int x, int y, function int(int, int) fn ) { return fn(x,y); };
+    // We can now find and print our result at the same time, because the '='
+    // operator will return the value.
+    int result;
+    cout << ( result = miscop(adder(adder(mult(2,3))), 3, mult) );
+
+    // This switch can only evaluate to 24 because we fed our expression above constants.
+    switch (result){
+    case 24
+        {
+        printf("\nThe result is 24.");
+        break;
+        }
+    case 10
+        {
+        printf("\nYour CPU is broken.");
+        break;
+        }
+    }
+    // return 0 for success
+    return 0;
+
+}

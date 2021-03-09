@@ -964,8 +964,12 @@ class Compiler:
             if p.t.name in tns:
                 fn.parameters[i] = fn.parameters[i].copy()
                 pd = fn.parameters[i].t.ptrdepth
-                fn.parameters[i].t = types[tns.index(p.t.name)]
+                fn.parameters[i].t = types[tns.index(p.t.name)].copy()
                 fn.parameters[i].t.ptrdepth += pd
+                
+            # check for function type parameters using the templated type
+            if fn.parameters[i].t.function_template is not None:
+                fn.parameters[i].t.function_template = self.buildTemplateFunction(fn.parameters[i].t.function_template, tns, types)
 
         # check if the function has already been built before
         fnexist = templatefn.getFunction(
@@ -986,6 +990,7 @@ class Compiler:
                     self.tdef_hash[types[i].name].append(temptype.name)
                 else:
                     self.tdef_hash[types[i].name] = [temptype.name]
+            
 
         # if it is not already built, it needs to be compiled
         if not fn.isCompiled:
